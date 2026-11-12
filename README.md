@@ -46,7 +46,8 @@ plugins/AquaticSMP/
 │   ├── tournament.yml  stages, team size, rewards, crown, King perks
 │   ├── events.yml      each server event, rewards, auto-scheduler
 │   ├── guide.yml       new-player intro, starter kit, tips and the /guide book
-│   └── sidebar.yml     the stats sidebar lines
+│   ├── sidebar.yml     the stats sidebar lines
+│   └── shop.yml        Harbor Market categories, items and prices
 └── data/               saved game state (don't edit while the server runs)
 ```
 
@@ -100,6 +101,7 @@ Settings most servers change first:
 | `tournament` | `tournament.yml` | The Conqueror of the Sea tournament: registration → qualifiers → bracket → best-of finale → coronation, Hall of Kings. Needs `crews` |
 | `events` | `events.yml` | Treasure Hunt, Pirate War, Bounty Hunt, Lost Island, King's Challenge, Grand Raid, Naval Battle; optional auto-scheduler |
 | `combat` | `combat.yml` | Combat tag (no logging out or teleporting away mid-fight), respawn protection, new-player PvP protection |
+| `shop` | `shop.yml` | Harbor Market: buy and sell for Doubloons, editable in-game with `/shop admin` |
 | `sidebar` | `sidebar.yml` | Stats sidebar: Doubloons, bounty, crew, island, fruit power, events (`/sidebar` to hide) |
 | `guide` | `guide.yml` | Welcome intro, starter kit with a treasure map, tips for new players, the `/guide` book |
 

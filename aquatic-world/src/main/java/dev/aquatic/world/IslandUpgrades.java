@@ -44,7 +44,7 @@ import java.util.UUID;
  */
 final class IslandUpgrades implements Listener {
 
-    static final List<String> TYPES = List.of("treasury", "fortress", "watchtower", "harbor");
+    static final List<String> TYPES = List.of("treasury", "fortress", "watchtower", "harbor", "barracks", "wellspring");
 
     private final IslandsModule m;
     /** "player:island" -> last watchtower alert (ms), so a crew is not spammed. */
@@ -182,12 +182,20 @@ final class IslandUpgrades implements Listener {
         for (Map.Entry<UUID, String> e : presence.entrySet()) {
             IslandImpl is = m.islandImpl(e.getValue());
             int level = is == null ? 0 : is.upgrade("harbor");
-            if (level <= 0 || is.ownerCrewId == null) {
+            int well = is == null ? 0 : is.upgrade("wellspring");
+            if (is == null || (level <= 0 && well <= 0) || is.ownerCrewId == null) {
                 continue;
             }
             Player p = Bukkit.getPlayer(e.getKey());
             Crew crew = p == null ? null : crews.crewOf(p.getUniqueId());
-            if (crew == null || !crew.id().equals(is.ownerCrewId) || !p.isInWater()) {
+            if (crew == null || !crew.id().equals(is.ownerCrewId)) {
+                continue;
+            }
+            if (well > 0) {
+                // Wellspring: crewmates heal on their own island
+                p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 100, Math.min(2, well - 1), true, false, true));
+            }
+            if (level <= 0 || !p.isInWater()) {
                 continue;
             }
             p.addPotionEffect(new PotionEffect(PotionEffectType.DOLPHINS_GRACE, 100, Math.min(2, level - 1), true, false, true));
@@ -197,10 +205,38 @@ final class IslandUpgrades implements Listener {
         }
     }
 
+    /** Barracks: crewmates without a bed respawn on the crew island nearest to where they died. */
+    org.bukkit.Location barracksSpawn(Player p) {
+        if (!enabled()) {
+            return null;
+        }
+        CrewService crews = m.service(CrewService.class);
+        Crew crew = crews == null ? null : crews.crewOf(p.getUniqueId());
+        if (crew == null) {
+            return null;
+        }
+        org.bukkit.Location died = p.getLocation();
+        IslandImpl best = null;
+        double bestDist = Double.MAX_VALUE;
+        for (dev.aquatic.api.Island island : m.islandsOwnedBy(crew.id())) {
+            IslandImpl is = m.islandImpl(island.id());
+            if (is == null || is.upgrade("barracks") <= 0 || !is.world.equals(died.getWorld().getName())) {
+                continue;
+            }
+            double d = is.distance(died.getBlockX(), died.getBlockZ());
+            if (d < bestDist) {
+                bestDist = d;
+                best = is;
+            }
+        }
+        return best == null ? null : m.islandSpawnSpot(best);
+    }
+
     // ------------------------------------------------------------------ menu
 
     private static final int SLOT_INFO = 4;
-    private static final int[] SLOT_UPGRADES = {19, 21, 23, 25};
+    private static final int[] SLOT_UPGRADES = {19, 21, 23, 25, 29, 33};
+    private static final int SLOT_ACCESS = 31;
 
     private static final class Menu implements InventoryHolder {
         final String islandId;
@@ -218,7 +254,7 @@ final class IslandUpgrades implements Listener {
 
     void open(Player p, IslandImpl is) {
         Menu holder = new Menu(is.id);
-        Inventory inv = Bukkit.createInventory(holder, 36, m.rawMsg("manage-title", "island", is.name));
+        Inventory inv = Bukkit.createInventory(holder, 45, m.rawMsg("manage-title", "island", is.name));
         holder.inventory = inv;
         fill(inv, is, p);
         p.openInventory(inv);
@@ -263,6 +299,9 @@ final class IslandUpgrades implements Listener {
             it.setAmount(Math.max(1, Math.min(64, level)));
             inv.setItem(SLOT_UPGRADES[i], it);
         }
+        inv.setItem(SLOT_ACCESS, item(is.officersOnly ? Material.IRON_DOOR : Material.OAK_DOOR,
+                m.rawMsg(is.officersOnly ? "manage-access-officers" : "manage-access-all"),
+                List.of(m.rawMsg("manage-access-hint"), m.rawMsg("manage-access-click"))));
     }
 
     private static ItemStack item(Material type, Component name, List<Component> lore) {
@@ -293,6 +332,22 @@ final class IslandUpgrades implements Listener {
         IslandImpl is = m.islandImpl(menu.islandId);
         if (is == null) {
             p.closeInventory();
+            return;
+        }
+        if (event.getSlot() == SLOT_ACCESS) {
+            try {
+                Crew crew = ownCrew(p, is);
+                CrewRank rank = crew.rankOf(p.getUniqueId());
+                if (rank == null || !rank.isOfficer()) {
+                    throw new CommandFail(m.rawMsg("upgrade-officer"));
+                }
+                is.officersOnly = !is.officersOnly;
+                m.markDirty();
+                crew.broadcast(m.msg(is.officersOnly ? "access-officers" : "access-all", "island", is.name, "player", p.getName()));
+            } catch (CommandFail fail) {
+                p.sendMessage(m.plugin().prefix().append(fail.component()));
+            }
+            fill(event.getInventory(), is, p);
             return;
         }
         for (int i = 0; i < SLOT_UPGRADES.length && i < TYPES.size(); i++) {

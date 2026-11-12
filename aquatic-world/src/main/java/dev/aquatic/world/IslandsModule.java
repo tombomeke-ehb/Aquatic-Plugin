@@ -790,6 +790,10 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         markDirty();
     }
 
+    Location islandSpawnSpot(IslandImpl is) {
+        return teleportSpot(is);
+    }
+
     /** The spawn point: the exact /setspawn spot, else the spawn island, else null. */
     Location spawnLocation() {
         if (spawnPoint != null) {
@@ -1293,7 +1297,8 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         } else {
             CrewRelation relation = crews.relation(mine, owner);
             if (relation == CrewRelation.SAME) {
-                return null;
+                dev.aquatic.api.CrewRank rank = mine.rankOf(player.getUniqueId());
+                return is.officersOnly && (rank == null || rank == dev.aquatic.api.CrewRank.MEMBER) ? "deny-officers-only" : null;
             }
             if (relation == CrewRelation.ALLY) {
                 return config().getBoolean("protection.allies-can-build", true) ? null : "deny-occupied";
@@ -1633,7 +1638,15 @@ public final class IslandsModule extends AquaticModule implements IslandService,
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onRespawn(PlayerRespawnEvent event) {
-        if (!config().getBoolean("spawn.respawn-here", true) || event.isBedSpawn() || event.isAnchorSpawn()) {
+        if (event.isBedSpawn() || event.isAnchorSpawn()) {
+            return;
+        }
+        Location barracks = upgrades == null ? null : upgrades.barracksSpawn(event.getPlayer());
+        if (barracks != null) {
+            event.setRespawnLocation(barracks);
+            return;
+        }
+        if (!config().getBoolean("spawn.respawn-here", true)) {
             return;
         }
         Location spot = spawnLocation();

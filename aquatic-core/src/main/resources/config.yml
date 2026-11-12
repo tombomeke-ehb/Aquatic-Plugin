@@ -17,3 +17,5 @@ modules:
   guide: true
   # Stats sidebar on the right side of the screen (/sidebar to hide it).
   sidebar: true
+  # The Harbor Market (/shop). Turn off if you use another shop plugin.
+  shop: true

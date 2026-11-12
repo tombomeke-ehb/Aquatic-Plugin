@@ -1,5 +1,35 @@
 # Changelog
 
+## 1.7.0 (2026-11-12)
+
+### Added
+- **Harbor Market** (new `shop` module):
+  - `/shop` opens a chest menu with categories: tools and weapons, provisions, building supplies, sailing and navigation, the pirate armory, and trade goods (the market buys your loot).
+  - Left-click buys, shift-left buys a stack, right-click sells, shift-right sells all. `/shop sell` sells what you hold.
+  - Custom items can be sold too, such as rum, the flintlock, cannonballs and the Tide Compass.
+  - **Edit it in-game:**
+    - Hold an item and run `/shop admin add <category> <buy> [sell] [amount]`.
+    - `/shop admin list | price | remove`
+    - `/shop admin category create | delete`
+    - Everything is saved to `shop.yml`.
+- **New island upgrades:**
+  - **Barracks:** crewmates without a bed respawn on the nearest crew island that has one.
+  - **Wellspring:** crewmates regenerate health while on their own island (2 levels).
+- **Build access per island:** a button in `/island manage` switches between "all crewmates" and "officers only". Plain members then can't build, break or open containers there.
+- **Lore:** the story of the Endless Sea, the drowned empire of the Abyss, Abyss Fruits, Abyssal Iron, the Tidewatch of the Harbor Crown and the throne of the Conqueror of the Sea.
+  - It's in every item's description.
+  - It's in the new intro, which opens with **"Sail. Claim. Conquer."**
+  - The guide book has a new first chapter, "The Endless Sea", plus pages for the market and island upgrades.
+- **Renamed abilities:** Ice Age → Frostburst, Invisibility → Mistveil, Beast Form → Behemoth Rage.
+
+### Fixed
+- **Volcano craters could hold lava with no wall around it.** The lava level was fixed in advance, while the real rim height varies with hills and mountains.
+  - The crater is now filled after the terrain, to just below the lowest point of the rim, so the lake is always enclosed.
+  - 2 real lava streams spill over the rim and run down the volcano (`volcano.lava-streams`).
+
+### Existing servers
+Run `/aquatic resetconfig items confirm` and `/aquatic resetconfig guide confirm` to get the new lore and intro. A backup of the old file is kept.
+
 ## 1.6.0 (2026-11-12)
 
 ### Added

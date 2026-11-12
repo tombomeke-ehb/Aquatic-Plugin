@@ -377,11 +377,7 @@ final class IslandGenerator extends AreaJob {
             }
             world.getBlockAt(wx, y, wz).setType(m, false);
         }
-        if (k == CRATER) {
-            for (int y = Math.max(topY, floor) + 1; y <= lavaY; y++) {
-                world.getBlockAt(wx, y, wz).setType(t.craterFluid, false);
-            }
-        }
+        // the crater lake is filled after the terrain (fillCrater), once the real rim height is known
         top[idx] = Math.max(topY, floor);
         kind[idx] = k;
         if (k == LAND || k == MOUNTAIN) {
@@ -483,6 +479,10 @@ final class IslandGenerator extends AreaJob {
         if (t.plaza && t.throne) {
             list.add(new Feature(0, 0, 10, this::buildThrone));
         }
+        if (t.volcano) {
+            int craterR = (int) Math.ceil(t.craterSize * landR);
+            list.add(new Feature(0, 0, craterR + 4, () -> fillCrater(craterR, new Random(seed * 53 + 7))));
+        }
         if (t.plaza && t.town) {
             planTown(new Random(seed * 41 + 5), list); // before trees: roads and houses reserve their ground
         }
@@ -523,6 +523,72 @@ final class IslandGenerator extends AreaJob {
         list.sort(java.util.Comparator.comparingInt((Feature f) -> (cz + f.dz()) >> 4).thenComparingInt(f -> (cx + f.dx()) >> 4));
         features.addAll(list);
         featureTotal = features.size();
+    }
+
+    // ------------------------------------------------------------------ volcano crater
+
+    /**
+     * Fills the crater with lava up to just below the LOWEST point of its rim, so the lake is always
+     * walled in, then lets a few streams spill over the rim and run down the volcano.
+     */
+    private void fillCrater(int craterR, Random r) {
+        int minRim = Integer.MAX_VALUE, lowestFloor = Integer.MAX_VALUE;
+        List<int[]> rimCols = new ArrayList<>();
+        int reach = craterR + 3;
+        for (int dx = -reach; dx <= reach; dx++) {
+            for (int dz = -reach; dz <= reach; dz++) {
+                if (!inGrid(dx, dz)) {
+                    continue;
+                }
+                byte k = kind[index(dx, dz)];
+                if (k == CRATER) {
+                    lowestFloor = Math.min(lowestFloor, top[index(dx, dz)]);
+                    continue;
+                }
+                // a rim column: not crater itself, but touching a crater column
+                boolean touches = false;
+                for (int[] d : DIRS) {
+                    if (kindAt(dx + d[0], dz + d[1]) == CRATER) {
+                        touches = true;
+                        break;
+                    }
+                }
+                if (touches && k != NONE && k != SLOPE) {
+                    minRim = Math.min(minRim, top[index(dx, dz)]);
+                    rimCols.add(new int[]{dx, dz});
+                }
+            }
+        }
+        if (minRim == Integer.MAX_VALUE || lowestFloor == Integer.MAX_VALUE) {
+            return;
+        }
+        int level = Math.min(lavaY, minRim - 1);
+        if (level <= lowestFloor) {
+            return;
+        }
+        for (int dx = -craterR; dx <= craterR; dx++) {
+            for (int dz = -craterR; dz <= craterR; dz++) {
+                if (kindAt(dx, dz) != CRATER) {
+                    continue;
+                }
+                for (int y = top[index(dx, dz)] + 1; y <= level; y++) {
+                    world.getBlockAt(cx + dx, y, cz + dz).setType(t.craterFluid, false);
+                }
+            }
+        }
+        // lava streams: a source on the rim, with physics, so it really flows down the slope
+        if (t.craterFluid == Material.LAVA && !rimCols.isEmpty()) {
+            java.util.Collections.shuffle(rimCols, r);
+            int streams = Math.min(t.lavaStreams, rimCols.size());
+            for (int i = 0; i < streams; i++) {
+                int[] c = rimCols.get(i);
+                int y = top[index(c[0], c[1])] + 1;
+                Block b = world.getBlockAt(cx + c[0], y, cz + c[1]);
+                if (b.isEmpty()) {
+                    b.setType(Material.LAVA, true);
+                }
+            }
+        }
     }
 
     // ------------------------------------------------------------------ capital town

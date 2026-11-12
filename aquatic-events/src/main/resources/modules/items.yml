@@ -117,14 +117,15 @@ items:
     material: APPLE
     name: "<gradient:#c44dff:#ff6ec7><bold>Springcoil Fruit</bold></gradient>"
     lore:
-      - "<gray>A swirly purple fruit. Tastes awful."
+      - "<gray>A coiled, rubbery fruit that bounces when dropped."
       - "<dark_gray>Body"
       - ""
-      - "<light_purple>Your body turns to rubber."
+      - "<light_purple>Your body becomes elastic as a spring."
       - "<gray>No fall damage, high jumps."
       - "<gray>Ability: <white>Coilshot"
       - ""
-      - "<red>Eating it means you can never swim again."
+      - "<dark_aqua>A fragment of the drowned Abyss."
+      - "<red>The sea wants it back: eat it and you will never swim again."
     custom-model-data: 0
     glint: true
     max-stack: 1
@@ -132,7 +133,7 @@ items:
     nutrition: 4
     saturation: 2.4
     fruit:
-      description: "Rubber body: immune to fall damage, jumps higher. Stretch a punch at whatever you look at, or leap forward."
+      description: "Spring body: immune to fall damage, jumps higher. Stretch a punch at whatever you look at, or leap forward."
       passives:
         - jump_boost:2
       immunities:
@@ -153,20 +154,21 @@ items:
     material: APPLE
     name: "<gradient:#ff4b1f:#ff9068><bold>Emberheart Fruit</bold></gradient>"
     lore:
-      - "<gray>The fruit seems to flicker like a flame."
+      - "<gray>Warm as a hearth, it glows from within."
       - "<dark_gray>Elemental"
       - ""
-      - "<gold>Your body becomes fire."
+      - "<gold>Your body burns like a living ember."
       - "<gray>Immune to fire and lava."
-      - "<gray>Ability: <white>Flare Fist (Fire Fist)"
+      - "<gray>Ability: <white>Flare Fist"
       - ""
-      - "<red>Eating it means you can never swim again."
+      - "<dark_aqua>A fragment of the drowned Abyss."
+      - "<red>The sea wants it back: eat it and you will never swim again."
     custom-model-data: 0
     glint: true
     max-stack: 1
     always-edible: true
     fruit:
-      description: "Fire body: immune to fire and lava. Hurl a fist of fire that explodes on impact."
+      description: "Ember body: immune to fire and lava. Hurl a blazing fist that bursts on impact."
       passives:
         - fire_resistance:1
       immunities:
@@ -190,25 +192,26 @@ items:
     material: APPLE
     name: "<gradient:#a1c4fd:#c2e9fb><bold>Rimefrost Fruit</bold></gradient>"
     lore:
-      - "<gray>Cold to the touch."
+      - "<gray>Frost creeps over your fingers as you hold it."
       - "<dark_gray>Elemental"
       - ""
-      - "<aqua>Your body becomes ice."
+      - "<aqua>Your body turns to living ice."
       - "<gray>Freeze the sea you walk over."
-      - "<gray>Ability: <white>Ice Age"
+      - "<gray>Ability: <white>Frostburst"
       - ""
-      - "<red>Eating it means you can never swim again."
+      - "<dark_aqua>A fragment of the drowned Abyss."
+      - "<red>The sea wants it back: eat it and you will never swim again."
     custom-model-data: 0
     glint: true
     max-stack: 1
     always-edible: true
     fruit:
-      description: "Ice body: walk on frozen water, immune to freezing. Freeze and slow everything around you."
+      description: "Frost body: walk on frozen water, immune to freezing. A burst of frost freezes and slows everything around you."
       frost-walker-radius: 3
       immunities:
         - FREEZE
       ability:
-        name: "<aqua>Ice Age"
+        name: "<aqua>Frostburst"
         type: nova
         cooldown: 15
         radius: 6
@@ -226,20 +229,21 @@ items:
     material: APPLE
     name: "<gradient:#f7ff00:#db36a4><bold>Thunderveil Fruit</bold></gradient>"
     lore:
-      - "<gray>It crackles in your hand."
+      - "<gray>It hums, and your hair stands on end."
       - "<dark_gray>Elemental"
       - ""
-      - "<yellow>Your body becomes lightning."
+      - "<yellow>Your body becomes a living storm."
       - "<gray>Permanent speed."
       - "<gray>Ability: <white>Skyfall"
       - ""
-      - "<red>Eating it means you can never swim again."
+      - "<dark_aqua>A fragment of the drowned Abyss."
+      - "<red>The sea wants it back: eat it and you will never swim again."
     custom-model-data: 0
     glint: true
     max-stack: 1
     always-edible: true
     fruit:
-      description: "Lightning body: always fast. Call down lightning where you look."
+      description: "Storm body: always fast. Call down lightning where you look."
       passives:
         - speed:2
       immunities:
@@ -258,21 +262,22 @@ items:
     material: APPLE
     name: "<gradient:#e0e0e0:#7f8c8d><bold>Ghostglass Fruit</bold></gradient>"
     lore:
-      - "<gray>You can barely see it."
+      - "<gray>Like holding a soap bubble that never pops."
       - "<dark_gray>Body"
       - ""
-      - "<white>Turn invisible at will."
-      - "<gray>Ability: <white>Invisibility (toggle)"
+      - "<white>Fade from sight like sea mist."
+      - "<gray>Ability: <white>Mistveil (toggle)"
       - ""
-      - "<red>Eating it means you can never swim again."
+      - "<dark_aqua>A fragment of the drowned Abyss."
+      - "<red>The sea wants it back: eat it and you will never swim again."
     custom-model-data: 0
     glint: true
     max-stack: 1
     always-edible: true
     fruit:
-      description: "Clear body: turn invisible for a while; use again to reappear. Abyssal Iron reveals you."
+      description: "Mist body: fade from sight for a while; use again to reappear. Abyssal Iron reveals you."
       ability:
-        name: "<white>Invisibility"
+        name: "<white>Mistveil"
         type: invisibility
         toggle: true
         cooldown: 25
@@ -286,19 +291,20 @@ items:
     material: APPLE
     name: "<gradient:#ff9a9e:#fad0c4><bold>Riftshift Fruit</bold></gradient>"
     lore:
-      - "<gray>Shaped like a heart."
+      - "<gray>Its skin shimmers, as if it is slightly somewhere else."
       - "<dark_gray>Body"
       - ""
-      - "<light_purple>Create a Room and rearrange it."
+      - "<light_purple>Bend space to trade places with a target."
       - "<gray>Ability: <white>Rift Swap"
       - ""
-      - "<red>Eating it means you can never swim again."
+      - "<dark_aqua>A fragment of the drowned Abyss."
+      - "<red>The sea wants it back: eat it and you will never swim again."
     custom-model-data: 0
     glint: true
     max-stack: 1
     always-edible: true
     fruit:
-      description: "Operation: swap places with whoever you look at and cut them for a little damage."
+      description: "Rift: swap places with whoever you look at, tearing them for a little damage."
       ability:
         name: "<light_purple>Rift Swap"
         type: swap
@@ -313,19 +319,20 @@ items:
     material: APPLE
     name: "<gradient:#232526:#6a3093><bold>Hollowvoid Fruit</bold></gradient>"
     lore:
-      - "<gray>Swallows the light around it."
+      - "<gray>Light bends around it and disappears."
       - "<dark_gray>Elemental"
       - ""
-      - "<dark_purple>Your body becomes darkness."
+      - "<dark_purple>Your body becomes a hungry void."
       - "<gray>Ability: <white>Undertow"
       - ""
-      - "<red>Eating it means you can never swim again."
+      - "<dark_aqua>A fragment of the drowned Abyss."
+      - "<red>The sea wants it back: eat it and you will never swim again."
     custom-model-data: 0
     glint: true
     max-stack: 1
     always-edible: true
     fruit:
-      description: "Darkness: pull everyone around you in and blind them."
+      description: "Void: drag everyone around you in and blind them."
       passives:
         - night_vision:1
       ability:
@@ -346,24 +353,25 @@ items:
     material: APPLE
     name: "<gradient:#8e5a2b:#d1913c><bold>Behemoth Fruit</bold></gradient>"
     lore:
-      - "<gray>Heavy and earthy."
+      - "<gray>Heavy, with a peel like thick hide."
       - "<dark_gray>Beast"
       - ""
-      - "<gold>Gain the strength of a bison."
+      - "<gold>Gain the might of a sea behemoth."
       - "<gray>Permanent extra health."
-      - "<gray>Ability: <white>Beast Form"
+      - "<gray>Ability: <white>Behemoth Rage"
       - ""
-      - "<red>Eating it means you can never swim again."
+      - "<dark_aqua>A fragment of the drowned Abyss."
+      - "<red>The sea wants it back: eat it and you will never swim again."
     custom-model-data: 0
     glint: true
     max-stack: 1
     always-edible: true
     fruit:
-      description: "Beast: permanent extra health; transform into a beast with great strength and toughness."
+      description: "Behemoth: permanent extra health; rage into a behemoth with great strength and toughness."
       passives:
         - health_boost:1
       ability:
-        name: "<gold>Beast Form"
+        name: "<gold>Behemoth Rage"
         type: transform
         cooldown: 60
         duration: 30
@@ -383,9 +391,10 @@ items:
     material: IRON_SWORD
     name: "<gradient:#43cea2:#185a9d><bold>Abyssal Iron Baton</bold></gradient>"
     lore:
-      - "<gray>Forged from Kairoseki, the solidified sea."
+      - "<gray>Forged from Abyssal Iron, dredged from the drowned empire."
+      - "<gray>It silences the power of the Abyss."
       - ""
-      - "<aqua>Hitting a abyss fruit user disables"
+      - "<aqua>Hitting an Abyss Fruit user silences"
       - "<aqua>their power for <white>6s</white>."
     custom-model-data: 0
     seastone:
@@ -407,9 +416,9 @@ items:
     material: CHAIN
     name: "<gradient:#43cea2:#185a9d><bold>Abyssal Iron Shackles</bold></gradient>"
     lore:
-      - "<gray>Right-click a player to cuff them."
+      - "<gray>Right-click a player to shackle them."
       - ""
-      - "<aqua>A cuffed abyss fruit user loses their"
+      - "<aqua>A shackled Abyss Fruit user loses their"
       - "<aqua>power and is slowed for <white>20s</white>."
       - "<dark_gray>Single use."
     custom-model-data: 0
@@ -443,10 +452,10 @@ items:
     material: IRON_SWORD
     name: "<gradient:#ffffff:#bdc3c7><bold>Tidecleaver</bold></gradient>"
     lore:
-      - "<dark_gray>One of the 21 Great Grade Swords"
+      - "<dark_gray>Forged from a whale-hunter's harpoon. It cuts the wind itself."
       - ""
       - "<gray>On hit: <white>25% chance to cut deep (+3, slowness)"
-      - "<gray>Right-click: <white>Flying Slash"
+      - "<gray>Right-click: <white>Gale Cutter"
     custom-model-data: 0
     unbreakable: true
     flags: [HIDE_UNBREAKABLE]
@@ -477,10 +486,10 @@ items:
     material: NETHERITE_SWORD
     name: "<gradient:#3a1c71:#d76d77><bold>Nightbloom</bold></gradient>"
     lore:
-      - "<dark_gray>A black blade, Great Grade"
+      - "<dark_gray>A black blade grown from Abyss coral. It drinks what it cuts."
       - ""
       - "<gray>On hit: <white>steals 15% of the damage as health"
-      - "<gray>Right-click: <white>Lion Strike dash (withers)"
+      - "<gray>Right-click: <white>Lion's Lunge dash (withers)"
     custom-model-data: 0
     unbreakable: true
     flags: [HIDE_UNBREAKABLE]
@@ -509,10 +518,10 @@ items:
     material: NETHERITE_SWORD
     name: "<gradient:#000000:#c0392b><bold>Leviathan's Fang</bold></gradient>"
     lore:
-      - "<dark_gray>Supreme Grade. The strongest black blade."
+      - "<dark_gray>A tooth of the Leviathan that once guarded the Abyss."
       - ""
       - "<gray>On hit: <white>20% chance for +4 damage and lightning"
-      - "<gray>Sneak + right-click: <white>World-cleaving slash"
+      - "<gray>Sneak + right-click: <white>Abyss Cleave"
     custom-model-data: 0
     unbreakable: true
     glint: true
@@ -546,7 +555,7 @@ items:
     material: CROSSBOW
     name: "<gradient:#b79891:#94716b><bold>Flintlock Pistol</bold></gradient>"
     lore:
-      - "<gray>A trusty pirate sidearm."
+      - "<gray>A trusty sidearm. Powder dry, aim true."
       - ""
       - "<gray>Right-click to fire. Uses <white>gunpowder</white>."
       - "<gray>Headshots deal extra damage."
@@ -585,7 +594,7 @@ items:
     material: IRON_HORSE_ARMOR
     name: "<gradient:#434343:#9a9a9a><bold>Hand Cannon</bold></gradient>"
     lore:
-      - "<gray>Heavy. Very heavy."
+      - "<gray>Heavy. Very heavy. Worth it."
       - ""
       - "<gray>Right-click to fire a <white>Cannonball</white>."
       - "<gray>Explodes on impact."
@@ -643,7 +652,7 @@ items:
     material: COMPASS
     name: "<gradient:#2193b0:#6dd5ed><bold>Tide Compass</bold></gradient>"
     lore:
-      - "<gray>Holds the magnetic memory of the islands."
+      - "<gray>Its shell needle always turns toward land."
       - ""
       - "<gray>Right-click: <white>point to the next island"
       - "<gray>Sneak + right-click: <white>nearest island"
@@ -665,7 +674,7 @@ items:
     material: TURTLE_SCUTE
     name: "<gradient:#f6d365:#fda085><bold>Echo Conch</bold></gradient>"
     lore:
-      - "<gray>Purupurupuru..."
+      - "<gray>Paired conch shells carry voices across the sea."
       - ""
       - "<gray>Right-click: <white>call your crew to your position"
     custom-model-data: 0
@@ -680,7 +689,7 @@ items:
     material: POTION
     name: "<gold><bold>Pirate Rum</bold>"
     lore:
-      - "<gray>Yo-ho-ho!"
+      - "<gray>Distilled in the harbour taverns of the capital."
       - ""
       - "<gray>A burst of courage... and a spinning head."
     custom-model-data: 0
@@ -710,9 +719,9 @@ items:
     material: GOLDEN_HELMET
     name: "<gradient:#f7971e:#ffd200><bold>Crown of the Conqueror</bold></gradient>"
     lore:
-      - "<gray>Worn by the one who conquered the Endless Sea."
+      - "<gray>Forged for whoever wins the Crown Tournament."
       - ""
-      - "<gold>Only one may hold the throne."
+      - "<gold>Only one may hold the throne of the capital."
     custom-model-data: 0
     glint: true
     unbreakable: true

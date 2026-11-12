@@ -39,7 +39,7 @@ Every feature is a **module** you can turn on or off. All numbers, costs and mes
 | `/aquatic reload [module]` | Reload configs for all modules or just one, with no restart | `aquatic.admin` |
 | `/aquatic resetconfig <module> confirm` | Replace a module's config with the newest defaults. The old file is kept as a `.bak` | `aquatic.admin` |
 
-Aliases: `/aq`, `/aquaticsmp`. Module names: `economy`, `crews`, `bounty`, `combat`, `islands`, `treasure`, `items`, `tournament`, `events`, `guide`, `sidebar`.
+Aliases: `/aq`, `/aquaticsmp`. Module names: `economy`, `crews`, `bounty`, `combat`, `islands`, `treasure`, `items`, `tournament`, `events`, `guide`, `sidebar`, `shop`.
 
 ---
 
@@ -183,7 +183,7 @@ Killing a pirate with a bounty pays you the full amount. Crewmates and allies of
 | `/island unclaim [confirm]` | Abandon the island you stand on | `aquatic.islands.claim` |
 | `/island flag` | Move or re-place your crew flag to where you stand | `aquatic.islands.flag` |
 | `/island manage [island]` | Your island's stats and upgrade menu | `aquatic.islands.manage` |
-| `/island upgrade <treasury\|fortress\|watchtower\|harbor>` | Buy the next upgrade level for the island you stand on (Captain/First Mate, paid from the crew bank) | `aquatic.islands.manage` |
+| `/island upgrade <treasury\|fortress\|watchtower\|harbor\|barracks\|wellspring>` | Buy the next upgrade level for the island you stand on (Captain/First Mate, paid from the crew bank) | `aquatic.islands.manage` |
 
 **Admin commands** (`aquatic.islands.admin`)
 
@@ -208,7 +208,7 @@ Run `/island admin` for this list in-game. The short form without `admin` (e.g. 
 
 Bypass all island protection: `aquatic.islands.bypass`.
 
-**Island upgrades:** Treasury (more income), Fortress (slower capture), Watchtower (alerts and glowing intruders) and Harbor (faster swimming, water breathing). They're bought from the crew bank. After a conquest, every upgrade drops a level.
+**Island upgrades:** Treasury (more income), Fortress (slower capture), Watchtower (alerts and glowing intruders), Harbor (faster swimming, water breathing), Barracks (crew respawn point) and Wellspring (healing). In `/island manage` you can also limit building to officers. They're bought from the crew bank. After a conquest, every upgrade drops a level.
 
 **Conquest:** stand near an enemy island's flag with your crew. The capture bar fills while no defender is close and drains otherwise. When it is full, the island is yours.
 
@@ -311,6 +311,20 @@ These rules keep PvP fair. Tournament matches use their own rules instead.
 | `/pvp protect <player>` | Give back new-player protection, if they are still under the playtime limit | Admin: `aquatic.combat.admin` |
 
 Staff with `aquatic.combat.bypass` never get tagged. Everything is in `combat.yml`, including the list of blocked commands.
+
+---
+
+## Harbor Market (`shop`, needs `economy`)
+
+| Command | What it does | Permission |
+| --- | --- | --- |
+| `/shop [category]` | Open the market (alias `/market`). Left-click buy, shift-left buy a stack, right-click sell, shift-right sell all | Everyone |
+| `/shop sell` | Sell everything like the item in your hand | Player: `aquatic.shop.sell` |
+| `/shop admin add <category> <buy> [sell] [amount]` | Add the item in your hand to a category | Admin: `aquatic.shop.admin` |
+| `/shop admin list <category>` | List a category's items with their numbers | Admin |
+| `/shop admin price <category> <number> <buy> <sell>` | Change a price (0 = not bought / not sold) | Admin |
+| `/shop admin remove <category> <number>` | Remove an item | Admin |
+| `/shop admin category <create\|delete> <id> [icon] [slot]` | Add or remove a category | Admin |
 
 ---
 

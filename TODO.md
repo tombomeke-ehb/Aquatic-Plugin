@@ -24,7 +24,8 @@ The idea came from an anime: powers from fruits, a sea full of islands, crews co
 
 **Still to do:**
 - [ ] **Rename the internal ids with a migration**, for example `gomu_gomu` → `springcoil`, `log_pose` → `tide_compass`, `pirate_king_crown` → `sovereign_crown`. Existing items and saved fruit powers have to be converted automatically, through an alias table that maps old ids to new ones.
-- [ ] **Write our own lore:**
+- [x] Lore for the world, Abyss Fruits, Abyssal Iron, the Tidewatch and the throne; in items, the intro and the guide (done in 1.7.0).
+- [ ] **Expand the lore:**
   - Where Abyss Fruits come from: for example, they grow on coral in the deep, and the sea wants its power back, which is why users can't swim.
   - Who the Tidewatch are.
   - What the Conqueror of the Sea means.
@@ -48,7 +49,8 @@ The idea came from an anime: powers from fruits, a sea full of islands, crews co
 
 ### 1. Island management and development
 - [x] Upgrades from the crew bank (Treasury, Fortress, Watchtower, Harbor), the `/island manage` menu, and losing levels on conquest (done in 1.6.0).
-- [ ] More upgrades: a Granary (food/crop drops), a Shipyard (cheaper ships), a Vault (safe crew storage that can't be raided), a Barracks (respawn point on the island).
+- [x] Barracks (respawn), Wellspring (healing), build access officers-only (done in 1.7.0).
+- [ ] More upgrades: a Granary (food/crop drops), a Shipyard (cheaper ships), a Vault (safe crew storage that can't be raided).
 - [ ] Permissions per rank in the manage menu (who may build, open chests, use doors).
 Owned islands should become something a crew builds up over time, not just a claim.
 - [ ] **Island levels / upgrades** bought with Doubloons from the crew bank. For example: more passive income, a bigger protected radius, a stronger conquest defence (longer capture time), and more members allowed to build.
@@ -63,6 +65,8 @@ Owned islands should become something a crew builds up over time, not just a cla
 - [ ] Decide what happens to upgrades when an island is conquered: keep them, lose some, or the conqueror gets them.
 
 ### 2. Shop
+- [x] Harbor Market: categories, buy/sell, custom items, in-game editing with `/shop admin` (done in 1.7.0).
+- [ ] Shop NPC or sign at the capital's market square; limited stock and daily deals; selling island upgrades and ship blueprints.
 - [ ] **Server shop** (`/shop`) as a chest GUI, with categories: tools, food, ship parts, pirate gear, rare items.
 - [ ] Buy and sell for Doubloons. Prices go in a `shop.yml`, and support custom items (`item:<id>`).
 - [ ] **Configurable in-game:** admins add items, set prices and change categories through the GUI, without editing YAML.

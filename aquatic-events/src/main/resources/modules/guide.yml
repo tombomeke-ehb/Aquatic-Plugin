@@ -25,13 +25,22 @@ intro:
   #   seconds            how long before the next step starts
   #   sound              sound key (optional, "none" for silence)
   steps:
-    - title: "<gradient:#1fa2ff:#12d8fa><bold>Welcome aboard!"
-      subtitle: "<gray>The Endless Sea awaits, <white><player>"
+    - title: "<gradient:#1fa2ff:#12d8fa><bold>AQUATIC SMP"
+      subtitle: "<white>Sail. Claim. Conquer."
       chat:
-        - "<gradient:#1fa2ff:#12d8fa><bold>AQUATIC SMP</bold></gradient> <gray>- a world of ocean, islands and pirates."
-        - "<gray>Every player is a pirate. The goal: become the <gold><bold>Conqueror of the Sea</bold></gold>."
+        - "<gradient:#1fa2ff:#12d8fa><bold>AQUATIC SMP</bold></gradient> <dark_gray>-</dark_gray> <white>Sail. Claim. Conquer."
+        - "<gray>Welcome aboard, <white><player></white>. Every soul here is a pirate."
       seconds: 6
       sound: ui.toast.challenge_complete
+
+    - title: "<dark_aqua><bold>The Endless Sea"
+      subtitle: "<gray>An empire lies beneath the waves"
+      chat:
+        - "<dark_aqua>Long ago the empire of the <bold>Abyss</bold> sank beneath the waves."
+        - "<gray>On its drowned coral grow <light_purple>Abyss Fruits</light_purple>, each holding a fragment of its power."
+        - "<gray>The <blue>Tidewatch</blue>, navy of the Harbor Crown, hunts every pirate who goes looking for them."
+        - "<gray>And one throne waits in the capital for the <gold>Conqueror of the Sea</gold>."
+      seconds: 10
 
     - title: "<aqua><bold>1. Form a crew"
       subtitle: "<gray>/crew create <name>"
@@ -130,9 +139,15 @@ book:
   title: "<gold>Pirate's Guide"
   author: "AquaticSMP"
   chapters:
+    lore:
+      - "<dark_aqua><bold>The Endless Sea</bold>\n\n<black>Long ago the empire of the <dark_aqua>Abyss</dark_aqua> ruled every coast. Its pride grew too heavy, and the sea swallowed it whole.\n\nNow only islands remain, scattered over the Endless Sea."
+      - "<dark_aqua><bold>Abyss Fruits</bold>\n\n<black>On the drowned coral of the empire grow strange fruits. Each holds a fragment of the Abyss's power.\n\nBut the sea wants its power back: whoever eats one sinks like a stone and can never swim again."
+      - "<dark_aqua><bold>Abyssal Iron</bold>\n\n<black>Dredged from the empire's sea floor, this dark metal silences the power of the Abyss.\n\nPirates with a fruit fear it. Pirates without one treasure it."
+      - "<dark_aqua><bold>The Tidewatch</bold>\n\n<black>The Harbor Crown sends its navy, the Tidewatch, to keep order on the sea.\n\nThey hunt pirates, guard the old ruins and answer to the High Warden."
+      - "<dark_aqua><bold>The Throne</bold>\n\n<black>In the capital stands an empty throne.\n\nWhoever wins the Crown Tournament may sit on it as <gold>Conqueror of the Sea</gold>, until someone takes it from them.\n\n<dark_gray>Sail. Claim. Conquer."
     welcome:
       - "<dark_aqua><bold>AQUATIC SMP</bold></dark_aqua>\n<dark_gray>The Pirate's Guide\n\n<black>Ahoy, <player>!\n\nThis world is a vast ocean full of islands, treasure and rival pirates.\n\n<dark_gray>Turn the page to learn the ropes."
-      - "<dark_aqua><bold>Contents</bold>\n\n<black>1. Crews\n2. Islands & flags\n3. Treasure\n4. Bounties\n5. Abyss Fruits & gear\n6. The Conqueror of the Sea\n\n<dark_gray>/guide <chapter> opens one chapter."
+      - "<dark_aqua><bold>Contents</bold>\n\n<black>0. The Endless Sea\n1. Crews\n2. Islands & flags\n3. Treasure\n4. Bounties\n5. Abyss Fruits & gear\n6. The Conqueror of the Sea\n7. The Harbor Market\n\n<dark_gray>/guide <chapter> opens one chapter."
     crews:
       - "<dark_aqua><bold>1. Crews</bold>\n\n<black>A crew is your pirate gang (max 6).\n\n<dark_gray>/crew create <name>\n/crew invite <player>\n/crew accept\n/crew info\n/cc <message></dark_gray>\n\nRanks: Captain, First Mate, Navigator, Quartermaster, Member."
       - "<dark_aqua><bold>Crew life</bold>\n\n<black>Share Doubloons in the <dark_gray>/crew bank</dark_gray>, set a <dark_gray>/crew sethome</dark_gray>, make allies or enemies:\n\n<dark_gray>/crew ally <crew>\n/crew rival <crew>\n/crew war <crew>\n/crew peace <crew></dark_gray>\n\n<black>War lets you raid and conquer!"
@@ -140,11 +155,14 @@ book:
       - "<dark_aqua><bold>2. Islands</bold>\n\n<black>Islands are tropical, jungle, volcanic, snowy, desert or ancient.\n\nSail out to <dark_gray>discover</dark_gray> them, you get a reward for each new one.\n\n<dark_gray>/island map\n/island list\n/island info"
       - "<dark_aqua><bold>Claiming</bold>\n\n<black>Captain or First Mate: stand on an unclaimed island and type\n<dark_gray>/island claim</dark_gray>\n\n<black>Your crew flag is planted on a pole. Only your crew can build there."
       - "<dark_aqua><bold>Flags</bold>\n\n<black>Design your flag:\n<dark_gray>/crew flag set</dark_gray> <black>(banner in hand, make it in a loom)\n<dark_gray>/crew flag color <dye>\n/crew flag preset <name>\n/crew flag presets\n/crew flag get</dark_gray>\n\n<black>All your islands update."
+      - "<dark_aqua><bold>Develop it</bold>\n\n<black>Spend the crew bank on upgrades:\nTreasury, Fortress, Watchtower, Harbor, Barracks, Wellspring.\n\n<dark_gray>/island manage</dark_gray>\n\n<black>You can also limit building to officers."
       - "<dark_aqua><bold>Conquest</bold>\n\n<black>At war, enemies capture an island by standing at its flag. The bar fills while no defender is near.\n\nStay close to your flag to stop them!\n\nIslands are safe while your whole crew is offline."
     treasure:
       - "<dark_aqua><bold>3. Treasure</bold>\n\n<black>Treasure is buried on islands. Look for a <red><bold>red X</bold></red> <black>of wool on the ground.\n\nDig <bold>straight down</bold> under the middle of the X and open the chest."
       - "<dark_aqua><bold>Depth</bold>\n\n<black>Common: 1 block\nUncommon: 2 blocks\nRare: 2 blocks\nEpic: 3 blocks\nLegendary: 4 blocks\n\nFirst to open it gets the Doubloons and the loot! You may dig up treasure on any island."
       - "<dark_aqua><bold>Treasure maps</bold>\n\n<black>A map shows a red X near the treasure (not exactly on it).\n\n<bold>Right-click</bold> the map: it tells you if you are getting warmer or colder.\n\n<dark_gray>/treasure info</dark_gray> <black>gives rumours."
+    market:
+      - "<dark_aqua><bold>7. Harbor Market</bold>\n\n<black>Buy tools, food, boats and pirate gear for Doubloons, and sell your loot.\n\n<dark_gray>/shop</dark_gray> <black>opens the market.\nLeft-click: buy\nRight-click: sell\nShift: a stack / all\n\n<dark_gray>/shop sell</dark_gray> <black>sells what you hold."
     bounties:
       - "<dark_aqua><bold>4. Bounties</bold>\n\n<black>Defeating pirates raises your bounty. Big bounties earn titles, from Rookie to Dread Tyrant.\n\nKill a wanted pirate to claim their bounty!\n\n<dark_gray>/bounty info\n/bounty top\n/bounty set <player> <amount>\n/wanted"
     fruits:

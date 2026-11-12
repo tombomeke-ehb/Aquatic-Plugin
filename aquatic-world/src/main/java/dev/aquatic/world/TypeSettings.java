@@ -61,6 +61,8 @@ final class TypeSettings {
     double craterSize;
     int craterDepth;
     Material craterFluid = Material.LAVA;
+    /** Lava streams that spill over the crater rim and flow down the volcano. */
+    int lavaStreams = 2;
     final WeightedList<Material> coneBlocks = new WeightedList<>();
 
     boolean plaza;
@@ -117,6 +119,7 @@ final class TypeSettings {
             t.defaultStatus = IslandStatus.UNCLAIMED;
         }
         t.maxHeight = Math.max(1, s.getInt("max-height", 12));
+        t.lavaStreams = Math.max(0, s.getInt("volcano.lava-streams", 2));
         boolean warm = t.type == IslandType.TROPICAL || t.type == IslandType.PLAINS || t.type == IslandType.JUNGLE;
         boolean frozen = t.type == IslandType.SNOWY;
         t.coral = Math.max(0, s.getDouble("sea-life.coral", warm ? 0.07 : 0));

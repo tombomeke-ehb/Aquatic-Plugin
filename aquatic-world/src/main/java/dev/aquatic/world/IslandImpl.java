@@ -31,6 +31,9 @@ final class IslandImpl implements Island {
     /** Bought island upgrades: type -> level (see IslandUpgrades). */
     final java.util.Map<String, Integer> upgrades = new java.util.HashMap<>();
 
+    /** true = only Captain, First Mate, Navigator and Quartermaster may build/break/open (not plain members). */
+    boolean officersOnly;
+
     int upgrade(String type) {
         return upgrades.getOrDefault(type, 0);
     }
@@ -136,6 +139,7 @@ final class IslandImpl implements Island {
         }
         s.set("shield-until", shieldUntil);
         s.set("claimed-at", claimedAt);
+        s.set("officers-only", officersOnly ? true : null);
         s.set("upgrades", null);
         for (java.util.Map.Entry<String, Integer> e : upgrades.entrySet()) {
             if (e.getValue() > 0) {
@@ -166,6 +170,7 @@ final class IslandImpl implements Island {
         }
         is.shieldUntil = s.getLong("shield-until");
         is.claimedAt = s.getLong("claimed-at");
+        is.officersOnly = s.getBoolean("officers-only", false);
         ConfigurationSection up = s.getConfigurationSection("upgrades");
         if (up != null) {
             for (String key : up.getKeys(false)) {

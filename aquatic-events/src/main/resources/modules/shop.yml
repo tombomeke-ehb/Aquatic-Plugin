@@ -1,0 +1,129 @@
+# =====================================================================================
+#  AquaticSMP - Harbor Market (the shop)
+#  /shop opens it. Left-click = buy, shift-left = buy a stack, right-click = sell,
+#  shift-right = sell all. /shop sell sells what you hold.
+#
+#  Edit in-game (no YAML needed):
+#    hold an item  ->  /shop admin add <category> <buy price> [sell price] [amount per purchase]
+#    /shop admin list <category>          (numbers for the commands below)
+#    /shop admin price <category> <number> <buy> <sell>
+#    /shop admin remove <category> <number>
+#    /shop admin category create <id> [icon] [slot]  |  /shop admin category delete <id>
+#
+#  Items here: "MATERIAL" (vanilla) or "item:<id>" (custom items). amount = items per purchase.
+#  buy 0 = can't be bought, sell 0 = the shop doesn't buy it back.
+# =====================================================================================
+title: "<dark_aqua><bold>Harbor Market"
+
+categories:
+  tools:
+    name: "<gold><bold>Tools & Weapons"
+    icon: IRON_PICKAXE
+    slot: 10
+    description: ["<gray>Picks, axes, blades and bows."]
+    items:
+      - {item: IRON_PICKAXE, amount: 1, buy: 180, sell: 25}
+      - {item: IRON_AXE, amount: 1, buy: 160, sell: 20}
+      - {item: IRON_SHOVEL, amount: 1, buy: 90, sell: 10}
+      - {item: IRON_SWORD, amount: 1, buy: 170, sell: 20}
+      - {item: BOW, amount: 1, buy: 120, sell: 15}
+      - {item: CROSSBOW, amount: 1, buy: 200, sell: 20}
+      - {item: ARROW, amount: 16, buy: 40, sell: 4}
+      - {item: SHIELD, amount: 1, buy: 140, sell: 15}
+      - {item: FISHING_ROD, amount: 1, buy: 60, sell: 6}
+  food:
+    name: "<green><bold>Provisions"
+    icon: COOKED_COD
+    slot: 12
+    description: ["<gray>Nobody sails on an empty stomach."]
+    items:
+      - {item: BREAD, amount: 16, buy: 48, sell: 6}
+      - {item: COOKED_COD, amount: 16, buy: 56, sell: 8}
+      - {item: COOKED_BEEF, amount: 16, buy: 96, sell: 12}
+      - {item: GOLDEN_CARROT, amount: 8, buy: 120, sell: 15}
+      - {item: APPLE, amount: 16, buy: 40, sell: 5}
+      - {item: "item:rum", amount: 1, buy: 75, sell: 0}
+  building:
+    name: "<white><bold>Building Supplies"
+    icon: OAK_PLANKS
+    slot: 14
+    description: ["<gray>Build docks, forts and homes."]
+    items:
+      - {item: OAK_LOG, amount: 32, buy: 64, sell: 8}
+      - {item: SPRUCE_LOG, amount: 32, buy: 64, sell: 8}
+      - {item: STONE_BRICKS, amount: 64, buy: 96, sell: 8}
+      - {item: GLASS, amount: 32, buy: 64, sell: 6}
+      - {item: LANTERN, amount: 8, buy: 80, sell: 8}
+      - {item: WHITE_WOOL, amount: 16, buy: 48, sell: 6}
+      - {item: TORCH, amount: 32, buy: 24, sell: 0}
+  sailing:
+    name: "<aqua><bold>Sailing & Navigation"
+    icon: OAK_BOAT
+    slot: 16
+    description: ["<gray>Everything to cross the Endless Sea."]
+    items:
+      - {item: OAK_BOAT, amount: 1, buy: 60, sell: 5}
+      - {item: SPRUCE_CHEST_BOAT, amount: 1, buy: 140, sell: 10}
+      - {item: COMPASS, amount: 1, buy: 90, sell: 10}
+      - {item: SPYGLASS, amount: 1, buy: 150, sell: 15}
+      - {item: MAP, amount: 1, buy: 40, sell: 0}
+      - {item: "item:log_pose", amount: 1, buy: 900, sell: 0}
+      - {item: "item:den_den_mushi", amount: 1, buy: 600, sell: 0}
+  pirate:
+    name: "<red><bold>Pirate Armory"
+    icon: GUNPOWDER
+    slot: 30
+    description: ["<gray>Powder, shot and things that go boom."]
+    items:
+      - {item: "item:flintlock", amount: 1, buy: 1500, sell: 0}
+      - {item: "item:cannonball", amount: 8, buy: 320, sell: 0}
+      - {item: "item:hand_cannon", amount: 1, buy: 4000, sell: 0}
+      - {item: GUNPOWDER, amount: 16, buy: 160, sell: 6}
+      - {item: TNT, amount: 4, buy: 400, sell: 0}
+  trade:
+    name: "<yellow><bold>Trade Goods"
+    icon: EMERALD
+    slot: 32
+    description: ["<gray>The market buys your loot."]
+    items:
+      - {item: GOLD_INGOT, amount: 1, buy: 0, sell: 12}
+      - {item: IRON_INGOT, amount: 1, buy: 0, sell: 6}
+      - {item: COPPER_INGOT, amount: 4, buy: 0, sell: 6}
+      - {item: EMERALD, amount: 1, buy: 0, sell: 15}
+      - {item: DIAMOND, amount: 1, buy: 0, sell: 60}
+      - {item: LAPIS_LAZULI, amount: 8, buy: 0, sell: 8}
+      - {item: REDSTONE, amount: 16, buy: 0, sell: 8}
+      - {item: COAL, amount: 16, buy: 0, sell: 8}
+      - {item: NAUTILUS_SHELL, amount: 1, buy: 0, sell: 45}
+      - {item: HEART_OF_THE_SEA, amount: 1, buy: 0, sell: 600}
+      - {item: PRISMARINE_SHARD, amount: 8, buy: 0, sell: 10}
+
+messages:
+  menu-items: "<gray><count> item(s)"
+  menu-open: "<yellow>Click to open"
+  menu-back: "<yellow>« Back"
+  menu-previous: "<yellow>« Page <page>"
+  menu-next: "<yellow>Page <page> »"
+  menu-balance: "<gold>Your Doubloons: <yellow><balance>"
+  menu-balance-hint: "<gray>/shop sell sells what you hold"
+  item-buy: "<gray>Buy: <yellow><price></yellow> <dark_gray>(<amount>x)"
+  item-sell: "<gray>Sell: <green><price></green> <dark_gray>(<amount>x)"
+  item-hint-both: "<dark_gray>Left: buy · Shift: stack · Right: sell · Shift-right: sell all"
+  item-hint-buy: "<dark_gray>Left: buy · Shift-left: a stack"
+  item-hint-sell: "<dark_gray>Right: sell · Shift-right: sell all"
+  bought: "<green>Bought <white><amount>x <item></white> for <yellow><price></yellow>."
+  sold: "<green>Sold <white><amount>x <item></white> for <yellow><price></yellow>."
+  no-money: "<red>You need <yellow><price></yellow> for that."
+  not-for-sale: "<red>The market doesn't sell this."
+  not-buying: "<red>The market doesn't buy this."
+  nothing-to-sell: "<red>You need at least <white><amount></white> of these to sell."
+  hand-not-sellable: "<red>The market doesn't buy what you're holding."
+  unavailable: "<red>This item is unavailable right now."
+  unknown-category: "<red>No category <white><category></white>. <gray>Categories: <white><categories>"
+  hold-item: "<red>Hold the item you want to add."
+  bad-index: "<red>Pick a number between 1 and <max>. <gray>(/shop admin list <category>)"
+  admin-added: "<green>Added <white><item></white> to <white><category></white> as #<index>."
+  admin-removed: "<green>Removed #<index> from <white><category></white>."
+  admin-price: "<green>Updated the price of #<index> in <white><category></white>."
+  admin-category: "<green>Category <white><category></white> updated. <gray>(rename it in shop.yml)"
+  admin-list-entry: "<gray>#<index> <white><item></white> x<amount> <dark_gray>|</dark_gray> buy <yellow><buy></yellow> <dark_gray>|</dark_gray> sell <green><sell>"

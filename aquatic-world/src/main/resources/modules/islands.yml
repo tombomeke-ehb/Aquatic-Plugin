@@ -261,6 +261,8 @@ types:
       crater-size: 0.14
       crater-depth: 7
       crater-fluid: LAVA
+      # Lava streams that spill over the crater rim and run down the volcano (0 = none).
+      lava-streams: 2
       blocks: [BASALT:4, BLACKSTONE:3, SMOOTH_BASALT:1, MAGMA_BLOCK:0.5, TUFF:1]
   SNOWY:
     display-name: "<aqua>Snowy</aqua>"
@@ -582,6 +584,22 @@ upgrades:
         - "<gray>Level 3: also breathe underwater."
       per-level: 1
       costs: [1500, 4000, 8000]
+    barracks:
+      display-name: "<gold><bold>Barracks"
+      icon: RED_BED
+      description:
+        - "<gray>Crewmates without a bed respawn"
+        - "<gray>on this island instead of at spawn."
+      per-level: 1
+      costs: [5000]
+    wellspring:
+      display-name: "<green><bold>Wellspring"
+      icon: GLOW_BERRIES
+      description:
+        - "<gray>Crewmates slowly heal while on the island."
+        - "<gray>Stronger per level."
+      per-level: 1
+      costs: [3000, 9000]
 
 raiding:
   # When may enemies build/break/loot on an occupied island?
@@ -670,6 +688,13 @@ bluemap:
 #  Messages
 # =====================================================================================
 messages:
+  deny-officers-only: "<red>Only officers may build here. <gray>(build access: officers only)"
+  manage-access-all: "<green><bold>Build access: all crewmates"
+  manage-access-officers: "<gold><bold>Build access: officers only"
+  manage-access-hint: "<gray>Officers = Captain, First Mate, Navigator, Quartermaster."
+  manage-access-click: "<yellow>Click to switch"
+  access-officers: "<gold><white><player></white> set <white><island></white> to officers-only building."
+  access-all: "<green><white><player></white> opened <white><island></white> for all crewmates to build."
   manage-title: "<dark_aqua>Manage <island>"
   manage-info-name: "<aqua><bold><island>"
   manage-info-type: "<gray>Type: <type>"

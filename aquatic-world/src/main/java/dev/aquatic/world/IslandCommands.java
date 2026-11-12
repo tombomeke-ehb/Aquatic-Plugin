@@ -78,7 +78,7 @@ final class IslandCommands {
             AquaticCommand.need(a, 1, "/island upgrade <" + String.join("|", IslandUpgrades.TYPES) + ">");
             Player p = AquaticCommand.player(s);
             m.upgrades().upgrade(p, standingOn(p), a[0]);
-        }).usage("<treasury|fortress|watchtower|harbor>").description("Buy the next level of an upgrade for the island you stand on")
+        }).usage("<treasury|fortress|watchtower|harbor|barracks|wellspring>").description("Buy the next level of an upgrade for the island you stand on")
                 .playerOnly().playerPermission("aquatic.islands.manage")
                 .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(IslandUpgrades.TYPES, a[0]) : List.of());
 
