@@ -193,7 +193,8 @@ final class ConquestManager {
             hint(attackers, is, blocked);
         }
 
-        double captureSeconds = Math.max(5, module.config().getDouble("conquest.capture-seconds", 120));
+        double captureSeconds = Math.max(5, module.config().getDouble("conquest.capture-seconds", 120))
+                * (1 + (module.upgrades() == null ? 0 : module.upgrades().value(is, "fortress")));
         double decay = Math.max(0, module.config().getDouble("conquest.decay-per-second", 1.0));
         boolean contested = defenders > 0 && !attackers.isEmpty();
 

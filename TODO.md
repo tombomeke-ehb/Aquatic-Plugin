@@ -47,6 +47,9 @@ The idea came from an anime: powers from fruits, a sea full of islands, crews co
 - [ ] Hook into the TAB plugin's scoreboard when it's installed.
 
 ### 1. Island management and development
+- [x] Upgrades from the crew bank (Treasury, Fortress, Watchtower, Harbor), the `/island manage` menu, and losing levels on conquest (done in 1.6.0).
+- [ ] More upgrades: a Granary (food/crop drops), a Shipyard (cheaper ships), a Vault (safe crew storage that can't be raided), a Barracks (respawn point on the island).
+- [ ] Permissions per rank in the manage menu (who may build, open chests, use doors).
 Owned islands should become something a crew builds up over time, not just a claim.
 - [ ] **Island levels / upgrades** bought with Doubloons from the crew bank. For example: more passive income, a bigger protected radius, a stronger conquest defence (longer capture time), and more members allowed to build.
 - [ ] **Island buildings or "facilities"** that each give a bonus:
@@ -162,6 +165,7 @@ The idea stays: an inner strength every pirate can train, separate from fruits. 
   - [x] better ore placement (veins, done in 1.5.0)
 - [x] Islands from radius 100 up to 1500, generated chunk by chunk (done in 1.3.0).
 - [ ] **Performance:** keep the per-tick budget. Caves and structures are generated in the same job system.
+- [x] Capital town: roads, houses, piers, lighthouse; coral reefs and kelp (done in 1.6.0).
 - [ ] **Placeable facilities on big islands:** buy a building (dock, market, watchtower, vault) in the shop and place it as a schematic, with a preview outline, on your own island. Each building gives its upgrade. See section 1.
 
 ### 4c. Custom map

@@ -72,6 +72,8 @@ Settings most servers change first:
 | When enemies can raid or conquer | `islands.yml` | `raiding.mode`, `conquest.mode` (`always`, `war-only` or `never`) |
 | Conquest capture time | `islands.yml` | `conquest.capture-seconds` |
 | Passive island income | `islands.yml` | `income:` |
+| Island upgrades: prices, effects, what happens on conquest | `islands.yml` | `upgrades:` |
+| Capital town (houses, roads, piers) | `islands.yml` | `types.CAPITAL.town` |
 | How often treasure appears | `treasure.yml` | `natural.interval-minutes` |
 | One Abyss Fruit per player, second fruit refused or lethal | `items.yml` | `fruits.one-per-player`, `fruits.second-fruit` |
 | Tournament entry fee, minimum crews | `tournament.yml` | `registration:` |

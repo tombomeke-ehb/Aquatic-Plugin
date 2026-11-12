@@ -92,6 +92,7 @@ public final class IslandsModule extends AquaticModule implements IslandService,
     private QueuedJob currentJob;
     private int jobTicks;
     private String spawnIslandId;
+    private IslandUpgrades upgrades;
     /** Exact spawn point set with /island admin setspawn ("world;x;y;z;yaw;pitch"), or null. */
     private String spawnPoint;
     private boolean dirty;
@@ -132,6 +133,9 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         registerService(IslandService.class, this);
         registerListener(this);
         registerListener(new IslandProtectionListener(this));
+        upgrades = new IslandUpgrades(this);
+        registerListener(upgrades);
+        runTimer(() -> upgrades.tickHarbor(presence), 40L, 40L);
         conquest = new ConquestManager(this);
         registerCommand(new IslandCommands(this).build());
 
@@ -1331,7 +1335,24 @@ public final class IslandsModule extends AquaticModule implements IslandService,
     // ------------------------------------------------------------------ ownership changes
 
     /** Hands the island to a crew after a successful conquest (state only; events are fired by the caller). */
+    IslandUpgrades upgrades() {
+        return upgrades;
+    }
+
+    IslandImpl islandImpl(String id) {
+        return id == null ? null : islands.get(id);
+    }
+
+    /** Passive income of one island per payout (type base x treasury upgrade). */
+    double incomeOf(IslandImpl is) {
+        double base = config().getDouble("income.per-type." + is.type.name(), config().getDouble("income.default", 0));
+        return base * (1 + (upgrades == null ? 0 : upgrades.value(is, "treasury")));
+    }
+
     void conquer(IslandImpl is, Crew winner) {
+        if (upgrades != null) {
+            upgrades.onConquered(is);
+        }
         is.ownerCrewId = winner.id();
         is.status = IslandStatus.OCCUPIED;
         is.claimedAt = System.currentTimeMillis();
@@ -1430,7 +1451,7 @@ public final class IslandsModule extends AquaticModule implements IslandService,
             if (is.status != IslandStatus.OCCUPIED || is.ownerCrewId == null) {
                 continue;
             }
-            double amount = config().getDouble("income.per-type." + is.type.name(), def);
+            double amount = incomeOf(is);
             if (amount > 0) {
                 totals.merge(is.ownerCrewId, amount, Double::sum);
                 counts.merge(is.ownerCrewId, 1, Integer::sum);
@@ -1476,6 +1497,9 @@ public final class IslandsModule extends AquaticModule implements IslandService,
                 presence.put(uuid, nowId);
                 boolean discovered = discover(player, now);
                 showPresence(player, "enter", now, discovered);
+                if (upgrades != null) {
+                    upgrades.onEnter(player, now);
+                }
             }
         }
     }

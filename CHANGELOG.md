@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.6.0 (2026-11-12)
+
+### Added
+- **Island management:** crews develop their islands with upgrades bought from the crew bank. Only the Captain and First Mate can buy them.
+  - **Treasury:** +25% passive income per level (5 levels).
+  - **Fortress:** +20% capture time for attackers per level (5 levels).
+  - **Watchtower:** the crew is warned when enemies land. From level 2, intruders glow (3 levels).
+  - **Harbor:** crewmates swim faster around the island. At level 3 they can also breathe underwater (3 levels).
+  - **`/island manage`** opens a menu with the island's stats (size, owner, income, crew bank) and upgrade buttons. `/island upgrade <type>` buys directly.
+  - **Conquest:** when an island is conquered, every upgrade loses a level by default (`upgrades.on-conquest`: keep, lose-one or reset).
+  - Prices, effects and levels are configurable under `upgrades:` in `islands.yml`.
+- **Capital town:** capital islands get a harbour town around the plaza:
+  - 4 paved roads to the coast with lamp posts
+  - up to 16 houses along the roads, with windows, a door facing the road and a slab roof
+  - wooden piers where the roads reach the sea
+  - a red-and-white lighthouse
+  - Configure it with `town:` in the CAPITAL section.
+- **Coral reefs and sea life:** warm islands (tropical, plains, jungle) get coral reefs and seagrass in the shallows, and colder ones kelp forests. Set it per type with `sea-life:`.
+
 ## 1.5.0 (2026-11-12)
 
 ### Added

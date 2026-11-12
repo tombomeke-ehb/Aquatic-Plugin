@@ -67,6 +67,20 @@ final class IslandCommands {
                 .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(List.of("confirm"), a[0]) : List.of());
         cmd.sub("flag", (s, a) -> flag(AquaticCommand.player(s))).description("Move/re-place your crew flag to where you stand")
                 .playerPermission("aquatic.islands.flag").playerOnly();
+        cmd.sub("manage", (s, a) -> {
+            Player p = AquaticCommand.player(s);
+            IslandImpl is = a.length > 0 ? island(String.join(" ", a)) : standingOn(p);
+            m.upgrades().open(p, is);
+        }).usage("[island]").description("Your island's stats and upgrades (menu)").playerOnly()
+                .playerPermission("aquatic.islands.manage")
+                .completer((s, a) -> a.length == 1 ? islandNames(a[0]) : List.of());
+        cmd.sub("upgrade", (s, a) -> {
+            AquaticCommand.need(a, 1, "/island upgrade <" + String.join("|", IslandUpgrades.TYPES) + ">");
+            Player p = AquaticCommand.player(s);
+            m.upgrades().upgrade(p, standingOn(p), a[0]);
+        }).usage("<treasury|fortress|watchtower|harbor>").description("Buy the next level of an upgrade for the island you stand on")
+                .playerOnly().playerPermission("aquatic.islands.manage")
+                .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(IslandUpgrades.TYPES, a[0]) : List.of());
 
         // ---------------------------------------------------------------- admin
         cmd.sub("admin", (s, a) -> {

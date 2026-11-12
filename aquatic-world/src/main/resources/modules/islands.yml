@@ -134,6 +134,10 @@ restore:
 #                    COCOA_TREE, JUNGLE_BUSH, ACACIA, DARK_OAK, CHERRY, AZALEA, ...) or PALM (custom)
 #   decorations      block: chance per land column (plants, flowers, cacti ...)
 #   ruins            density = ruins per 10,000 land blocks; walls or pillar clusters
+#   sea-life         chances per underwater column: coral, seagrass, kelp (defaults: warm islands get
+#                    coral reefs, cold ones kelp forests)
+#   mountains        0..2, how tall the mountains get on this type
+#   town             (CAPITAL) roads, houses, piers and a lighthouse around the plaza
 #   volcano          cone with a lava crater
 #   plaza            flat central plaza (+ throne)
 # -------------------------------------------------------------------------------------
@@ -343,6 +347,11 @@ types:
       pillar-cap: CHISELED_STONE_BRICKS
   CAPITAL:
     display-name: "<gold>Capital</gold>"
+    # A harbour town around the plaza: paved roads to the coast with lamps, houses, piers, a lighthouse.
+    town:
+      enabled: true
+      houses: 16
+      road: [STONE_BRICKS:5, POLISHED_ANDESITE:2, CRACKED_STONE_BRICKS:1]
     # Capitals are safe zones by default (no PvP, no building, no conquest).
     status: NEUTRAL
     biome: plains
@@ -529,6 +538,51 @@ protection:
 # islands (only the blocks right above the chest, nothing around it). false = island protection applies.
 treasure-digging: true
 
+# -------------------------------------------------------------------------------------
+# Island development: upgrades a crew buys from its crew bank (/island manage or /island upgrade).
+# Only Captain and First Mate can buy. costs = price of level 1, 2, 3, ... (the list length is the max level).
+# per-level = effect strength per level.
+# -------------------------------------------------------------------------------------
+upgrades:
+  enabled: true
+  # When an island is conquered: keep | lose-one (every upgrade drops a level) | reset
+  on-conquest: lose-one
+  types:
+    treasury:
+      display-name: "<gold><bold>Treasury"
+      icon: GOLD_BLOCK
+      description:
+        - "<gray>More passive income from this island."
+        - "<gray>+25% income per level."
+      per-level: 0.25
+      costs: [2000, 4000, 8000, 15000, 25000]
+    fortress:
+      display-name: "<red><bold>Fortress"
+      icon: IRON_BARS
+      description:
+        - "<gray>Enemies need longer to capture your flag."
+        - "<gray>+20% capture time per level."
+      per-level: 0.20
+      costs: [2500, 5000, 10000, 18000, 30000]
+    watchtower:
+      display-name: "<aqua><bold>Watchtower"
+      icon: SPYGLASS
+      description:
+        - "<gray>Your crew is warned when enemies land."
+        - "<gray>Level 2+: intruders glow (longer per level)."
+      per-level: 1
+      alert-cooldown-seconds: 60
+      glow-seconds: 15
+      costs: [1500, 4000, 9000]
+    harbor:
+      display-name: "<dark_aqua><bold>Harbor"
+      icon: OAK_BOAT
+      description:
+        - "<gray>Crewmates swim faster around the island."
+        - "<gray>Level 3: also breathe underwater."
+      per-level: 1
+      costs: [1500, 4000, 8000]
+
 raiding:
   # When may enemies build/break/loot on an occupied island?
   #   always   = any non-allied crew
@@ -616,6 +670,26 @@ bluemap:
 #  Messages
 # =====================================================================================
 messages:
+  manage-title: "<dark_aqua>Manage <island>"
+  manage-info-name: "<aqua><bold><island>"
+  manage-info-type: "<gray>Type: <type>"
+  manage-info-size: "<gray>Size: <white><width></white> blocks across (radius <radius>)"
+  manage-info-owner: "<gray>Owner: <owner>"
+  manage-info-income: "<gray>Income: <yellow><amount></yellow> every <minutes> min"
+  manage-info-bank: "<gray>Crew bank: <yellow><amount>"
+  manage-level: "<gray>Level: <white><level>/<max>"
+  manage-cost: "<gray>Next level: <yellow><cost></yellow> <dark_gray>(crew bank)"
+  manage-maxed: "<green>Fully upgraded!"
+  manage-click: "<yellow>Click to upgrade"
+  manage-not-yours: "<red><island> doesn't belong to your crew."
+  upgrades-disabled: "<red>Island upgrades are turned off on this server."
+  upgrade-unknown: "<red>Unknown upgrade <white><type></white>. <gray>Upgrades: <white><types>"
+  upgrade-officer: "<red>Only the Captain or First Mate can buy island upgrades."
+  upgrade-maxed: "<yellow><upgrade> is already at its highest level."
+  upgrade-no-money: "<red>That costs <yellow><cost></yellow>, but the crew bank only has <yellow><bank></yellow>. <gray>(/crew bank deposit)"
+  upgrade-bought: "<green><white><player></white> upgraded <aqua><upgrade></aqua> to level <white><level></white> on <white><island></white>! <dark_gray>(<cost>)"
+  watchtower-alert: "<red>⚠ Watchtower: <white><player></white> (<crew><red>) landed on <white><island></white>!"
+  watchtower-no-crew: "<gray>no crew"
   spawn-point-set-island: "<green>Spawn set at <white><x>, <y>, <z></white> on <aqua><island></aqua> (now a neutral safe zone). New players and players without a bed spawn here."
   spawn-point-set: "<green>Spawn set at <white><x>, <y>, <z></white>. New players and players without a bed spawn here."
   # --- enter / leave (presence.display) ---

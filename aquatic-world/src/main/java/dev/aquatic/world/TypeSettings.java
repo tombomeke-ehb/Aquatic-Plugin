@@ -37,6 +37,9 @@ final class TypeSettings {
     /** Multiplier for mountains on this island type (0 = none). */
     double mountainScale = 1.0;
 
+    /** Sea life on the underwater slope: chances per column. */
+    double coral, seagrass, kelp;
+
     double treeDensity;
     /** Entries are org.bukkit.TreeType names or the custom type PALM. */
     final WeightedList<String> trees = new WeightedList<>();
@@ -65,6 +68,10 @@ final class TypeSettings {
     int plazaHeight;
     final WeightedList<Material> plazaBlocks = new WeightedList<>();
     boolean throne;
+    /** Capital town: roads, houses, piers and a lighthouse around the plaza. */
+    boolean town;
+    int townHouses = 16;
+    final WeightedList<Material> roadBlocks = new WeightedList<>();
     Material throneBase = Material.POLISHED_ANDESITE;
     Material throneAccent = Material.GOLD_BLOCK;
     Material throneSeat = Material.QUARTZ_STAIRS;
@@ -110,6 +117,14 @@ final class TypeSettings {
             t.defaultStatus = IslandStatus.UNCLAIMED;
         }
         t.maxHeight = Math.max(1, s.getInt("max-height", 12));
+        boolean warm = t.type == IslandType.TROPICAL || t.type == IslandType.PLAINS || t.type == IslandType.JUNGLE;
+        boolean frozen = t.type == IslandType.SNOWY;
+        t.coral = Math.max(0, s.getDouble("sea-life.coral", warm ? 0.07 : 0));
+        t.seagrass = Math.max(0, s.getDouble("sea-life.seagrass", frozen ? 0.05 : 0.25));
+        t.kelp = Math.max(0, s.getDouble("sea-life.kelp", warm ? 0.01 : frozen ? 0 : 0.05));
+        t.town = s.getBoolean("town.enabled", t.type == IslandType.CAPITAL);
+        t.townHouses = Math.max(0, s.getInt("town.houses", 16));
+        blocks(t.roadBlocks, s.getStringList("town.road"), Material.STONE_BRICKS, log, ctx + ".town.road");
         t.mountainScale = Math.max(0, s.getDouble("mountains", t.type == IslandType.CAPITAL ? 0.4 : 1.0));
         t.beachHeight = Math.max(0, s.getInt("beach-height", 2));
         t.roughness = Math.max(0.1, s.getDouble("roughness", 1.0));

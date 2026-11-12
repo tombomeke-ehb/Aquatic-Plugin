@@ -28,6 +28,12 @@ final class IslandImpl implements Island {
     /** Epoch millis until which the island cannot be conquered. */
     long shieldUntil;
     long claimedAt;
+    /** Bought island upgrades: type -> level (see IslandUpgrades). */
+    final java.util.Map<String, Integer> upgrades = new java.util.HashMap<>();
+
+    int upgrade(String type) {
+        return upgrades.getOrDefault(type, 0);
+    }
 
     IslandImpl(String id, String name, IslandType type, String world, int x, int y, int z, int radius, long seed) {
         this.id = id;
@@ -130,6 +136,12 @@ final class IslandImpl implements Island {
         }
         s.set("shield-until", shieldUntil);
         s.set("claimed-at", claimedAt);
+        s.set("upgrades", null);
+        for (java.util.Map.Entry<String, Integer> e : upgrades.entrySet()) {
+            if (e.getValue() > 0) {
+                s.set("upgrades." + e.getKey(), e.getValue());
+            }
+        }
     }
 
     static IslandImpl load(String id, ConfigurationSection s) {
@@ -154,6 +166,12 @@ final class IslandImpl implements Island {
         }
         is.shieldUntil = s.getLong("shield-until");
         is.claimedAt = s.getLong("claimed-at");
+        ConfigurationSection up = s.getConfigurationSection("upgrades");
+        if (up != null) {
+            for (String key : up.getKeys(false)) {
+                is.upgrades.put(key, Math.max(0, up.getInt(key)));
+            }
+        }
         return is;
     }
 }

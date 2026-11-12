@@ -30,7 +30,7 @@ import java.util.Random;
  */
 final class IslandGenerator extends AreaJob {
 
-    private static final byte NONE = 0, SLOPE = 1, BEACH = 2, LAND = 3, CONE = 4, CRATER = 5, PLAZA = 6, MOUNTAIN = 7;
+    private static final byte NONE = 0, SLOPE = 1, BEACH = 2, LAND = 3, CONE = 4, CRATER = 5, PLAZA = 6, MOUNTAIN = 7, BUILT = 8;
 
     /** Mountains, caves and ore veins: "generation.terrain" in islands.yml. */
     static final class TerrainOptions {
@@ -282,6 +282,7 @@ final class IslandGenerator extends AreaJob {
                 }
                 top[idx] = target;
                 kind[idx] = SLOPE;
+                seaLife(wx, target, wz);
             }
             if (t.frozenShore && u < 0.3 && detail.noise(wx, wz, 2.0, 0.5, true) > -0.15) {
                 Block surface = world.getBlockAt(wx, sea - 1, wz);
@@ -420,6 +421,43 @@ final class IslandGenerator extends AreaJob {
         }
     }
 
+    private static final Material[] CORALS = {Material.TUBE_CORAL, Material.BRAIN_CORAL, Material.BUBBLE_CORAL,
+            Material.FIRE_CORAL, Material.HORN_CORAL, Material.TUBE_CORAL_FAN, Material.BRAIN_CORAL_FAN,
+            Material.BUBBLE_CORAL_FAN, Material.FIRE_CORAL_FAN, Material.HORN_CORAL_FAN};
+    private static final Material[] CORAL_BLOCKS = {Material.TUBE_CORAL_BLOCK, Material.BRAIN_CORAL_BLOCK,
+            Material.BUBBLE_CORAL_BLOCK, Material.FIRE_CORAL_BLOCK, Material.HORN_CORAL_BLOCK};
+
+    /** Coral, seagrass and kelp on the underwater slope (only where the water is deep enough). */
+    private void seaLife(int wx, int floorTop, int wz) {
+        int depth = sea - 1 - floorTop;
+        if (depth < 2) {
+            return;
+        }
+        Block above = world.getBlockAt(wx, floorTop + 1, wz);
+        if (above.getType() != Material.WATER) {
+            return;
+        }
+        double roll = rng.nextDouble();
+        if (roll < t.coral) {
+            if (rng.nextInt(4) == 0 && depth >= 3) {
+                above.setType(CORAL_BLOCKS[rng.nextInt(CORAL_BLOCKS.length)], false); // a small coral mound
+                Block top2 = world.getBlockAt(wx, floorTop + 2, wz);
+                if (top2.getType() == Material.WATER) {
+                    top2.setType(CORALS[rng.nextInt(CORALS.length)], false);
+                }
+            } else {
+                above.setType(CORALS[rng.nextInt(CORALS.length)], false);
+            }
+        } else if (roll < t.coral + t.kelp && depth >= 4) {
+            int h = 1 + rng.nextInt(Math.max(1, depth - 2));
+            for (int i = 0; i < h; i++) {
+                world.getBlockAt(wx, floorTop + 1 + i, wz).setType(i == h - 1 ? Material.KELP : Material.KELP_PLANT, false);
+            }
+        } else if (roll < t.coral + t.kelp + t.seagrass) {
+            above.setType(Material.SEAGRASS, false);
+        }
+    }
+
     private void biomeColumn(int dx, int dz) {
         int wx = cx + dx, wz = cz + dz;
         if ((wx & 3) != 0 || (wz & 3) != 0 || (long) dx * dx + (long) dz * dz > (long) (radius + 3) * (radius + 3)) {
@@ -444,6 +482,9 @@ final class IslandGenerator extends AreaJob {
         List<Feature> list = new ArrayList<>();
         if (t.plaza && t.throne) {
             list.add(new Feature(0, 0, 10, this::buildThrone));
+        }
+        if (t.plaza && t.town) {
+            planTown(new Random(seed * 41 + 5), list); // before trees: roads and houses reserve their ground
         }
         if (t.ruinDensity > 0 && !t.ruinBlocks.isEmpty()) {
             int ruins = Math.max(1, (int) Math.round(landCount / 10000.0 * t.ruinDensity));
@@ -482,6 +523,254 @@ final class IslandGenerator extends AreaJob {
         list.sort(java.util.Comparator.comparingInt((Feature f) -> (cz + f.dz()) >> 4).thenComparingInt(f -> (cx + f.dx()) >> 4));
         features.addAll(list);
         featureTotal = features.size();
+    }
+
+    // ------------------------------------------------------------------ capital town
+
+    private static final int[][] DIRS = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+
+    /** Plans the capital's town: 4 roads to the coast with lamps, houses along them, piers and a lighthouse. */
+    private void planTown(Random r, List<Feature> list) {
+        int plazaR = (int) Math.round(Math.min(0.62, t.plazaSize) * landR);
+        // lamp posts around the plaza
+        for (int i = 0; i < 8; i++) {
+            double a = Math.PI / 4 * i + Math.PI / 8;
+            int lx = (int) Math.round(Math.cos(a) * (plazaR - 2)), lz = (int) Math.round(Math.sin(a) * (plazaR - 2));
+            if (kindAt(lx, lz) == PLAZA) {
+                list.add(new Feature(lx, lz, 1, () -> lamp(lx, lz)));
+            }
+        }
+        List<int[]> houseSpots = new ArrayList<>();
+        boolean lighthouse = false;
+        for (int[] d : DIRS) {
+            int step = plazaR - 1;
+            int lastX = 0, lastZ = 0;
+            List<int[]> road = new ArrayList<>();
+            while (step < radius) {
+                int rx = d[0] * step, rz = d[1] * step;
+                byte k = kindAt(rx, rz);
+                if (k != LAND && k != PLAZA && k != MOUNTAIN && k != BUILT) {
+                    break;
+                }
+                for (int w = -1; w <= 1; w++) {
+                    int px = rx + (d[1] != 0 ? w : 0), pz = rz + (d[0] != 0 ? w : 0);
+                    if (inGrid(px, pz) && kind[index(px, pz)] != PLAZA) {
+                        kind[index(px, pz)] = BUILT;
+                        road.add(new int[]{px, pz});
+                    }
+                }
+                lastX = rx;
+                lastZ = rz;
+                step++;
+            }
+            // road in segments, so each feature only needs a few chunks
+            for (int i = 0; i < road.size(); i += 24) {
+                List<int[]> seg = road.subList(i, Math.min(road.size(), i + 24));
+                int[] mid = seg.get(seg.size() / 2);
+                list.add(new Feature(mid[0], mid[1], 12, () -> paveRoad(seg, d)));
+            }
+            // houses on both sides, every ~11 blocks
+            int roadLen = Math.max(0, step - plazaR);
+            for (int off = plazaR + 4; off < plazaR + roadLen - 6; off += 11) {
+                for (int side = -1; side <= 1; side += 2) {
+                    int hx = d[0] * off + (d[1] != 0 ? side * 6 : 0);
+                    int hz = d[1] * off + (d[0] != 0 ? side * 6 : 0);
+                    houseSpots.add(new int[]{hx, hz, d[0], d[1], side});
+                }
+            }
+            // pier where the road meets the sea, lighthouse at the first one
+            int px = lastX + d[0] * 2, pz = lastZ + d[1] * 2;
+            int[] dir = d;
+            list.add(new Feature(px + d[0] * 9, pz + d[1] * 9, 12, () -> buildPier(px, pz, dir)));
+            if (!lighthouse) {
+                lighthouse = true;
+                int lx = lastX + d[1] * 6, lz = lastZ + d[0] * 6;
+                if (kindAt(lx, lz) == LAND || kindAt(lx, lz) == BEACH) {
+                    list.add(new Feature(lx, lz, 4, () -> buildLighthouse(lx, lz)));
+                }
+            }
+        }
+        java.util.Collections.shuffle(houseSpots, r);
+        int built = 0;
+        for (int[] h : houseSpots) {
+            if (built >= t.townHouses) {
+                break;
+            }
+            int w = 2 + r.nextInt(2), l = 2 + r.nextInt(2); // half sizes: 5x5 .. 7x7
+            if (!footprintFree(h[0], h[1], w, l)) {
+                continue;
+            }
+            for (int ox = -w - 1; ox <= w + 1; ox++) {
+                for (int oz = -l - 1; oz <= l + 1; oz++) {
+                    kind[index(h[0] + ox, h[1] + oz)] = BUILT;
+                }
+            }
+            long houseSeed = r.nextLong();
+            // the door faces the road
+            int doorDx, doorDz;
+            if (h[2] != 0) { // road runs along x: houses beside it (z offset), door faces -side in z
+                doorDx = 0;
+                doorDz = -h[4];
+            } else {
+                doorDx = -h[4];
+                doorDz = 0;
+            }
+            int hx = h[0], hz = h[1];
+            list.add(new Feature(hx, hz, 6, () -> buildHouse(hx, hz, w, l, doorDx, doorDz, new Random(houseSeed))));
+            built++;
+        }
+    }
+
+    private boolean footprintFree(int cxr, int czr, int w, int l) {
+        int minY = Integer.MAX_VALUE, maxYv = Integer.MIN_VALUE;
+        for (int ox = -w - 1; ox <= w + 1; ox++) {
+            for (int oz = -l - 1; oz <= l + 1; oz++) {
+                int px = cxr + ox, pz = czr + oz;
+                if (!inGrid(px, pz) || kind[index(px, pz)] != LAND) {
+                    return false;
+                }
+                minY = Math.min(minY, top[index(px, pz)]);
+                maxYv = Math.max(maxYv, top[index(px, pz)]);
+            }
+        }
+        return maxYv - minY <= 3;
+    }
+
+    private void lamp(int dx, int dz) {
+        int x = cx + dx, z = cz + dz, y = top[index(dx, dz)] + 1;
+        set(x, y, z, Material.SPRUCE_FENCE);
+        set(x, y + 1, z, Material.SPRUCE_FENCE);
+        set(x, y + 2, z, Material.LANTERN);
+    }
+
+    private void paveRoad(List<int[]> seg, int[] dir) {
+        for (int[] c : seg) {
+            int x = cx + c[0], z = cz + c[1], y = top[index(c[0], c[1])];
+            set(x, y, z, t.roadBlocks.isEmpty() ? Material.STONE_BRICKS : t.roadBlocks.pick(rng));
+            for (int up = 1; up <= 4; up++) {
+                Block b = world.getBlockAt(x, y + up, z);
+                if (!b.isEmpty()) {
+                    b.setType(Material.AIR, false);
+                }
+            }
+            // a lamp at the road edge every 9 blocks
+            int along = dir[0] != 0 ? c[0] : c[1];
+            int across = dir[0] != 0 ? c[1] : c[0];
+            if (Math.abs(along) % 9 == 0 && Math.abs(across) == 1) {
+                int lx = c[0] + (dir[1] != 0 ? Integer.signum(across) : 0), lz = c[1] + (dir[0] != 0 ? Integer.signum(across) : 0);
+                if (inGrid(lx, lz) && (kind[index(lx, lz)] == LAND || kind[index(lx, lz)] == BUILT)) {
+                    lamp(lx, lz);
+                }
+            }
+        }
+    }
+
+    private void buildHouse(int hx, int hz, int w, int l, int doorDx, int doorDz, Random r) {
+        int base = Integer.MIN_VALUE;
+        for (int ox = -w; ox <= w; ox++) {
+            for (int oz = -l; oz <= l; oz++) {
+                base = Math.max(base, top[index(hx + ox, hz + oz)]);
+            }
+        }
+        Material[] walls = {Material.OAK_PLANKS, Material.SPRUCE_PLANKS, Material.BIRCH_PLANKS, Material.WHITE_TERRACOTTA};
+        Material wall = walls[r.nextInt(walls.length)];
+        Material roof = r.nextBoolean() ? Material.SPRUCE_SLAB : Material.DARK_OAK_SLAB;
+        int height = 4;
+        for (int ox = -w; ox <= w; ox++) {
+            for (int oz = -l; oz <= l; oz++) {
+                int x = cx + hx + ox, z = cz + hz + oz;
+                // foundation down to the ground
+                for (int y = top[index(hx + ox, hz + oz)]; y <= base; y++) {
+                    set(x, y, z, Material.COBBLESTONE);
+                }
+                boolean edgeX = Math.abs(ox) == w, edgeZ = Math.abs(oz) == l;
+                for (int y = base + 1; y <= base + height; y++) {
+                    Material m;
+                    if (edgeX && edgeZ) {
+                        m = Material.STRIPPED_SPRUCE_LOG;
+                    } else if (edgeX || edgeZ) {
+                        boolean window = y == base + 2 && ((edgeX && Math.abs(oz) == 1) || (edgeZ && Math.abs(ox) == 1));
+                        m = window ? Material.GLASS_PANE : wall;
+                    } else {
+                        m = Material.AIR;
+                    }
+                    set(x, y, z, m);
+                }
+                set(x, base, z, edgeX || edgeZ ? Material.COBBLESTONE : Material.SPRUCE_PLANKS);
+            }
+        }
+        // slab roof with a 1-block overhang
+        for (int ox = -w - 1; ox <= w + 1; ox++) {
+            for (int oz = -l - 1; oz <= l + 1; oz++) {
+                set(cx + hx + ox, base + height + 1, cz + hz + oz, roof);
+            }
+        }
+        // door in the middle of the wall that faces the road
+        int dx = cx + hx + doorDx * w, dz = cz + hz + doorDz * l;
+        BlockFace facing = doorDx > 0 ? BlockFace.EAST : doorDx < 0 ? BlockFace.WEST : doorDz > 0 ? BlockFace.SOUTH : BlockFace.NORTH;
+        BlockData lower = Bukkit.createBlockData(Material.SPRUCE_DOOR);
+        BlockData upper = Bukkit.createBlockData(Material.SPRUCE_DOOR);
+        if (lower instanceof org.bukkit.block.data.type.Door dl && upper instanceof org.bukkit.block.data.type.Door du) {
+            dl.setFacing(facing);
+            dl.setHalf(Bisected.Half.BOTTOM);
+            du.setFacing(facing);
+            du.setHalf(Bisected.Half.TOP);
+        }
+        world.getBlockAt(dx, base + 1, dz).setBlockData(lower, false);
+        world.getBlockAt(dx, base + 2, dz).setBlockData(upper, false);
+        // a lantern inside and a light above the door
+        set(cx + hx, base + 1, cz + hz, Material.LANTERN);
+        set(dx + doorDx, base + 3, dz + doorDz, Material.LANTERN);
+    }
+
+    private void buildPier(int px, int pz, int[] d) {
+        int y = sea;
+        for (int i = 0; i < 18; i++) {
+            int x = cx + px + d[0] * i, z = cz + pz + d[1] * i;
+            for (int w = -1; w <= 1; w++) {
+                int wx = x + (d[1] != 0 ? w : 0), wz = z + (d[0] != 0 ? w : 0);
+                Block b = world.getBlockAt(wx, y, wz);
+                if (b.getType() == Material.WATER || b.isEmpty() || b.getType() == Material.SAND || b.isReplaceable()) {
+                    b.setType(Material.SPRUCE_PLANKS, false);
+                }
+                if (Math.abs(w) == 1 && i % 4 == 0) {
+                    // posts down to the sea floor
+                    for (int yy = y - 1; yy > minY && !world.getBlockAt(wx, yy, wz).getType().isSolid(); yy--) {
+                        world.getBlockAt(wx, yy, wz).setType(Material.SPRUCE_LOG, false);
+                    }
+                    set(wx, y + 1, wz, Material.SPRUCE_FENCE);
+                    if (i % 8 == 0) {
+                        set(wx, y + 2, wz, Material.LANTERN);
+                    }
+                }
+            }
+        }
+    }
+
+    private void buildLighthouse(int lx, int lz) {
+        int base = top[index(lx, lz)];
+        int height = 20;
+        for (int y = 0; y <= height; y++) {
+            Material ring = (y / 4) % 2 == 0 ? Material.WHITE_CONCRETE : Material.RED_CONCRETE;
+            for (int ox = -2; ox <= 2; ox++) {
+                for (int oz = -2; oz <= 2; oz++) {
+                    boolean corner = Math.abs(ox) == 2 && Math.abs(oz) == 2;
+                    boolean wall = Math.abs(ox) == 2 || Math.abs(oz) == 2;
+                    if (corner) {
+                        continue;
+                    }
+                    set(cx + lx + ox, base + y, cz + lz + oz, wall ? ring : (y == 0 ? Material.STONE_BRICKS : Material.AIR));
+                }
+            }
+        }
+        for (int ox = -1; ox <= 1; ox++) {
+            for (int oz = -1; oz <= 1; oz++) {
+                set(cx + lx + ox, base + height + 1, cz + lz + oz, Material.GLASS);
+            }
+        }
+        set(cx + lx, base + height + 1, cz + lz, Material.SEA_LANTERN);
+        set(cx + lx, base + height + 2, cz + lz, Material.SEA_LANTERN);
+        set(cx + lx, base + height + 3, cz + lz, Material.DARK_OAK_SLAB);
     }
 
     /** A blob of ore inside the island's rock (never in the open air or the sea). */

@@ -182,6 +182,8 @@ Killing a pirate with a bounty pays you the full amount. Crewmates and allies of
 | `/island claim` | Plant your crew flag on the unclaimed island you stand on (officers, may cost Doubloons) | `aquatic.islands.claim` |
 | `/island unclaim [confirm]` | Abandon the island you stand on | `aquatic.islands.claim` |
 | `/island flag` | Move or re-place your crew flag to where you stand | `aquatic.islands.flag` |
+| `/island manage [island]` | Your island's stats and upgrade menu | `aquatic.islands.manage` |
+| `/island upgrade <treasury\|fortress\|watchtower\|harbor>` | Buy the next upgrade level for the island you stand on (Captain/First Mate, paid from the crew bank) | `aquatic.islands.manage` |
 
 **Admin commands** (`aquatic.islands.admin`)
 
@@ -205,6 +207,8 @@ Run `/island admin` for this list in-game. The short form without `admin` (e.g. 
 | `/island admin tp <island>` | Teleport to an island |
 
 Bypass all island protection: `aquatic.islands.bypass`.
+
+**Island upgrades:** Treasury (more income), Fortress (slower capture), Watchtower (alerts and glowing intruders) and Harbor (faster swimming, water breathing). They're bought from the crew bank. After a conquest, every upgrade drops a level.
 
 **Conquest:** stand near an enemy island's flag with your crew. The capture bar fills while no defender is close and drains otherwise. When it is full, the island is yours.
 
