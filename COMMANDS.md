@@ -191,7 +191,7 @@ Run `/island admin` for this list in-game. The short form without `admin` (e.g. 
 
 | Command | What it does |
 | --- | --- |
-| `/island admin spawn <type> <radius> [name]` | Generate an island at your position. Types: `tropical`, `plains`, `jungle`, `volcanic`, `snowy`, `desert`, `ancient`, `capital` |
+| `/island admin spawn <type> <radius> [name]` | Generate an island at your position. Types: `plains`, `forest`, `tropical`, `jungle`, `volcanic`, `snowy`, `desert`, `ancient`, `capital` |
 | `/island admin spawnrandom <type\|random> <count> [minRadius] [maxRadius]` | Scatter many islands over the ocean area, auto-named and spaced apart |
 | `/island admin area <radius> [spacing]` | Set the ocean area for random islands and treasure, centred on you |
 | `/island admin register <name> <type> <radius>` | Turn terrain you already built into an island (no generation) |
@@ -246,9 +246,10 @@ Aliases: `/aquaticitem`, `/pirateitem`.
 
 Default item ids:
 - **Abyss Fruits:** `gomu_gomu`, `mera_mera`, `hie_hie`, `goro_goro`, `suke_suke`, `ope_ope`, `yami_yami`, `ushi_ushi_bison`, `galeborn`, `stoneskin`
-- **Weapons:** `sea_prism_blade`, `seastone_cuffs`, `wado_ichimonji`, `shusui`, `yoru`, `flintlock`, `hand_cannon`, `cannonball`
+- **Weapons:** `sea_prism_blade`, `seastone_cuffs`, `wado_ichimonji`, `shusui`, `yoru`, `storm_saber`, `tide_rapier`, `abyss_cutlass`, `krakens_maul`, `flintlock`, `hand_cannon`, `cannonball`
+- **Throwables (right-click):** `smoke_bomb`, `frost_bomb`, `fire_bomb`
 - **Tools and other:** `log_pose`, `den_den_mushi`, `rum`, `healing_tonic`, `gale_grog`, `pirate_king_crown`
-- **Gear:** `coral_trident`, `captains_coat`
+- **Gear:** `coral_trident`, `captains_coat`, `marauders_buckler`
 - **Special:** `devil_fruit_random` gives a random Abyss Fruit
 
 **Using an Abyss Fruit power:** sneak + **F** (swap hands), or sneak + right-click while looking at a block. Fruits have 2–3 moves: **sneak + scroll** (empty hand) switches between them. You cannot use powers while in water.

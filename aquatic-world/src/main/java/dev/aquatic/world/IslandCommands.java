@@ -257,6 +257,7 @@ final class IslandCommands {
     private void showInfo(CommandSender sender, IslandImpl is) {
         sender.sendMessage(m.rawMsg("info-header", "island", is.name));
         sender.sendMessage(m.rawMsg("info-type", "type", m.typeName(is.type), "id", is.id));
+        sender.sendMessage(m.rawMsg("info-rarity", "rarity", m.rarityName(is.type)));
         sender.sendMessage(m.rawMsg("info-owner", "owner", m.ownerLine(is)));
         sender.sendMessage(m.rawMsg("info-location", "x", is.x, "z", is.z, "radius", is.radius, "world", is.world));
         if (is.id.equals(m.spawnIslandId())) {

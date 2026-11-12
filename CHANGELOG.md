@@ -1,5 +1,46 @@
 # Changelog
 
+## 1.9.0 (2026-11-12)
+
+### Added
+- **Island rarity:** every island type has a rarity, and the random type follows it:
+
+  | Rarity | Types | Weight |
+  | --- | --- | --- |
+  | Common | Plains, Forest | 10 each |
+  | Uncommon | Jungle, Snowy, Desert | 4 each |
+  | Rare | Tropical | 2 |
+  | Epic | Volcanic, Ancient | 1 each |
+  | Legendary | Capital | never random |
+
+  - `/island info` shows the rarity.
+  - Discovering a rarer island pays more (×1 up to ×6, `rarities:` in `islands.yml`).
+  - The weights are under the new key `generation.island-type-weights`, so they apply on existing servers too.
+- **Forest islands:** a new common type with oak, birch and dark oak woods, ferns, berry bushes, lily of the valley and mushrooms, plus its own name list ("Mossbough Grove", "Elderleaf Weald", ...).
+- **New swords:**
+  - **Stormcaller Saber:** calls down lightning on hit. Move: Arc Lash, chain lightning.
+  - **Tide Rapier:** fast and light, with a slowing hit. Move: Riptide Lunge, a dash.
+  - **Abyss Cutlass:** steals 20% of the damage as health. Move: Drowning Wave.
+  - **Kraken's Maul:** a heavy axe that weakens on hit. Move: Tidal Slam, a shockwave with a windup.
+- **Marauder's Buckler:** a shield with armour and knockback resistance in the off hand.
+- **Bombs** (new item type `bomb`): right-click to throw. They burst where they land and follow the PvP rules.
+  - **Smoke Bomb:** blinds and slows, and the cloud lingers.
+  - **Frost Bomb:** freezes and slows.
+  - **Fire Bomb:** sets targets on fire without burning blocks.
+
+### Changed
+- **Treasure loot updated:**
+  - The **elytra is gone**.
+  - Bombs are in common to legendary.
+  - Healing Tonics are in uncommon and up.
+  - The Tide Rapier and Buckler are in rare.
+  - The new swords are in epic and legendary.
+  - Legendary has new named items: Wavebreaker, Captain's Last Word and Captain's Name Plate, plus a Mending book.
+- **Market:** bombs and the Buckler are sold in the Pirate Armory.
+
+### Existing servers
+Run `/aquatic resetconfig items confirm`, `treasure` and `shop` for the new items and loot. Backups are kept. Island rarity and the Forest type work right away.
+
 ## 1.8.0 (2026-11-12)
 
 ### Added

@@ -82,6 +82,10 @@ categories:
       - {item: "item:hand_cannon", amount: 1, buy: 4000, sell: 0}
       - {item: GUNPOWDER, amount: 16, buy: 160, sell: 6}
       - {item: TNT, amount: 4, buy: 400, sell: 0}
+      - {item: "item:smoke_bomb", amount: 2, buy: 220, sell: 0}
+      - {item: "item:frost_bomb", amount: 2, buy: 260, sell: 0}
+      - {item: "item:fire_bomb", amount: 2, buy: 260, sell: 0}
+      - {item: "item:marauders_buckler", amount: 1, buy: 1800, sell: 0}
   trade:
     name: "<yellow><bold>Trade Goods"
     icon: EMERALD

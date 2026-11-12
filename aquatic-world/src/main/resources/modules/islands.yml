@@ -98,14 +98,17 @@ generation:
   # Maximum islands per /island spawnrandom call.
   max-spawnrandom: 30
   # Chance weights of each type for "/island spawnrandom random ...".
-  random-type-weights:
-    PLAINS: 4
-    TROPICAL: 4
-    JUNGLE: 3
-    VOLCANIC: 1.5
-    SNOWY: 2
-    DESERT: 2
-    ANCIENT: 1.5
+  # How often each type appears with "/island admin spawnrandom random ...". Most islands are the
+  # main biomes (plains, forest); special ones like volcanic or ancient islands are rare finds.
+  island-type-weights:
+    PLAINS: 10
+    FOREST: 10
+    JUNGLE: 4
+    SNOWY: 4
+    DESERT: 4
+    TROPICAL: 2
+    VOLCANIC: 1
+    ANCIENT: 1
     CAPITAL: 0
 
 # What /island delete <island> restore and /island regen turn the area back into.
@@ -143,7 +146,45 @@ restore:
 #   volcano          cone with a lava crater
 #   plaza            flat central plaza (+ throne)
 # -------------------------------------------------------------------------------------
+# Rarity of each island type (set per type with "rarity: ..."), shown in /island info.
+# Discovering a rarer island pays more: discovery reward x discovery-multiplier.
+rarities:
+  common: {display: "<gray>Common", discovery-multiplier: 1}
+  uncommon: {display: "<green>Uncommon", discovery-multiplier: 1.5}
+  rare: {display: "<aqua>Rare", discovery-multiplier: 2.5}
+  epic: {display: "<light_purple>Epic", discovery-multiplier: 4}
+  legendary: {display: "<gold>Legendary", discovery-multiplier: 6}
+
 types:
+  FOREST:
+    display-name: "<gradient:#56ab2f:#2f6b1f>Forest</gradient>"
+    status: UNCLAIMED
+    rarity: common
+    biome: forest
+    max-height: 10
+    beach-height: 2
+    roughness: 0.8
+    coast-variation: 0.22
+    mountains: 0.8
+    surface: [GRASS_BLOCK]
+    subsurface: [DIRT:5, COARSE_DIRT:1]
+    core: [STONE:6, ANDESITE:1, GRANITE:1]
+    beach: [SAND:3, GRAVEL:1]
+    underwater: [SAND:3, GRAVEL:2, CLAY:1]
+    ores:
+      chance: 0.014
+      blocks: [COAL_ORE:4, IRON_ORE:3, COPPER_ORE:2]
+    trees:
+      density: 0.55
+      types: [TREE:5, BIRCH:3, BIG_TREE:1, DARK_OAK:1]
+    decorations:
+      SHORT_GRASS: 0.25
+      FERN: 0.06
+      LARGE_FERN: 0.01
+      SWEET_BERRY_BUSH: 0.006
+      LILY_OF_THE_VALLEY: 0.01
+      POPPY: 0.008
+      BROWN_MUSHROOM: 0.004
   PLAINS:
     display-name: "<gradient:#a8e063:#56ab2f>Plains</gradient>"
     status: UNCLAIMED
@@ -398,6 +439,10 @@ island-names:
     fixed: []
     first: [Saltwhisper, Brightwater, Palmreach, Sunmere, Coralline, Tidesong, Goldsand, Breezeway, Lumen, Marigold, Seaglass, Driftwood, Azure, Honeytide, Shellmoor]
     second: [Cay, Atoll, Lagoon, Shoals, Haven, Strand, Key, Sands, Isle, Reach]
+  FOREST:
+    fixed: []
+    first: [Oakhaven, Mossbough, Timberline, Greywood, Hollowbark, Elderleaf, Pinemere, Thornwood, Shadebrook, Wildgrove, Ashwood, Birchmoor]
+    second: [Woods, Forest, Grove, Thicket, Isle, Hollow, Weald, Glade, Timbers, Reach]
   PLAINS:
     fixed: []
     first: [Meadow, Greenreach, Windmere, Fairfield, Goldengrass, Clover, Brightvale, Larkspur, Haymarsh, Softwind, Rolling, Bluebell]
@@ -690,6 +735,7 @@ bluemap:
 #  Messages
 # =====================================================================================
 messages:
+  info-rarity: "<gray>Rarity: <rarity>"
   deny-officers-only: "<red>Only officers may build here. <gray>(build access: officers only)"
   manage-access-all: "<green><bold>Build access: all crewmates"
   manage-access-officers: "<gold><bold>Build access: officers only"

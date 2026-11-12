@@ -1,7 +1,7 @@
 package dev.aquatic.api;
 
 public enum IslandType {
-    TROPICAL, PLAINS, JUNGLE, VOLCANIC, SNOWY, DESERT, ANCIENT, CAPITAL;
+    TROPICAL, PLAINS, FOREST, JUNGLE, VOLCANIC, SNOWY, DESERT, ANCIENT, CAPITAL;
 
     /** @return the type, or null when the text is not a valid type. */
     public static IslandType parse(String raw) {

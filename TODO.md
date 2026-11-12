@@ -173,6 +173,8 @@ The idea stays: an inner strength every pirate can train, separate from fruits. 
 - [ ] **Performance:** keep the per-tick budget. Caves and structures are generated in the same job system.
 - [x] Capital town: roads, houses, piers, lighthouse; coral reefs and kelp (done in 1.6.0).
 - [x] Shipwrecks on beaches, freshwater lakes (done in 1.8.0).
+- [x] Island rarity (common to legendary) and the Forest type (done in 1.9.0).
+- [ ] Rarer islands could also have better treasure and resources.
 - [ ] **Placeable facilities on big islands:** buy a building (dock, market, watchtower, vault) in the shop and place it as a schematic, with a preview outline, on your own island. Each building gives its upgrade. See section 1.
 
 ### 4c. Custom map
@@ -187,6 +189,7 @@ The idea stays: an inner strength every pirate can train, separate from fruits. 
 
 ### 5. More treasure items
 - [x] Coral Trident, Captain's Greatcoat, Healing Tonic, Grog of the Gale (done in 1.8.0).
+- [x] 4 new swords, Marauder's Buckler, Smoke/Frost/Fire Bombs; elytra removed from loot (done in 1.9.0).
 - [x] Uncommon tier between common and rare (done in 1.5.0).
 - [ ] More unique loot: legendary weapons and armour sets, accessories with passive buffs, ship upgrades, Tidewill training scrolls, rare cosmetics such as hats and titles.
 - [ ] Item rarities shown in the name and lore.

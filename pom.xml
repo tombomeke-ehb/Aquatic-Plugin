@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>dev.aquatic</groupId>
   <artifactId>aquatic-parent</artifactId>
-  <version>1.8.0</version>
+  <version>1.9.0</version>
   <packaging>pom</packaging>
   <name>AquaticSMP</name>
   <description>AquaticSMP, developed by tombomeke</description>

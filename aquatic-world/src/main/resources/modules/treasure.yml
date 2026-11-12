@@ -66,6 +66,7 @@ tiers:
       - {material: NAUTILUS_SHELL, amount: 1, weight: 1.5}
       - {material: NAME_TAG, amount: 1, weight: 1}
       - {material: LEATHER_HELMET, weight: 2, name: "<gold>Weathered Tricorn", lore: ["<gray>Smells of salt and rum."]}
+      - {custom-item: smoke_bomb, amount: 1-2, weight: 1.5}
       - {doubloons: 20-60, weight: 4}
   uncommon:
     display-name: "<green>Uncommon</green>"
@@ -97,6 +98,9 @@ tiers:
       - {material: NAUTILUS_SHELL, amount: 1-2, weight: 2}
       - {custom-item: log_pose, weight: 0.5}
       - {custom-item: rum, amount: 1-3, weight: 2}
+      - {custom-item: fire_bomb, amount: 1-2, weight: 1.5}
+      - {custom-item: frost_bomb, amount: 1-2, weight: 1.5}
+      - {custom-item: healing_tonic, weight: 1}
       - {doubloons: 40-100, weight: 4}
   rare:
     display-name: "<aqua>Rare</aqua>"
@@ -127,6 +131,11 @@ tiers:
       - {material: MUSIC_DISC_CAT, weight: 1}
       - {material: MUSIC_DISC_MALL, weight: 1}
       - {custom-item: log_pose, weight: 1}
+      - {custom-item: smoke_bomb, amount: 2-3, weight: 2}
+      - {custom-item: frost_bomb, amount: 1-3, weight: 1.5}
+      - {custom-item: healing_tonic, amount: 1-2, weight: 1.5}
+      - {custom-item: tide_rapier, weight: 0.8}
+      - {custom-item: marauders_buckler, weight: 0.8}
       - {doubloons: 75-150, weight: 4}
   epic:
     display-name: "<light_purple>Epic</light_purple>"
@@ -159,6 +168,11 @@ tiers:
       - {custom-item: gale_grog, weight: 1.5}
       - {custom-item: captains_coat, weight: 0.6}
       - {custom-item: devil_fruit_random, weight: 0.5}
+      - {custom-item: fire_bomb, amount: 2-4, weight: 2}
+      - {custom-item: storm_saber, weight: 0.6}
+      - {custom-item: abyss_cutlass, weight: 0.5}
+      - {custom-item: krakens_maul, weight: 0.5}
+      - {custom-item: tide_rapier, weight: 0.8}
       - {doubloons: 200-400, weight: 4}
   legendary:
     display-name: "<gradient:#ffcc00:#ff6a00><bold>Legendary</bold></gradient>"
@@ -179,16 +193,20 @@ tiers:
       - {material: DIAMOND_BLOCK, amount: 1-3, weight: 4}
       - {material: HEART_OF_THE_SEA, amount: 1-2, weight: 3}
       - {material: ENCHANTED_GOLDEN_APPLE, amount: 1-2, weight: 2}
-      - {material: TRIDENT, weight: 2, enchants: [RIPTIDE:3, UNBREAKING:3, MENDING:1], name: "<gold>Trident of the Conqueror of the Sea", lore: ["<gray>Rides the waves like they owe it Doubloons."]}
-      - {material: TRIDENT, weight: 2, enchants: [CHANNELING:1, LOYALTY:3, IMPALING:5], name: "<yellow>Thunder Bagua"}
-      - {material: NETHERITE_SWORD, weight: 1, enchants: [SHARPNESS:4-5, LOOTING:2-3, UNBREAKING:3], name: "<red>Leviathan's Fang's Little Brother"}
-      - {material: ELYTRA, weight: 0.6}
-      - {material: TOTEM_OF_UNDYING, amount: 1-2, weight: 2}
+      - {material: TOTEM_OF_UNDYING, amount: 1, weight: 2}
+      - {material: TRIDENT, weight: 1.5, enchants: [RIPTIDE:3, UNBREAKING:3, MENDING:1], name: "<gold>Wavebreaker", lore: ["<gray>Rides the waves like they owe it Doubloons."]}
+      - {material: NETHERITE_SWORD, weight: 1, enchants: [SHARPNESS:4-5, LOOTING:2-3, UNBREAKING:3], name: "<red>Captain's Last Word", lore: ["<gray>The last thing many sailors heard."]}
+      - {material: ENCHANTED_BOOK, weight: 1.5, enchants: [MENDING:1]}
       - {material: MUSIC_DISC_OTHERSIDE, weight: 1}
       - {material: MUSIC_DISC_RELIC, weight: 1}
-      - {material: NAME_TAG, weight: 1, name: "<gold>the pirate theme", lore: ["<gray>It was real all along."]}
+      - {material: NAME_TAG, weight: 0.8, name: "<gold>Captain's Name Plate", lore: ["<gray>Every ship deserves a proper name."]}
+      - {custom-item: storm_saber, weight: 1.2}
+      - {custom-item: abyss_cutlass, weight: 1.2}
+      - {custom-item: krakens_maul, weight: 1}
       - {custom-item: coral_trident, weight: 1}
       - {custom-item: captains_coat, weight: 1}
+      - {custom-item: fire_bomb, amount: 3-5, weight: 1.5}
+      - {custom-item: healing_tonic, amount: 2-3, weight: 1.5}
       - {custom-item: devil_fruit_random, weight: 2}
       - {doubloons: 800-1500, weight: 4}
 

@@ -34,6 +34,9 @@ final class TypeSettings {
     Material topLayer;
     boolean frozenShore;
 
+    /** common | uncommon | rare | epic | legendary (see "rarities" in islands.yml). */
+    String rarity;
+
     /** Chance that an island of this type has a shipwreck on its beach (0..1). */
     double shipwreckChance;
     /** Freshwater lakes per 10,000 land blocks. */
@@ -124,9 +127,17 @@ final class TypeSettings {
             t.defaultStatus = IslandStatus.UNCLAIMED;
         }
         t.maxHeight = Math.max(1, s.getInt("max-height", 12));
+        t.rarity = s.getString("rarity", switch (t.type) {
+            case PLAINS, FOREST -> "common";
+            case JUNGLE, SNOWY, DESERT -> "uncommon";
+            case TROPICAL -> "rare";
+            case VOLCANIC, ANCIENT -> "epic";
+            case CAPITAL -> "legendary";
+        }).toLowerCase(java.util.Locale.ROOT);
         t.shipwreckChance = Math.max(0, Math.min(1, s.getDouble("shipwreck-chance", t.type == IslandType.CAPITAL ? 0 : 0.6)));
         t.lakeDensity = Math.max(0, s.getDouble("lakes", switch (t.type) {
             case PLAINS, JUNGLE -> 2.5;
+            case FOREST -> 1.5;
             case TROPICAL -> 1.2;
             case ANCIENT -> 0.8;
             default -> 0;

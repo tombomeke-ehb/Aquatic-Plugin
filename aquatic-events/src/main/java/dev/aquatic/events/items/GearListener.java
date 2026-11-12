@@ -97,12 +97,64 @@ public final class GearListener implements Listener {
                     abilities.fx().burst(at, org.bukkit.Particle.FLAME, 4, 0.12, 0.01);
                     abilities.fx().burst(at, org.bukkit.Particle.SMOKE, 2, 0.1, 0.01);
                 }
+                case "bomb" -> abilities.fx().burst(at, org.bukkit.Particle.SMOKE, 2, 0.05, 0.01);
                 case "cannon" -> {
                     abilities.fx().burst(at, org.bukkit.Particle.LARGE_SMOKE, 2, 0.1, 0.01);
                     abilities.fx().burst(at, org.bukkit.Particle.FLAME, 1, 0.05, 0.01);
                 }
                 default -> abilities.fx().dust(at, org.bukkit.Color.fromRGB(0x777777), 0.8f, 1, 0.02);
             }
+        }
+    }
+
+    /** Throws a bomb item (type: bomb): it bursts where it lands, see bombHit. */
+    private void throwBomb(Player p, ItemDef def, ItemStack hand) {
+        ConfigurationSection b = def.cfg.getConfigurationSection("bomb");
+        if (b == null || hand == null) {
+            return;
+        }
+        String key = "item:" + def.id;
+        long left = module.fruits().cooldownLeft(p.getUniqueId(), key);
+        if (left > 0) {
+            module.actionBar(p, "ability-cooldown", "ability", def.displayName(), "seconds", left);
+            return;
+        }
+        module.fruits().setCooldown(p.getUniqueId(), key, b.getDouble("cooldown", 2));
+        org.bukkit.entity.Snowball ball = p.launchProjectile(org.bukkit.entity.Snowball.class,
+                p.getEyeLocation().getDirection().multiply(b.getDouble("speed", 1.3)));
+        ball.setItem(hand.asOne());
+        track(ball, p, "bomb", b);
+        if (p.getGameMode() != org.bukkit.GameMode.CREATIVE) {
+            hand.setAmount(hand.getAmount() - 1);
+        }
+        Util.sound(p.getLocation(), b.getString("throw-sound", "entity.snowball.throw"), 1f, 0.7f);
+    }
+
+    /** Bomb impact: area damage/effects (PvP rules apply), a big burst, and an optional lingering cloud. */
+    private void bombHit(Player shooter, Location at, ConfigurationSection b) {
+        double radius = b.getDouble("radius", 4);
+        abilities.area(shooter, at, radius, b.getDouble("damage", 0), b);
+        String particle = b.getString("cloud", "CAMPFIRE_COSY_SMOKE");
+        try {
+            org.bukkit.Particle cloud = org.bukkit.Particle.valueOf(particle.toUpperCase(java.util.Locale.ROOT));
+            abilities.fx().burst(at.clone().add(0, 0.5, 0), cloud, (int) (radius * 30), radius / 2, 0.02);
+        } catch (IllegalArgumentException ignored) {
+        }
+        abilities.fx().wave(at.clone().add(0, 0.2, 0), radius, 6, Fx.color(b.getString("color"), org.bukkit.Color.GRAY), null, false);
+        Util.sound(at, b.getString("hit-sound", "entity.generic.explode"), 0.8f, 1.4f);
+        int linger = Math.max(0, b.getInt("linger-seconds", 0));
+        for (int i = 1; i <= linger; i++) {
+            module.runLater(() -> {
+                if (!shooter.isOnline()) {
+                    return;
+                }
+                abilities.area(shooter, at, radius, 0, b); // effects only
+                try {
+                    org.bukkit.Particle cloud = org.bukkit.Particle.valueOf(particle.toUpperCase(java.util.Locale.ROOT));
+                    abilities.fx().burst(at.clone().add(0, 0.6, 0), cloud, (int) (radius * 12), radius / 2, 0.01);
+                } catch (IllegalArgumentException ignored) {
+                }
+            }, 20L * i);
         }
     }
 
@@ -306,6 +358,14 @@ public final class GearListener implements Listener {
                     module.actionBar(p, "ability-no-target", "ability", name);
                 }
             }
+            case "bomb" -> {
+                event.setCancelled(true);
+                if (last != null && now - last < 400) {
+                    return;
+                }
+                lastUse.put(p.getUniqueId(), now);
+                throwBomb(p, def, event.getItem());
+            }
             case "gun", "cannon" -> {
                 event.setCancelled(true);
                 if (last != null && now - last < 150) {
@@ -447,6 +507,7 @@ public final class GearListener implements Listener {
         Location at = proj.getLocation();
         switch (t.kind()) {
             case "blast" -> abilities.blast(shooter, at, t.cfg());
+            case "bomb" -> bombHit(shooter, at, t.cfg());
             case "gun" -> {
                 if (event.getHitEntity() instanceof LivingEntity le) {
                     boolean head = event.getHitEntity() instanceof Player

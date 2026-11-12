@@ -739,6 +739,12 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         return types.get(type);
     }
 
+    /** The coloured rarity name of an island type, e.g. "Rare". */
+    Component rarityName(IslandType type) {
+        String r = settings(type).rarity;
+        return Text.mm(config().getString("rarities." + r + ".display", r));
+    }
+
     Component typeName(IslandType type) {
         String raw = config().getString("types." + type.name() + ".display-name");
         if (raw == null) {
@@ -1080,14 +1086,18 @@ public final class IslandsModule extends AquaticModule implements IslandService,
 
     IslandType randomType(Random random) {
         WeightedList<IslandType> list = new WeightedList<>();
-        ConfigurationSection sec = config().getConfigurationSection("generation.random-type-weights");
+        // "island-type-weights" (1.9.0+) replaces the older "random-type-weights"
+        ConfigurationSection sec = config().getConfigurationSection("generation.island-type-weights");
+        if (sec == null || sec.getKeys(false).isEmpty()) {
+            sec = config().getConfigurationSection("generation.random-type-weights");
+        }
         if (sec != null) {
             for (String key : sec.getKeys(false)) {
                 list.add(IslandType.parse(key), sec.getDouble(key));
             }
             // types added in a newer version get their bundled default weight
             ConfigurationSection defaults = config().getDefaults() == null ? null
-                    : config().getDefaults().getConfigurationSection("generation.random-type-weights");
+                    : config().getDefaults().getConfigurationSection("generation.island-type-weights");
             if (defaults != null) {
                 for (String key : defaults.getKeys(false)) {
                     if (!sec.contains(key, true) && IslandType.parse(key) != null) {
@@ -1612,7 +1622,8 @@ public final class IslandsModule extends AquaticModule implements IslandService,
                 // invalid key in config
             }
         }
-        double reward = config().getDouble("discovery.reward-per-type." + is.type.name(), config().getDouble("discovery.reward", 0));
+        double reward = config().getDouble("discovery.reward-per-type." + is.type.name(), config().getDouble("discovery.reward", 0))
+                * Math.max(0, config().getDouble("rarities." + settings(is.type).rarity + ".discovery-multiplier", 1));
         EconomyService economy = service(EconomyService.class);
         if (reward > 0 && economy != null) {
             economy.deposit(player.getUniqueId(), reward);
