@@ -82,6 +82,11 @@ public final class IslandsModule extends AquaticModule implements IslandService,
     private final Map<String, Long> crewLastSeen = new HashMap<>();
     private final Map<UUID, String> presence = new HashMap<>();
     private final Map<UUID, long[]> lastBlock = new HashMap<>();
+    /** Last enter/leave message per player: "key:islandId" -> time (ms), against border flicker spam. */
+    private final Map<UUID, String> lastPresenceKey = new HashMap<>();
+    private final Map<UUID, Long> lastPresenceAt = new HashMap<>();
+    /** Generation progress bar per command sender (a boss bar, so it never hides other action bar messages). */
+    private final Map<UUID, net.kyori.adventure.bossbar.BossBar> jobBars = new HashMap<>();
     private final Map<UUID, Long> lastDenyMessage = new HashMap<>();
     private final Deque<QueuedJob> jobs = new ArrayDeque<>();
     private QueuedJob currentJob;
@@ -153,6 +158,9 @@ public final class IslandsModule extends AquaticModule implements IslandService,
 
     @Override
     protected void onDisable() {
+        hideAllJobBars();
+        lastPresenceKey.clear();
+        lastPresenceAt.clear();
         if (currentJob != null) {
             currentJob.job().cleanup();
             currentJob = null;
@@ -893,13 +901,15 @@ public final class IslandsModule extends AquaticModule implements IslandService,
             if (q.sender() != null && !(q.sender() instanceof Player p && !p.isOnline())) {
                 send(q.sender(), "job-done", "label", q.job().label(), "queued", jobs.size());
             }
+            if (q.sender() instanceof Player p && jobs.stream().noneMatch(o -> o.sender() == p)) {
+                hideJobBar(p);
+            }
             return;
         }
         CommandSender sender = q.sender();
         if (sender instanceof Player p) {
             if (jobTicks % 10 == 0 && p.isOnline()) {
-                p.sendActionBar(rawMsg("job-progress", "label", q.job().label(),
-                        "percent", (int) Math.floor(q.job().progress() * 100), "queued", jobs.size()));
+                showJobBar(p, q);
             }
         } else if (sender != null && jobTicks % 200 == 0) {
             sender.sendMessage(rawMsg("job-progress", "label", q.job().label(),
@@ -1295,11 +1305,57 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         }
     }
 
+    private void showJobBar(Player p, QueuedJob q) {
+        float progress = (float) Math.max(0, Math.min(1, q.job().progress()));
+        Component name = rawMsg("job-progress", "label", q.job().label(),
+                "percent", (int) Math.floor(progress * 100), "queued", jobs.size());
+        net.kyori.adventure.bossbar.BossBar bar = jobBars.get(p.getUniqueId());
+        if (bar == null) {
+            bar = net.kyori.adventure.bossbar.BossBar.bossBar(name, progress,
+                    net.kyori.adventure.bossbar.BossBar.Color.BLUE, net.kyori.adventure.bossbar.BossBar.Overlay.PROGRESS);
+            jobBars.put(p.getUniqueId(), bar);
+            p.showBossBar(bar);
+        } else {
+            bar.name(name);
+            bar.progress(progress);
+        }
+    }
+
+    private void hideJobBar(Player p) {
+        net.kyori.adventure.bossbar.BossBar bar = jobBars.remove(p.getUniqueId());
+        if (bar != null) {
+            p.hideBossBar(bar);
+        }
+    }
+
+    private void hideAllJobBars() {
+        for (Map.Entry<UUID, net.kyori.adventure.bossbar.BossBar> e : jobBars.entrySet()) {
+            Player p = Bukkit.getPlayer(e.getKey());
+            if (p != null) {
+                p.hideBossBar(e.getValue());
+            }
+        }
+        jobBars.clear();
+    }
+
     private void showPresence(Player player, String key, IslandImpl is, boolean suppressTitle) {
-        String mode = config().getString("presence.display", "actionbar").toLowerCase(Locale.ROOT);
+        // enter-display / leave-display (no explicit fallback, so the bundled default "title" applies to
+        // configs created by older versions that only had the single "display" key)
+        String configured = config().getString("presence." + key + "-display");
+        String mode = (configured == null ? "title" : configured).toLowerCase(Locale.ROOT);
         if (mode.equals("none")) {
             return;
         }
+        // walking along a coastline flips between island and sea every few blocks: don't repeat the same message
+        long now = System.currentTimeMillis();
+        long cooldown = Math.max(0, config().getLong("presence.repeat-cooldown-seconds", 5)) * 1000L;
+        String stamp = key + ":" + is.id;
+        Long last = lastPresenceAt.get(player.getUniqueId());
+        if (cooldown > 0 && stamp.equals(lastPresenceKey.get(player.getUniqueId())) && last != null && now - last < cooldown) {
+            return;
+        }
+        lastPresenceKey.put(player.getUniqueId(), stamp);
+        lastPresenceAt.put(player.getUniqueId(), now);
         Object[] ph = {"island", is.name, "type", typeName(is.type), "owner", ownerLine(is)};
         Component line = rawMsg(key, ph);
         if (Text.plain(line).isBlank()) {
@@ -1311,6 +1367,16 @@ public final class IslandsModule extends AquaticModule implements IslandService,
                 if (suppressTitle) {
                     player.sendActionBar(line);
                 } else {
+                    Title.Times times = Title.Times.times(
+                            java.time.Duration.ofMillis(50L * Math.max(0, config().getInt("presence.title-fade-in-ticks", 8))),
+                            java.time.Duration.ofMillis(50L * Math.max(1, config().getInt("presence.title-stay-ticks", 40))),
+                            java.time.Duration.ofMillis(50L * Math.max(0, config().getInt("presence.title-fade-out-ticks", 12))));
+                    player.showTitle(Title.title(rawMsg(key + "-title", ph), rawMsg(key + "-subtitle", ph), times));
+                }
+            }
+            case "both" -> {
+                player.sendActionBar(line);
+                if (!suppressTitle) {
                     player.showTitle(Title.title(rawMsg(key + "-title", ph), rawMsg(key + "-subtitle", ph)));
                 }
             }
@@ -1383,6 +1449,9 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         UUID uuid = player.getUniqueId();
         presence.remove(uuid);
         lastBlock.remove(uuid);
+        lastPresenceKey.remove(uuid);
+        lastPresenceAt.remove(uuid);
+        jobBars.remove(uuid);
         lastDenyMessage.remove(uuid);
         conquest.playerQuit(player);
         CrewService crews = service(CrewService.class);

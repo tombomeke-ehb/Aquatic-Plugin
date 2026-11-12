@@ -335,8 +335,22 @@ spawn-island:
 presence:
   # How often (ticks) player positions are checked; players are only re-checked when they changed block.
   check-interval-ticks: 10
-  # actionbar | title | chat | none
-  display: actionbar
+  # How entering / leaving an island is shown, every time it happens:
+  #   title     = a short title in the middle of the screen (default)
+  #   actionbar = a line above the hotbar
+  #   both      = title + action bar
+  #   chat      = a chat message
+  #   none      = nothing
+  # (The very first visit of an island always shows the big discovery title, see "discovery".)
+  enter-display: title
+  leave-display: title
+  # The same enter/leave message is not repeated within this many seconds (stops spam when sailing
+  # along a coastline that crosses the island border back and forth). 0 = always show.
+  repeat-cooldown-seconds: 5
+  # Title timing in ticks (20 ticks = 1 second).
+  title-fade-in-ticks: 8
+  title-stay-ticks: 40
+  title-fade-out-ticks: 12
 
 discovery:
   enabled: true
@@ -504,10 +518,10 @@ messages:
   # --- enter / leave (presence.display) ---
   enter: "<aqua><island></aqua> <dark_gray>|</dark_gray> <type> <dark_gray>|</dark_gray> <owner>"
   enter-title: "<aqua><island>"
-  enter-subtitle: "<owner>"
+  enter-subtitle: "<type> <dark_gray>|</dark_gray> <owner>"
   leave: "<gray>You sail away from <white><island></white> into open waters."
   leave-title: ""
-  leave-subtitle: "<gray>Open waters"
+  leave-subtitle: "<gray>You leave <white><island></white> <dark_gray>-</dark_gray> <aqua>open waters"
   owner-occupied: "<gray>Territory of</gray> <crew>"
   owner-unclaimed: "<green>Unclaimed</green>"
   owner-neutral: "<aqua>Neutral waters</aqua>"

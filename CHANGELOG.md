@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.4 (2026-11-12)
+
+### Fixed
+- **Island enter/leave messages only showed the first time:** while islands were generating, the progress line kept overwriting the action bar of whoever started it, every half second. Enter and leave messages use that same action bar, so they vanished. Generation progress is now a separate boss bar at the top of the screen.
+
+### Changed
+- **Enter/leave display:** entering or leaving an island now shows a short title by default, every time.
+- **New `presence:` settings in `islands.yml`:**
+  - `enter-display` and `leave-display`: `title`, `actionbar`, `both`, `chat` or `none`.
+  - `repeat-cooldown-seconds` (default 5): the same message isn't repeated when you sail along a coastline.
+  - Title timing: `title-fade-in-ticks`, `title-stay-ticks`, `title-fade-out-ticks`.
+- The old `presence.display` key is no longer used. Servers that still have it get the new title display automatically.
+
 ## 1.0.3 (2026-11-12)
 
 ### Changed
