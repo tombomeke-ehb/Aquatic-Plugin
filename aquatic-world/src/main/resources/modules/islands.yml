@@ -67,10 +67,39 @@ generation:
   # max-height-boost times taller. height-scaling 0 = same heights for every size.
   height-scaling: 1.0
   max-height-boost: 3.0
+  # Landscape features shared by all island types (per type, "mountains: 0..2" scales the mountains).
+  terrain:
+    mountains:
+      enabled: true
+      # Extra height of the highest ridges (full height on islands with radius 250+, smaller islands
+      # get smaller mountains). Mountains only rise in some parts of an island, away from the coast.
+      height: 45
+      # Higher = more, narrower ridges.
+      frequency: 1.0
+      # Land higher than this above sea level is bare rock; higher than snow-above gets snow caps.
+      rock-above: 22
+      snow-above: 48
+      rock: [STONE:6, ANDESITE:2, COBBLESTONE:1, GRAVEL:1]
+    caves:
+      enabled: true
+      # Only islands at least this big get caves.
+      min-island-radius: 60
+      # Tunnel width (0.5 = narrow, 1 = normal, 2 = wide).
+      size: 1.0
+      # How far below sea level caves may reach.
+      depth: 14
+      # Some tunnels open up to the surface.
+      entrances: true
+    ore-veins:
+      enabled: true
+      # Veins per 1000 land blocks (on top of the scattered ores of each type).
+      per-1000-land: 4
+      ores: [COAL_ORE:6, IRON_ORE:5, COPPER_ORE:4, GOLD_ORE:1.5, REDSTONE_ORE:1.5, LAPIS_ORE:1, DIAMOND_ORE:0.25, EMERALD_ORE:0.2]
   # Maximum islands per /island spawnrandom call.
   max-spawnrandom: 30
   # Chance weights of each type for "/island spawnrandom random ...".
   random-type-weights:
+    PLAINS: 4
     TROPICAL: 4
     JUNGLE: 3
     VOLCANIC: 1.5
@@ -109,6 +138,35 @@ restore:
 #   plaza            flat central plaza (+ throne)
 # -------------------------------------------------------------------------------------
 types:
+  PLAINS:
+    display-name: "<gradient:#a8e063:#56ab2f>Plains</gradient>"
+    status: UNCLAIMED
+    biome: plains
+    max-height: 7
+    beach-height: 2
+    roughness: 0.55
+    coast-variation: 0.2
+    mountains: 0.35
+    surface: [GRASS_BLOCK]
+    subsurface: [DIRT:5, COARSE_DIRT:1]
+    core: [STONE:6, ANDESITE:1, GRANITE:1]
+    beach: [SAND:4, GRAVEL:1]
+    underwater: [SAND:3, GRAVEL:1, CLAY:1]
+    ores:
+      chance: 0.012
+      blocks: [COAL_ORE:4, IRON_ORE:3, COPPER_ORE:2]
+    trees:
+      density: 0.08
+      types: [TREE:6, BIRCH:2, BIG_TREE:1]
+    decorations:
+      SHORT_GRASS: 0.3
+      TALL_GRASS: 0.04
+      DANDELION: 0.02
+      POPPY: 0.02
+      OXEYE_DAISY: 0.015
+      CORNFLOWER: 0.015
+      AZURE_BLUET: 0.01
+      PUMPKIN: 0.0008
   TROPICAL:
     display-name: "<gradient:#ffd36b:#3fd0c9>Tropical</gradient>"
     status: UNCLAIMED
@@ -327,6 +385,10 @@ island-names:
     fixed: []
     first: [Saltwhisper, Brightwater, Palmreach, Sunmere, Coralline, Tidesong, Goldsand, Breezeway, Lumen, Marigold, Seaglass, Driftwood, Azure, Honeytide, Shellmoor]
     second: [Cay, Atoll, Lagoon, Shoals, Haven, Strand, Key, Sands, Isle, Reach]
+  PLAINS:
+    fixed: []
+    first: [Meadow, Greenreach, Windmere, Fairfield, Goldengrass, Clover, Brightvale, Larkspur, Haymarsh, Softwind, Rolling, Bluebell]
+    second: [Fields, Downs, Meadows, Vale, Plains, Isle, Commons, Pastures, Green, Hollow]
   JUNGLE:
     fixed: []
     first: [Verdant, Mossheart, Tanglewood, Greenmaw, Thornvale, Viridian, Canopy, Fernhollow, Wildroot, Liana, Emberleaf, Murkfern, Jadebark, Sprawl]

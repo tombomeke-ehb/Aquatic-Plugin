@@ -2,7 +2,7 @@
 
 **Developed by [tombomeke](https://github.com/tombomeke).**
 
-One plugin jar for the Aquatic SMP pirate server (Paper 1.21.4+, Java 21): crews, Doubloons, bounties, procedurally generated islands with claiming and conquest, buried treasure with treasure maps, Abyss Fruits and pirate gear, the Sea Sovereign tournament and seven server events.
+One plugin jar for the Aquatic SMP pirate server (Paper 1.21.4+, Java 21): crews, Doubloons, bounties, procedurally generated islands with claiming and conquest, buried treasure with treasure maps, Abyss Fruits and pirate gear, the Conqueror of the Sea tournament and seven server events.
 
 Everything is split into **modules** that can be switched on and off at runtime. Each module has its own config file with every number, toggle and message in it.
 
@@ -45,7 +45,8 @@ plugins/AquaticSMP/
 │   ├── items.yml       every custom item and Abyss Fruit, ability numbers, triggers, recipes
 │   ├── tournament.yml  stages, team size, rewards, crown, King perks
 │   ├── events.yml      each server event, rewards, auto-scheduler
-│   └── guide.yml       new-player intro, starter kit, tips and the /guide book
+│   ├── guide.yml       new-player intro, starter kit, tips and the /guide book
+│   └── sidebar.yml     the stats sidebar lines
 └── data/               saved game state (don't edit while the server runs)
 ```
 
@@ -93,10 +94,11 @@ Settings most servers change first:
 | `bounty` | `bounty.yml` | Player-placed bounties, automatic notoriety, bounty tiers (Rookie → Dread Tyrant), wanted posters. Needs `economy` |
 | `islands` | `islands.yml` | Island generator (7 types), claiming, raid protection, flag-capture conquest, discovery, passive income, BlueMap markers |
 | `treasure` | `treasure.yml` | Loot tiers, buried treasure chests, treasure maps with a red X, natural spawning and map drops |
-| `items` | `items.yml` | 8 Abyss Fruits with powers and sea weakness, Abyssal Iron gear, legendary swords, flintlock, hand cannon, Tide Compass, Echo Conch, rum, Sea Sovereign crown |
-| `tournament` | `tournament.yml` | The Sea Sovereign tournament: registration → qualifiers → bracket → best-of finale → coronation, Hall of Kings. Needs `crews` |
+| `items` | `items.yml` | 8 Abyss Fruits with powers and sea weakness, Abyssal Iron gear, legendary swords, flintlock, hand cannon, Tide Compass, Echo Conch, rum, Conqueror of the Sea crown |
+| `tournament` | `tournament.yml` | The Conqueror of the Sea tournament: registration → qualifiers → bracket → best-of finale → coronation, Hall of Kings. Needs `crews` |
 | `events` | `events.yml` | Treasure Hunt, Pirate War, Bounty Hunt, Lost Island, King's Challenge, Grand Raid, Naval Battle; optional auto-scheduler |
 | `combat` | `combat.yml` | Combat tag (no logging out or teleporting away mid-fight), respawn protection, new-player PvP protection |
+| `sidebar` | `sidebar.yml` | Stats sidebar: Doubloons, bounty, crew, island, fruit power, events (`/sidebar` to hide) |
 | `guide` | `guide.yml` | Welcome intro, starter kit with a treasure map, tips for new players, the `/guide` book |
 
 Modules talk to each other only through shared services, so turning one off just disables the features that need it. For example, without `crews`, islands can still be generated and discovered but not claimed.
@@ -129,14 +131,14 @@ A suggested order for a fresh ocean world:
    ```
    This creates 25 islands of random types with radius 30–70, auto-named. Leave out the radius (`/island admin spawnrandom random 25`) to get a mix of sizes from small (100) to huge (1000). Generation runs a little each tick, so the server keeps running, and progress shows in a bar at the top of your screen. `/island admin cancel` stops it.
 4. **Single islands:**
-   - `/island admin spawn <tropical|jungle|volcanic|snowy|desert|ancient|capital> <radius> [name]` generates at your feet.
+   - `/island admin spawn <tropical|plains|jungle|volcanic|snowy|desert|ancient|capital> <radius> [name]` generates at your feet.
    - `/island admin register <name> <type> <radius>` turns terrain you built yourself into an island.
 5. **Manage islands:**
    - `/island admin delete <island> restore`, `/island admin regen <island>`
    - `/island admin setstatus <island> neutral`, `/island admin setowner <island> <crew|none>`
    - `/island admin rename`, `/island admin setradius`, `/island admin tp`, `/island admin shield <island> <minutes>`
 6. **Treasure:**
-   - `/treasure spawn <common|rare|epic|legendary> [here|random]`
+   - `/treasure spawn <common|uncommon|rare|epic|legendary> [here|random]`
    - `/treasure map <tier> [player]` spawns a treasure and hands out a map to it.
    - `/treasure list | tp <n> | remove <n|all> | give-loot <tier>`
    - Natural spawning is configured in `treasure.yml`.
@@ -151,14 +153,14 @@ A suggested order for a fresh ocean world:
 8. **Event locations:**
    - `/seaevent setlocation <event> [name]` for the King's Challenge hill and the Grand Raid spawn. Without a hill location, the King's Challenge uses the capital island.
 
-## Running the Sea Sovereign tournament
+## Running the Conqueror of the Sea tournament
 
 | Step | Command | What happens |
 | --- | --- | --- |
 | 1 | `/tournament open [minutes]` | Registration opens. Crew officers run `/tournament register` and `/tournament roster add/remove <member>`. |
 | 2 | `/tournament start` | Moves to the qualifiers. Crews score points for kills, treasure, claims, conquests and bounties. |
 | 3 | `/tournament start` | The top crews go into the bracket. `/tournament next` runs each match (auto-advance is in config). |
-| 4 | — | The finale is best-of-3 by default. The winning captain is crowned Sea Sovereign: crown item, prize, reputation, and your own console commands (e.g. a LuckPerms group). |
+| 4 | — | The finale is best-of-3 by default. The winning captain is crowned Conqueror of the Sea: crown item, prize, reputation, and your own console commands (e.g. a LuckPerms group). |
 
 Other commands: `/tournament status | bracket | standings | cancel | forcewin <crew>`, `/tournament admin setking <player|none>`, `/hallofkings`.
 

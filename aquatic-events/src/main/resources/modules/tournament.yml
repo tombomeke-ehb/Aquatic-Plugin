@@ -1,14 +1,14 @@
 # =====================================================================================
 #  AquaticSMP - Tournament module (modules/tournament.yml)
 # =====================================================================================
-#  The Sea Sovereign tournament. Requires the "crews" module.
+#  The Conqueror of the Sea tournament. Requires the "crews" module.
 #
 #  Flow (staff-driven, automated in between):
 #    1. Registration  /tournament open [minutes]   crew officers: /tournament register
 #    2. Qualifiers    crews earn points for kills, treasure, islands, bounties
 #    3. Bracket       single elimination crew-vs-crew arena fights (byes for odd counts)
 #    4. Grand finale  best-of-N
-#    5. Coronation    the captain of the winning crew becomes the Sea Sovereign
+#    5. Coronation    the captain of the winning crew becomes the Conqueror of the Sea
 #
 #  Player commands (everyone by default):
 #    /tournament register | unregister            aquatic.tournament.register (crew officers only)
@@ -161,11 +161,11 @@ coronation:
     #  - "lp user {player} parent add pirateking"
 
 king-perks:
-  # The Sea Sovereign glows.
+  # The Conqueror of the Sea glows.
   glow: true
   # Particle trail (Particle name, or none).
   particle: END_ROD
-  # "The Sea Sovereign has arrived" broadcast on join.
+  # "The Conqueror of the Sea has arrived" broadcast on join.
   join-broadcast: true
 
 sounds:
@@ -183,9 +183,9 @@ messages:
   stage-bracket: "Elimination bracket"
   manual: "until staff start it"
   # flow
-  registration-open: "<gold><bold>THE SEA SOVEREIGN TOURNAMENT</bold></gold> <gray>(season <season>)</gray> <yellow>is open! Crew officers: <white>/tournament register</white>. Teams of <white><size></white>. Registration: <white><time>"
+  registration-open: "<gold><bold>THE CONQUEROR OF THE SEA TOURNAMENT</bold></gold> <gray>(season <season>)</gray> <yellow>is open! Crew officers: <white>/tournament register</white>. Teams of <white><size></white>. Registration: <white><time>"
   registration-reminder: "<yellow>Tournament registration closes in <white><time></white>. <gray>/tournament register"
-  join-reminder-registration: "<yellow>The Sea Sovereign tournament is open for registration! <white>/tournament info"
+  join-reminder-registration: "<yellow>The Conqueror of the Sea tournament is open for registration! <white>/tournament info"
   registered: "<green><crew> <green>entered the tournament! <gray>(<count> crews)"
   unregistered: "<yellow><crew> <yellow>withdrew from the tournament."
   qualifiers-start: "<gold><bold>QUALIFIERS BEGIN!</bold> <yellow><count> crews have <white><time></white> to earn points. The top <white><top></white> advance. <gray>/tournament standings"
@@ -222,27 +222,27 @@ messages:
   command-blocked: "<red>You cannot use that command during a tournament match."
   # coronation
   crowned-title: "<gradient:#f7971e:#ffd200><bold><player>"
-  crowned-subtitle: "<yellow>is the new Sea Sovereign! <gray>(<crew><gray>, season <season>)"
-  crowned: "<gold><bold>ALL HAIL THE SEA SOVEREIGN!</bold> <white><player></white> <gold>of</gold> <crew> <gold>has conquered the Endless Sea! <gray>(season <season>)"
+  crowned-subtitle: "<yellow>is the new Conqueror of the Sea! <gray>(<crew><gray>, season <season>)"
+  crowned: "<gold><bold>ALL HAIL THE CONQUEROR OF THE SEA!</bold> <white><player></white> <gold>of</gold> <crew> <gold>has conquered the Endless Sea! <gray>(season <season>)"
   prize: "<yellow><crew> <yellow>receives <white><bank></white> in the crew bank, <white><each></white> per fighter, <white><king></white> for the king and <white><reputation></white> reputation."
   crown-skipped: "<gray>(The crown item could not be given: the items module is disabled.)"
-  crown-received: "<gold>You received the Crown of the Sea Sovereign!"
+  crown-received: "<gold>You received the Crown of the Conqueror!"
   no-winner: "<red>The winning crew no longer exists. The tournament ends without a new king."
-  king-joined: "<gold><bold>The Sea Sovereign has arrived!</bold> <white><player></white> <gold>sets foot on the server."
-  king-set: "<green><player> is now the Sea Sovereign."
+  king-joined: "<gold><bold>The Conqueror of the Sea has arrived!</bold> <white><player></white> <gold>sets foot on the server."
+  king-set: "<green><player> is now the Conqueror of the Sea."
   king-cleared: "<yellow>The throne is now empty."
-  king-appointed: "<gold><player> <gold>has been named Sea Sovereign!"
-  throne-empty: "<gray>The throne of the Sea Sovereign stands empty..."
+  king-appointed: "<gold><player> <gold>has been named Conqueror of the Sea!"
+  throne-empty: "<gray>The throne of the Conqueror of the Sea stands empty..."
   # status / info
   resumed: "<yellow>The tournament resumes: <white><stage></white>."
   resumed-bracket: "<yellow>The tournament bracket resumes. Interrupted matches will be replayed."
-  cancelled: "<red>The Sea Sovereign tournament has been cancelled."
+  cancelled: "<red>The Conqueror of the Sea tournament has been cancelled."
   cancelled-not-enough: "<red>The tournament was cancelled: at least <white><min></white> crews are needed."
-  info: "<gold>Tournament: <white><stage></white> <gray>(season <season>)</gray> <dark_gray>|</dark_gray> <gold>Sea Sovereign: <white><king>"
+  info: "<gold>Tournament: <white><stage></white> <gray>(season <season>)</gray> <dark_gray>|</dark_gray> <gold>Conqueror of the Sea: <white><king>"
   status-header: "<gold>Tournament status <gray>(season <season>)</gray>: <white><stage>"
   status-time: " <gray>Stage ends in <white><time>"
   status-entries: " <gray>Registered crews: <white><count>"
-  status-king: " <gray>Sea Sovereign: <white><king>"
+  status-king: " <gray>Conqueror of the Sea: <white><king>"
   status-arenas: " <gray>Arenas ready: <white><count>/<total>"
   status-match: " <gray>Match running: <a> <gray>vs</gray> <b>"
   standings-header: "<gold>Standings <gray>(<stage>)"
@@ -268,8 +268,8 @@ messages:
   roster-show: "<aqua>Tournament roster <gray>(max <size>)</gray>: <white><roster>"
   hall-header: "<gold><bold>Hall of Kings</bold> <gray>(<count>)"
   hall-entry: " <gold>Season <season></gold> <dark_gray>-</dark_gray> <white><player></white> <gray>of <crew> <dark_gray>(<date>)"
-  hall-empty: " <gray>No Sea Sovereign has ever been crowned."
-  hall-current: "<gold>Current Sea Sovereign: <white><king>"
+  hall-empty: " <gray>No Conqueror of the Sea has ever been crowned."
+  hall-current: "<gold>Current Conqueror of the Sea: <white><king>"
   # arenas
   arena-created: "<green>Arena <white><arena></white> created. Set both spawns with <white>/tournament arena setspawn <arena> 1|2</white>."
   arena-deleted: "<yellow>Arena <white><arena></white> deleted."

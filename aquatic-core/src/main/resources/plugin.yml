@@ -4,7 +4,7 @@ main: dev.aquatic.core.AquaticPlugin
 api-version: '1.21'
 authors: [tombomeke]
 website: https://github.com/tombomeke-ehb/Aquatic-Plugin
-description: Pirate crews, island conquest, treasure, bounties and the Sea Sovereign.
+description: Pirate crews, island conquest, treasure, bounties and the Conqueror of the Sea.
 softdepend: [Vault, PlaceholderAPI, BlueMap, WorldEdit, WorldGuard]
 permissions:
   aquatic.admin:

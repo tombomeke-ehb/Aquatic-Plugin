@@ -213,7 +213,7 @@ chat:
   # Hover over a name or crew tag in chat for a card with crew, rank, reputation and bounty.
   # Clicking the tag opens /crew info, clicking the name starts a /msg.
   hover-cards: true
-  # Extra prefix for the reigning Sea Sovereign (needs the tournament module). Empty = none.
+  # Extra prefix for the reigning Conqueror of the Sea (needs the tournament module). Empty = none.
   pirate-king-prefix: "<gold>👑 </gold>"
   # Crew chat (/cc <message> or /crew chat toggle). Tags: <crew> <tag> <rank> <player> <message>
   crew-format: "<dark_aqua>[<tag><dark_aqua>] <gray><rank> <white><player><dark_gray>: <aqua><message>"
@@ -256,7 +256,7 @@ messages:
   card-crew: "<crew> <dark_gray>[<tag><dark_gray>]<newline><gray>Captain: <white><captain><newline><gray>Members: <white><members>/<max><newline><gray>Reputation: <white><reputation><newline><newline><yellow>Click for crew info"
   card-no-crew: "<gray>no crew"
   card-none: "none"
-  card-sovereign: "<gold>👑 Sea Sovereign"
+  card-sovereign: "<gold>👑 Conqueror of the Sea"
   # general
   no-permission: "<red>Ye don't have permission to do that."
   no-crew-permission: "<red>Yer rank doesn't allow that, sailor."

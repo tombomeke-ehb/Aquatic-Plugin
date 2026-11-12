@@ -30,7 +30,58 @@ import java.util.Random;
  */
 final class IslandGenerator extends AreaJob {
 
-    private static final byte NONE = 0, SLOPE = 1, BEACH = 2, LAND = 3, CONE = 4, CRATER = 5, PLAZA = 6;
+    private static final byte NONE = 0, SLOPE = 1, BEACH = 2, LAND = 3, CONE = 4, CRATER = 5, PLAZA = 6, MOUNTAIN = 7;
+
+    /** Mountains, caves and ore veins: "generation.terrain" in islands.yml. */
+    static final class TerrainOptions {
+        boolean mountains = true;
+        double mountainHeight = 45;
+        double mountainFrequency = 1.0;
+        int rockAbove = 22;
+        int snowAbove = 48;
+        final WeightedList<Material> rock = new WeightedList<>();
+        boolean caves = true;
+        int caveMinRadius = 60;
+        double caveSize = 1.0;
+        int caveDepth = 14;
+        boolean caveEntrances = true;
+        boolean veins = true;
+        double veinsPer1000 = 4;
+        final WeightedList<Material> veinOres = new WeightedList<>();
+
+        static TerrainOptions load(org.bukkit.configuration.ConfigurationSection s, java.util.logging.Logger log) {
+            TerrainOptions o = new TerrainOptions();
+            if (s != null) {
+                o.mountains = s.getBoolean("mountains.enabled", true);
+                o.mountainHeight = Math.max(0, s.getDouble("mountains.height", 45));
+                o.mountainFrequency = Math.max(0.1, s.getDouble("mountains.frequency", 1.0));
+                o.rockAbove = s.getInt("mountains.rock-above", 22);
+                o.snowAbove = s.getInt("mountains.snow-above", 48);
+                TypeSettings.blocks(o.rock, s.getStringList("mountains.rock"), Material.STONE, log, "generation.terrain.mountains.rock");
+                o.caves = s.getBoolean("caves.enabled", true);
+                o.caveMinRadius = s.getInt("caves.min-island-radius", 60);
+                o.caveSize = Math.max(0.2, Math.min(3, s.getDouble("caves.size", 1.0)));
+                o.caveDepth = Math.max(0, s.getInt("caves.depth", 14));
+                o.caveEntrances = s.getBoolean("caves.entrances", true);
+                o.veins = s.getBoolean("ore-veins.enabled", true);
+                o.veinsPer1000 = Math.max(0, s.getDouble("ore-veins.per-1000-land", 4));
+                TypeSettings.blocks(o.veinOres, s.getStringList("ore-veins.ores"), Material.COAL_ORE, log, "generation.terrain.ore-veins.ores");
+            } else {
+                o.rock.add(Material.STONE, 1);
+                o.veinOres.add(Material.COAL_ORE, 1);
+            }
+            return o;
+        }
+    }
+
+    private TerrainOptions terrain = TerrainOptions.load(null, null);
+    private org.bukkit.util.noise.SimplexOctaveGenerator ridges;
+    private org.bukkit.util.noise.SimplexNoiseGenerator caveA, caveB, caveGate;
+
+    /** Mountains, caves and veins settings; call before the job starts. */
+    void terrain(TerrainOptions options) {
+        this.terrain = options;
+    }
 
     private final String label;
     private final long seed;
@@ -84,6 +135,11 @@ final class IslandGenerator extends AreaJob {
         this.shape.setScale(1.0 / Math.max(12.0, landR * 0.9));
         this.detail = new SimplexOctaveGenerator(new Random(seed * 31 + 7), 4);
         this.detail.setScale(t.roughness / 28.0);
+        this.ridges = new org.bukkit.util.noise.SimplexOctaveGenerator(new Random(seed * 17 + 3), 3);
+        this.ridges.setScale(1.0 / 90.0);
+        this.caveA = new org.bukkit.util.noise.SimplexNoiseGenerator(new Random(seed * 101 + 11));
+        this.caveB = new org.bukkit.util.noise.SimplexNoiseGenerator(new Random(seed * 211 + 13));
+        this.caveGate = new org.bukkit.util.noise.SimplexNoiseGenerator(new Random(seed * 307 + 17));
         this.rng = new Random(seed ^ 0x9E3779B97F4A7C15L);
         double base = 1 + maxH * 0.65;
         double rim = coneH * Math.pow(1 - t.craterSize / t.coneSize, 1.4);
@@ -243,12 +299,20 @@ final class IslandGenerator extends AreaJob {
         }
         double s = smooth(tt / 0.6);
         double amp = maxH;
+        double region = 0.5;
         if (regions) {
             // large-scale regions: flat plains (good building ground) next to hills and mountains
-            double region = shape.noise(wx + 7919, wz - 7919, 2.0, 0.5, true) * 0.5 + 0.5;
+            region = shape.noise(wx + 7919, wz - 7919, 2.0, 0.5, true) * 0.5 + 0.5;
             amp *= 0.3 + 0.9 * smooth(region);
         }
         double elev = 1 + s * amp * (0.3 + 0.7 * hill);
+        if (terrain.mountains && t.mountainScale > 0 && terrain.mountainHeight > 0) {
+            // ridged noise: sharp crests; only in "mountain" regions and away from the coast
+            double ridge = 1 - Math.abs(ridges.noise(wx * terrain.mountainFrequency, wz * terrain.mountainFrequency, 2.0, 0.5, true));
+            double mask = regions ? smooth((region - 0.45) / 0.35) : 0.45;
+            double size = Math.min(1, radius / 250.0); // small islands get small mountains
+            elev += Math.pow(ridge, 2.4) * terrain.mountainHeight * t.mountainScale * size * mask * smooth((tt - 0.12) / 0.45);
+        }
         byte k = (elev - 1 < t.beachHeight || tt < 0.04) ? BEACH : LAND;
         if (coneT > 0) {
             double cone = coneH * Math.pow(coneT, 1.4);
@@ -276,6 +340,9 @@ final class IslandGenerator extends AreaJob {
             }
         }
         int topY = Math.min(maxY - 40, sea - 1 + Math.max(1, (int) Math.round(elev)));
+        if (k == LAND && terrain.mountains && topY - sea >= terrain.rockAbove + (int) Math.round(hill * 4)) {
+            k = MOUNTAIN; // bare rock (no trees or plants)
+        }
         if (floor >= topY && k != CRATER) {
             // existing terrain is already higher: leave it alone but remember it so features can use it
             top[idx] = floor;
@@ -291,6 +358,7 @@ final class IslandGenerator extends AreaJob {
                     case BEACH -> t.beach.pick(rng);
                     case CONE, CRATER -> t.coneBlocks.pick(rng);
                     case PLAZA -> t.plazaBlocks.pick(rng);
+                    case MOUNTAIN -> topY - sea >= terrain.snowAbove ? Material.SNOW_BLOCK : terrain.rock.pick(rng);
                     default -> t.surface.pick(rng);
                 };
             } else if (depth < 4) {
@@ -298,6 +366,7 @@ final class IslandGenerator extends AreaJob {
                     case BEACH -> t.beach.pick(rng);
                     case CONE, CRATER -> t.coneBlocks.pick(rng);
                     case PLAZA -> t.core.pick(rng);
+                    case MOUNTAIN -> terrain.rock.pick(rng);
                     default -> t.subsurface.pick(rng);
                 };
             } else if (t.oreChance > 0 && rng.nextDouble() < t.oreChance) {
@@ -314,8 +383,40 @@ final class IslandGenerator extends AreaJob {
         }
         top[idx] = Math.max(topY, floor);
         kind[idx] = k;
-        if (k == LAND) {
+        if (k == LAND || k == MOUNTAIN) {
             landCount++;
+        }
+        if (k == MOUNTAIN && topY - sea >= terrain.snowAbove + 2) {
+            world.getBlockAt(wx, topY + 1, wz).setType(Material.SNOW, false); // snow cap
+        }
+        carveCaves(wx, wz, floor, topY, tt, k);
+    }
+
+    /**
+     * Cave tunnels: where two 3D noise fields are both near zero ("spaghetti" caves). Only inland (so the
+     * sea never floods in), below the surface, with occasional openings to the surface.
+     */
+    private void carveCaves(int wx, int wz, int floor, int topY, double tt, byte k) {
+        if (!terrain.caves || radius < terrain.caveMinRadius || (k != LAND && k != MOUNTAIN) || tt < 0.14) {
+            return;
+        }
+        double scale = 1.0 / (22.0 * terrain.caveSize);
+        double width = 0.075 * terrain.caveSize;
+        boolean entrance = terrain.caveEntrances && caveGate.noise(wx * 0.02, wz * 0.02) > 0.72;
+        int low = Math.max(Math.max(floor + 2, minY + 2), sea - terrain.caveDepth);
+        int high = entrance ? topY : topY - 5;
+        for (int y = low; y <= high; y++) {
+            double a = caveA.noise(wx * scale, y * scale * 1.6, wz * scale);
+            if (Math.abs(a) > width) {
+                continue;
+            }
+            double b = caveB.noise(wx * scale, y * scale * 1.6, wz * scale);
+            if (Math.abs(b) <= width) {
+                Block block = world.getBlockAt(wx, y, wz);
+                if (block.getType().isSolid()) {
+                    block.setType(y <= low + 1 && t.volcano ? Material.LAVA : Material.CAVE_AIR, false);
+                }
+            }
         }
     }
 
@@ -367,10 +468,52 @@ final class IslandGenerator extends AreaJob {
                 }
             }
         }
+        if (terrain.veins && terrain.veinsPer1000 > 0) {
+            int veins = (int) Math.round(landCount / 1000.0 * terrain.veinsPer1000);
+            for (int i = 0; i < veins; i++) {
+                int[] spot = landSpot(r, 6, false);
+                if (spot != null) {
+                    long veinSeed = r.nextLong();
+                    list.add(new Feature(spot[0], spot[1], 3, () -> buildVein(spot[0], spot[1], new Random(veinSeed))));
+                }
+            }
+        }
         // work through them chunk by chunk, so neighbouring features reuse loaded chunks
         list.sort(java.util.Comparator.comparingInt((Feature f) -> (cz + f.dz()) >> 4).thenComparingInt(f -> (cx + f.dx()) >> 4));
         features.addAll(list);
         featureTotal = features.size();
+    }
+
+    /** A blob of ore inside the island's rock (never in the open air or the sea). */
+    private void buildVein(int dx, int dz, Random r) {
+        int surface = top[index(dx, dz)];
+        int low = Math.max(minY + 2, sea - 10), high = surface - 4;
+        if (high <= low) {
+            return;
+        }
+        Material ore = (t.ores.isEmpty() ? terrain.veinOres : r.nextBoolean() ? t.ores : terrain.veinOres).pick(r);
+        if (ore == null) {
+            return;
+        }
+        int cy = low + r.nextInt(high - low + 1);
+        int size = 3 + r.nextInt(7);
+        int x = cx + dx, y = cy, z = cz + dz;
+        for (int i = 0; i < size; i++) {
+            Block b = world.getBlockAt(x, y, z);
+            Material type = b.getType();
+            if (type == Material.STONE || type == Material.ANDESITE || type == Material.DIORITE || type == Material.GRANITE
+                    || type == Material.TUFF || type == Material.DEEPSLATE || type == Material.SANDSTONE
+                    || type == Material.BASALT || type == Material.BLACKSTONE || type == Material.CALCITE || type == Material.TERRACOTTA) {
+                b.setType(ore, false);
+            }
+            x += r.nextInt(3) - 1;
+            y += r.nextInt(3) - 1;
+            z += r.nextInt(3) - 1;
+            if (Math.abs(x - (cx + dx)) > 2 || Math.abs(z - (cz + dz)) > 2) {
+                x = cx + dx;
+                z = cz + dz;
+            }
+        }
     }
 
     /** A random spot on dry land (or beach when allowed), or null. */

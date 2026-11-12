@@ -10,7 +10,7 @@ AquaticSMP turns a survival server into a a pirate world. In one plugin:
 - **Islands**: generate tropical, jungle, volcanic, snowy, desert, ancient and capital islands with one command. Crews plant their flag on an island to claim it and defend it. Enemy crews take it over by holding the flag.
 - **Treasure**: buried chests with loot tiers, and treasure maps with a red X.
 - **Pirate gear**: Abyss Fruits with powers (and the sea's curse), Abyssal Iron weapons, legendary swords, flintlocks, cannons, the Tide Compass, rum and more.
-- **The Sea Sovereign tournament**: registration, qualifiers, an elimination bracket and a best-of-3 finale. The winning captain is crowned Sea Sovereign and enters the Hall of Kings.
+- **The Conqueror of the Sea tournament**: registration, qualifiers, an elimination bracket and a best-of-3 finale. The winning captain is crowned Conqueror of the Sea and enters the Hall of Kings.
 - **Server events**: Treasure Hunt, Pirate War, Bounty Hunt, Lost Island, King's Challenge, Grand Raid and Naval Battle.
 
 Every feature is a **module** you can turn on or off. All numbers, costs and messages are in the config files.
@@ -39,7 +39,7 @@ Every feature is a **module** you can turn on or off. All numbers, costs and mes
 | `/aquatic reload [module]` | Reload configs for all modules or just one, with no restart | `aquatic.admin` |
 | `/aquatic resetconfig <module> confirm` | Replace a module's config with the newest defaults. The old file is kept as a `.bak` | `aquatic.admin` |
 
-Aliases: `/aq`, `/aquaticsmp`. Module names: `economy`, `crews`, `bounty`, `combat`, `islands`, `treasure`, `items`, `tournament`, `events`, `guide`.
+Aliases: `/aq`, `/aquaticsmp`. Module names: `economy`, `crews`, `bounty`, `combat`, `islands`, `treasure`, `items`, `tournament`, `events`, `guide`, `sidebar`.
 
 ---
 
@@ -189,7 +189,7 @@ Run `/island admin` for this list in-game. The short form without `admin` (e.g. 
 
 | Command | What it does |
 | --- | --- |
-| `/island admin spawn <type> <radius> [name]` | Generate an island at your position. Types: `tropical`, `jungle`, `volcanic`, `snowy`, `desert`, `ancient`, `capital` |
+| `/island admin spawn <type> <radius> [name]` | Generate an island at your position. Types: `tropical`, `plains`, `jungle`, `volcanic`, `snowy`, `desert`, `ancient`, `capital` |
 | `/island admin spawnrandom <type\|random> <count> [minRadius] [maxRadius]` | Scatter many islands over the ocean area, auto-named and spaced apart |
 | `/island admin area <radius> [spacing]` | Set the ocean area for random islands and treasure, centred on you |
 | `/island admin register <name> <type> <radius>` | Turn terrain you already built into an island (no generation) |
@@ -217,7 +217,7 @@ Bypass all island protection: `aquatic.islands.bypass`.
 | Command | What it does | Permission |
 | --- | --- | --- |
 | `/treasure info` | Rumours about how much treasure is buried and where | Player: `aquatic.treasure.info` |
-| `/treasure spawn <tier> [here\|random]` | Bury a treasure where you stand or at a random spot. Tiers: `common`, `rare`, `epic`, `legendary` | Admin: `aquatic.treasure.admin` |
+| `/treasure spawn <tier> [here\|random]` | Bury a treasure where you stand or at a random spot. Tiers: `common`, `uncommon`, `rare`, `epic`, `legendary` | Admin: `aquatic.treasure.admin` |
 | `/treasure map <tier> [player]` | Bury a treasure and give a treasure map to it | Admin |
 | `/treasure list` | All active treasures, numbered | Admin |
 | `/treasure tp <number>` | Teleport to a treasure from the list | Admin |
@@ -250,7 +250,7 @@ Default item ids:
 
 ---
 
-## Sea Sovereign tournament (`tournament`, needs `crews`)
+## Conqueror of the Sea tournament (`tournament`, needs `crews`)
 
 `/tournament` (aliases `/tourney`, `/pkt`)
 
@@ -261,10 +261,10 @@ Default item ids:
 | `/tournament register` | Register your crew (officers) | `aquatic.tournament.register` |
 | `/tournament unregister` | Withdraw your crew | `aquatic.tournament.register` |
 | `/tournament roster [add\|remove <member>]` | Show or choose your crew's fighters | `aquatic.tournament.register` |
-| `/tournament info` | Current stage and the reigning Sea Sovereign | `aquatic.tournament.view` |
+| `/tournament info` | Current stage and the reigning Conqueror of the Sea | `aquatic.tournament.view` |
 | `/tournament standings` | Qualifier points | `aquatic.tournament.view` |
 | `/tournament bracket` | The elimination bracket | `aquatic.tournament.view` |
-| `/hallofkings` | Every past Sea Sovereign with date, crew and season (alias `/kings`) | `aquatic.tournament.view` |
+| `/hallofkings` | Every past Conqueror of the Sea with date, crew and season (alias `/kings`) | `aquatic.tournament.view` |
 
 **Staff commands** (`aquatic.tournament.admin`)
 
@@ -282,7 +282,7 @@ Default item ids:
 | `/tournament arena delete <name>` | Delete an arena |
 | `/tournament arena list` | List arenas |
 | `/tournament setlobby` | Where players return after a match |
-| `/tournament admin setking <player\|none>` | Set or clear the Sea Sovereign by hand |
+| `/tournament admin setking <player\|none>` | Set or clear the Conqueror of the Sea by hand |
 
 Nobody loses items in a match. Position, health and inventory are restored afterwards.
 
@@ -310,9 +310,19 @@ Staff with `aquatic.combat.bypass` never get tagged. Everything is in `combat.ym
 
 ---
 
+## Sidebar (`sidebar`)
+
+| Command | What it does | Permission |
+| --- | --- | --- |
+| `/sidebar [on\|off]` | Show or hide the stats sidebar (alias `/sb`) | Everyone |
+
+All lines are configurable in `sidebar.yml`.
+
+---
+
 ## Guide and intro (`guide`)
 
-New players get a short intro on their first join: titles and chat tips about crews, islands and flags, treasure digging, bounties, Abyss Fruits and the Sea Sovereign. When it ends, the guide book opens.
+New players get a short intro on their first join: titles and chat tips about crews, islands and flags, treasure digging, bounties, Abyss Fruits and the Conqueror of the Sea. When it ends, the guide book opens.
 
 | Command | What it does | Permission |
 | --- | --- | --- |

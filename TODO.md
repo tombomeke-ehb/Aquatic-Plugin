@@ -5,7 +5,7 @@ The roadmap for the next versions. Details are still open and will be worked out
 ## 0. Rebrand: our own identity
 The idea came from an anime: powers from fruits, a sea full of islands, crews competing for one crown. The theme stays (pirates, sea, powers), but every name and its lore must be our own.
 
-**Done in 1.4.0:** player-visible names were renamed (internal ids are unchanged, so existing data keeps working).
+**Done in 1.4.0 / 1.5.0:** player-visible names were renamed (the top title is now **Conqueror of the Sea**) (internal ids are unchanged, so existing data keeps working).
 
 | Concept | New name |
 | --- | --- |
@@ -15,11 +15,11 @@ The idea came from an anime: powers from fruits, a sea full of islands, crews co
 | Fruit-cancelling metal | **Abyssal Iron** (baton and shackles) |
 | Swords | Tidecleaver, Nightbloom, Leviathan's Fang |
 | Island compass / crew phone | **Tide Compass** / **Echo Conch** |
-| Highest title | **Sea Sovereign** (Crown of the Sea Sovereign) |
+| Highest title | **Conqueror of the Sea** (Crown of the Conqueror) |
 | Bounty titles | Rookie → Notorious → Rising Tide → Corsair Lord → Dread Tyrant |
 | Navy enemies | **The Tidewatch** (Recruit, Rifleman, Lieutenant, Warden Captain, High Warden Vex) |
 | The sea | **The Endless Sea**; zones: the Shallows → the Open Sea → the Abyssal Reach |
-| Spirit power (planned) | **Resolve**: Iron Resolve, Keen Resolve, Sovereign Resolve |
+| Spirit power (planned) | **Tidewill**: Ironwill, Seasight, Stormcrown |
 | Island names | Generated from our own word lists per island type |
 
 **Still to do:**
@@ -27,7 +27,7 @@ The idea came from an anime: powers from fruits, a sea full of islands, crews co
 - [ ] **Write our own lore:**
   - Where Abyss Fruits come from: for example, they grow on coral in the deep, and the sea wants its power back, which is why users can't swim.
   - Who the Tidewatch are.
-  - What the Sea Sovereign means.
+  - What the Conqueror of the Sea means.
   - Short lore lines on every item.
 - [ ] **New ability names** per fruit that fit the new theme. A few still describe the effect generically ("Ice Age", "Beast Form").
 - [ ] **Rename the code itself** (classes, permissions, commands where needed), for example `PirateKingCrownedEvent` → `SovereignCrownedEvent` and the `/hallofkings` command → `/hallofsovereigns`. Keep the old names as aliases for a while.
@@ -41,16 +41,10 @@ The idea came from an anime: powers from fruits, a sea full of islands, crews co
 ## Planned features
 
 ### Sidebar (scoreboard HUD)
-- [ ] A sidebar on the right side of the screen showing:
-  - your Doubloons, crew, rank and bounty
-  - the island you're on and its owner
-  - your fruit power and its cooldown
-  - the current server event with its time left
-- [ ] Toggle it with `/sidebar`. Lines are configured in a `sidebar.yml`.
-- [ ] Context modes: during a tournament it shows the standings, during an event the event score, and normally the player info.
-- [ ] Works next to the TAB plugin: when TAB is installed, use its scoreboard or turn ours off.
-- [ ] No flicker: update every second with scoreboard teams, not by recreating the board.
-
+- [x] Sidebar on the right side of the screen with Doubloons, bounty, crew, rank, the current island and its owner, your fruit power and the running event. Toggle it with `/sidebar`; lines are in `sidebar.yml`. It steps aside during the tournament (done in 1.5.0).
+- [ ] Show the fruit ability cooldown and the active combat tag on the sidebar.
+- [ ] Context modes: during an event, show the event score (kills, held time).
+- [ ] Hook into the TAB plugin's scoreboard when it's installed.
 
 ### 1. Island management and development
 Owned islands should become something a crew builds up over time, not just a claim.
@@ -69,18 +63,40 @@ Owned islands should become something a crew builds up over time, not just a cla
 - [ ] **Server shop** (`/shop`) as a chest GUI, with categories: tools, food, ship parts, pirate gear, rare items.
 - [ ] Buy and sell for Doubloons. Prices go in a `shop.yml`, and support custom items (`item:<id>`).
 - [ ] **Configurable in-game:** admins add items, set prices and change categories through the GUI, without editing YAML.
-- [ ] Optional: limited stock, rotating daily deals, rank- or Sea Sovereign-only items.
+- [ ] Optional: limited stock, rotating daily deals, rank- or Conqueror of the Sea-only items.
 - [ ] Optional: player shops / trading posts on neutral islands.
 - [ ] Decide whether the shop replaces or works alongside EssentialsX `/sell` and `/worth`.
 
-### 3. Resolve
-- [ ] **Iron Resolve:** a toggle that adds damage and lets you **hit Elemental abyss fruit users**. A Elemental user (for example `mera_mera`, `goro_goro` or `hie_hie`) should dodge normal hits unless the attacker uses Resolve or Abyssal Iron.
-- [ ] **Keen Resolve:** sense nearby players through walls (glowing), a short dodge window, and warnings when someone targets you.
-- [ ] **Sovereign Resolve:** **only some players have it**, either at random on first join, or rare and earned. It is an area blast that knocks back and stuns weaker players, and its power scales with your Resolve level.
-- [ ] **Training and progression:** Resolve XP from fighting, using Resolve, training dummies or special training islands. Levels unlock longer duration, more power and lower cooldowns.
-- [ ] Resolve energy / stamina bar, so it can't be used non-stop.
-- [ ] `/resolve` command: status, levels and toggles, plus admin commands to set levels or grant Sovereign Resolve.
-- [ ] Add a "elemental" flag to abyss fruits in `items.yml`, so the dodge rule knows which fruits it applies to.
+### 3. Tidewill: the inner power (rework of the old "Haki" idea)
+The idea stays: an inner strength every pirate can train, separate from fruits. Name, lore and mechanics are our own.
+
+**Lore (draft):** sailors who survive long enough on the Endless Sea learn to bend the tide of a fight with sheer will.
+
+**The three forms:**
+- [ ] **Ironwill** (everyone can learn it):
+  - Toggle with a key. It drains energy while active.
+  - Your hits and blocks get harder.
+  - It is the only way, besides Abyssal Iron, to hit an **Elemental** fruit user, who otherwise phases through normal hits.
+- [ ] **Seasight** (everyone can learn it):
+  - Nearby enemies glow through walls for a few seconds.
+  - A short dodge window against the next attack.
+  - A warning when someone aims a bow or ability at you.
+- [ ] **Stormcrown** (rare: **only some players have it**):
+  - An area wave of pressure that knocks back and briefly stuns weaker players. "Weaker" means a lower Tidewill level.
+  - **Ideas for who gets it:**
+    - a small chance at first join
+    - earned by a big feat (win the tournament, defeat a High Warden)
+    - only crew captains with enough reputation
+  - **Discuss:** whether the Conqueror of the Sea should always awaken it.
+
+**Progression:**
+- [ ] Tidewill XP from PvP, fighting Tidewatch mobs, using the forms, and training at special places (meditation spots on ancient islands, training dummies).
+- [ ] Levels per form unlock longer duration, stronger effects and lower energy cost.
+- [ ] Energy bar, shown in the action bar or the sidebar, so the forms can't be used non-stop.
+- [ ] `/tidewill`: status, levels, toggles. Admin: set levels, grant or remove Stormcrown.
+- [ ] Add an `elemental: true` flag to fruits in `items.yml`, so the phase rule knows which fruits it applies to.
+
+**Balance:** Tidewill must not make fruits useless or fruits make Tidewill useless. A trained non-fruit player should beat an untrained fruit user.
 
 ### 4. More and better abilities
 **Today's problems:** most abilities only work up close (punch, swap, slash), they feel weak, and they aren't balanced for real PvP.
@@ -94,9 +110,9 @@ Owned islands should become something a crew builds up over time, not just a cla
   - The current move and its cooldowns show in the action bar.
 - [ ] **Combos and synergy:**
   - Hie freezes a target, and Goro does extra damage to frozen targets.
-  - Resolve breaks Elemental defences (see Resolve).
+  - Ironwill breaks Elemental defences (see Tidewill).
 - [ ] **Mobility moves:** dash, double jump, glide or flight, so fights aren't just standing still.
-- [ ] **Elemental passive:** a chance to "phase through" normal hits, countered by Resolve or Abyssal Iron.
+- [ ] **Elemental passive:** a chance to "phase through" normal hits, countered by Ironwill or Abyssal Iron.
 - [ ] **Awakening:** a stronger version of a fruit after a lot of use (mastery XP per fruit).
 - [ ] More fruits: Body, Beast and Elemental variety.
 - [x] Better visuals: shockwaves, beams, auras, trails, colours (done in 1.3.0).
@@ -104,7 +120,7 @@ Owned islands should become something a crew builds up over time, not just a cla
 - [ ] **PvP balance pass**, tested with real players:
   - **Time-to-kill target:** an ability should take about 20–30% of a player's health, and a full combo should not one-shot a player in diamond or netherite armour.
   - **Armour:** abilities respect armour and Protection. Decide per move whether it does true damage.
-  - **Fair matchups:** a non-fruit player with Resolve and a good sword should still have a fair chance.
+  - **Fair matchups:** a non-fruit player with Tidewill and a good sword should still have a fair chance.
   - **Per-world/region multipliers:** separate damage multipliers for PvP and PvE.
   - **Test arena:** `/aitem test` dummies that show damage numbers.
 - [ ] **Ideas to discuss:**
@@ -112,7 +128,8 @@ Owned islands should become something a crew builds up over time, not just a cla
   - Should eating a fruit cost something, such as losing your current one?
 
 ### 4b. Island generation: more unique, with caves
-- [ ] **Caves:**
+- [x] Plains island type, mountains with rock and snow peaks, cave tunnels with entrances, ore veins (done in 1.5.0).
+- [ ] **Better caves:**
   - Cave systems under islands, using 3D noise worms or "spaghetti" tunnels, plus a few big chambers.
   - Entrances on the beach and the cliffs.
   - Treasure can spawn in caves (deeper means a better tier).
@@ -142,7 +159,7 @@ Owned islands should become something a crew builds up over time, not just a cla
   - smoother coasts and reefs (coral and kelp in the shallows)
   - rivers and lakes
   - custom tree shapes for palms and big jungle trees
-  - better ore placement (veins)
+  - [x] better ore placement (veins, done in 1.5.0)
 - [x] Islands from radius 100 up to 1500, generated chunk by chunk (done in 1.3.0).
 - [ ] **Performance:** keep the per-tick budget. Caves and structures are generated in the same job system.
 - [ ] **Placeable facilities on big islands:** buy a building (dock, market, watchtower, vault) in the shop and place it as a schematic, with a preview outline, on your own island. Each building gives its upgrade. See section 1.
@@ -158,7 +175,8 @@ Owned islands should become something a crew builds up over time, not just a cla
 - [ ] **Navigation:** the Tide Compass "locks" onto an island you choose (`/logpose set <island>`). An Bound Compass item points to one fixed island.
 
 ### 5. More treasure items
-- [ ] More unique loot: legendary weapons and armour sets, accessories with passive buffs, ship upgrades, Resolve training scrolls, rare cosmetics such as hats and titles.
+- [x] Uncommon tier between common and rare (done in 1.5.0).
+- [ ] More unique loot: legendary weapons and armour sets, accessories with passive buffs, ship upgrades, Tidewill training scrolls, rare cosmetics such as hats and titles.
 - [ ] Item rarities shown in the name and lore.
 - [ ] Set bonuses for wearing matching pirate gear.
 
@@ -188,7 +206,7 @@ Owned islands should become something a crew builds up over time, not just a cla
   - My suggestion: try Movecraft first (A). If it doesn't run well on 1.21.4, go for B.
 - [ ] **Shop plugin or our own?**
   - Existing options: EssentialsX `/sell` and `/worth` (simple), or a GUI shop plugin such as EconomyShopGUI or ShopGUIPlus. These work with our Doubloons through Vault.
-  - Building our own (see the Shop section) makes sense if the shop should sell custom items, island upgrades and Resolve training. My suggestion: build our own small shop for pirate items and upgrades, and leave general block trading to an existing plugin.
+  - Building our own (see the Shop section) makes sense if the shop should sell custom items, island upgrades and Tidewill training. My suggestion: build our own small shop for pirate items and upgrades, and leave general block trading to an existing plugin.
 - [ ] **Personal world map:** only shows islands you have discovered (BlueMap currently shows everything).
 - [ ] **Seasons:** a command to start a new season, resetting bounties, reputation and/or islands.
 - [ ] **Known limitations:**

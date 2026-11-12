@@ -28,6 +28,7 @@ public final class AquaticPlugin extends JavaPlugin {
             {"tournament", "dev.aquatic.events.TournamentModule"},
             {"events", "dev.aquatic.events.EventsModule"},
             {"guide", "dev.aquatic.events.GuideModule"},
+            {"sidebar", "dev.aquatic.events.SidebarModule"},
     };
 
     /** Credit shown on startup and in /aquatic about. */
@@ -157,7 +158,7 @@ public final class AquaticPlugin extends JavaPlugin {
         sender.sendMessage(Text.mm("<dark_aqua><strikethrough>                </strikethrough> <gradient:#1fa2ff:#12d8fa><bold>AquaticSMP</bold></gradient> <dark_aqua><strikethrough>                </strikethrough>"));
         sender.sendMessage(Text.mm(" <gray>Version <white><version>", "version", getPluginMeta().getVersion()));
         sender.sendMessage(Text.mm(" <gray>Developed by <gold><bold><author></bold>", "author", AUTHOR));
-        sender.sendMessage(Text.mm(" <gray>Pirate crews, islands, treasure, Abyss Fruits and the Sea Sovereign."));
+        sender.sendMessage(Text.mm(" <gray>Pirate crews, islands, treasure, Abyss Fruits and the Conqueror of the Sea."));
         sender.sendMessage(Text.mm(" <aqua><click:open_url:'" + REPO + "'><hover:show_text:'<gray>Open the project page'>" + REPO + "</hover></click>"));
         sender.sendMessage(Text.mm(" <gray>All commands: <click:run_command:'/aquatic commands'><hover:show_text:'<gray>Click to list every command'><aqua>/aquatic commands</aqua></hover></click> <dark_gray>|</dark_gray> <gray>Guide: <click:run_command:'/guide'><hover:show_text:'<gray>Open the guide book'><aqua>/guide</aqua></hover></click>"));
     }

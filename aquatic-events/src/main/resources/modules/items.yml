@@ -2,7 +2,7 @@
 #  AquaticSMP - Items module (modules/items.yml)
 # =====================================================================================
 #  Custom pirate items: Abyss Fruits, Abyssal Iron, legendary swords (Meito), guns,
-#  cannons, the Tide Compass, Echo Conch, rum and the Sea Sovereign's crown.
+#  cannons, the Tide Compass, Echo Conch, rum and the Conqueror of the Sea's crown.
 #
 #  Commands
 #    /aitem give <player> <id> [amount]       (aquatic.items.admin)
@@ -708,7 +708,7 @@ items:
   pirate_king_crown:
     type: plain
     material: GOLDEN_HELMET
-    name: "<gradient:#f7971e:#ffd200><bold>Crown of the Sea Sovereign</bold></gradient>"
+    name: "<gradient:#f7971e:#ffd200><bold>Crown of the Conqueror</bold></gradient>"
     lore:
       - "<gray>Worn by the one who conquered the Endless Sea."
       - ""

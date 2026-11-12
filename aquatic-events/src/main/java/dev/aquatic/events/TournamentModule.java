@@ -1459,7 +1459,7 @@ public final class TournamentModule extends AquaticModule implements TournamentS
 
     private void registerCommands() {
         String admin = "aquatic.tournament.admin";
-        AquaticCommand cmd = new AquaticCommand("tournament", "The Sea Sovereign tournament", "tourney", "pkt");
+        AquaticCommand cmd = new AquaticCommand("tournament", "The Conqueror of the Sea tournament", "tourney", "pkt");
 
         // ---- players
         cmd.sub("register", (s, a) -> register(s)).description("Register your crew (officers)")
@@ -1497,7 +1497,7 @@ public final class TournamentModule extends AquaticModule implements TournamentS
             if (stageEndsAt > 0) {
                 s.sendMessage(rawMsg("status-time", "time", Text.duration(Math.max(0, (stageEndsAt - System.currentTimeMillis()) / 1000))));
             }
-        }).description("Tournament stage and the current Sea Sovereign").playerPermission("aquatic.tournament.view");
+        }).description("Tournament stage and the current Conqueror of the Sea").playerPermission("aquatic.tournament.view");
 
         // ---- staff
         cmd.sub("open", (s, a) -> open(a.length > 0 ? Math.max(0, AquaticCommand.integer(a[0]))
@@ -1556,7 +1556,7 @@ public final class TournamentModule extends AquaticModule implements TournamentS
             Bukkit.getPluginManager().callEvent(new PirateKingCrownedEvent(op.getUniqueId(), name, crew));
             send(s, "king-set", "player", name);
             announce("king-appointed", "player", name);
-        }).usage("setking <player|none>").description("Set or clear the Sea Sovereign").permission(admin)
+        }).usage("setking <player|none>").description("Set or clear the Conqueror of the Sea").permission(admin)
                 .completer((s, a) -> {
                     if (a.length == 1) {
                         return AquaticCommand.filter(List.of("setking"), a[0]);
@@ -1572,14 +1572,14 @@ public final class TournamentModule extends AquaticModule implements TournamentS
                 });
         registerCommand(cmd);
 
-        AquaticCommand hallCmd = new AquaticCommand("hallofkings", "Past Sea Sovereigns", "kings");
+        AquaticCommand hallCmd = new AquaticCommand("hallofkings", "Past Conquerors of the Sea", "kings");
         hallCmd.defaultExecutor((s, a) -> {
             if (!s.hasPermission("aquatic.tournament.view") && !s.hasPermission("aquatic.admin")) {
                 throw new CommandFail("<red>You don't have permission to do that.");
             }
             showHall(s);
         });
-        hallCmd.sub("list", (s, a) -> showHall(s)).description("List all past Sea Sovereigns").playerPermission("aquatic.tournament.view");
+        hallCmd.sub("list", (s, a) -> showHall(s)).description("List all past Conquerors of the Sea").playerPermission("aquatic.tournament.view");
         registerCommand(hallCmd);
     }
 

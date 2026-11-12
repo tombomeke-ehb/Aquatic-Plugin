@@ -120,7 +120,12 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         currentJob = null;
 
         for (IslandType type : IslandType.values()) {
-            types.put(type, TypeSettings.load(type, config().getConfigurationSection("types." + type.name()), logger()));
+            ConfigurationSection section = config().getConfigurationSection("types." + type.name());
+            if ((section == null || section.getKeys(false).isEmpty()) && config().getDefaults() != null) {
+                // a type added in a newer version (e.g. PLAINS) is not in an older islands.yml yet
+                section = config().getDefaults().getConfigurationSection("types." + type.name());
+            }
+            types.put(type, TypeSettings.load(type, section, logger()));
         }
         loadAll();
 
@@ -838,6 +843,7 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         IslandGenerator gen = new IslandGenerator(plugin(), is.name, world, is.x, is.z, is.radius, is.seed,
                 settings(is.type), config().getDouble("generation.land-fraction", 0.72),
                 config().getDouble("generation.height-scaling", 1.0), config().getDouble("generation.max-height-boost", 3.0));
+        gen.terrain(IslandGenerator.TerrainOptions.load(config().getConfigurationSection("generation.terrain"), logger()));
         enqueue(gen, is.id, feedback, () -> {
             is.y = gen.centerSurfaceY();
             if (is.status == IslandStatus.OCCUPIED && is.ownerCrewId != null) {
@@ -1070,6 +1076,16 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         if (sec != null) {
             for (String key : sec.getKeys(false)) {
                 list.add(IslandType.parse(key), sec.getDouble(key));
+            }
+            // types added in a newer version get their bundled default weight
+            ConfigurationSection defaults = config().getDefaults() == null ? null
+                    : config().getDefaults().getConfigurationSection("generation.random-type-weights");
+            if (defaults != null) {
+                for (String key : defaults.getKeys(false)) {
+                    if (!sec.contains(key, true) && IslandType.parse(key) != null) {
+                        list.add(IslandType.parse(key), defaults.getDouble(key));
+                    }
+                }
             }
         }
         if (list.isEmpty()) {

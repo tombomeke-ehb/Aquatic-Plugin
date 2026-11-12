@@ -34,6 +34,9 @@ final class TypeSettings {
     Material topLayer;
     boolean frozenShore;
 
+    /** Multiplier for mountains on this island type (0 = none). */
+    double mountainScale = 1.0;
+
     double treeDensity;
     /** Entries are org.bukkit.TreeType names or the custom type PALM. */
     final WeightedList<String> trees = new WeightedList<>();
@@ -107,6 +110,7 @@ final class TypeSettings {
             t.defaultStatus = IslandStatus.UNCLAIMED;
         }
         t.maxHeight = Math.max(1, s.getInt("max-height", 12));
+        t.mountainScale = Math.max(0, s.getDouble("mountains", t.type == IslandType.CAPITAL ? 0.4 : 1.0));
         t.beachHeight = Math.max(0, s.getInt("beach-height", 2));
         t.roughness = Math.max(0.1, s.getDouble("roughness", 1.0));
         t.coastVariation = Math.max(0, Math.min(0.3, s.getDouble("coast-variation", 0.25)));

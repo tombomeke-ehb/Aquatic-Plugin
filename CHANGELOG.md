@@ -1,5 +1,35 @@
 # Changelog
 
+## 1.5.0 (2026-11-12)
+
+### Added
+- **Sidebar** (new `sidebar` module):
+  - A stats panel on the right of the screen: Doubloons, bounty, crew and rank, the island you're on and its owner (or "Open sea" with coordinates), your fruit power, and the running event with its time left.
+  - Lines update in place, without flicker.
+  - It steps aside while the tournament shows its standings.
+  - Players toggle it with `/sidebar`. Every line is configurable in `sidebar.yml`.
+- **Plains islands:** a new island type with open grassland, flowers and a few oaks and birches, good building ground. Its names come from a new list, such as "Windmere Downs" or "Clover Fields".
+- **Mountains:**
+  - Ridges rise in parts of bigger islands, away from the coast.
+  - High ground becomes bare rock, and the highest peaks get snow caps.
+  - Small islands get small mountains. Per island type, `mountains: 0..2` scales them.
+- **Caves:** tunnel systems inside islands (radius 60 and up), with openings to the surface here and there.
+  - They stay away from the coast, so the sea doesn't flood in.
+  - Volcanic caves can have lava at the bottom.
+- **Ore veins:** clusters of coal, iron, copper, gold, redstone and lapis, and rarely diamond or emerald.
+- **Uncommon treasure tier** between common and rare: buried 2 deep, 50–120 Doubloons, iron tools, copper, lanterns, spyglasses and more.
+
+### Changed
+- The highest title is now **Conqueror of the Sea** (crown: Crown of the Conqueror).
+- Mountains, caves and ore veins are configured under `generation.terrain` in `islands.yml`.
+- New island types (such as Plains) are used automatically, even with an older `islands.yml`.
+- TODO: the "Haki" idea is reworked as **Tidewill** (Ironwill, Seasight and Stormcrown), with lore, progression and balance notes.
+
+### Existing servers
+- Plains, mountains, caves and ore veins work right away.
+- The uncommon tier only appears after `/aquatic resetconfig treasure confirm`, because the loot tiers come from your own `treasure.yml`.
+- The new title texts only appear after resetting the modules that show them: tournament, items, guide, crews and events. Each reset keeps a backup.
+
 ## 1.4.0 (2026-11-12)
 
 ### Changed: our own identity

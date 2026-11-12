@@ -15,3 +15,5 @@ modules:
   events: true
   # Welcome intro for new players + the /guide book.
   guide: true
+  # Stats sidebar on the right side of the screen (/sidebar to hide it).
+  sidebar: true

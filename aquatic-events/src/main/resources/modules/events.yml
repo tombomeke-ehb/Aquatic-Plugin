@@ -176,7 +176,7 @@ events:
     join-teleport: true
     # Location: /seaevent setlocation kings_challenge hill  (fallback: first CAPITAL island centre).
     radius: 6
-    # Refuse to start when there is no Sea Sovereign (or the tournament module is disabled).
+    # Refuse to start when there is no Conqueror of the Sea (or the tournament module is disabled).
     require-king: false
     # Seconds counted per second for the king's own crew while it holds the hill (defender bonus).
     king-crew-points-per-second: 1
@@ -376,12 +376,12 @@ messages:
   lost-island-status-sinking: "<red><bold><island> IS SINKING"
   # king's challenge
   kings-no-hill: "<red>No hill: set one with <white>/seaevent setlocation kings_challenge hill</white> or create a CAPITAL island."
-  kings-no-king: "<red>There is no Sea Sovereign to challenge."
+  kings-no-king: "<red>There is no Conqueror of the Sea to challenge."
   kings-start: "<gold><bold>THE KING'S CHALLENGE!</bold> <yellow>Take the throne from <white><king></white>'s crew at <white><x>, <y>, <z></white>!"
   kings-start-empty: "<gold><bold>THE KING'S CHALLENGE!</bold> <yellow>The throne is empty. Hold it at <white><x>, <y>, <z></white>!"
   kings-hill-taken: "<gold><crew> <yellow>holds the throne!"
-  kings-defended: "<gold>The crew of the Sea Sovereign <white><king></white>, <crew><gold>, defended the throne! <gray>(<time>)"
-  kings-won: "<gold><crew> <gold>held the throne the longest <gray>(<time>)<gold>! The Sea Sovereign <white><king></white> has been humiliated."
+  kings-defended: "<gold>The crew of the Conqueror of the Sea <white><king></white>, <crew><gold>, defended the throne! <gray>(<time>)"
+  kings-won: "<gold><crew> <gold>held the throne the longest <gray>(<time>)<gold>! The Conqueror of the Sea <white><king></white> has been humiliated."
   kings-nobody: "<gray>Nobody held the throne."
   kings-status-free: "<gray>The throne is free"
   kings-status-contested: "<red>Contested!"

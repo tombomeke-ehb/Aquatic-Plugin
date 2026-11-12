@@ -29,7 +29,7 @@ intro:
       subtitle: "<gray>The Endless Sea awaits, <white><player>"
       chat:
         - "<gradient:#1fa2ff:#12d8fa><bold>AQUATIC SMP</bold></gradient> <gray>- a world of ocean, islands and pirates."
-        - "<gray>Every player is a pirate. The goal: become the <gold><bold>Sea Sovereign</bold></gold>."
+        - "<gray>Every player is a pirate. The goal: become the <gold><bold>Conqueror of the Sea</bold></gold>."
       seconds: 6
       sound: ui.toast.challenge_complete
 
@@ -68,10 +68,10 @@ intro:
         - "<aqua>You are safe from PvP for your first 30 minutes. <gray>Check with <white>/pvp</white>. Never log out in a fight!"
       seconds: 9
 
-    - title: "<gold><bold>Become the Sea Sovereign"
+    - title: "<gold><bold>Become the Conqueror of the Sea"
       subtitle: "<gray>Win the tournament, claim the crown"
       chat:
-        - "<gold>The <bold>Sea Sovereign</bold> is crowned in a server-wide crew tournament."
+        - "<gold>The <bold>Conqueror of the Sea</bold> is crowned in a server-wide crew tournament."
         - "<gray>Watch for announcements, and see past kings with <white>/hallofkings</white>."
       seconds: 6
 
@@ -132,7 +132,7 @@ book:
   chapters:
     welcome:
       - "<dark_aqua><bold>AQUATIC SMP</bold></dark_aqua>\n<dark_gray>The Pirate's Guide\n\n<black>Ahoy, <player>!\n\nThis world is a vast ocean full of islands, treasure and rival pirates.\n\n<dark_gray>Turn the page to learn the ropes."
-      - "<dark_aqua><bold>Contents</bold>\n\n<black>1. Crews\n2. Islands & flags\n3. Treasure\n4. Bounties\n5. Abyss Fruits & gear\n6. The Sea Sovereign\n\n<dark_gray>/guide <chapter> opens one chapter."
+      - "<dark_aqua><bold>Contents</bold>\n\n<black>1. Crews\n2. Islands & flags\n3. Treasure\n4. Bounties\n5. Abyss Fruits & gear\n6. The Conqueror of the Sea\n\n<dark_gray>/guide <chapter> opens one chapter."
     crews:
       - "<dark_aqua><bold>1. Crews</bold>\n\n<black>A crew is your pirate gang (max 6).\n\n<dark_gray>/crew create <name>\n/crew invite <player>\n/crew accept\n/crew info\n/cc <message></dark_gray>\n\nRanks: Captain, First Mate, Navigator, Quartermaster, Member."
       - "<dark_aqua><bold>Crew life</bold>\n\n<black>Share Doubloons in the <dark_gray>/crew bank</dark_gray>, set a <dark_gray>/crew sethome</dark_gray>, make allies or enemies:\n\n<dark_gray>/crew ally <crew>\n/crew rival <crew>\n/crew war <crew>\n/crew peace <crew></dark_gray>\n\n<black>War lets you raid and conquer!"
@@ -143,7 +143,7 @@ book:
       - "<dark_aqua><bold>Conquest</bold>\n\n<black>At war, enemies capture an island by standing at its flag. The bar fills while no defender is near.\n\nStay close to your flag to stop them!\n\nIslands are safe while your whole crew is offline."
     treasure:
       - "<dark_aqua><bold>3. Treasure</bold>\n\n<black>Treasure is buried on islands. Look for a <red><bold>red X</bold></red> <black>of wool on the ground.\n\nDig <bold>straight down</bold> under the middle of the X and open the chest."
-      - "<dark_aqua><bold>Depth</bold>\n\n<black>Common: 1 block\nRare: 2 blocks\nEpic: 3 blocks\nLegendary: 4 blocks\n\nFirst to open it gets the Doubloons and the loot! You may dig up treasure on any island."
+      - "<dark_aqua><bold>Depth</bold>\n\n<black>Common: 1 block\nUncommon: 2 blocks\nRare: 2 blocks\nEpic: 3 blocks\nLegendary: 4 blocks\n\nFirst to open it gets the Doubloons and the loot! You may dig up treasure on any island."
       - "<dark_aqua><bold>Treasure maps</bold>\n\n<black>A map shows a red X near the treasure (not exactly on it).\n\n<bold>Right-click</bold> the map: it tells you if you are getting warmer or colder.\n\n<dark_gray>/treasure info</dark_gray> <black>gives rumours."
     bounties:
       - "<dark_aqua><bold>4. Bounties</bold>\n\n<black>Defeating pirates raises your bounty. Big bounties earn titles, from Rookie to Dread Tyrant.\n\nKill a wanted pirate to claim their bounty!\n\n<dark_gray>/bounty info\n/bounty top\n/bounty set <player> <amount>\n/wanted"
@@ -151,7 +151,7 @@ book:
       - "<dark_aqua><bold>5. Abyss Fruits</bold>\n\n<black>Rare fruits found in treasure. Eating one gives a power, but only one per pirate.\n\nUse it: <bold>sneak + F</bold>\n\nWater takes your power away while you swim!\n\n<dark_gray>/fruit"
       - "<dark_aqua><bold>Pirate gear</bold>\n\n<black>Look out for legendary swords, flintlocks, cannons, Abyssal Iron weapons (they cancel fruit powers) and the Tide Compass, which points to the nearest island."
     pirate-king:
-      - "<dark_aqua><bold>6. Sea Sovereign</bold>\n\n<black>Crews compete in the tournament:\n\nRegistration\nQualifiers\nBracket fights\nGrand finale\n\nThe winning captain is crowned <gold><bold>Sea Sovereign</bold></gold><black>!\n\n<dark_gray>/tournament info\n/hallofkings"
+      - "<dark_aqua><bold>6. Conqueror of the Sea</bold>\n\n<black>Crews compete in the tournament:\n\nRegistration\nQualifiers\nBracket fights\nGrand finale\n\nThe winning captain is crowned <gold><bold>Conqueror of the Sea</bold></gold><black>!\n\n<dark_gray>/tournament info\n/hallofkings"
 
 messages:
   starter-kit: "<gold>Here is your starter kit, pirate! <gray>(boat, food, tools and a Tide Compass)"
