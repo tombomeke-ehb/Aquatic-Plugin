@@ -1,5 +1,7 @@
 # AquaticSMP
 
+**Developed by [tombomeke](https://github.com/tombomeke).**
+
 One plugin jar for the Aquatic SMP pirate server (Paper 1.21.4+, Java 21): crews, Doubloons, bounties, procedurally generated islands with claiming and conquest, buried treasure with treasure maps, Devil Fruits and pirate gear, the Pirate King tournament and seven server events.
 
 Everything is split into **modules** that can be switched on and off at runtime. Each module has its own config file with every number, toggle and message in it.
@@ -225,3 +227,7 @@ aquatic-dist/    shades everything into the final jar
 1. Extend `AquaticModule`.
 2. Add a `modules/<id>.yml` resource.
 3. Register the class in the `MODULES` list in `AquaticPlugin`.
+
+---
+
+AquaticSMP is developed by **[tombomeke](https://github.com/tombomeke)**. In-game, `/aquatic about` shows the credits.

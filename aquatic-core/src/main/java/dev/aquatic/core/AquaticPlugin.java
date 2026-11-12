@@ -28,6 +28,10 @@ public final class AquaticPlugin extends JavaPlugin {
             {"events", "dev.aquatic.events.EventsModule"},
     };
 
+    /** Credit shown on startup and in /aquatic about. */
+    public static final String AUTHOR = "tombomeke";
+    public static final String REPO = "https://github.com/tombomeke-ehb/Aquatic-Plugin";
+
     private static AquaticPlugin instance;
     private final Services services = new Services();
     private final Map<String, AquaticModule> modules = new LinkedHashMap<>();
@@ -63,6 +67,7 @@ public final class AquaticPlugin extends JavaPlugin {
         }
         registerAdminCommand();
         getLogger().info("AquaticSMP enabled with modules: " + enabledModuleIds());
+        printBanner();
     }
 
     @Override
@@ -136,6 +141,24 @@ public final class AquaticPlugin extends JavaPlugin {
         }
     }
 
+    private void printBanner() {
+        String version = getPluginMeta().getVersion();
+        getLogger().info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        getLogger().info("  AquaticSMP v" + version + "  -  sail the Grand Line");
+        getLogger().info("  Developed by " + AUTHOR);
+        getLogger().info("  " + REPO);
+        getLogger().info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+    }
+
+    /** The credit card shown by /aquatic about (and /aquatic for players). */
+    private void sendAbout(CommandSender sender) {
+        sender.sendMessage(Text.mm("<dark_aqua><strikethrough>                </strikethrough> <gradient:#1fa2ff:#12d8fa><bold>AquaticSMP</bold></gradient> <dark_aqua><strikethrough>                </strikethrough>"));
+        sender.sendMessage(Text.mm(" <gray>Version <white><version>", "version", getPluginMeta().getVersion()));
+        sender.sendMessage(Text.mm(" <gray>Developed by <gold><bold><author></bold>", "author", AUTHOR));
+        sender.sendMessage(Text.mm(" <gray>Pirate crews, islands, treasure, Devil Fruits and the Pirate King."));
+        sender.sendMessage(Text.mm(" <aqua><click:open_url:'" + REPO + "'><hover:show_text:'<gray>Open the project page'>" + REPO + "</hover></click>"));
+    }
+
     private void loadPrefix() {
         prefix = Text.mm(getConfig().getString("prefix", ""));
     }
@@ -143,8 +166,17 @@ public final class AquaticPlugin extends JavaPlugin {
     // ------------------------------------------------------------------ /aquatic
 
     private void registerAdminCommand() {
-        AquaticCommand cmd = new AquaticCommand("aquatic", "AquaticSMP administration", "aq", "aquaticsmp");
-        cmd.permission("aquatic.admin");
+        AquaticCommand cmd = new AquaticCommand("aquatic", "AquaticSMP: about and administration", "aq", "aquaticsmp");
+        // /aquatic itself is open to everyone (credits); the management sub-commands are admin-only.
+        cmd.defaultExecutor((sender, args) -> {
+            sendAbout(sender);
+            if (sender.hasPermission("aquatic.admin")) {
+                cmd.sendHelp(sender, "aquatic");
+            }
+        });
+
+        cmd.sub("about", (sender, args) -> sendAbout(sender))
+                .aliases("credits", "version").description("Who made AquaticSMP");
 
         cmd.sub("modules", (sender, args) -> {
             sender.sendMessage(prefix.append(Text.mm("<aqua>Modules:")));
@@ -153,14 +185,14 @@ public final class AquaticPlugin extends JavaPlugin {
                 sender.sendMessage(Text.mm(" <dark_gray>- " + (on ? "<green>" : "<red>") + "<id> <gray>(<state>)",
                         "id", e.getKey(), "state", on ? "enabled" : "disabled"));
             }
-        }).description("List all modules and their state");
+        }).permission("aquatic.admin").description("List all modules and their state");
 
         cmd.sub("enable", (sender, args) -> toggle(sender, args, true))
-                .usage("<module>").description("Enable a module")
+                .usage("<module>").permission("aquatic.admin").description("Enable a module")
                 .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(modules.keySet(), a[0]) : List.of());
 
         cmd.sub("disable", (sender, args) -> toggle(sender, args, false))
-                .usage("<module>").description("Disable a module")
+                .usage("<module>").permission("aquatic.admin").description("Disable a module")
                 .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(modules.keySet(), a[0]) : List.of());
 
         cmd.sub("reload", (sender, args) -> {
@@ -186,7 +218,7 @@ public final class AquaticPlugin extends JavaPlugin {
             }
             sender.sendMessage(prefix.append(Text.mm("<green>Reloaded. Active modules: <white><list>",
                     "list", String.join(", ", enabledModuleIds()))));
-        }).usage("[module]").description("Reload configs (all modules or one)")
+        }).usage("[module]").permission("aquatic.admin").description("Reload configs (all modules or one)")
                 .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(modules.keySet(), a[0]) : List.of());
 
         cmd.register(this);

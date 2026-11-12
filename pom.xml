@@ -3,9 +3,19 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>dev.aquatic</groupId>
   <artifactId>aquatic-parent</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <packaging>pom</packaging>
   <name>AquaticSMP</name>
+  <description>AquaticSMP, developed by tombomeke</description>
+  <url>https://github.com/tombomeke-ehb/Aquatic-Plugin</url>
+
+  <developers>
+    <developer>
+      <id>tombomeke</id>
+      <name>tombomeke</name>
+      <url>https://github.com/tombomeke</url>
+    </developer>
+  </developers>
 
   <modules>
     <module>aquatic-core</module>

@@ -29,6 +29,7 @@ Every feature is a **module** you can turn on or off. All numbers, costs and mes
 
 | Command | What it does | Permission |
 | --- | --- | --- |
+| `/aquatic` or `/aquatic about` | Plugin version and credits (developed by tombomeke). Admins also see the admin help | Everyone |
 | `/aquatic modules` | List all modules and whether they are on | `aquatic.admin` |
 | `/aquatic enable <module>` | Turn a module on (saved in `config.yml`) | `aquatic.admin` |
 | `/aquatic disable <module>` | Turn a module off; modules that depend on it go off too | `aquatic.admin` |
