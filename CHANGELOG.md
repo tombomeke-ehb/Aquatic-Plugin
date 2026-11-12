@@ -1,5 +1,44 @@
 # Changelog
 
+## 1.3.0 (2026-11-12)
+
+### Islands: from small to huge
+- **Huge islands:** islands can now have a radius up to **1500 blocks** (`generation.radius-limit`).
+  - Generation works **chunk by chunk**: each chunk is loaded in the background, built and released again. Memory use stays small, even for an island 2000 blocks across.
+  - Before, every chunk of the island was loaded at the same time, which would crash a server at radius 1000.
+  - Restoring the ocean (`delete … restore`, `regen`) streams the same way.
+- **Size classes:** `/island admin spawnrandom <type> <count>` without a radius now picks a size by weight:
+  - small 100–180
+  - medium 180–350
+  - large 350–600
+  - huge 600–1000
+  - Set them under `generation.island-sizes`.
+- **Bigger islands are taller:** height grows with size, up to 3× (`generation.height-scaling`, `generation.max-height-boost`).
+- **Plains and hills:** islands with a radius of 150 or more mix wide flat plains (room to build) with hilly and mountainous areas.
+- **New defaults:** the ocean area is 12,000 blocks and the minimum spacing between islands is 200.
+  - Existing servers: run `/island admin area <radius>` to enlarge your sea, otherwise big islands won't fit.
+  - The old keys `max-radius`, `random-min-radius` and `random-max-radius` are no longer used; the new keys apply automatically.
+
+### Better ability visuals
+- Every ability got real effects:
+  - **punch:** beam, impact explosion and shockwave
+  - **nova:** expanding frost ring
+  - **lightning:** jagged bolt and spark wave
+  - **fireball:** muzzle flash and fiery impact ring
+  - **pull:** imploding ring
+  - **transform:** spiral aura
+  - **slash:** crescent arcs
+  - **dash:** wind trail
+  - **invisibility:** smoke cloud
+  - **swap:** beam between the two spots
+- **Projectile trails:** fireballs leave a fire trail, cannonballs a smoke trail, bullets a dust trail.
+- **Colours:** every ability can get its own colour with `color: "#ff6a00"` in `items.yml`.
+- **Effects quality:** `effects.quality` in `items.yml`: 0 = off, 0.5 = light, 1 = normal, 1.5 = rich.
+
+### Fixed
+- The "no free ocean spot" message could appear twice.
+- **Generation could get stuck:** a chunk was edited while the chunks next to it were still generating, which made Minecraft's lighting step wait forever. A chunk is now only edited when all of its neighbours are fully loaded.
+
 ## 1.2.0 (2026-11-12)
 
 ### Added

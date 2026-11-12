@@ -65,6 +65,8 @@ Settings most servers change first:
 | Max crew size (default 6) | `crews.yml` | `max-members` |
 | Cost to found a crew or declare war | `crews.yml` | `costs:`, `war:` |
 | Where random islands and treasure go | `islands.yml` | `ocean-area:` (or `/island admin area` in-game) |
+| Island sizes for spawnrandom (small … huge) | `islands.yml` | `generation.island-sizes`, `generation.radius-limit` |
+| Ability effects amount / colours | `items.yml` | `effects.quality`, `color:` per ability |
 | Island claim price and limit | `islands.yml` | `claiming.cost`, `claiming.max-per-crew` |
 | When enemies can raid or conquer | `islands.yml` | `raiding.mode`, `conquest.mode` (`always`, `war-only` or `never`) |
 | Conquest capture time | `islands.yml` | `conquest.capture-seconds` |
@@ -125,7 +127,7 @@ A suggested order for a fresh ocean world:
    ```
    /island admin spawnrandom random 25 30 70
    ```
-   This creates 25 islands of random types with radius 30–70, auto-named. Generation runs a little each tick, so the server keeps running, and progress shows in your action bar. `/island admin cancel` stops it.
+   This creates 25 islands of random types with radius 30–70, auto-named. Leave out the radius (`/island admin spawnrandom random 25`) to get a mix of sizes from small (100) to huge (1000). Generation runs a little each tick, so the server keeps running, and progress shows in a bar at the top of your screen. `/island admin cancel` stops it.
 4. **Single islands:**
    - `/island admin spawn <tropical|jungle|volcanic|snowy|desert|ancient|capital> <radius> [name]` generates at your feet.
    - `/island admin register <name> <type> <radius>` turns terrain you built yourself into an island.

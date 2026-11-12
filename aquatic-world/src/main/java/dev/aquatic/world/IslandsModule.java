@@ -542,6 +542,16 @@ public final class IslandsModule extends AquaticModule implements IslandService,
      * and the callback runs on the main thread with the spot, or null when none was found.
      */
     public void findFreeOceanSpotAsync(int radius, java.util.function.Consumer<Location> callback) {
+        java.util.concurrent.atomic.AtomicBoolean fired = new java.util.concurrent.atomic.AtomicBoolean();
+        java.util.function.Consumer<Location> once = loc -> {
+            if (fired.compareAndSet(false, true)) {
+                callback.accept(loc);
+            }
+        };
+        findFreeOceanSpotAsyncImpl(radius, once);
+    }
+
+    private void findFreeOceanSpotAsyncImpl(int radius, java.util.function.Consumer<Location> callback) {
         World world = oceanWorld();
         if (world == null) {
             callback.accept(null);
@@ -798,7 +808,8 @@ public final class IslandsModule extends AquaticModule implements IslandService,
             return;
         }
         IslandGenerator gen = new IslandGenerator(plugin(), is.name, world, is.x, is.z, is.radius, is.seed,
-                settings(is.type), config().getDouble("generation.land-fraction", 0.72));
+                settings(is.type), config().getDouble("generation.land-fraction", 0.72),
+                config().getDouble("generation.height-scaling", 1.0), config().getDouble("generation.max-height-boost", 3.0));
         enqueue(gen, is.id, feedback, () -> {
             is.y = gen.centerSurfaceY();
             if (is.status == IslandStatus.OCCUPIED && is.ownerCrewId != null) {
@@ -845,11 +856,43 @@ public final class IslandsModule extends AquaticModule implements IslandService,
     }
 
     /** Aborts running/queued jobs; islandId null = everything. @return number of jobs removed */
+    /** Picks a size class from generation.island-sizes by weight, then a radius in its range. */
+    int randomIslandRadius(java.util.Random random) {
+        ConfigurationSection sizes = config().getConfigurationSection("generation.island-sizes");
+        double total = 0;
+        List<ConfigurationSection> list = new ArrayList<>();
+        if (sizes != null) {
+            for (String key : sizes.getKeys(false)) {
+                ConfigurationSection s = sizes.getConfigurationSection(key);
+                if (s != null && s.getDouble("weight", 1) > 0) {
+                    list.add(s);
+                    total += s.getDouble("weight", 1);
+                }
+            }
+        }
+        int limit = config().getInt("generation.radius-limit", 1500), floor = config().getInt("generation.min-radius", 16);
+        if (list.isEmpty()) {
+            return Math.max(floor, Math.min(limit, 100 + random.nextInt(250)));
+        }
+        double roll = random.nextDouble() * total;
+        ConfigurationSection pick = list.get(list.size() - 1);
+        for (ConfigurationSection s : list) {
+            roll -= s.getDouble("weight", 1);
+            if (roll < 0) {
+                pick = s;
+                break;
+            }
+        }
+        int lo = Math.max(floor, pick.getInt("min", 100)), hi = Math.min(limit, Math.max(lo, pick.getInt("max", lo)));
+        return lo + random.nextInt(hi - lo + 1);
+    }
+
     /** A running /island admin spawnrandom: islands are placed one by one, so cancel must stop the chain too. */
     static final class SpawnRun {
         final int total;
         int placed;
         boolean cancelled;
+        boolean finished;
 
         SpawnRun(int total) {
             this.total = total;

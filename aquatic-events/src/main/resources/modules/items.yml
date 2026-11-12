@@ -20,6 +20,12 @@
 # -------------------------------------------------------------------------------------
 #  Devil fruit rules
 # -------------------------------------------------------------------------------------
+# Extra ability effects (shockwaves, beams, auras, trails). quality multiplies the particle amounts:
+# 0 = off (only the basic particles), 0.5 = light (big servers), 1 = normal, 1.5 = rich.
+# Every ability can also get its own colour with  color: "#ff6a00"  in its section.
+effects:
+  quality: 1.0
+
 fruits:
   # Only one devil fruit power per player.
   one-per-player: true

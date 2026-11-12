@@ -75,8 +75,34 @@ public final class GearListener implements Listener {
 
     private void fastTick() {
         abilities.fastTick();
+        drawTrails();
         if (module.fruits() != null) {
             module.fruits().fastTick();
+        }
+    }
+
+    /** Particle trail behind every tracked projectile (fireballs, bullets, cannonballs). */
+    private void drawTrails() {
+        if (projectiles.isEmpty() || abilities.fx().quality() <= 0) {
+            return;
+        }
+        for (Map.Entry<UUID, Tracked> e : projectiles.entrySet()) {
+            Entity ent = Bukkit.getEntity(e.getKey());
+            if (ent == null || !ent.isValid()) {
+                continue;
+            }
+            Location at = ent.getLocation();
+            switch (e.getValue().kind()) {
+                case "blast" -> {
+                    abilities.fx().burst(at, org.bukkit.Particle.FLAME, 4, 0.12, 0.01);
+                    abilities.fx().burst(at, org.bukkit.Particle.SMOKE, 2, 0.1, 0.01);
+                }
+                case "cannon" -> {
+                    abilities.fx().burst(at, org.bukkit.Particle.LARGE_SMOKE, 2, 0.1, 0.01);
+                    abilities.fx().burst(at, org.bukkit.Particle.FLAME, 1, 0.05, 0.01);
+                }
+                default -> abilities.fx().dust(at, org.bukkit.Color.fromRGB(0x777777), 0.8f, 1, 0.02);
+            }
         }
     }
 

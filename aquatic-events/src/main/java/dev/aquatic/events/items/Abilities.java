@@ -53,9 +53,32 @@ public final class Abilities {
     /** Players with an active invisibility toggle -> end time (ms). */
     private final Map<UUID, Long> invisible = new HashMap<>();
 
+    private final Fx fx;
+
     Abilities(ItemsModule module, GearListener gear) {
         this.module = module;
         this.gear = gear;
+        this.fx = new Fx(module);
+    }
+
+    Fx fx() {
+        return fx;
+    }
+
+    /** Ability colour: "color" in its config section, or a default per ability type. */
+    private static org.bukkit.Color colorOf(ConfigurationSection a, String type) {
+        org.bukkit.Color def = switch (type) {
+            case "fireball", "blast" -> org.bukkit.Color.fromRGB(0xFF6A00);
+            case "nova" -> org.bukkit.Color.fromRGB(0x9BE7FF);
+            case "lightning" -> org.bukkit.Color.fromRGB(0xFFF35C);
+            case "pull" -> org.bukkit.Color.fromRGB(0x3B0A57);
+            case "swap" -> org.bukkit.Color.fromRGB(0x7B5CFF);
+            case "transform" -> org.bukkit.Color.fromRGB(0x8B4513);
+            case "invisibility" -> org.bukkit.Color.fromRGB(0xD9D9D9);
+            case "slash", "dash" -> org.bukkit.Color.fromRGB(0xF2F2F2);
+            default -> org.bukkit.Color.fromRGB(0xFF3B3B);
+        };
+        return Fx.color(a.getString("color"), def);
     }
 
     // ------------------------------------------------------------------ damage rules
@@ -243,7 +266,12 @@ public final class Abilities {
                     double knock = a.getDouble("knockback", 1.5);
                     push(t, dir.clone().multiply(knock).setY(0.4));
                     line(a, "CRIT", eye, t.getLocation().add(0, 1, 0));
+                    org.bukkit.Color c = colorOf(a, type);
+                    fx.beam(eye.clone().add(dir.clone().multiply(0.6)), t.getLocation().add(0, 1, 0), c, 1.5f, 0.35);
+                    fx.burst(t.getLocation().add(0, 1, 0), Particle.EXPLOSION, 1, 0, 0);
+                    fx.wave(t.getLocation().add(0, 0.2, 0), 2.5, 6, c, Particle.CLOUD, false);
                     sound(a, "entity.player.attack.strong", t.getLocation());
+                    Util.sound(t.getLocation(), "entity.generic.explode", 0.5f, 1.6f);
                     return true;
                 }
                 double leap = a.getDouble("leap-power", 0);
@@ -253,6 +281,7 @@ public final class Abilities {
                 push(p, dir.clone().multiply(leap));
                 p.setFallDistance(0);
                 particles(a, "CLOUD", p.getLocation(), 15, 0.3);
+                fx.wave(p.getLocation().add(0, 0.1, 0), 2.0, 5, colorOf(a, type), Particle.CLOUD, false);
                 sound(a, "entity.slime.jump", p.getLocation());
                 return true;
             }
@@ -261,6 +290,7 @@ public final class Abilities {
                 ball.setIsIncendiary(false);
                 ball.setYield(0);
                 gear.track(ball, p, "blast", a);
+                fx.burst(eye.clone().add(dir.clone().multiply(1.2)), Particle.FLAME, 14, 0.15, 0.06);
                 sound(a, "entity.blaze.shoot", p.getLocation());
                 return true;
             }
@@ -268,6 +298,8 @@ public final class Abilities {
                 Location c = p.getLocation().add(0, 1, 0);
                 area(p, c, radius, damage, a);
                 ring(a, "SNOWFLAKE", p.getLocation().add(0, 0.3, 0), radius);
+                fx.wave(p.getLocation().add(0, 0.3, 0), radius, 8, colorOf(a, type), Particle.SNOWFLAKE, false);
+                fx.burst(c, Particle.WHITE_ASH, 30, radius / 3, 0.02);
                 sound(a, "block.glass.break", c);
                 selfEffects(p, a);
                 return true;
@@ -285,6 +317,8 @@ public final class Abilities {
                     at = block.getHitPosition().toLocation(p.getWorld());
                 }
                 p.getWorld().strikeLightningEffect(at);
+                fx.bolt(at.clone().add(0, 0.5, 0), colorOf(a, type));
+                fx.wave(at.clone().add(0, 0.2, 0), radius, 6, colorOf(a, type), Particle.ELECTRIC_SPARK, false);
                 area(p, at, radius, damage, a);
                 particles(a, "ELECTRIC_SPARK", at.clone().add(0, 1, 0), 60, radius / 2);
                 return true;
@@ -295,6 +329,7 @@ public final class Abilities {
                 invisible.put(p.getUniqueId(), System.currentTimeMillis() + ticks * 50L);
                 selfEffects(p, a);
                 particles(a, "CLOUD", p.getLocation().add(0, 1, 0), 25, 0.4);
+                fx.burst(p.getLocation().add(0, 1, 0), Particle.LARGE_SMOKE, 35, 0.6, 0.03);
                 sound(a, "entity.illusioner.mirror_move", p.getLocation());
                 return true;
             }
@@ -311,6 +346,7 @@ public final class Abilities {
                 Location toTheirs = mine.clone();
                 toTheirs.setYaw(theirs.getYaw());
                 toTheirs.setPitch(theirs.getPitch());
+                fx.beam(mine.clone().add(0, 1, 0), theirs.clone().add(0, 1, 0), colorOf(a, type), 1.4f, 0.3);
                 p.teleport(toMine);
                 t.teleport(toTheirs);
                 particles(a, "PORTAL", mine.add(0, 1, 0), 40, 0.5);
@@ -331,12 +367,15 @@ public final class Abilities {
                     }
                 }
                 ring(a, "SQUID_INK", c.clone().add(0, 0.5, 0), radius);
+                fx.wave(c.clone().add(0, 0.5, 0), radius, 10, colorOf(a, type), Particle.SQUID_INK, true);
                 sound(a, "entity.wither.ambient", c);
                 selfEffects(p, a);
                 return true;
             }
             case "transform" -> {
                 selfEffects(p, a);
+                fx.spiral(p, Math.min(100, (int) (a.getDouble("duration", 10) * 20)), colorOf(a, type));
+                fx.wave(p.getLocation().add(0, 0.1, 0), 3, 6, colorOf(a, type), Particle.CRIT, false);
                 particles(a, "ANGRY_VILLAGER", p.getLocation().add(0, 1, 0), 20, 0.6);
                 sound(a, "entity.ravager.roar", p.getLocation());
                 return true;
@@ -348,6 +387,7 @@ public final class Abilities {
                 p.setFallDistance(0);
                 dashes.removeIf(d -> d.player.equals(p.getUniqueId()));
                 dashes.add(new Dash(p.getUniqueId(), a, Math.max(1, a.getInt("dash-ticks", 8))));
+                fx.burst(p.getLocation().add(0, 0.5, 0), Particle.CLOUD, 12, 0.3, 0.05);
                 sound(a, "entity.player.attack.sweep", p.getLocation());
                 selfEffects(p, a);
                 return true;
@@ -363,6 +403,9 @@ public final class Abilities {
                     }
                     if (i % 2 == 0) {
                         particles(a, "SWEEP_ATTACK", point, 1, 0);
+                    }
+                    if (i % 3 == 0) {
+                        fx.crescent(point, step, 1.6, colorOf(a, type));
                     }
                     for (Entity e : p.getWorld().getNearbyEntities(point, 1.4, 1.4, 1.4)) {
                         if (e instanceof LivingEntity le && hit.add(e.getUniqueId())) {
@@ -416,6 +459,9 @@ public final class Abilities {
     void blast(Player shooter, Location at, ConfigurationSection a) {
         area(shooter, at, a.getDouble("radius", 3), a.getDouble("damage", 6), a);
         particles(a, "FLAME", at, 60, a.getDouble("radius", 3) / 2.5);
+        fx.burst(at, Particle.EXPLOSION, 2, 0.4, 0);
+        fx.wave(at.clone().add(0, 0.3, 0), a.getDouble("radius", 3) + 0.5, 6, colorOf(a, "blast"), Particle.FLAME, false);
+        fx.burst(at, Particle.LAVA, 8, 0.6, 0);
         Util.sound(at, a.getString("hit-sound", "entity.generic.explode"), 1f, 1.2f);
     }
 
@@ -438,6 +484,7 @@ public final class Abilities {
                 }
             }
             particles(d.cfg, "CRIT", p.getLocation().add(0, 1, 0), 4, 0.3);
+            fx.dust(p.getLocation().add(0, 1, 0), colorOf(d.cfg, "dash"), 1.6f, 6, 0.3);
         }
     }
 

@@ -19,9 +19,6 @@ final class OceanRestoreJob extends AreaJob {
     private final Biome biome;
     private final SimplexOctaveGenerator noise;
     private final Random random;
-    private final int n;
-    private int phase;
-    private int cursor;
 
     OceanRestoreJob(Plugin plugin, String label, World world, int cx, int cz, int radius, long seed,
                     int depth, WeightedList<Material> floor, Biome biome) {
@@ -33,7 +30,6 @@ final class OceanRestoreJob extends AreaJob {
         this.noise = new SimplexOctaveGenerator(new Random(seed), 2);
         this.noise.setScale(1.0 / 24.0);
         this.random = new Random(seed);
-        this.n = radius * 2 + 1;
     }
 
     @Override
@@ -43,30 +39,22 @@ final class OceanRestoreJob extends AreaJob {
 
     @Override
     public double progress() {
-        if (phase == 0) {
-            return 0.15 * chunkProgress();
-        }
-        return 0.15 + 0.85 * cursor / (double) ((long) n * n);
+        return streamProgress();
     }
 
     @Override
     public boolean tick(long deadline) {
-        if (phase == 0) {
-            if (!pumpChunks()) {
-                return false;
+        return stream(deadline, (chunkX, chunkZ) -> {
+            int bx = chunkX << 4, bz = chunkZ << 4;
+            for (int z = 0; z < 16; z++) {
+                for (int x = 0; x < 16; x++) {
+                    column(bx + x - cx, bz + z - cz);
+                }
             }
-            phase = 1;
-        }
-        long total = (long) n * n;
-        while (cursor < total) {
-            column(cursor % n - radius, cursor / n - radius);
-            cursor++;
-            if (System.nanoTime() > deadline) {
-                return false;
+            if (biome != null) {
+                refreshChunk(chunkX, chunkZ);
             }
-        }
-        refreshChunks();
-        return true;
+        });
     }
 
     private void column(int dx, int dz) {

@@ -18,6 +18,8 @@ import org.bukkit.util.noise.SimplexOctaveGenerator;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -43,15 +45,34 @@ final class IslandGenerator extends AreaJob {
     private final int lavaY;
     private final int maxElevation;
 
+    /** Height multiplier: bigger islands get taller land (see generation.height-scaling). */
+    private final double maxH, coneH;
+    /** Big islands mix flat plains (room to build) with hilly regions. */
+    private final boolean regions;
+
     private int phase;
-    private long cursor;
     private int landCount;
-    private Deque<Runnable> features;
+    private Deque<Feature> features;
     private int featureTotal;
+    private Random decoRandom;
+
+    /** A tree/ruin/throne: needs the chunks within "reach" blocks of its spot loaded. */
+    private record Feature(int dx, int dz, int reach, Runnable action) {
+    }
 
     IslandGenerator(Plugin plugin, String label, World world, int cx, int cz, int radius, long seed,
                     TypeSettings settings, double landFraction) {
+        this(plugin, label, world, cx, cz, radius, seed, settings, landFraction, 1.0, 3.0);
+    }
+
+    IslandGenerator(Plugin plugin, String label, World world, int cx, int cz, int radius, long seed,
+                    TypeSettings settings, double landFraction, double heightScaling, double maxBoost) {
         super(plugin, world, cx, cz, radius);
+        // radius 70 = the configured heights; radius 1000 = up to maxBoost times taller
+        double boost = heightScaling <= 0 ? 1 : Math.max(1, Math.min(Math.max(1, maxBoost), Math.pow(radius / 70.0, 0.5 * heightScaling)));
+        this.maxH = settings.maxHeight * boost;
+        this.coneH = settings.coneHeight * boost;
+        this.regions = radius >= 150;
         this.label = label;
         this.seed = seed;
         this.t = settings;
@@ -64,10 +85,10 @@ final class IslandGenerator extends AreaJob {
         this.detail = new SimplexOctaveGenerator(new Random(seed * 31 + 7), 4);
         this.detail.setScale(t.roughness / 28.0);
         this.rng = new Random(seed ^ 0x9E3779B97F4A7C15L);
-        double base = 1 + t.maxHeight * 0.65;
-        double rim = t.coneHeight * Math.pow(1 - t.craterSize / t.coneSize, 1.4);
+        double base = 1 + maxH * 0.65;
+        double rim = coneH * Math.pow(1 - t.craterSize / t.coneSize, 1.4);
         this.lavaY = sea - 1 + (int) Math.round(base + rim) - 2;
-        this.maxElevation = t.maxHeight + (t.volcano ? t.coneHeight : 0) + 6;
+        this.maxElevation = (int) Math.ceil(maxH + (t.volcano ? coneH : 0)) + 6;
     }
 
     @Override
@@ -78,10 +99,9 @@ final class IslandGenerator extends AreaJob {
     @Override
     public double progress() {
         return switch (phase) {
-            case 0 -> 0.10 * chunkProgress();
-            case 1 -> 0.10 + 0.60 * cursor / (double) ((long) n * n);
-            case 2 -> 0.70 + 0.05 * cursor / (double) ((long) n * n);
-            case 3 -> 0.75 + 0.25 * (featureTotal == 0 ? 1 : 1 - features.size() / (double) featureTotal);
+            case 0 -> 0.70 * streamProgress();
+            case 1 -> 0.70 + 0.10 * streamProgress();
+            case 2 -> 0.80 + 0.20 * (featureTotal == 0 ? 1 : 1 - features.size() / (double) featureTotal);
             default -> 1;
         };
     }
@@ -93,49 +113,79 @@ final class IslandGenerator extends AreaJob {
 
     @Override
     public boolean tick(long deadline) {
+        // pass 1: terrain + biome, one chunk at a time
         if (phase == 0) {
-            if (!pumpChunks()) {
+            if (!stream(deadline, this::terrainChunk)) {
                 return false;
             }
             phase = 1;
-            cursor = 0;
+            resetStream();
+            decoRandom = new Random(seed * 6364136223846793005L + 1442695040888963407L);
         }
-        long total = (long) n * n;
+        // pass 2: ground decorations and snow layer (only touch their own column)
         if (phase == 1) {
-            while (cursor < total) {
-                column((int) (cursor % n) - radius, (int) (cursor / n) - radius);
-                cursor++;
+            if ((t.decorations.isEmpty() && t.topLayer == null) || stream(deadline, this::decorateChunk)) {
+                phase = 2;
+                buildFeatures();
+            } else {
+                return false;
+            }
+        }
+        // pass 3: trees, ruins, throne; each loads only the chunks around it
+        if (phase == 2) {
+            while (!features.isEmpty()) {
+                Feature f = features.peek();
+                int wx = cx + f.dx(), wz = cz + f.dz();
+                if (!requestArea(wx - f.reach(), wz - f.reach(), wx + f.reach(), wz + f.reach())) {
+                    return false; // loading
+                }
+                features.poll().action().run();
+                trimTickets(64);
                 if (System.nanoTime() > deadline) {
                     return false;
-                }
-            }
-            phase = 2;
-            cursor = 0;
-        }
-        if (phase == 2) {
-            if (t.biome != null) {
-                while (cursor < total) {
-                    biomeColumn((int) (cursor % n) - radius, (int) (cursor / n) - radius);
-                    cursor++;
-                    if ((cursor & 63) == 0 && System.nanoTime() > deadline) {
-                        return false;
-                    }
                 }
             }
             phase = 3;
-            buildFeatures();
+            trimTickets(0);
         }
-        if (phase == 3) {
-            while (!features.isEmpty()) {
-                features.poll().run();
-                if (System.nanoTime() > deadline) {
-                    return false;
+        return true;
+    }
+
+    private void terrainChunk(int chunkX, int chunkZ) {
+        int bx = chunkX << 4, bz = chunkZ << 4;
+        for (int z = 0; z < 16; z++) {
+            for (int x = 0; x < 16; x++) {
+                int dx = bx + x - cx, dz = bz + z - cz;
+                if (Math.abs(dx) <= radius && Math.abs(dz) <= radius) {
+                    column(dx, dz);
+                    if (t.biome != null) {
+                        biomeColumn(dx, dz);
+                    }
                 }
             }
-            phase = 4;
         }
-        refreshChunks();
-        return true;
+        if (t.biome != null) {
+            refreshChunk(chunkX, chunkZ);
+        }
+    }
+
+    private void decorateChunk(int chunkX, int chunkZ) {
+        int bx = chunkX << 4, bz = chunkZ << 4;
+        for (int z = 0; z < 16; z++) {
+            for (int x = 0; x < 16; x++) {
+                int dx = bx + x - cx, dz = bz + z - cz;
+                if (!inGrid(dx, dz)) {
+                    continue;
+                }
+                if (!t.decorations.isEmpty()) {
+                    // cactus checks its neighbours: skip the chunk border so no other chunk gets loaded
+                    decorateColumn(dx, dz, decoRandom, x > 0 && x < 15 && z > 0 && z < 15);
+                }
+                if (t.topLayer != null) {
+                    topLayerColumn(dx, dz);
+                }
+            }
+        }
     }
 
     // ------------------------------------------------------------------ terrain
@@ -192,12 +242,18 @@ final class IslandGenerator extends AreaJob {
             hill = lerp(hill, 0.5, Math.min(1, coneT * 2));
         }
         double s = smooth(tt / 0.6);
-        double elev = 1 + s * t.maxHeight * (0.3 + 0.7 * hill);
+        double amp = maxH;
+        if (regions) {
+            // large-scale regions: flat plains (good building ground) next to hills and mountains
+            double region = shape.noise(wx + 7919, wz - 7919, 2.0, 0.5, true) * 0.5 + 0.5;
+            amp *= 0.3 + 0.9 * smooth(region);
+        }
+        double elev = 1 + s * amp * (0.3 + 0.7 * hill);
         byte k = (elev - 1 < t.beachHeight || tt < 0.04) ? BEACH : LAND;
         if (coneT > 0) {
-            double cone = t.coneHeight * Math.pow(coneT, 1.4);
+            double cone = coneH * Math.pow(coneT, 1.4);
             if (d < t.craterSize) {
-                double rim = t.coneHeight * Math.pow(1 - t.craterSize / t.coneSize, 1.4);
+                double rim = coneH * Math.pow(1 - t.craterSize / t.coneSize, 1.4);
                 double q = d / t.craterSize;
                 cone = rim - t.craterDepth * (1 - q * q);
                 k = CRATER;
@@ -279,34 +335,49 @@ final class IslandGenerator extends AreaJob {
     private void buildFeatures() {
         features = new ArrayDeque<>();
         Random r = new Random(seed * 6364136223846793005L + 1442695040888963407L);
+        List<Feature> list = new ArrayList<>();
         if (t.plaza && t.throne) {
-            features.add(this::buildThrone);
+            list.add(new Feature(0, 0, 10, this::buildThrone));
         }
         if (t.ruinDensity > 0 && !t.ruinBlocks.isEmpty()) {
             int ruins = Math.max(1, (int) Math.round(landCount / 10000.0 * t.ruinDensity));
             for (int i = 0; i < ruins; i++) {
-                features.add(() -> buildRuin(r));
+                int[] spot = landSpot(r, 12, false);
+                if (spot != null) {
+                    long ruinSeed = r.nextLong();
+                    list.add(new Feature(spot[0], spot[1], 8, () -> buildRuin(spot[0], spot[1], new Random(ruinSeed))));
+                }
             }
         }
         if (t.treeDensity > 0 && !t.trees.isEmpty()) {
             int trees = (int) Math.round(landCount / 100.0 * t.treeDensity);
             for (int i = 0; i < trees; i++) {
-                features.add(() -> plantTree(r));
+                String name = t.trees.pick(r);
+                boolean palm = "PALM".equals(name);
+                int[] spot = landSpot(r, 8, palm && t.palmsOnBeach);
+                if (spot != null) {
+                    long treeSeed = r.nextLong();
+                    list.add(new Feature(spot[0], spot[1], palm ? 5 : 8,
+                            () -> plantTree(spot[0], spot[1], name, new Random(treeSeed))));
+                }
             }
         }
-        if (!t.decorations.isEmpty()) {
-            for (int dz = -radius; dz <= radius; dz++) {
-                int row = dz;
-                features.add(() -> decorateRow(row, r));
-            }
-        }
-        if (t.topLayer != null) {
-            for (int dz = -radius; dz <= radius; dz++) {
-                int row = dz;
-                features.add(() -> topLayerRow(row));
-            }
-        }
+        // work through them chunk by chunk, so neighbouring features reuse loaded chunks
+        list.sort(java.util.Comparator.comparingInt((Feature f) -> (cz + f.dz()) >> 4).thenComparingInt(f -> (cx + f.dx()) >> 4));
+        features.addAll(list);
         featureTotal = features.size();
+    }
+
+    /** A random spot on dry land (or beach when allowed), or null. */
+    private int[] landSpot(Random r, int attempts, boolean beachOk) {
+        for (int a = 0; a < attempts; a++) {
+            int dx = r.nextInt(n) - radius, dz = r.nextInt(n) - radius;
+            byte k = kindAt(dx, dz);
+            if (k == LAND || (beachOk && k == BEACH)) {
+                return new int[]{dx, dz};
+            }
+        }
+        return null;
     }
 
     private boolean inGrid(int dx, int dz) {
@@ -333,32 +404,19 @@ final class IslandGenerator extends AreaJob {
         }
     }
 
-    private void plantTree(Random r) {
-        String name = t.trees.pick(r);
-        boolean palm = "PALM".equals(name);
-        for (int attempt = 0; attempt < 8; attempt++) {
-            int dx = r.nextInt(n) - radius, dz = r.nextInt(n) - radius;
-            byte k = kindAt(dx, dz);
-            if (k != LAND && !(palm && t.palmsOnBeach && k == BEACH)) {
-                continue;
-            }
-            int wx = cx + dx, wz = cz + dz, y = top[index(dx, dz)] + 1;
-            if (!world.getBlockAt(wx, y, wz).isEmpty()) {
-                continue;
-            }
-            if (palm) {
-                buildPalm(wx, y, wz, r);
-                return;
-            }
-            TreeType type;
-            try {
-                type = TreeType.valueOf(name);
-            } catch (IllegalArgumentException e) {
-                return;
-            }
-            if (world.generateTree(new Location(world, wx, y, wz), r, type)) {
-                return;
-            }
+    private void plantTree(int dx, int dz, String name, Random r) {
+        int wx = cx + dx, wz = cz + dz, y = top[index(dx, dz)] + 1;
+        if (!world.getBlockAt(wx, y, wz).isEmpty()) {
+            return;
+        }
+        if ("PALM".equals(name)) {
+            buildPalm(wx, y, wz, r);
+            return;
+        }
+        try {
+            world.generateTree(new Location(world, wx, y, wz), r, TreeType.valueOf(name));
+        } catch (IllegalArgumentException ignored) {
+            // unknown tree type in config
         }
     }
 
@@ -395,17 +453,7 @@ final class IslandGenerator extends AreaJob {
         }
     }
 
-    private void buildRuin(Random r) {
-        int dx = 0, dz = 0;
-        boolean found = false;
-        for (int attempt = 0; attempt < 12 && !found; attempt++) {
-            dx = r.nextInt(n) - radius;
-            dz = r.nextInt(n) - radius;
-            found = kindAt(dx, dz) == LAND;
-        }
-        if (!found) {
-            return;
-        }
+    private void buildRuin(int dx, int dz, Random r) {
         if (t.ruinPillars && r.nextBoolean()) {
             int pillars = 3 + r.nextInt(4);
             for (int i = 0; i < pillars; i++) {
@@ -448,10 +496,10 @@ final class IslandGenerator extends AreaJob {
         }
     }
 
-    private void decorateRow(int dz, Random r) {
-        for (int dx = -radius; dx <= radius; dx++) {
+    private void decorateColumn(int dx, int dz, Random r, boolean cactusOk) {
+        {
             if (kind[index(dx, dz)] != LAND) {
-                continue;
+                return;
             }
             double roll = r.nextDouble();
             Material chosen = null;
@@ -463,32 +511,35 @@ final class IslandGenerator extends AreaJob {
                 }
             }
             if (chosen == null) {
-                continue;
+                return;
             }
             int wx = cx + dx, wz = cz + dz, y = top[index(dx, dz)] + 1;
             Block above = world.getBlockAt(wx, y, wz);
             Block ground = world.getBlockAt(wx, y - 1, wz);
             if (!above.isEmpty() || !ground.getType().isOccluding()) {
-                continue;
+                return;
             }
             if (chosen == Material.CACTUS) {
+                if (!cactusOk) {
+                    return;
+                }
                 Material g = ground.getType();
                 if ((g != Material.SAND && g != Material.RED_SAND)
                         || !above.getRelative(BlockFace.NORTH).isEmpty() || !above.getRelative(BlockFace.SOUTH).isEmpty()
                         || !above.getRelative(BlockFace.EAST).isEmpty() || !above.getRelative(BlockFace.WEST).isEmpty()) {
-                    continue;
+                    return;
                 }
                 int h = 1 + r.nextInt(3);
                 for (int i = 0; i < h; i++) {
                     set(wx, y + i, wz, Material.CACTUS);
                 }
-                continue;
+                return;
             }
             BlockData data = Bukkit.createBlockData(chosen);
             if (data instanceof Bisected bisected && !(data instanceof org.bukkit.block.data.type.Stairs)
                     && !(data instanceof org.bukkit.block.data.type.TrapDoor)) {
                 if (!world.getBlockAt(wx, y + 1, wz).isEmpty()) {
-                    continue;
+                    return;
                 }
                 bisected.setHalf(Bisected.Half.BOTTOM);
                 above.setBlockData(bisected, false);
@@ -501,11 +552,11 @@ final class IslandGenerator extends AreaJob {
         }
     }
 
-    private void topLayerRow(int dz) {
-        for (int dx = -radius; dx <= radius; dx++) {
+    private void topLayerColumn(int dx, int dz) {
+        {
             byte k = kind[index(dx, dz)];
             if (k != LAND && k != BEACH && k != CONE && k != PLAZA) {
-                continue;
+                return;
             }
             int wx = cx + dx, wz = cz + dz, y = top[index(dx, dz)] + 1;
             Block above = world.getBlockAt(wx, y, wz);

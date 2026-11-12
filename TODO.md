@@ -51,7 +51,8 @@ Owned islands should become something a crew builds up over time, not just a cla
 - [ ] **Logia passive:** a chance to "phase through" normal hits, countered by Haki or Sea Prism.
 - [ ] **Awakening:** a stronger version of a fruit after a lot of use (mastery XP per fruit).
 - [ ] More fruits: Paramecia, Zoan and Logia variety.
-- [ ] Better visuals: particles, sounds, short animations, a telegraph before big hits so they can be dodged.
+- [x] Better visuals: shockwaves, beams, auras, trails, colours (done in 1.3.0).
+- [ ] A telegraph before big hits so they can be dodged.
 - [ ] **PvP balance pass**, tested with real players:
   - **Time-to-kill target:** an ability should take about 20–30% of a player's health, and a full combo should not one-shot a player in diamond or netherite armour.
   - **Armour:** abilities respect armour and Protection. Decide per move whether it does true damage.
@@ -94,7 +95,9 @@ Owned islands should become something a crew builds up over time, not just a cla
   - rivers and lakes
   - custom tree shapes for palms and big jungle trees
   - better ore placement (veins)
+- [x] Islands from radius 100 up to 1500, generated chunk by chunk (done in 1.3.0).
 - [ ] **Performance:** keep the per-tick budget. Caves and structures are generated in the same job system.
+- [ ] **Placeable facilities on big islands:** buy a building (dock, market, watchtower, vault) in the shop and place it as a schematic, with a preview outline, on your own island. Each building gives its upgrade. See section 1.
 
 ### 4c. Custom map
 - [ ] **In-game map item:** a "Grand Line chart".

@@ -27,10 +27,11 @@ ocean-area:
   world: world
   center-x: 0
   center-z: 0
-  # Islands are placed within this many blocks (square) of the centre.
-  radius: 3000
+  # Islands are placed within this many blocks (square) of the centre. Big islands need a big sea:
+  # set it in-game with /island admin area <radius> where you stand.
+  radius: 12000
   # Minimum open water between the borders of two islands.
-  min-spacing: 150
+  min-spacing: 200
   # Random spots tried per island before giving up.
   attempts: 80
   # Only use spots that are really ocean (sea floor at least min-water-depth below sea level).
@@ -39,7 +40,7 @@ ocean-area:
   # Free ocean spots are checked in the background ahead of time, so events like the Lost Island can
   # rise instantly without lag. prefetch-radius = the biggest island radius those spots must fit.
   prefetch-spots: 4
-  prefetch-radius: 80
+  prefetch-radius: 350
 
 # -------------------------------------------------------------------------------------
 # Generation
@@ -49,12 +50,22 @@ generation:
   millis-per-tick: 20
   # Part of the radius that is dry land; the rest is beach and an underwater slope down to the sea floor.
   land-fraction: 0.72
-  # Allowed radius for /island spawn and spawnrandom.
+  # Allowed radius for /island admin spawn and spawnrandom (in blocks from the centre to the edge).
+  # Islands are built chunk by chunk, so even radius 1000+ works without lag; it just takes longer
+  # (roughly 1-3 minutes for radius 300, 10-20 minutes for radius 1000, depending on the server).
   min-radius: 16
-  max-radius: 160
-  # Default radius range for /island spawnrandom when none is given.
-  random-min-radius: 35
-  random-max-radius: 70
+  radius-limit: 1500
+  # Island sizes for "/island admin spawnrandom <type> <count>" (when no min/max radius is given):
+  # a size is picked by weight, then a radius within its range.
+  island-sizes:
+    small:  {min: 100, max: 180, weight: 5}
+    medium: {min: 180, max: 350, weight: 4}
+    large:  {min: 350, max: 600, weight: 2}
+    huge:   {min: 600, max: 1000, weight: 1}
+  # Bigger islands get taller land: radius 70 uses the heights below, larger islands grow up to
+  # max-height-boost times taller. height-scaling 0 = same heights for every size.
+  height-scaling: 1.0
+  max-height-boost: 3.0
   # Maximum islands per /island spawnrandom call.
   max-spawnrandom: 30
   # Chance weights of each type for "/island spawnrandom random ...".

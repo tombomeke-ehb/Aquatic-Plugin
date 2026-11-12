@@ -81,7 +81,7 @@ final class IslandCommands {
                 .permission(ADMIN).hidden().playerOnly()
                 .completer((s, a) -> switch (a.length) {
                     case 1 -> typeNames(a[0], false);
-                    case 2 -> AquaticCommand.filter(List.of("40", "60", "80"), a[1]);
+                    case 2 -> AquaticCommand.filter(List.of("100", "250", "500", "1000"), a[1]);
                     default -> List.of();
                 });
         cmd.sub("spawnrandom", this::spawnRandom).usage("<type|random> <count> [minRadius] [maxRadius]")
@@ -89,8 +89,8 @@ final class IslandCommands {
                 .completer((s, a) -> switch (a.length) {
                     case 1 -> typeNames(a[0], true);
                     case 2 -> AquaticCommand.filter(List.of("1", "5", "10"), a[1]);
-                    case 3 -> AquaticCommand.filter(List.of(String.valueOf(m.config().getInt("generation.random-min-radius", 35))), a[2]);
-                    case 4 -> AquaticCommand.filter(List.of(String.valueOf(m.config().getInt("generation.random-max-radius", 70))), a[3]);
+                    case 3 -> AquaticCommand.filter(List.of("100", "200", "400"), a[2]);
+                    case 4 -> AquaticCommand.filter(List.of("300", "600", "1000"), a[3]);
                     default -> List.of();
                 });
         cmd.sub("register", this::register).usage("<name> <type> <radius>")
@@ -198,7 +198,7 @@ final class IslandCommands {
 
     private int checkedRadius(String raw) {
         int r = AquaticCommand.integer(raw);
-        int min = m.config().getInt("generation.min-radius", 16), max = m.config().getInt("generation.max-radius", 160);
+        int min = m.config().getInt("generation.min-radius", 16), max = m.config().getInt("generation.radius-limit", 1500);
         if (r < min || r > max) {
             throw new CommandFail(m.rawMsg("bad-radius", "min", min, "max", max));
         }
@@ -575,8 +575,9 @@ final class IslandCommands {
         if (count < 1 || count > maxCount) {
             throw new CommandFail(m.rawMsg("bad-count", "max", maxCount));
         }
-        int minR = args.length > 2 ? checkedRadius(args[2]) : m.config().getInt("generation.random-min-radius", 35);
-        int maxR = args.length > 3 ? checkedRadius(args[3]) : m.config().getInt("generation.random-max-radius", 70);
+        // no radius given: use the size classes (small ... huge); minR/maxR = 0 marks that
+        int minR = args.length > 2 ? checkedRadius(args[2]) : 0;
+        int maxR = args.length > 3 ? checkedRadius(args[3]) : (args.length > 2 ? minR : 0);
         if (maxR < minR) {
             int t = minR;
             minR = maxR;
@@ -595,18 +596,20 @@ final class IslandCommands {
             return; // /island admin cancel (the cancel message already went out)
         }
         if (done >= count) {
+            run.finished = true;
             m.spawnRuns.remove(run);
             finishSpawnRandom(sender, count, names);
             return;
         }
         ThreadLocalRandom random = ThreadLocalRandom.current();
         IslandType type = fixed != null ? fixed : m.randomType(random);
-        int radius = minR + random.nextInt(maxR - minR + 1);
+        int radius = minR > 0 ? minR + random.nextInt(Math.max(1, maxR - minR + 1)) : m.randomIslandRadius(random);
         m.findFreeOceanSpotAsync(radius, spot -> {
-            if (run.cancelled) {
+            if (run.cancelled || run.finished) {
                 return;
             }
             if (spot == null) {
+                run.finished = true;
                 m.spawnRuns.remove(run);
                 finishSpawnRandom(sender, count, names);
                 return;
