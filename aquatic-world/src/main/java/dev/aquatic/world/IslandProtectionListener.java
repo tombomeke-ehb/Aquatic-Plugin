@@ -70,7 +70,8 @@ final class IslandProtectionListener implements Listener {
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
-        if (module.isFlagBlock(event.getBlock()) && !module.hasBypass(player)) {
+        if (module.isFlagBlock(event.getBlock())) {
+            // a planted flag can only be taken by conquest (or removed by command), never broken - not even by admins
             event.setCancelled(true);
             IslandImpl is = module.at(event.getBlock());
             module.deny(player, is, "deny-flag");
@@ -288,7 +289,7 @@ final class IslandProtectionListener implements Listener {
 
     private void filterExplosion(List<Block> blocks) {
         Map<String, Boolean> cache = new HashMap<>();
-        blocks.removeIf(b -> explosionBlocked(b, cache));
+        blocks.removeIf(b -> module.isFlagBlock(b) || explosionBlocked(b, cache));
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -346,7 +347,7 @@ final class IslandProtectionListener implements Listener {
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onSpread(BlockSpreadEvent event) {
         if (event.getSource().getType() == Material.FIRE || event.getSource().getType() == Material.SOUL_FIRE) {
-            if (fireProtected(event.getBlock())) {
+            if (fireProtected(event.getBlock()) || module.isFlagBlock(event.getBlock())) {
                 event.setCancelled(true);
             }
         }
@@ -376,6 +377,10 @@ final class IslandProtectionListener implements Listener {
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onFlow(BlockFromToEvent event) {
         Block to = event.getToBlock();
+        if (module.isFlagBlock(to)) {
+            event.setCancelled(true); // water/lava never washes a flag away
+            return;
+        }
         IslandImpl target = module.at(to);
         if (target == null || target.status == IslandStatus.UNCLAIMED) {
             return;
@@ -411,14 +416,15 @@ final class IslandProtectionListener implements Listener {
     public void onPistonExtend(BlockPistonExtendEvent event) {
         List<Block> blocks = new java.util.ArrayList<>(event.getBlocks());
         blocks.add(event.getBlock().getRelative(event.getDirection()));
-        if (pistonCrossesBorder(event.getBlock(), blocks, event.getDirection())) {
+        if (blocks.stream().anyMatch(module::isFlagBlock) || pistonCrossesBorder(event.getBlock(), blocks, event.getDirection())) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onPistonRetract(BlockPistonRetractEvent event) {
-        if (pistonCrossesBorder(event.getBlock(), event.getBlocks(), event.getDirection())) {
+        if (event.getBlocks().stream().anyMatch(module::isFlagBlock)
+                || pistonCrossesBorder(event.getBlock(), event.getBlocks(), event.getDirection())) {
             event.setCancelled(true);
         }
     }

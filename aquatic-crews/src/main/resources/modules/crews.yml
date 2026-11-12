@@ -264,7 +264,60 @@ placeholderapi:
 # ---------------------------------------------------------------------
 #  Messages (MiniMessage format). <placeholders> are filled in by the plugin.
 # ---------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+# Crew teleports: /tpa <crewmate>, /tpahere <crewmate>, /tpaccept, /tpdeny
+# Only between crewmates (and allies when allow-allies is true). Blocked in combat.
+# take-over: these names belong to AquaticSMP even when EssentialsX has them too.
+# blocked-commands: other plugins' teleport-request commands, blocked for everyone but admins.
+# -------------------------------------------------------------------------------------
+teleport:
+  enabled: true
+  allow-allies: false
+  warmup-seconds: 3
+  cooldown-seconds: 60
+  expire-seconds: 60
+  take-over: true
+  blocked-commands:
+    - essentials:tpa
+    - essentials:tpahere
+    - essentials:tpaccept
+    - essentials:tpdeny
+    - essentials:tpaall
+    - essentials:call
+    - etpa
+    - call
+    - ecall
+    - tpask
+    - etpask
+    - etpahere
+    - tpaall
+    - etpaall
+    - etpyes
+    - etpaccept
+    - etpno
+    - etpdeny
+
 messages:
+  tp-disabled: "<red>Crew teleports are turned off."
+  tp-self: "<red>You can't send a request to yourself."
+  tp-not-crew: "<red>You can only teleport to your own crewmates. <gray>(<white><player></white> isn't in your crew)"
+  tp-cooldown: "<red>Wait <white><seconds></white>s before your next teleport request."
+  tp-sent: "<aqua>Request sent to <white><player></white>."
+  tp-request: "<aqua><white><player></white> wants to teleport to you. <gray>(<seconds>s)"
+  tp-request-here: "<aqua><white><player></white> asks you to teleport to them. <gray>(<seconds>s)"
+  tp-accept-button: "<green><bold>[Accept]"
+  tp-accept-hover: "<gray>Accept the teleport"
+  tp-deny-button: "<red><bold>[Deny]"
+  tp-deny-hover: "<gray>Deny the teleport"
+  tp-no-request: "<red>You have no open teleport requests."
+  tp-offline: "<red>That player is no longer online."
+  tp-denied: "<red><white><player></white> denied your teleport request."
+  tp-denied-you: "<gray>Request denied."
+  tp-accepted: "<green><white><player></white> accepted your request."
+  tp-warmup: "<aqua>Teleporting to <white><player></white> in <white><seconds></white>s... <gray>Don't move."
+  tp-cancelled: "<red>Teleport cancelled: you moved or got hurt."
+  tp-arrived: "<green>You arrived at <white><player></white>."
+  tp-blocked-command: "<red>Teleport requests only work between crewmates: use <white>/tpa <crewmate></white>."
   card-player: "<aqua><bold><player></bold></aqua> <title><newline><gray>Crew: <crew><newline><gray>Rank: <white><rank><newline><gray>Crew reputation: <white><reputation><newline><gray>Bounty: <red><bounty><newline><newline><yellow>Click to send a message"
   card-crew: "<crew> <dark_gray>[<tag><dark_gray>]<newline><gray>Captain: <white><captain><newline><gray>Members: <white><members>/<max><newline><gray>Reputation: <white><reputation><newline><newline><yellow>Click for crew info"
   card-no-crew: "<gray>no crew"

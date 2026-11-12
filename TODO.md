@@ -92,6 +92,7 @@ This file is the roadmap. Tick off items as they're finished and add new ideas u
 
 ## Island management and development
 - [x] 6 upgrades, the `/island manage` menu, build access, and losing a level on conquest.
+- [x] Unbreakable flags (only conquest or `/island admin removeflag`), crew-only `/tpa` (done in 2.2.0).
 - [ ] **Placeable buildings:** buy a dock, market, watchtower or vault as a schematic and place it on your island with a preview outline. The building gives its bonus.
 - [ ] More upgrades: Granary (food), Shipyard (ships), Vault (crew storage that can't be raided).
 - [ ] Permissions per rank (build, chests, doors, redstone) in the manage menu.

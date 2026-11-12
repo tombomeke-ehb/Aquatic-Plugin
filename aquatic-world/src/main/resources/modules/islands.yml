@@ -743,6 +743,9 @@ bluemap:
 #  Messages
 # =====================================================================================
 messages:
+  deny-flag: "<red>A crew flag can't be broken. <gray>Take the island by conquest: stand at the flag with your crew."
+  flag-none: "<red><island> has no flag."
+  flag-removed: "<green>The flag of <white><island></white> was removed. <gray>(the owners can plant it again with /island flag)"
   spawn-none: "<red>No spawn is set yet. <gray>(an admin uses /island admin setspawn)"
   spawn-warmup: "<aqua>Setting sail for spawn in <white><seconds></white>s... <gray>Don't move."
   spawn-cancelled: "<red>Trip cancelled: you moved or got hurt."
@@ -802,7 +805,6 @@ messages:
   deny-occupied: "<red>This is the territory of <crew>. Keep your hands off, scallywag!"
   deny-offline: "<red>The owners of <island> are ashore - it's protected while they're away."
   deny-shield: "<red><island> is under a truce for another <time>."
-  deny-flag: "<red>That flag can only be taken by holding it, not by smashing it!"
   deny-pvp: "<red>No duels in neutral waters!"
   # --- conquest ---
   conquest-bar: "<red><crew> <white>is capturing</white> <gold><island></gold> <gray>- <percent>% (<time>)"

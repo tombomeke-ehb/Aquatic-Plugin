@@ -100,6 +100,11 @@ public final class CrewsModule extends AquaticModule implements CrewService {
         registerService(CrewService.class, this);
         listener = new CrewListener(this);
         registerListener(listener);
+        CrewTeleport teleport = new CrewTeleport(this);
+        registerListener(teleport);
+        for (AquaticCommand command : teleport.commands()) {
+            registerCommand(command);
+        }
         for (AquaticCommand command : new CrewCommands(this, listener).build()) {
             registerCommand(command);
         }

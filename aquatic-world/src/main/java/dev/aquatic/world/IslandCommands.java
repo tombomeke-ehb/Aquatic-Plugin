@@ -140,6 +140,17 @@ final class IslandCommands {
                     case 2 -> AquaticCommand.filter(List.of("newseed"), a[1]);
                     default -> List.of();
                 });
+        cmd.sub("removeflag", (s, a) -> {
+            AquaticCommand.need(a, 1, "/island admin removeflag <island>");
+            IslandImpl is = island(String.join(" ", a));
+            if (!is.hasFlag) {
+                throw new CommandFail(m.rawMsg("flag-none", "island", is.name));
+            }
+            m.removeFlagBlocks(is);
+            m.send(s, "flag-removed", "island", is.name);
+        }).usage("<island>").description("Remove an island's flag (flags can't be broken, only taken over)")
+                .permission(ADMIN).hidden()
+                .completer((s, a) -> a.length == 1 ? islandNames(a[0]) : List.of());
         cmd.sub("setspawn", (s, a) -> setSpawn(AquaticCommand.player(s))).description("Set the server spawn exactly where you stand (the island becomes a safe zone)")
                 .permission(ADMIN).hidden().playerOnly();
         cmd.sub("area", this::area).usage("<radius> [spacing]").description("Set the ocean area for random islands/treasure at your position")

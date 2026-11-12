@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.2.0 (2026-11-12)
+
+### Added
+- **Crew teleports:** `/tpa <crewmate>`, `/tpahere <crewmate>`, `/tpaccept` and `/tpdeny`.
+  - They **only work between crewmates**. Allies can be allowed with `teleport.allow-allies`.
+  - The other player gets clickable [Accept] and [Deny] buttons.
+  - A 3-second warmup that cancels if you move or take damage, a 60-second cooldown, and requests that expire after 60 seconds.
+  - Blocked during combat.
+  - Other plugins' teleport requests (EssentialsX `/tpa`, `/call`, `/etpa`, `/tpaall`, ...) are blocked for everyone except admins. The list is in `crews.yml` under `teleport.blocked-commands`.
+- **`/island admin removeflag <island>`:** the only way to remove a planted flag. The owners can plant it again with `/island flag`.
+
+### Changed
+- **Crew flags are unbreakable:** nobody can break a planted flag (pole and banner), not even admins in creative. Explosions, pistons, fire, flowing water or lava and mobs can't destroy it either. Taking an island only works through conquest.
+
 ## 2.1.0 (2026-11-12)
 
 ### Added

@@ -113,6 +113,17 @@ Ranks are Captain, First Mate, Navigator, Quartermaster and Member. `crews.yml` 
 | `/crew sethome` | Set the crew home where you stand | Officers |
 | `/crew home` | Teleport home after a warmup. Moving or taking damage cancels it; there is a cooldown | Members (`aquatic.crews.home`) |
 
+**Crew teleports** (only between crewmates; 3 s warmup, 60 s cooldown, not in combat)
+
+| Command | What it does | Who |
+| --- | --- | --- |
+| `/tpa <crewmate>` | Ask to teleport to a crewmate | Members |
+| `/tpahere <crewmate>` | Ask a crewmate to come to you | Members |
+| `/tpaccept [player]` | Accept a request (or click [Accept]); alias `/tpyes` | Members |
+| `/tpdeny [player]` | Deny a request (or click [Deny]); alias `/tpno` | Members |
+
+Teleport commands of other plugins (EssentialsX `/tpa`, `/call`, ...) are blocked.
+
 **Chat, friendly fire and bank**
 
 | Command | What it does | Who |
@@ -213,11 +224,14 @@ Run `/island admin` for this list in-game. The short form without `admin` (e.g. 
 | `/island admin rename <island> <new name>` | Rename an island |
 | `/island admin setradius <island> <radius>` | Change the protected radius |
 | `/island admin shield <island> <minutes>` | Protect an island from conquest for a while |
+| `/island admin removeflag <island>` | Remove an island's flag. Flags can't be broken by anyone (admins included); this is the only way |
 | `/island admin tp <island>` | Teleport to an island |
 
 Bypass all island protection: `aquatic.islands.bypass`.
 
 **Island upgrades:** Treasury (more income), Fortress (slower capture), Watchtower (alerts and glowing intruders), Harbor (faster swimming, water breathing), Barracks (crew respawn point) and Wellspring (healing). In `/island manage` you can also limit building to officers. They're bought from the crew bank. After a conquest, every upgrade drops a level.
+
+**Flags can't be broken** by players, admins, mobs, explosions, pistons, fire or water. An island changes hands only through conquest.
 
 **Conquest:** stand near an enemy island's flag with your crew. The capture bar fills while no defender is close and drains otherwise. When it is full, the island is yours.
 
@@ -418,9 +432,9 @@ Event types:
 
 ## EssentialsX conflict
 
-EssentialsX also has `/balance`, `/bal`, `/money`, `/pay`, `/baltop` and (with EssentialsX Spawn) `/spawn`.
+Depending on the version, EssentialsX can also have `/balance`, `/bal`, `/money`, `/pay`, `/baltop`, `/tpa` and (with EssentialsX Spawn) `/spawn`.
 
-**Since 2.1.0, AquaticSMP always wins these names**, even if EssentialsX loads later. You don't have to change anything in EssentialsX.
+**AquaticSMP always wins these names** (`/tpa` only works between crewmates; EssentialsX's tpa commands are blocked), even if EssentialsX loads later. You don't have to change anything in EssentialsX.
 - EssentialsX's own versions stay reachable as `/essentials:pay`, `/essentials:spawn` and so on.
 - To give those names back to EssentialsX: set `take-over-commands: false` in `economy.yml` and `spawn.command.take-over: false` in `islands.yml`.
 
