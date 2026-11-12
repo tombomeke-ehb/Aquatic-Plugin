@@ -1,5 +1,28 @@
 # Changelog
 
+## 2.3.0 (2026-11-12)
+
+### Changed
+- **Intro titles fit on the screen:** every title is short now, and the long text moved to the subtitle and chat. "Become the Conqueror of the Sea" became "The Throne".
+  - The steps use the new key `intro.sequence`, so existing servers get the new version automatically.
+- **New pirates start with 1000 Doubloons,** enough to found a crew right away.
+  - The new key is `start-balance` in `economy.yml`; the old `starting-balance` is no longer used.
+  - Players who already joined keep their balance.
+  - The starter kit no longer gives extra Doubloons by default.
+
+### Added
+- **Expanded sidebar** (new key `layout` in `sidebar.yml`, applied automatically). It shows:
+  - your name and level with an **XP bar** (`▮▮▮▮▯▯▯▯▯▯ 40%`)
+  - your bounty with its **title** (Rising Tide, Corsair Lord, ...)
+  - your crew with **how many are online**
+  - the island you're on with its **rarity**
+  - your fruit with its mastery and current move
+  - **⚔ IN COMBAT** with a countdown
+  - the running event
+- **New sidebar tags:** `<xp_bar>`, `<xp_percent>`, `<bounty_title>`, `<crew_online>`, `<island_type>`, `<island_rarity>`, `<combat>`.
+- **New sidebar conditions:** `?combat:` and `?nofruit:`.
+- **API:** `CombatService`, plus `BountyService.tierTitle`, `LevelService.progress` and `IslandService.rarityDisplay`.
+
 ## 2.2.0 (2026-11-12)
 
 ### Added

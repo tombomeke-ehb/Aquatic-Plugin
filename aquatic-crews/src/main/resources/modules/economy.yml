@@ -4,8 +4,8 @@
 #  Balances are stored in plugins/AquaticSMP/data/economy/balances.yml
 # =====================================================================
 
-# Doubloons every new pirate starts with.
-starting-balance: 100
+# Doubloons every new pirate starts with: enough to found a crew (crews.yml costs.create).
+start-balance: 1000
 
 # Hard cap on a single balance. Deposits above the cap are cut off.
 max-balance: 1000000000000

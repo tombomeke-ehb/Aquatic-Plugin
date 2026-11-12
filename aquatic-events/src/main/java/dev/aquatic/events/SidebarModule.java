@@ -179,6 +179,7 @@ public final class SidebarModule extends AquaticModule implements Listener {
         SeaEvent event = runningEvent();
         String conqueror = tournament == null ? null : tournament.pirateKingName();
 
+        dev.aquatic.api.LevelService levels = service(dev.aquatic.api.LevelService.class);
         Map<String, Object> ph = new HashMap<>();
         ph.put("player", p.getName());
         ph.put("balance", eco == null ? "-" : eco.format(eco.balance(id)));
@@ -189,7 +190,6 @@ public final class SidebarModule extends AquaticModule implements Listener {
         ph.put("island", island == null ? rawMsg("open-sea") : Component.text(island.name()));
         ph.put("island_owner", island == null ? Component.empty() : islandOwner(island, crews));
         ph.put("fruit", fruit == null ? rawMsg("none") : Text.mm(fruit));
-        dev.aquatic.api.LevelService levels = service(dev.aquatic.api.LevelService.class);
         ph.put("level", levels == null ? "-" : String.valueOf(levels.level(id)));
         ph.put("fruit_level", plugin().module("items") instanceof ItemsModule im && im.isEnabled() && im.fruits() != null
                 ? String.valueOf(im.fruits().masteryLevel(id)) : "-");
@@ -200,6 +200,21 @@ public final class SidebarModule extends AquaticModule implements Listener {
         ph.put("event_time", event == null ? "" : Text.duration(Math.max(0, event.secondsLeft())));
         ph.put("conqueror", conqueror == null ? rawMsg("none") : Component.text(conqueror));
         ph.put("online", Bukkit.getOnlinePlayers().size());
+        // 2.3.0: level bar, bounty title, combat, crew online, island rarity
+        double progress = levels == null ? 0 : levels.progress(id);
+        int filled = (int) Math.round(progress * 10);
+        ph.put("xp_bar", Text.mm("<aqua>" + "▮".repeat(filled) + "<dark_gray>" + "▯".repeat(10 - filled)));
+        ph.put("xp_percent", String.valueOf(Math.round(progress * 100)));
+        String title = bounties == null ? null : bounties.tierTitle(id);
+        ph.put("bounty_title", title == null ? Component.empty() : Text.mm(title));
+        dev.aquatic.api.CombatService combat = service(dev.aquatic.api.CombatService.class);
+        long combatLeft = combat == null ? 0 : combat.combatSecondsLeft(id);
+        ph.put("combat", String.valueOf(combatLeft));
+        ph.put("crew_online", crew == null ? "0" : crew.onlineMembers().size() + "/" + crew.members().size());
+        ph.put("island_type", island == null ? Component.empty() : Text.mm("<white>" + island.type().name().charAt(0)
+                + island.type().name().substring(1).toLowerCase()));
+        Component rarity = island == null || islands == null ? null : islands.rarityDisplay(island.type());
+        ph.put("island_rarity", rarity == null ? Component.empty() : rarity);
         ph.put("x", p.getLocation().getBlockX());
         ph.put("z", p.getLocation().getBlockZ());
         Object[] flat = new Object[ph.size() * 2];
@@ -210,7 +225,8 @@ public final class SidebarModule extends AquaticModule implements Listener {
         }
 
         List<Component> out = new ArrayList<>();
-        for (String raw : config().getStringList("lines")) {
+        // "layout" (2.3.0+) replaces the older "lines"
+        for (String raw : config().getStringList("layout")) {
             String line = raw;
             if (line.startsWith("?")) {
                 int colon = line.indexOf(':');
@@ -228,6 +244,8 @@ public final class SidebarModule extends AquaticModule implements Listener {
                     case "event" -> event != null;
                     case "bounty" -> bounty > 0;
                     case "conqueror" -> conqueror != null;
+                    case "combat" -> combatLeft > 0;
+                    case "nofruit" -> fruit == null;
                     default -> true;
                 };
                 if (!show) {

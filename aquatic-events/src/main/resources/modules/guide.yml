@@ -19,12 +19,14 @@ intro:
   show-skip-hint: true
   # Open the guide book when the intro is over.
   open-book-at-end: true
+  # Keep titles short (about 16 characters): long ones don't fit on the screen; put the rest in
+  # the subtitle or the chat lines.
   # The steps, played one after another. Per step:
   #   title / subtitle   big text in the middle of the screen (optional)
   #   chat               lines in chat (optional)
   #   seconds            how long before the next step starts
   #   sound              sound key (optional, "none" for silence)
-  steps:
+  sequence:
     - title: "<gradient:#1fa2ff:#12d8fa><bold>AQUATIC SMP"
       subtitle: "<white>Sail. Claim. Conquer."
       chat:
@@ -42,7 +44,7 @@ intro:
         - "<gray>And one throne waits in the capital for the <gold>Conqueror of the Sea</gold>."
       seconds: 10
 
-    - title: "<aqua><bold>1. Form a crew"
+    - title: "<aqua><bold>Form a Crew"
       subtitle: "<gray>/crew create <name>"
       chat:
         - "<aqua><bold>Crews</bold> <gray>are pirate gangs of up to 6 players."
@@ -50,7 +52,7 @@ intro:
         - "<gray>Chat with your crew using <white>/cc <message></white>."
       seconds: 7
 
-    - title: "<green><bold>2. Claim an island"
+    - title: "<green><bold>Claim an Island"
       subtitle: "<gray>/island claim"
       chat:
         - "<green><bold>Islands</bold> <gray>are scattered across the sea. Sail out and explore!"
@@ -59,7 +61,7 @@ intro:
         - "<gray>Find islands with <white>/island map</white>."
       seconds: 8
 
-    - title: "<gold><bold>3. Hunt for treasure"
+    - title: "<gold><bold>Hunt Treasure"
       subtitle: "<gray>Look for the red <red><bold>X</bold></red><gray> and dig!"
       chat:
         - "<gold><bold>Treasure</bold> <gray>is buried on islands. A <red><bold>red X</bold></red> <gray>marks the spot."
@@ -68,7 +70,7 @@ intro:
         - "<gray>Rumours: <white>/treasure info</white>."
       seconds: 9
 
-    - title: "<red><bold>4. Bounties & powers"
+    - title: "<red><bold>Bounties & Powers"
       subtitle: "<gray>Fame has a price"
       chat:
         - "<red><bold>Bounties:</bold> <gray>defeating pirates raises your bounty. Claim one by taking down a wanted pirate."
@@ -77,15 +79,15 @@ intro:
         - "<aqua>You are safe from PvP for your first 30 minutes. <gray>Check with <white>/pvp</white>. Never log out in a fight!"
       seconds: 9
 
-    - title: "<gold><bold>Become the Conqueror of the Sea"
-      subtitle: "<gray>Win the tournament, claim the crown"
+    - title: "<gold><bold>The Throne"
+      subtitle: "<gray>Win the tournament, rule the sea"
       chat:
         - "<gold>The <bold>Conqueror of the Sea</bold> is crowned in a server-wide crew tournament."
         - "<gray>Watch for announcements, and see past kings with <white>/hallofkings</white>."
       seconds: 6
 
-    - title: "<aqua>Good luck, pirate!"
-      subtitle: "<gray>Type <white>/guide</white> any time to read this again"
+    - title: "<aqua><bold>Good luck!"
+      subtitle: "<gray>Type <white>/guide</white> to read this again"
       chat:
         - "<aqua>Type <white>/guide</white> any time for the pirate's guide book."
       seconds: 4
@@ -104,7 +106,8 @@ starter-kit:
     - "STONE_SHOVEL"
     - "STONE_SWORD"
     - "item:log_pose"
-  doubloons: 100
+  # Extra Doubloons on top of economy.yml's start-balance (0 = none).
+  doubloons: 0
   # Also bury a real treasure on a random island and give a treasure map to it: the best way to
   # learn treasure hunting. (Needs the treasure module.)
   treasure-map: true

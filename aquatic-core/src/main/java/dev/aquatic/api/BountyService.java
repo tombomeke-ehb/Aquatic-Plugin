@@ -18,6 +18,11 @@ public interface BountyService {
     /** Removes the bounty without paying it out. */
     void clearBounty(UUID target);
 
+    /** The bounty tier title of a player (MiniMessage, e.g. "<aqua>Rising Tide"), or null below the first tier. */
+    default String tierTitle(UUID player) {
+        return null;
+    }
+
     /** Highest bounties first. */
     Map<UUID, Double> top(int limit);
 }

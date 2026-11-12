@@ -120,6 +120,16 @@ public final class LevelsModule extends AquaticModule implements LevelService, L
     }
 
     @Override
+    public double progress(UUID player) {
+        int level = level(player);
+        if (level >= maxLevel()) {
+            return 1;
+        }
+        long from = xpForLevel(level), to = xpForLevel(level + 1);
+        return to <= from ? 1 : Math.max(0, Math.min(1, (xp(player) - from) / (double) (to - from)));
+    }
+
+    @Override
     public long xpToNext(UUID player) {
         int level = level(player);
         return level >= maxLevel() ? 0 : Math.max(0, xpForLevel(level + 1) - xp(player));

@@ -116,7 +116,8 @@ This file is the roadmap. Tick off items as they're finished and add new ideas u
 ## Interface
 - [x] Sidebar, tab list, hover cards and help pages.
 - [x] `/spawn` with warmup; chat with level badge, @mentions and `[item]`; economy commands win over EssentialsX (done in 2.1.0).
-- [ ] Combat tag and Tidewill energy on the sidebar.
+- [x] Expanded sidebar: XP bar, bounty title, crew online, island rarity, combat tag (done in 2.3.0).
+- [ ] Tidewill energy on the sidebar.
 - [ ] A menu for `/crew` (members, ranks, bank, diplomacy) instead of only commands.
 - [ ] An admin config menu (`/aquatic config`) to change the main settings in-game.
 - [ ] Edit loot in-game: hold an item and run `/treasure loot add <tier> [weight]`.

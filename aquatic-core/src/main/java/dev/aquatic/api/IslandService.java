@@ -32,6 +32,11 @@ public interface IslandService {
 
     void setStatus(Island island, IslandStatus status);
 
+    /** The coloured rarity name of an island type ("Common" ... "Legendary"), or null. */
+    default net.kyori.adventure.text.Component rarityDisplay(IslandType type) {
+        return null;
+    }
+
     /** A random free spot in the configured ocean area that does not overlap any island, or null. */
     Location findFreeOceanSpot(int radius);
 }

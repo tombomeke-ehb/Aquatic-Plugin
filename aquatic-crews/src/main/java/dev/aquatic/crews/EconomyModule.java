@@ -110,7 +110,7 @@ public final class EconomyModule extends AquaticModule implements EconomyService
         plural = config().getString("currency.plural", "Doubloons");
         symbol = config().getString("currency.symbol", "");
         format = config().getString("currency.format", "<amount> <name>");
-        startingBalance = round(Math.min(sane(config().getDouble("starting-balance", 100), 0), maxBalance));
+        startingBalance = round(Math.min(sane(config().getDouble("start-balance", 1000), 0), maxBalance));
 
         mobRewards.clear();
         ConfigurationSection mobs = config().getConfigurationSection("mob-rewards.mobs");

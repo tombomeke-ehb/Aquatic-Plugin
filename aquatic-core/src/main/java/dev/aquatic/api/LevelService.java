@@ -12,6 +12,11 @@ public interface LevelService {
     /** XP still needed for the next level. */
     long xpToNext(UUID player);
 
+    /** Progress towards the next level, 0..1 (1 at max level). */
+    default double progress(UUID player) {
+        return 0;
+    }
+
     /** Gives XP (e.g. for an event reward); handles level-ups. */
     void addXp(UUID player, long amount, String reason);
 }

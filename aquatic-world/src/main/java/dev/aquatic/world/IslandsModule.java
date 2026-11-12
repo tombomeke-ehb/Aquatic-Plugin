@@ -740,6 +740,11 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         return types.get(type);
     }
 
+    @Override
+    public Component rarityDisplay(IslandType type) {
+        return rarityName(type);
+    }
+
     /** The coloured rarity name of an island type, e.g. "Rare". */
     Component rarityName(IslandType type) {
         String r = settings(type).rarity;

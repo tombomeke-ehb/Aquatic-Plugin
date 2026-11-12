@@ -201,7 +201,8 @@ public final class GuideModule extends AquaticModule implements Listener {
     /** Plays the intro steps one after another. */
     void playIntro(Player p) {
         stopIntro(p.getUniqueId());
-        List<Map<?, ?>> steps = config().getMapList("intro.steps");
+        // "intro.sequence" (2.3.0+) replaces the older "intro.steps", which had titles too long for the screen
+        List<Map<?, ?>> steps = config().getMapList("intro.sequence");
         if (steps.isEmpty()) {
             return;
         }

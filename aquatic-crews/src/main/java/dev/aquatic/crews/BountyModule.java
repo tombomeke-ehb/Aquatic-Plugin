@@ -260,6 +260,12 @@ public final class BountyModule extends AquaticModule implements BountyService, 
         }
     }
 
+    @Override
+    public String tierTitle(UUID player) {
+        int i = tierIndex(bountyOf(player));
+        return i < 0 || i >= tiers.size() ? null : tiers.get(i).title();
+    }
+
     private void setBounty(UUID id, double amount) {
         Entry e = entry(id);
         double old = e.bounty;

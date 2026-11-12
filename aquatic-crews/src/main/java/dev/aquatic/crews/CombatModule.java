@@ -44,7 +44,7 @@ import java.util.UUID;
  * </ul>
  * Tournament matches are left alone (the tournament handles its own deaths and logouts).
  */
-public final class CombatModule extends AquaticModule implements Listener {
+public final class CombatModule extends AquaticModule implements Listener, dev.aquatic.api.CombatService {
 
     private static final String BYPASS = "aquatic.combat.bypass";
     private static final String ADMIN = "aquatic.combat.admin";
@@ -79,6 +79,7 @@ public final class CombatModule extends AquaticModule implements Listener {
             }
         }
         registerListener(this);
+        registerService(dev.aquatic.api.CombatService.class, this);
         runTimer(this::tick, 10L, 10L);
         registerCommands();
     }
@@ -101,6 +102,16 @@ public final class CombatModule extends AquaticModule implements Listener {
     }
 
     // ------------------------------------------------------------------ state helpers
+
+    @Override
+    public boolean inCombat(UUID player) {
+        return isTagged(player);
+    }
+
+    @Override
+    public long combatSecondsLeft(UUID player) {
+        return isTagged(player) ? secondsLeft(tagged.get(player)) : 0;
+    }
 
     public boolean isTagged(UUID player) {
         Long until = tagged.get(player);
