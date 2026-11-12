@@ -43,7 +43,8 @@ The idea came from an anime: powers from fruits, a sea full of islands, crews co
 
 ### Sidebar (scoreboard HUD)
 - [x] Sidebar on the right side of the screen with Doubloons, bounty, crew, rank, the current island and its owner, your fruit power and the running event. Toggle it with `/sidebar`; lines are in `sidebar.yml`. It steps aside during the tournament (done in 1.5.0).
-- [ ] Show the fruit ability cooldown and the active combat tag on the sidebar.
+- [x] Current fruit move and its cooldown on the sidebar (done in 1.8.0).
+- [ ] Show the active combat tag on the sidebar.
 - [ ] Context modes: during an event, show the event score (kills, held time).
 - [ ] Hook into the TAB plugin's scoreboard when it's installed.
 
@@ -112,7 +113,8 @@ The idea stays: an inner strength every pirate can train, separate from fruits. 
   - Goro: a chained lightning bolt across 20+ blocks.
   - Hie: an ice path that freezes everyone on it.
   - Gomu: Gatling, a fast cone of hits.
-- [ ] **Move sets:** 3–4 moves per fruit, each with its own cooldown.
+- [x] Move sets: 2–3 moves per fruit with separate cooldowns, switched with sneak + scroll (done in 1.8.0).
+- [ ] **More moves:** a 3rd and 4th move for every fruit.
   - Pick a move by sneak + scrolling the hotbar, or by holding the fruit "skill item" in a set slot.
   - The current move and its cooldowns show in the action bar.
 - [ ] **Combos and synergy:**
@@ -123,7 +125,7 @@ The idea stays: an inner strength every pirate can train, separate from fruits. 
 - [ ] **Awakening:** a stronger version of a fruit after a lot of use (mastery XP per fruit).
 - [ ] More fruits: Body, Beast and Elemental variety.
 - [x] Better visuals: shockwaves, beams, auras, trails, colours (done in 1.3.0).
-- [ ] A telegraph before big hits so they can be dodged.
+- [x] Telegraph: `windup-ticks` on any move (done in 1.8.0).
 - [ ] **PvP balance pass**, tested with real players:
   - **Time-to-kill target:** an ability should take about 20–30% of a player's health, and a full combo should not one-shot a player in diamond or netherite armour.
   - **Armour:** abilities respect armour and Protection. Decide per move whether it does true damage.
@@ -170,6 +172,7 @@ The idea stays: an inner strength every pirate can train, separate from fruits. 
 - [x] Islands from radius 100 up to 1500, generated chunk by chunk (done in 1.3.0).
 - [ ] **Performance:** keep the per-tick budget. Caves and structures are generated in the same job system.
 - [x] Capital town: roads, houses, piers, lighthouse; coral reefs and kelp (done in 1.6.0).
+- [x] Shipwrecks on beaches, freshwater lakes (done in 1.8.0).
 - [ ] **Placeable facilities on big islands:** buy a building (dock, market, watchtower, vault) in the shop and place it as a schematic, with a preview outline, on your own island. Each building gives its upgrade. See section 1.
 
 ### 4c. Custom map
@@ -183,6 +186,7 @@ The idea stays: an inner strength every pirate can train, separate from fruits. 
 - [ ] **Navigation:** the Tide Compass "locks" onto an island you choose (`/logpose set <island>`). An Bound Compass item points to one fixed island.
 
 ### 5. More treasure items
+- [x] Coral Trident, Captain's Greatcoat, Healing Tonic, Grog of the Gale (done in 1.8.0).
 - [x] Uncommon tier between common and rare (done in 1.5.0).
 - [ ] More unique loot: legendary weapons and armour sets, accessories with passive buffs, ship upgrades, Tidewill training scrolls, rare cosmetics such as hats and titles.
 - [ ] Item rarities shown in the name and lore.

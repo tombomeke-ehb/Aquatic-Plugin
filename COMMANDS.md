@@ -239,18 +239,19 @@ Right-click a treasure map to get a "warmer / colder" hint.
 | `/fruit` | Your Abyss Fruit power, its ability and cooldown (alias `/devilfruit`) | Player: `aquatic.items.fruit` |
 | `/aitem give <player> <id> [amount]` | Give a custom item | Admin: `aquatic.items.admin` |
 | `/aitem list` | All custom item ids | Admin |
-| `/aitem fruit set <player> <fruit\|none>` | Give or remove a Abyss Fruit power directly | Admin |
+| `/aitem fruit set <player> <fruit\|none>` | Give or remove an Abyss Fruit power directly | Admin |
 | `/aitem fruit info [player]` | Show a player's power | Admin |
 
 Aliases: `/aquaticitem`, `/pirateitem`.
 
 Default item ids:
-- **Abyss Fruits:** `gomu_gomu`, `mera_mera`, `hie_hie`, `goro_goro`, `suke_suke`, `ope_ope`, `yami_yami`, `ushi_ushi_bison`
+- **Abyss Fruits:** `gomu_gomu`, `mera_mera`, `hie_hie`, `goro_goro`, `suke_suke`, `ope_ope`, `yami_yami`, `ushi_ushi_bison`, `galeborn`, `stoneskin`
 - **Weapons:** `sea_prism_blade`, `seastone_cuffs`, `wado_ichimonji`, `shusui`, `yoru`, `flintlock`, `hand_cannon`, `cannonball`
-- **Tools and other:** `log_pose`, `den_den_mushi`, `rum`, `pirate_king_crown`
+- **Tools and other:** `log_pose`, `den_den_mushi`, `rum`, `healing_tonic`, `gale_grog`, `pirate_king_crown`
+- **Gear:** `coral_trident`, `captains_coat`
 - **Special:** `devil_fruit_random` gives a random Abyss Fruit
 
-**Using a Abyss Fruit power:** sneak + **F** (swap hands), or sneak + right-click while looking at a block. You cannot use powers while in water.
+**Using an Abyss Fruit power:** sneak + **F** (swap hands), or sneak + right-click while looking at a block. Fruits have 2–3 moves: **sneak + scroll** (empty hand) switches between them. You cannot use powers while in water.
 
 ---
 

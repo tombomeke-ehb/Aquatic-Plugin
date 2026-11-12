@@ -155,6 +155,9 @@ tiers:
       - {material: TOTEM_OF_UNDYING, amount: 1, weight: 0.8}
       - {material: MUSIC_DISC_PIGSTEP, weight: 1}
       - {material: SPYGLASS, weight: 2, name: "<gold>Navigator's Spyglass"}
+      - {custom-item: healing_tonic, amount: 1-2, weight: 2}
+      - {custom-item: gale_grog, weight: 1.5}
+      - {custom-item: captains_coat, weight: 0.6}
       - {custom-item: devil_fruit_random, weight: 0.5}
       - {doubloons: 200-400, weight: 4}
   legendary:
@@ -184,6 +187,8 @@ tiers:
       - {material: MUSIC_DISC_OTHERSIDE, weight: 1}
       - {material: MUSIC_DISC_RELIC, weight: 1}
       - {material: NAME_TAG, weight: 1, name: "<gold>the pirate theme", lore: ["<gray>It was real all along."]}
+      - {custom-item: coral_trident, weight: 1}
+      - {custom-item: captains_coat, weight: 1}
       - {custom-item: devil_fruit_random, weight: 2}
       - {doubloons: 800-1500, weight: 4}
 

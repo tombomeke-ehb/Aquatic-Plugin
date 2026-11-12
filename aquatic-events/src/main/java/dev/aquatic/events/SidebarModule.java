@@ -189,6 +189,9 @@ public final class SidebarModule extends AquaticModule implements Listener {
         ph.put("island", island == null ? rawMsg("open-sea") : Component.text(island.name()));
         ph.put("island_owner", island == null ? Component.empty() : islandOwner(island, crews));
         ph.put("fruit", fruit == null ? rawMsg("none") : Text.mm(fruit));
+        Object[] move = moveInfo(id);
+        ph.put("move", move[0]);
+        ph.put("move_cd", move[1]);
         ph.put("event", event == null ? Component.empty() : event.displayName());
         ph.put("event_time", event == null ? "" : Text.duration(Math.max(0, event.secondsLeft())));
         ph.put("conqueror", conqueror == null ? rawMsg("none") : Component.text(conqueror));
@@ -254,6 +257,24 @@ public final class SidebarModule extends AquaticModule implements Listener {
         String fruitId = items.fruits().fruitOf(id);
         ItemDef def = fruitId == null ? null : items.def(fruitId);
         return def == null ? null : def.cfg.getString("name", fruitId);
+    }
+
+    /** {move name component, cooldown component} of the player's selected fruit move. */
+    private Object[] moveInfo(UUID id) {
+        if (!(plugin().module("items") instanceof ItemsModule items) || !items.isEnabled() || items.fruits() == null) {
+            return new Object[]{Component.empty(), Component.empty()};
+        }
+        String fruitId = items.fruits().fruitOf(id);
+        ItemDef def = fruitId == null ? null : items.def(fruitId);
+        org.bukkit.configuration.ConfigurationSection move = def == null ? null : items.fruits().currentMove(id, def);
+        if (move == null) {
+            return new Object[]{Component.empty(), Component.empty()};
+        }
+        int n = Math.max(1, def.moves().size());
+        int index = def.moves().indexOf(move);
+        long left = items.fruits().cooldownLeft(id, "fruit:" + Math.floorMod(index, n));
+        return new Object[]{Text.mm(move.getString("name", "Move")),
+                left > 0 ? rawMsg("move-cooldown", "seconds", left) : rawMsg("move-ready")};
     }
 
     private SeaEvent runningEvent() {

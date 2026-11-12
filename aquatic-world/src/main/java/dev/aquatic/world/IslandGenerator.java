@@ -486,6 +486,8 @@ final class IslandGenerator extends AreaJob {
         if (t.plaza && t.town) {
             planTown(new Random(seed * 41 + 5), list); // before trees: roads and houses reserve their ground
         }
+        planLakes(new Random(seed * 59 + 3), list);
+        planShipwreck(new Random(seed * 67 + 9), list);
         if (t.ruinDensity > 0 && !t.ruinBlocks.isEmpty()) {
             int ruins = Math.max(1, (int) Math.round(landCount / 10000.0 * t.ruinDensity));
             for (int i = 0; i < ruins; i++) {
@@ -587,6 +589,148 @@ final class IslandGenerator extends AreaJob {
                 if (b.isEmpty()) {
                     b.setType(Material.LAVA, true);
                 }
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------ lakes & shipwrecks
+
+    private void planLakes(Random r, List<Feature> list) {
+        int lakes = (int) Math.round(landCount / 10000.0 * t.lakeDensity);
+        for (int i = 0; i < lakes; i++) {
+            for (int attempt = 0; attempt < 10; attempt++) {
+                int dx = r.nextInt(n) - radius, dz = r.nextInt(n) - radius;
+                int lr = 3 + r.nextInt(4);
+                if (!flatLand(dx, dz, lr + 1, 1)) {
+                    continue;
+                }
+                for (int ox = -lr - 1; ox <= lr + 1; ox++) {
+                    for (int oz = -lr - 1; oz <= lr + 1; oz++) {
+                        if (ox * ox + oz * oz <= (lr + 1) * (lr + 1)) {
+                            kind[index(dx + ox, dz + oz)] = BUILT; // no trees in or right next to the water
+                        }
+                    }
+                }
+                long lakeSeed = r.nextLong();
+                list.add(new Feature(dx, dz, lr + 2, () -> buildLake(dx, dz, lr, new Random(lakeSeed))));
+                break;
+            }
+        }
+    }
+
+    /** True when the square of land around dx/dz is dry land that varies at most "maxDiff" blocks in height. */
+    private boolean flatLand(int dx, int dz, int half, int maxDiff) {
+        int lo = Integer.MAX_VALUE, hi = Integer.MIN_VALUE;
+        for (int ox = -half; ox <= half; ox++) {
+            for (int oz = -half; oz <= half; oz++) {
+                int px = dx + ox, pz = dz + oz;
+                if (!inGrid(px, pz) || kind[index(px, pz)] != LAND) {
+                    return false;
+                }
+                lo = Math.min(lo, top[index(px, pz)]);
+                hi = Math.max(hi, top[index(px, pz)]);
+            }
+        }
+        return hi - lo <= maxDiff;
+    }
+
+    private void buildLake(int dx, int dz, int lr, Random r) {
+        int level = Integer.MAX_VALUE;
+        for (int ox = -lr; ox <= lr; ox++) {
+            for (int oz = -lr; oz <= lr; oz++) {
+                if (ox * ox + oz * oz <= lr * lr) {
+                    level = Math.min(level, top[index(dx + ox, dz + oz)]);
+                }
+            }
+        }
+        Material[] bottom = {Material.SAND, Material.CLAY, Material.GRAVEL, Material.DIRT};
+        for (int ox = -lr; ox <= lr; ox++) {
+            for (int oz = -lr; oz <= lr; oz++) {
+                double d = Math.sqrt(ox * ox + oz * oz);
+                if (d > lr) {
+                    continue;
+                }
+                int x = cx + dx + ox, z = cz + dz + oz;
+                int depth = d < lr - 2 ? 3 : d < lr - 1 ? 2 : 1;
+                for (int y = top[index(dx + ox, dz + oz)] + 4; y > level; y--) {
+                    set(x, y, z, Material.AIR); // plants and the higher ground on the rim
+                }
+                for (int y = level; y > level - depth; y--) {
+                    set(x, y, z, Material.WATER);
+                }
+                set(x, level - depth, z, bottom[r.nextInt(bottom.length)]);
+                if (r.nextDouble() < 0.07 && depth >= 2) {
+                    set(x, level + 1, z, Material.LILY_PAD);
+                }
+            }
+        }
+    }
+
+    private void planShipwreck(Random r, List<Feature> list) {
+        if (t.shipwreckChance <= 0 || r.nextDouble() >= t.shipwreckChance) {
+            return;
+        }
+        for (int attempt = 0; attempt < 40; attempt++) {
+            int dx = r.nextInt(n) - radius, dz = r.nextInt(n) - radius;
+            if (kindAt(dx, dz) != BEACH) {
+                continue;
+            }
+            int[] dir = DIRS[r.nextInt(DIRS.length)];
+            long wreckSeed = r.nextLong();
+            list.add(new Feature(dx, dz, 7, () -> buildShipwreck(dx, dz, dir, new Random(wreckSeed))));
+            return;
+        }
+    }
+
+    /** A broken hull half buried in the beach: gaps in the planks, a snapped mast and a barrel of loot. */
+    private void buildShipwreck(int dx, int dz, int[] dir, Random r) {
+        int base = top[index(dx, dz)];
+        int ax = dir[0], az = dir[1];       // along the ship
+        int px = -dir[1], pz = dir[0];       // across the ship
+        for (int i = -5; i <= 5; i++) {
+            int half = Math.abs(i) >= 4 ? 1 : 2;
+            for (int w = -half; w <= half; w++) {
+                int x = cx + dx + ax * i + px * w, z = cz + dz + az * i + pz * w;
+                boolean side = Math.abs(w) == half || Math.abs(i) == 5;
+                // keel and floor sit in the sand
+                set(x, base, z, Math.abs(w) == 0 ? Material.STRIPPED_SPRUCE_LOG : Material.DARK_OAK_PLANKS);
+                if (side) {
+                    for (int y = 1; y <= 2; y++) {
+                        if (r.nextDouble() < 0.75) { // broken planks
+                            set(x, base + y, z, y == 2 && r.nextBoolean() ? Material.SPRUCE_SLAB : Material.SPRUCE_PLANKS);
+                        }
+                    }
+                } else {
+                    for (int y = 1; y <= 3; y++) {
+                        Block b = world.getBlockAt(x, base + y, z);
+                        if (b.getType() == Material.SAND || b.isReplaceable()) {
+                            b.setType(Material.AIR, false);
+                        }
+                    }
+                }
+            }
+        }
+        // snapped, leaning mast
+        int mx = cx + dx, mz = cz + dz;
+        for (int y = 1; y <= 6; y++) {
+            set(mx + px * (y / 3), base + y, mz + pz * (y / 3), Material.SPRUCE_LOG);
+        }
+        set(mx + px * 2 + ax, base + 6, mz + pz * 2 + az, Material.SPRUCE_FENCE);
+        set(mx + px * 2 - ax, base + 6, mz + pz * 2 - az, Material.WHITE_WOOL);
+        // a barrel of salvage at the stern
+        Block barrel = world.getBlockAt(cx + dx - ax * 3, base + 1, cz + dz - az * 3);
+        barrel.setType(Material.BARREL, false);
+        if (barrel.getState() instanceof org.bukkit.block.Barrel state) {
+            org.bukkit.inventory.Inventory inv = state.getInventory();
+            Material[] loot = {Material.GOLD_NUGGET, Material.STRING, Material.GUNPOWDER, Material.ROTTEN_FLESH,
+                    Material.PAPER, Material.IRON_NUGGET, Material.COAL, Material.EMERALD};
+            int rolls = 3 + r.nextInt(4);
+            for (int k = 0; k < rolls; k++) {
+                Material m = loot[r.nextInt(loot.length)];
+                inv.setItem(r.nextInt(inv.getSize()), new org.bukkit.inventory.ItemStack(m, 1 + r.nextInt(m == Material.EMERALD ? 2 : 6)));
+            }
+            if (r.nextDouble() < 0.15) {
+                inv.addItem(new org.bukkit.inventory.ItemStack(Material.NAUTILUS_SHELL));
             }
         }
     }

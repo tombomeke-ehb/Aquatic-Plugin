@@ -138,6 +138,8 @@ restore:
 #                    coral reefs, cold ones kelp forests)
 #   mountains        0..2, how tall the mountains get on this type
 #   town             (CAPITAL) roads, houses, piers and a lighthouse around the plaza
+#   shipwreck-chance 0..1, chance of a shipwreck on the beach (default 0.6, capital 0)
+#   lakes            freshwater lakes per 10,000 land blocks (default: plains/jungle 2.5, tropical 1.2)
 #   volcano          cone with a lava crater
 #   plaza            flat central plaza (+ throne)
 # -------------------------------------------------------------------------------------

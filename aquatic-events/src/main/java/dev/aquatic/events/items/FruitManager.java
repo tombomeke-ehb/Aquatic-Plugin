@@ -48,6 +48,45 @@ public final class FruitManager implements Listener {
     private final Map<String, Long> cooldowns = new HashMap<>();
     private final Map<UUID, Long> seastoned = new HashMap<>();
     private final Map<UUID, Long> lastTrigger = new HashMap<>();
+    /** Selected move per player (index into ItemDef.moves()). */
+    private final Map<UUID, Integer> selectedMove = new HashMap<>();
+
+    /** The move a player has selected (null when the fruit has none). */
+    public ConfigurationSection currentMove(UUID player, ItemDef def) {
+        java.util.List<ConfigurationSection> moves = def == null ? java.util.List.of() : def.moves();
+        if (moves.isEmpty()) {
+            return null;
+        }
+        int i = Math.floorMod(selectedMove.getOrDefault(player, 0), moves.size());
+        return moves.get(i);
+    }
+
+    private String moveKey(UUID player, ItemDef def) {
+        int n = def == null ? 1 : Math.max(1, def.moves().size());
+        return "fruit:" + Math.floorMod(selectedMove.getOrDefault(player, 0), n);
+    }
+
+    /** Sneak + scroll the hotbar (with an empty hand) switches between a fruit's moves. */
+    @EventHandler(ignoreCancelled = true)
+    public void onScroll(org.bukkit.event.player.PlayerItemHeldEvent event) {
+        Player p = event.getPlayer();
+        if (!p.isSneaking() || !module.config().getBoolean("fruits.switch-with-sneak-scroll", true)) {
+            return;
+        }
+        ItemDef def = fruitDef(p);
+        if (def == null || def.moves().size() < 2 || !p.getInventory().getItemInMainHand().getType().isAir()) {
+            return;
+        }
+        event.setCancelled(true);
+        int prev = event.getPreviousSlot(), next = event.getNewSlot();
+        int dir = (next - prev + 9) % 9 <= 4 ? 1 : -1;
+        int size = def.moves().size();
+        int i = Math.floorMod(selectedMove.getOrDefault(p.getUniqueId(), 0) + dir, size);
+        selectedMove.put(p.getUniqueId(), i);
+        ConfigurationSection move = def.moves().get(i);
+        module.actionBar(p, "move-selected", "ability", Text.mm(move.getString("name", "Move")), "n", i + 1, "total", size);
+        Util.sound(p, "ui.button.click", 0.5f, 1.6f);
+    }
     private final Set<UUID> inSea = new HashSet<>();
     private final Set<UUID> coolingDown = new HashSet<>();
     private final Map<String, List<PotionEffect>> passiveCache = new HashMap<>();
@@ -176,8 +215,8 @@ public final class FruitManager implements Listener {
                     p.addPotionEffect(e);
                 }
             }
-            long left = cooldownLeft(uuid, "fruit");
-            ConfigurationSection ability = def.ability();
+            long left = cooldownLeft(uuid, moveKey(uuid, def));
+            ConfigurationSection ability = currentMove(uuid, def);
             if (ability != null && showBar) {
                 if (left > 0) {
                     coolingDown.add(uuid);
@@ -405,11 +444,11 @@ public final class FruitManager implements Listener {
 
     private void use(Player p) {
         ItemDef def = fruitDef(p);
-        ConfigurationSection ability = def == null ? null : def.ability();
+        UUID uuid = p.getUniqueId();
+        ConfigurationSection ability = currentMove(uuid, def);
         if (ability == null) {
             return;
         }
-        UUID uuid = p.getUniqueId();
         long now = System.currentTimeMillis();
         Long last = lastTrigger.put(uuid, now);
         if (last != null && now - last < 200) {
@@ -428,13 +467,14 @@ public final class FruitManager implements Listener {
             module.actionBar(p, "ability-sea");
             return;
         }
-        long left = cooldownLeft(uuid, "fruit");
+        String key = moveKey(uuid, def);
+        long left = cooldownLeft(uuid, key);
         if (left > 0) {
             module.actionBar(p, "ability-cooldown", "ability", name, "seconds", left);
             return;
         }
-        if (abilities.execute(p, ability)) {
-            setCooldown(uuid, "fruit", ability.getDouble("cooldown", 10));
+        if (abilities.executeWithWindup(p, ability)) {
+            setCooldown(uuid, key, ability.getDouble("cooldown", 10));
             module.actionBar(p, "ability-used", "ability", name);
         } else {
             module.actionBar(p, "ability-no-target", "ability", name);
@@ -447,6 +487,7 @@ public final class FruitManager implements Listener {
         inSea.remove(uuid);
         coolingDown.remove(uuid);
         lastTrigger.remove(uuid);
+        selectedMove.remove(uuid);
         module.gear().abilities().forget(uuid);
     }
 }

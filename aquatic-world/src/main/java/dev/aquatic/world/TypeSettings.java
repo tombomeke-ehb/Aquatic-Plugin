@@ -34,6 +34,11 @@ final class TypeSettings {
     Material topLayer;
     boolean frozenShore;
 
+    /** Chance that an island of this type has a shipwreck on its beach (0..1). */
+    double shipwreckChance;
+    /** Freshwater lakes per 10,000 land blocks. */
+    double lakeDensity;
+
     /** Multiplier for mountains on this island type (0 = none). */
     double mountainScale = 1.0;
 
@@ -119,6 +124,13 @@ final class TypeSettings {
             t.defaultStatus = IslandStatus.UNCLAIMED;
         }
         t.maxHeight = Math.max(1, s.getInt("max-height", 12));
+        t.shipwreckChance = Math.max(0, Math.min(1, s.getDouble("shipwreck-chance", t.type == IslandType.CAPITAL ? 0 : 0.6)));
+        t.lakeDensity = Math.max(0, s.getDouble("lakes", switch (t.type) {
+            case PLAINS, JUNGLE -> 2.5;
+            case TROPICAL -> 1.2;
+            case ANCIENT -> 0.8;
+            default -> 0;
+        }));
         t.lavaStreams = Math.max(0, s.getInt("volcano.lava-streams", 2));
         boolean warm = t.type == IslandType.TROPICAL || t.type == IslandType.PLAINS || t.type == IslandType.JUNGLE;
         boolean frozen = t.type == IslandType.SNOWY;

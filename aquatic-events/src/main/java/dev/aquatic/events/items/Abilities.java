@@ -245,6 +245,29 @@ public final class Abilities {
     }
 
     /**
+     * Runs the ability, after an optional visible build-up ("windup-ticks") so opponents can react.
+     * A move with a windup always counts as used (the cooldown starts).
+     */
+    public boolean executeWithWindup(Player p, ConfigurationSection a) {
+        int windup = Math.max(0, a.getInt("windup-ticks", 0));
+        if (windup <= 0) {
+            return execute(p, a);
+        }
+        String type = a.getString("type", "").toLowerCase(Locale.ROOT);
+        org.bukkit.Color c = colorOf(a, type);
+        fx.spiral(p, windup, c);
+        fx.wave(p.getLocation().add(0, 0.1, 0), 1.6, windup, c, Particle.ENCHANT, true);
+        sound(a.getConfigurationSection("windup") != null ? a.getConfigurationSection("windup") : a, "block.beacon.power_select", p.getLocation());
+        p.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, windup, 2, true, false, false));
+        module.runLater(() -> {
+            if (p.isOnline() && !p.isDead()) {
+                execute(p, a);
+            }
+        }, windup);
+        return true;
+    }
+
+    /**
      * Runs the ability.
      *
      * @return false when it could not be used (no target); no cooldown should be applied then
@@ -390,6 +413,108 @@ public final class Abilities {
                 fx.burst(p.getLocation().add(0, 0.5, 0), Particle.CLOUD, 12, 0.3, 0.05);
                 sound(a, "entity.player.attack.sweep", p.getLocation());
                 selfEffects(p, a);
+                return true;
+            }
+            case "wave" -> {
+                // a wave rolling forward over the ground (fire wave, ice path, gust ...)
+                Vector flat = dir.clone().setY(0);
+                if (flat.lengthSquared() < 1e-4) {
+                    flat = new Vector(1, 0, 0);
+                }
+                flat.normalize();
+                Set<UUID> hit = new HashSet<>();
+                Location start = p.getLocation().add(0, 0.2, 0);
+                int steps = Math.max(2, (int) range);
+                double width = a.getDouble("width", 1.6);
+                double knock = a.getDouble("knockback", 0.6);
+                org.bukkit.Color c = colorOf(a, type);
+                String block = a.getString("path-block");
+                Vector stepV = flat.clone();
+                for (int i = 1; i <= steps; i++) {
+                    int n = i;
+                    module.runLater(() -> {
+                        if (!p.isOnline()) {
+                            return;
+                        }
+                        Location pt = start.clone().add(stepV.clone().multiply(n));
+                        fx.dust(pt.clone().add(0, 0.4, 0), c, 1.8f, 6, width / 3);
+                        particles(a, "FLAME", pt.clone().add(0, 0.3, 0), 4, width / 3);
+                        for (Entity e : p.getWorld().getNearbyEntities(pt, width, 1.6, width)) {
+                            if (e instanceof LivingEntity le && hit.add(e.getUniqueId()) && strike(p, le, a, damage)) {
+                                push(le, stepV.clone().multiply(knock).setY(0.3));
+                            }
+                        }
+                        if (block != null) {
+                            org.bukkit.block.Block below = pt.getBlock().getRelative(org.bukkit.block.BlockFace.DOWN);
+                            org.bukkit.Material m = org.bukkit.Material.matchMaterial(block);
+                            if (m != null && below.getType() == org.bukkit.Material.WATER) {
+                                below.setType(m); // e.g. FROSTED_ICE: melts again on its own
+                            }
+                        }
+                    }, i);
+                }
+                sound(a, "entity.blaze.shoot", p.getLocation());
+                selfEffects(p, a);
+                return true;
+            }
+            case "beam" -> {
+                // an instant ray that hits everything along it (up to "pierce" targets)
+                Location from = eye.clone();
+                Vector step = dir.clone().normalize().multiply(0.5);
+                Location point = from.clone();
+                Set<UUID> hit = new HashSet<>();
+                int pierce = Math.max(1, a.getInt("pierce", 3));
+                for (double d = 0; d < range && hit.size() < pierce; d += 0.5) {
+                    point.add(step);
+                    if (point.getBlock().getType().isOccluding()) {
+                        break;
+                    }
+                    for (Entity e : p.getWorld().getNearbyEntities(point, 0.7, 0.7, 0.7)) {
+                        if (e instanceof LivingEntity le && hit.add(e.getUniqueId())) {
+                            strike(p, le, a, damage);
+                        }
+                    }
+                }
+                fx.beam(from, point, colorOf(a, type), 1.6f, 0.3);
+                particles(a, "END_ROD", point, 12, 0.3);
+                sound(a, "entity.warden.sonic_boom", p.getLocation());
+                selfEffects(p, a);
+                return true;
+            }
+            case "chain" -> {
+                // lightning that jumps from target to target
+                LivingEntity current = target(p, range);
+                if (current == null) {
+                    return false;
+                }
+                Set<UUID> hit = new HashSet<>();
+                Location last = eye.clone();
+                int jumps = Math.max(1, a.getInt("jumps", 3));
+                double jumpRange = a.getDouble("jump-range", 6);
+                double dmg = damage;
+                org.bukkit.Color c = colorOf(a, "lightning");
+                for (int i = 0; i <= jumps && current != null; i++) {
+                    hit.add(current.getUniqueId());
+                    Location at = current.getLocation().add(0, 1, 0);
+                    fx.beam(last, at, c, 1.3f, 0.25);
+                    fx.burst(at, Particle.ELECTRIC_SPARK, 20, 0.4, 0.1);
+                    strike(p, current, a, dmg);
+                    last = at;
+                    dmg *= a.getDouble("falloff", 0.8);
+                    LivingEntity next = null;
+                    double best = jumpRange * jumpRange;
+                    for (Entity e : current.getNearbyEntities(jumpRange, jumpRange, jumpRange)) {
+                        if (e instanceof LivingEntity le && !hit.contains(e.getUniqueId()) && canHurt(p, e)) {
+                            double ds = e.getLocation().distanceSquared(current.getLocation());
+                            if (ds < best) {
+                                best = ds;
+                                next = le;
+                            }
+                        }
+                    }
+                    current = next;
+                }
+                sound(a, "entity.lightning_bolt.thunder", p.getLocation());
                 return true;
             }
             case "slash" -> {

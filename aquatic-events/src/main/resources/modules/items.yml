@@ -52,6 +52,13 @@ fruits:
     - sneak-swap-hands
   # Show the cooldown of your ability on the action bar.
   show-cooldown-bar: true
+  # Fruits with more than one move: sneak + scroll the hotbar (empty hand) to pick a move.
+  # Every move has its own cooldown. Moves are "ability" (move 1) plus the list "extra-moves".
+  # Ability types: punch, fireball, nova, lightning, invisibility, swap, pull, transform, dash, slash,
+  #   wave (rolls forward over the ground), beam (instant ray, "pierce" targets), chain (jumps between
+  #   targets: "jumps", "jump-range", "falloff").
+  # Any move can have "windup-ticks": a visible build-up before it fires, so others can react.
+  switch-with-sneak-scroll: true
   # How often (in ticks, 20 = 1 second) passive effects and sea weakness are refreshed.
   passive-interval-ticks: 20
   # The sea rejects abyss fruit users.
@@ -122,7 +129,7 @@ items:
       - ""
       - "<light_purple>Your body becomes elastic as a spring."
       - "<gray>No fall damage, high jumps."
-      - "<gray>Ability: <white>Coilshot"
+      - "<gray>Moves: <white>Coilshot, Springstep, Coil Storm"
       - ""
       - "<dark_aqua>A fragment of the drowned Abyss."
       - "<red>The sea wants it back: eat it and you will never swim again."
@@ -148,6 +155,9 @@ items:
         leap-power: 2.0
         particle: CRIT
         sound: entity.player.attack.strong
+      extra-moves:
+        - {name: "<light_purple>Springstep", type: dash, cooldown: 6, power: 2.2, damage: 4, dash-ticks: 8, color: "#c44dff"}
+        - {name: "<light_purple>Coil Storm", type: wave, cooldown: 14, range: 9, width: 1.8, damage: 3, knockback: 0.4, windup-ticks: 10, particle: CRIT, color: "#ff6ec7"}
 
   mera_mera:
     type: fruit
@@ -159,7 +169,7 @@ items:
       - ""
       - "<gold>Your body burns like a living ember."
       - "<gray>Immune to fire and lava."
-      - "<gray>Ability: <white>Flare Fist"
+      - "<gray>Moves: <white>Flare Fist, Ember Wave, Pyre Burst"
       - ""
       - "<dark_aqua>A fragment of the drowned Abyss."
       - "<red>The sea wants it back: eat it and you will never swim again."
@@ -186,6 +196,9 @@ items:
         fire-ticks: 80
         particle: FLAME
         sound: entity.blaze.shoot
+      extra-moves:
+        - {name: "<gold>Ember Wave", type: wave, cooldown: 12, range: 12, width: 1.8, damage: 5, fire-ticks: 80, knockback: 0.5, particle: FLAME, color: "#ff6a00"}
+        - {name: "<red>Pyre Burst", type: nova, cooldown: 20, radius: 5, damage: 7, fire-ticks: 100, knockback: 1.2, windup-ticks: 15, particle: FLAME, color: "#ff3b00"}
 
   hie_hie:
     type: fruit
@@ -197,7 +210,7 @@ items:
       - ""
       - "<aqua>Your body turns to living ice."
       - "<gray>Freeze the sea you walk over."
-      - "<gray>Ability: <white>Frostburst"
+      - "<gray>Moves: <white>Frostburst, Glacier Path, Ice Lance"
       - ""
       - "<dark_aqua>A fragment of the drowned Abyss."
       - "<red>The sea wants it back: eat it and you will never swim again."
@@ -223,6 +236,9 @@ items:
           - mining_fatigue:2
         particle: SNOWFLAKE
         sound: block.glass.break
+      extra-moves:
+        - {name: "<aqua>Glacier Path", type: wave, cooldown: 12, range: 14, width: 1.6, damage: 4, freeze-ticks: 140, effects: ["slowness:2"], effect-seconds: 4, path-block: FROSTED_ICE, particle: SNOWFLAKE, color: "#9be7ff"}
+        - {name: "<aqua>Ice Lance", type: beam, cooldown: 10, range: 22, damage: 6, pierce: 2, effects: ["slowness:3"], effect-seconds: 3, windup-ticks: 8, particle: SNOWFLAKE, color: "#c2e9fb"}
 
   goro_goro:
     type: fruit
@@ -234,7 +250,7 @@ items:
       - ""
       - "<yellow>Your body becomes a living storm."
       - "<gray>Permanent speed."
-      - "<gray>Ability: <white>Skyfall"
+      - "<gray>Moves: <white>Skyfall, Chain Storm, Stormstep"
       - ""
       - "<dark_aqua>A fragment of the drowned Abyss."
       - "<red>The sea wants it back: eat it and you will never swim again."
@@ -256,6 +272,9 @@ items:
         radius: 3
         damage: 9
         particle: ELECTRIC_SPARK
+      extra-moves:
+        - {name: "<yellow>Chain Storm", type: chain, cooldown: 14, range: 20, damage: 6, jumps: 4, jump-range: 7, falloff: 0.8, color: "#fff35c"}
+        - {name: "<yellow>Stormstep", type: dash, cooldown: 6, power: 2.6, damage: 3, dash-ticks: 6, color: "#fff35c"}
 
   suke_suke:
     type: fruit
@@ -266,7 +285,7 @@ items:
       - "<dark_gray>Body"
       - ""
       - "<white>Fade from sight like sea mist."
-      - "<gray>Ability: <white>Mistveil (toggle)"
+      - "<gray>Moves: <white>Mistveil, Phantom Step"
       - ""
       - "<dark_aqua>A fragment of the drowned Abyss."
       - "<red>The sea wants it back: eat it and you will never swim again."
@@ -285,6 +304,8 @@ items:
         self-effects:
           - speed:1
         particle: CLOUD
+      extra-moves:
+        - {name: "<white>Phantom Step", type: dash, cooldown: 8, power: 2.0, damage: 2, dash-ticks: 6, self-effects: ["invisibility:1"], duration: 2, color: "#d9d9d9"}
 
   ope_ope:
     type: fruit
@@ -295,7 +316,7 @@ items:
       - "<dark_gray>Body"
       - ""
       - "<light_purple>Bend space to trade places with a target."
-      - "<gray>Ability: <white>Rift Swap"
+      - "<gray>Moves: <white>Rift Swap, Rift Blade"
       - ""
       - "<dark_aqua>A fragment of the drowned Abyss."
       - "<red>The sea wants it back: eat it and you will never swim again."
@@ -313,6 +334,8 @@ items:
         damage: 3
         particle: PORTAL
         sound: entity.enderman.teleport
+      extra-moves:
+        - {name: "<light_purple>Rift Blade", type: beam, cooldown: 10, range: 18, damage: 6, pierce: 3, particle: PORTAL, color: "#7b5cff"}
 
   yami_yami:
     type: fruit
@@ -323,7 +346,7 @@ items:
       - "<dark_gray>Elemental"
       - ""
       - "<dark_purple>Your body becomes a hungry void."
-      - "<gray>Ability: <white>Undertow"
+      - "<gray>Moves: <white>Undertow, Void Lance"
       - ""
       - "<dark_aqua>A fragment of the drowned Abyss."
       - "<red>The sea wants it back: eat it and you will never swim again."
@@ -347,6 +370,8 @@ items:
           - blindness:1
           - darkness:1
         particle: SQUID_INK
+      extra-moves:
+        - {name: "<dark_purple>Void Lance", type: beam, cooldown: 12, range: 20, damage: 5, pierce: 4, effects: ["blindness:1"], effect-seconds: 3, windup-ticks: 10, particle: SQUID_INK, color: "#3b0a57"}
 
   ushi_ushi_bison:
     type: fruit
@@ -358,7 +383,7 @@ items:
       - ""
       - "<gold>Gain the might of a sea behemoth."
       - "<gray>Permanent extra health."
-      - "<gray>Ability: <white>Behemoth Rage"
+      - "<gray>Moves: <white>Behemoth Rage, Stampede"
       - ""
       - "<dark_aqua>A fragment of the drowned Abyss."
       - "<red>The sea wants it back: eat it and you will never swim again."
@@ -383,9 +408,89 @@ items:
         sound: entity.ravager.roar
 
   # ================================ SEA PRISM STONE ================================
-  #  seastone.hit-seconds:  hitting a abyss fruit user disables their power for this long
+  #  seastone.hit-seconds:  hitting an abyss fruit user disables their power for this long
   #  seastone.cuff-seconds: right-clicking a player with the item cuffs them (0 = cannot cuff)
   #  seastone.cuff-cooldown, cuff-effects, consume-cuffs (single use)
+      extra-moves:
+        - {name: "<gold>Stampede", type: dash, cooldown: 10, power: 2.4, damage: 7, dash-ticks: 10, self-effects: ["resistance:1"], duration: 2, color: "#8e5a2b"}
+  galeborn:
+    type: fruit
+    material: APPLE
+    name: "<gradient:#e0f7fa:#80deea><bold>Galeborn Fruit</bold></gradient>"
+    lore:
+      - "<gray>Weightless. It floats a little when you let go."
+      - "<dark_gray>Elemental"
+      - ""
+      - "<aqua>Your body becomes the wind."
+      - "<gray>Fall slowly, jump higher."
+      - "<gray>Moves: <white>Gale Burst, Cyclone, Wind Blade"
+      - ""
+      - "<dark_aqua>A fragment of the drowned Abyss."
+      - "<red>The sea wants it back: eat it and you will never swim again."
+    custom-model-data: 0
+    glint: true
+    max-stack: 1
+    always-edible: true
+    fruit:
+      description: "Wind body: falls slowly and jumps high. Blow enemies away, pull them into a cyclone or cut them with the wind."
+      passives:
+        - jump_boost:2
+        - slow_falling:1
+      immunities:
+        - FALL
+      ability:
+        name: "<aqua>Gale Burst"
+        type: nova
+        cooldown: 10
+        radius: 5
+        damage: 2
+        knockback: 2.6
+        particle: CLOUD
+        color: "#e0f7fa"
+        sound: entity.breeze.wind_burst
+      extra-moves:
+        - {name: "<aqua>Cyclone", type: pull, cooldown: 14, radius: 7, damage: 2, pull-strength: 1.4, particle: CLOUD, color: "#80deea"}
+        - {name: "<aqua>Wind Blade", type: wave, cooldown: 9, range: 14, width: 1.4, damage: 5, knockback: 0.8, particle: SWEEP_ATTACK, color: "#b2ebf2"}
+
+  stoneskin:
+    type: fruit
+    material: APPLE
+    name: "<gradient:#8e9eab:#5c6b73><bold>Stoneskin Fruit</bold></gradient>"
+    lore:
+      - "<gray>Hard as a pebble. You could chip a tooth."
+      - "<dark_gray>Body"
+      - ""
+      - "<gray>Your skin hardens into living stone."
+      - "<gray>Take less damage, hit harder."
+      - "<gray>Moves: <white>Quake, Boulder Fist"
+      - ""
+      - "<dark_aqua>A fragment of the drowned Abyss."
+      - "<red>The sea wants it back: eat it and you will never swim again."
+    custom-model-data: 0
+    glint: true
+    max-stack: 1
+    always-edible: true
+    fruit:
+      description: "Stone body: takes less damage and hits harder. Shake the ground around you or crush a target with a boulder fist."
+      passives:
+        - resistance:1
+        - strength:1
+      ability:
+        name: "<gray>Quake"
+        type: nova
+        cooldown: 14
+        radius: 5
+        damage: 6
+        knockback: 0.6
+        effects: ["slowness:2"]
+        effect-seconds: 3
+        windup-ticks: 12
+        particle: CRIT
+        color: "#8e9eab"
+        sound: entity.ravager.stunned
+      extra-moves:
+        - {name: "<gray>Boulder Fist", type: punch, cooldown: 9, range: 6, damage: 9, knockback: 2.2, particle: CRIT, color: "#5c6b73", sound: entity.iron_golem.attack}
+
   sea_prism_blade:
     type: seastone
     material: IRON_SWORD
@@ -714,6 +819,78 @@ items:
         S: SUGAR_CANE
         B: GLASS_BOTTLE
 
+  coral_trident:
+    type: plain
+    material: TRIDENT
+    name: "<gradient:#ff7e5f:#feb47b><bold>Coral Trident</bold></gradient>"
+    lore:
+      - "<gray>Grown, not forged, on the reefs of the Abyss."
+      - ""
+      - "<gray>Returns to its owner. Strikes like a storm in the rain."
+    custom-model-data: 0
+    max-stack: 1
+    enchants:
+      loyalty: 3
+      impaling: 3
+      channeling: 1
+
+  captains_coat:
+    type: plain
+    material: LEATHER_CHESTPLATE
+    name: "<gradient:#434343:#c0392b><bold>Captain's Greatcoat</bold></gradient>"
+    lore:
+      - "<gray>Salt-stained, patched a hundred times."
+      - "<gray>Every patch is a story."
+      - ""
+      - "<gray>Tough as plate, light as cloth."
+    custom-model-data: 0
+    max-stack: 1
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE]
+    enchants:
+      protection: 3
+    attributes:
+      - {attribute: armor, amount: 7, operation: ADD_NUMBER, slot: chest}
+      - {attribute: armor_toughness, amount: 2, operation: ADD_NUMBER, slot: chest}
+      - {attribute: movement_speed, amount: 0.05, operation: ADD_SCALAR, slot: chest}
+
+  healing_tonic:
+    type: drink
+    material: POTION
+    name: "<light_purple><bold>Healing Tonic"
+    lore:
+      - "<gray>Brewed from glow berries and kelp."
+      - ""
+      - "<gray>Mends wounds in seconds."
+    custom-model-data: 0
+    color: "#e84393"
+    flags: [HIDE_ADDITIONAL_TOOLTIP]
+    drink:
+      duration: 10
+      heal: 8
+      effects:
+        - regeneration:2
+      message: "<light_purple>The tonic mends your wounds."
+
+  gale_grog:
+    type: drink
+    material: POTION
+    name: "<aqua><bold>Grog of the Gale"
+    lore:
+      - "<gray>Sailors swear it makes the wind obey."
+      - ""
+      - "<gray>Swift feet and quick hands for a while."
+    custom-model-data: 0
+    color: "#4dd0e1"
+    flags: [HIDE_ADDITIONAL_TOOLTIP]
+    drink:
+      duration: 60
+      heal: 0
+      effects:
+        - speed:2
+        - haste:2
+      message: "<aqua>The wind fills your sails!"
+
   pirate_king_crown:
     type: plain
     material: GOLDEN_HELMET
@@ -739,14 +916,15 @@ items:
 #  Messages (MiniMessage). Placeholders are written as <name>.
 # -------------------------------------------------------------------------------------
 messages:
+  move-selected: "<aqua>Move <white><n>/<total></white>: <ability> <dark_gray>(sneak + scroll to switch)"
   unknown-item: "<red>Unknown item <white><id></white>. See <white>/aitem list</white>."
-  unknown-fruit: "<red><white><id></white> is not a abyss fruit."
+  unknown-fruit: "<red><white><id></white> is not an abyss fruit."
   item-given: "<green>Gave <white><amount>x</white> <item> <green>to <white><player></white>."
   list-header: "<aqua>Custom items <gray>(<count>)</gray>:"
   list-entry: " <dark_gray>-</dark_gray> <white><id></white> <dark_gray>[<type>]</dark_gray> <item>"
   fruit-set: "<green><white><player></white> now has the power of <fruit><green>."
-  fruit-cleared: "<yellow><white><player></white> no longer has a abyss fruit power."
-  fruit-none: "<gray><white><player></white> has not eaten a abyss fruit."
+  fruit-cleared: "<yellow><white><player></white> no longer has an abyss fruit power."
+  fruit-none: "<gray><white><player></white> has not eaten an abyss fruit."
   fruit-info-header: "<aqua><player></aqua> <gray>ate the</gray> <fruit>"
   fruit-info-description: " <gray><description>"
   fruit-info-ability: " <gray>Ability:</gray> <ability> <dark_gray>|</dark_gray> <gray>cooldown <white><cooldown></white> <dark_gray>|</dark_gray> <white><status>"
@@ -754,7 +932,7 @@ messages:
   ready: "ready"
   fruit-eaten: "<light_purple>You ate the <fruit><light_purple>! <gray><description> <red>The sea now rejects you."
   fruit-eaten-broadcast: "<light_purple><player></light_purple> <gray>has eaten the <fruit><gray>!"
-  fruit-already: "<red>Your body already holds a abyss fruit power. A second one would tear you apart."
+  fruit-already: "<red>Your body already holds an abyss fruit power. A second one would tear you apart."
   fruit-second-lethal: "<dark_red>Your body tears itself apart... two abyss fruit powers cannot coexist."
   fruit-second-broadcast: "<dark_red><player> tried to hold two abyss fruit powers and paid the price."
   fruit-taken: "<red>The power of <fruit> <red>already belongs to someone else."

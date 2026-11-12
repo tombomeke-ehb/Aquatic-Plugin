@@ -1,5 +1,39 @@
 # Changelog
 
+## 1.8.0 (2026-11-12)
+
+### Added
+- **Several moves per fruit:** every Abyss Fruit now has 2–3 moves.
+  - Pick one with **sneak + scroll** (empty hand). The action bar shows which move you're on.
+  - Every move has its own cooldown. The sidebar shows the current move and whether it's ready.
+- **New ability types:**
+  - `wave`: rolls forward over the ground. It can leave frosted ice on water.
+  - `beam`: an instant ray that pierces several targets.
+  - `chain`: lightning that jumps from target to target, weaker with every jump.
+- **Windup:** any move can have `windup-ticks`, a visible build-up (spiral, shrinking ring and sound, and you slow down) before it fires, so opponents can dodge.
+- **New moves:**
+  - Springstep, Coil Storm
+  - Ember Wave, Pyre Burst
+  - Glacier Path, Ice Lance
+  - Chain Storm, Stormstep
+  - Phantom Step
+  - Rift Blade
+  - Void Lance
+  - Stampede
+- **New fruits:**
+  - **Galeborn Fruit** (wind): slow falling and high jumps. Moves: Gale Burst, Cyclone, Wind Blade.
+  - **Stoneskin Fruit** (stone body): less damage and harder hits. Moves: Quake, Boulder Fist.
+- **New gear:**
+  - **Coral Trident:** Loyalty, Impaling and Channeling.
+  - **Captain's Greatcoat:** unbreakable armour that also makes you faster.
+  - **Healing Tonic** and **Grog of the Gale:** drinks.
+  - All of them can be found in epic and legendary treasure, and the drinks are also sold in the market.
+- **Shipwrecks:** broken hulls half buried in the sand on island beaches, with a snapped mast and a barrel of salvage. Most island types have a 60% chance of one.
+- **Lakes:** freshwater ponds with lily pads on flat land, mostly on plains and jungle islands.
+
+### Existing servers
+The new moves, fruits and gear are in the default `items.yml`. Run `/aquatic resetconfig items confirm` to get them; a backup is kept. Shipwrecks and lakes work right away.
+
 ## 1.7.0 (2026-11-12)
 
 ### Added
