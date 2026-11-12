@@ -45,7 +45,7 @@ final class IslandCommands {
     }
 
     AquaticCommand build() {
-        cmd = new AquaticCommand("island", "Islands of the Grand Line", "is", "islands");
+        cmd = new AquaticCommand("island", "Islands of the Endless Sea", "is", "islands");
 
         // ---------------------------------------------------------------- player
         cmd.sub("info", this::info).usage("[island]").description("Show information about an island")
@@ -81,7 +81,7 @@ final class IslandCommands {
                 .permission(ADMIN).hidden().playerOnly()
                 .completer((s, a) -> switch (a.length) {
                     case 1 -> typeNames(a[0], false);
-                    case 2 -> AquaticCommand.filter(List.of("100", "250", "500", "1000"), a[1]);
+                    case 2 -> AquaticCommand.filter(List.of("50", "100", "250", "500"), a[1]);
                     default -> List.of();
                 });
         cmd.sub("spawnrandom", this::spawnRandom).usage("<type|random> <count> [minRadius] [maxRadius]")
@@ -89,8 +89,8 @@ final class IslandCommands {
                 .completer((s, a) -> switch (a.length) {
                     case 1 -> typeNames(a[0], true);
                     case 2 -> AquaticCommand.filter(List.of("1", "5", "10"), a[1]);
-                    case 3 -> AquaticCommand.filter(List.of("100", "200", "400"), a[2]);
-                    case 4 -> AquaticCommand.filter(List.of("300", "600", "1000"), a[3]);
+                    case 3 -> AquaticCommand.filter(List.of("50", "100", "200"), a[2]);
+                    case 4 -> AquaticCommand.filter(List.of("200", "350", "500"), a[3]);
                     default -> List.of();
                 });
         cmd.sub("register", this::register).usage("<name> <type> <radius>")
@@ -126,7 +126,7 @@ final class IslandCommands {
                     case 2 -> AquaticCommand.filter(List.of("newseed"), a[1]);
                     default -> List.of();
                 });
-        cmd.sub("setspawn", (s, a) -> setSpawn(AquaticCommand.player(s))).description("Make the island you stand on the neutral spawn island")
+        cmd.sub("setspawn", (s, a) -> setSpawn(AquaticCommand.player(s))).description("Set the server spawn exactly where you stand (the island becomes a safe zone)")
                 .permission(ADMIN).hidden().playerOnly();
         cmd.sub("area", this::area).usage("<radius> [spacing]").description("Set the ocean area for random islands/treasure at your position")
                 .permission(ADMIN).hidden().playerOnly()
@@ -198,7 +198,7 @@ final class IslandCommands {
 
     private int checkedRadius(String raw) {
         int r = AquaticCommand.integer(raw);
-        int min = m.config().getInt("generation.min-radius", 16), max = m.config().getInt("generation.radius-limit", 1500);
+        int min = m.config().getInt("generation.min-radius", 16), max = m.config().getInt("generation.radius-limit", 750);
         if (r < min || r > max) {
             throw new CommandFail(m.rawMsg("bad-radius", "min", min, "max", max));
         }
@@ -742,9 +742,15 @@ final class IslandCommands {
     }
 
     private void setSpawn(Player p) {
-        IslandImpl is = standingOn(p);
-        m.setSpawnIsland(is);
-        m.send(p, "spawn-set", "island", is.name);
+        m.setSpawnPoint(p.getLocation());
+        IslandImpl is = m.at(p.getLocation());
+        if (is != null) {
+            m.setSpawnIsland(is); // the island becomes a neutral safe zone
+            m.send(p, "spawn-point-set-island", "island", is.name, "x", p.getLocation().getBlockX(),
+                    "y", p.getLocation().getBlockY(), "z", p.getLocation().getBlockZ());
+        } else {
+            m.send(p, "spawn-point-set", "x", p.getLocation().getBlockX(), "y", p.getLocation().getBlockY(), "z", p.getLocation().getBlockZ());
+        }
     }
 
     private void area(CommandSender sender, String[] args) {

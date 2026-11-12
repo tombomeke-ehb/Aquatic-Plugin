@@ -176,7 +176,7 @@ events:
     join-teleport: true
     # Location: /seaevent setlocation kings_challenge hill  (fallback: first CAPITAL island centre).
     radius: 6
-    # Refuse to start when there is no Pirate King (or the tournament module is disabled).
+    # Refuse to start when there is no Sea Sovereign (or the tournament module is disabled).
     require-king: false
     # Seconds counted per second for the king's own crew while it holds the hill (defender bonus).
     king-crew-points-per-second: 1
@@ -189,7 +189,7 @@ events:
   grand_raid:
     enabled: true
     display-name: "<red>Grand Raid"
-    description: "<gray>The Marines are attacking! Work together to repel every wave and defeat the Admiral."
+    description: "<gray>The Tidewatch are attacking! Work together to repel every wave and defeat the High Warden."
     duration-minutes: 25
     min-players: 4
     bossbar-color: RED
@@ -211,7 +211,7 @@ events:
     mobs:
       marine:
         type: ZOMBIE
-        name: "<blue>Marine Recruit"
+        name: "<blue>Tidewatch Recruit"
         health-multiplier: 1.5
         damage-multiplier: 1.2
         equipment:
@@ -220,14 +220,14 @@ events:
           mainhand: IRON_SWORD
       marine_rifleman:
         type: SKELETON
-        name: "<blue>Marine Rifleman"
+        name: "<blue>Tidewatch Rifleman"
         health-multiplier: 1.5
         equipment:
           helmet: CHAINMAIL_HELMET
           mainhand: BOW
       marine_officer:
         type: VINDICATOR
-        name: "<dark_blue>Marine Lieutenant"
+        name: "<dark_blue>Tidewatch Lieutenant"
         health-multiplier: 2.0
         damage-multiplier: 1.2
         equipment:
@@ -235,7 +235,7 @@ events:
           mainhand: IRON_AXE
       vice_admiral:
         type: PIGLIN_BRUTE
-        name: "<dark_aqua>Vice Admiral"
+        name: "<dark_aqua>Warden Captain"
         health-multiplier: 2.5
         effects: [resistance:1]
         equipment:
@@ -243,7 +243,7 @@ events:
           mainhand: DIAMOND_AXE
       admiral:
         type: WITHER_SKELETON
-        name: "<gold><bold>Admiral Akainu"
+        name: "<gold><bold>High Warden Vex"
         boss: true
         health: 400
         damage-multiplier: 1.6
@@ -376,12 +376,12 @@ messages:
   lost-island-status-sinking: "<red><bold><island> IS SINKING"
   # king's challenge
   kings-no-hill: "<red>No hill: set one with <white>/seaevent setlocation kings_challenge hill</white> or create a CAPITAL island."
-  kings-no-king: "<red>There is no Pirate King to challenge."
+  kings-no-king: "<red>There is no Sea Sovereign to challenge."
   kings-start: "<gold><bold>THE KING'S CHALLENGE!</bold> <yellow>Take the throne from <white><king></white>'s crew at <white><x>, <y>, <z></white>!"
   kings-start-empty: "<gold><bold>THE KING'S CHALLENGE!</bold> <yellow>The throne is empty. Hold it at <white><x>, <y>, <z></white>!"
   kings-hill-taken: "<gold><crew> <yellow>holds the throne!"
-  kings-defended: "<gold>The crew of the Pirate King <white><king></white>, <crew><gold>, defended the throne! <gray>(<time>)"
-  kings-won: "<gold><crew> <gold>held the throne the longest <gray>(<time>)<gold>! The Pirate King <white><king></white> has been humiliated."
+  kings-defended: "<gold>The crew of the Sea Sovereign <white><king></white>, <crew><gold>, defended the throne! <gray>(<time>)"
+  kings-won: "<gold><crew> <gold>held the throne the longest <gray>(<time>)<gold>! The Sea Sovereign <white><king></white> has been humiliated."
   kings-nobody: "<gray>Nobody held the throne."
   kings-status-free: "<gray>The throne is free"
   kings-status-contested: "<red>Contested!"
@@ -390,17 +390,17 @@ messages:
   raid-unknown-place: "<red>Unknown raid location or island <white><place></white>."
   raid-no-location: "<red>No raid location: use <white>/seaevent setlocation grand_raid</white> or give an island id."
   raid-no-waves: "<red>No waves are configured for the Grand Raid."
-  raid-start: "<red><bold>MARINE RAID!</bold> <yellow>The Marines attack <white><place></white> <gray>(<x>, <y>, <z>)<yellow> in <white><seconds>s</white>! <white><waves></white> waves. <gray>/seaevent join"
-  raid-wave: "<red>Wave <white><wave>/<waves></white> lands: <white><count></white> Marines!"
+  raid-start: "<red><bold>TIDEWATCH RAID!</bold> <yellow>The Tidewatch attack <white><place></white> <gray>(<x>, <y>, <z>)<yellow> in <white><seconds>s</white>! <white><waves></white> waves. <gray>/seaevent join"
+  raid-wave: "<red>Wave <white><wave>/<waves></white> lands: <white><count></white> Tidewatch soldiers!"
   raid-wave-cleared: "<green>Wave <white><wave>/<waves></white> repelled!"
   raid-boss: "<dark_red><bold><boss> HAS ARRIVED!"
   raid-boss-down: "<gold><bold><boss> has fallen!</bold> <gray>Final blow: <white><player>"
   raid-boss-bar: "<boss> <dark_gray>|</dark_gray> <red><health>/<max> ❤ <dark_gray>|</dark_gray> <yellow><time>"
   raid-victory: "<green><bold>The raid has been repelled!</bold> <white><players></white> <gray>pirates fought."
-  raid-failed: "<red>The Marines held their ground... the raid failed at wave <wave>/<waves>."
+  raid-failed: "<red>The Tidewatch held their ground... the raid failed at wave <wave>/<waves>."
   raid-share: "<green>Your share: <white><percent>%</white> of the damage, <white><amount></white>, <white><kills></white> kills."
   raid-mvp: "<gold>Raid MVP: <white><player></white> <gray>(<damage> damage)"
-  raid-status: "<gray>Wave <white><wave>/<waves></white> <dark_gray>|</dark_gray> <white><left></white> <gray>Marines left"
+  raid-status: "<gray>Wave <white><wave>/<waves></white> <dark_gray>|</dark_gray> <white><left></white> <gray>Tidewatch soldiers left"
   raid-status-waiting: "<gray>First wave in <white><seconds>s"
   # naval battle
   naval-not-enough-crews: "<red>At least <min> crews must have members online."

@@ -72,11 +72,11 @@ tiers:
     min: 1
   - title: "<green>Notorious Pirate"
     min: 5000
-  - title: "<aqua>Supernova"
+  - title: "<aqua>Rising Tide"
     min: 25000
-  - title: "<light_purple>Warlord of the Sea"
+  - title: "<light_purple>Corsair Lord"
     min: 100000
-  - title: "<gold><bold>Emperor of the Sea</bold>"
+  - title: "<gold><bold>Dread Tyrant of the Sea</bold>"
     min: 500000
 
 # /wanted [player]

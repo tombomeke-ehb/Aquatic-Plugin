@@ -2,6 +2,9 @@ package dev.aquatic.command;
 
 import dev.aquatic.core.AquaticPlugin;
 import dev.aquatic.util.Text;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
@@ -118,6 +121,14 @@ public class AquaticCommand extends Command {
         }
     }
 
+    /** Every registered AquaticSMP root command (for /aquatic commands). */
+    private static final Map<String, AquaticCommand> REGISTERED = new java.util.TreeMap<>();
+    private static final int HELP_PAGE_SIZE = 8;
+
+    public static java.util.Collection<AquaticCommand> registered() {
+        return java.util.Collections.unmodifiableCollection(REGISTERED.values());
+    }
+
     private final Map<String, Sub> subs = new LinkedHashMap<>();
     private final Map<String, Sub> lookup = new LinkedHashMap<>();
     private Executor defaultExecutor;
@@ -163,10 +174,12 @@ public class AquaticCommand extends Command {
             }
         }
         Bukkit.getCommandMap().register("aquatic", this);
+        REGISTERED.put(getName(), this);
         syncCommands();
     }
 
     public void unregister() {
+        REGISTERED.remove(getName(), this);
         CommandMap map = Bukkit.getCommandMap();
         try {
             // Paper's known-commands map is a Brigadier-backed view: its iterators do not support remove(),
@@ -217,7 +230,14 @@ public class AquaticCommand extends Command {
                 if (defaultExecutor != null && (args.length == 0 || !args[0].equalsIgnoreCase("help"))) {
                     defaultExecutor.run(sender, args);
                 } else {
-                    sendHelp(sender, label);
+                    int page = 1;
+                    if (args.length > 1) {
+                        try {
+                            page = Integer.parseInt(args[1]);
+                        } catch (NumberFormatException ignored) {
+                        }
+                    }
+                    sendHelp(sender, label, page);
                 }
                 return true;
             }
@@ -238,12 +258,45 @@ public class AquaticCommand extends Command {
     }
 
     public void sendHelp(CommandSender sender, String label) {
-        sender.sendMessage(Text.mm("<dark_aqua><strikethrough>        </strikethrough> <aqua><bold>/<label></bold> <dark_aqua><strikethrough>        </strikethrough>", "label", label));
+        sendHelp(sender, label, 1);
+    }
+
+    /** Paged help: hover a line for details, click it to put the command in your chat bar. */
+    public void sendHelp(CommandSender sender, String label, int page) {
+        List<Sub> visible = new ArrayList<>();
         for (Sub sub : subs.values()) {
-            if (sub.hidden || !sub.allowed(sender)) {
-                continue;
+            if (!sub.hidden && sub.allowed(sender)) {
+                visible.add(sub);
             }
-            helpLine(sender, label, sub);
+        }
+        int pages = Math.max(1, (visible.size() + HELP_PAGE_SIZE - 1) / HELP_PAGE_SIZE);
+        page = Math.max(1, Math.min(pages, page));
+        sender.sendMessage(Text.mm("<dark_aqua><strikethrough>          </strikethrough> <aqua><bold>/<label></bold> <gray><desc> "
+                        + "<dark_gray>(<page>/<pages>)</dark_gray> <dark_aqua><strikethrough>          </strikethrough>",
+                "label", label, "desc", getDescription(), "page", page, "pages", pages));
+        for (int i = (page - 1) * HELP_PAGE_SIZE; i < Math.min(visible.size(), page * HELP_PAGE_SIZE); i++) {
+            helpLine(sender, label, visible.get(i));
+        }
+        if (visible.isEmpty()) {
+            sender.sendMessage(Text.mm("<gray>No sub-commands you can use."));
+        }
+        if (pages > 1) {
+            Component nav = Component.empty();
+            if (page > 1) {
+                nav = nav.append(Text.mm("<aqua>« Previous</aqua>")
+                        .clickEvent(ClickEvent.runCommand("/" + label + " help " + (page - 1)))
+                        .hoverEvent(HoverEvent.showText(Text.mm("<gray>Page " + (page - 1)))));
+            }
+            nav = nav.append(Text.mm("  <dark_gray>|</dark_gray>  "));
+            if (page < pages) {
+                nav = nav.append(Text.mm("<aqua>Next »</aqua>")
+                        .clickEvent(ClickEvent.runCommand("/" + label + " help " + (page + 1)))
+                        .hoverEvent(HoverEvent.showText(Text.mm("<gray>Page " + (page + 1)))));
+            }
+            sender.sendMessage(nav);
+        }
+        if (sender instanceof Player) {
+            sender.sendMessage(Text.mm("<dark_gray>Hover a command for details, click to use it."));
         }
     }
 
@@ -258,8 +311,52 @@ public class AquaticCommand extends Command {
     }
 
     private static void helpLine(CommandSender sender, String label, Sub sub) {
-        sender.sendMessage(Text.mm("<aqua>/<label> <name><white><usage> <dark_gray>-</dark_gray> <gray><desc>",
-                "label", label, "name", sub.name, "usage", sub.usage.isEmpty() ? "" : " " + sub.usage, "desc", sub.description));
+        String full = "/" + label + " " + sub.name + (sub.usage.isEmpty() ? "" : " " + sub.usage);
+        StringBuilder hover = new StringBuilder("<aqua><bold>").append(escape(full)).append("</bold></aqua><newline><gray>")
+                .append(escape(sub.description));
+        if (sub.aliases.length > 0) {
+            hover.append("<newline><dark_gray>Aliases: ").append(escape(String.join(", ", sub.aliases)));
+        }
+        if (!sub.usage.isEmpty()) {
+            hover.append("<newline><dark_gray>\\<arg> = needed, [arg] = optional");
+        }
+        if (sub.permission != null && sender.hasPermission("aquatic.admin")) {
+            hover.append("<newline><dark_gray>Permission: ").append(sub.permission);
+        }
+        if (sub.playerOnly) {
+            hover.append("<newline><dark_gray>Players only");
+        }
+        hover.append("<newline><newline><yellow>Click to type it in chat");
+        sender.sendMessage(Text.mm("<dark_gray>▪</dark_gray> <aqua>/<label> <name></aqua><white><usage></white> <dark_gray>-</dark_gray> <gray><desc>",
+                        "label", label, "name", sub.name, "usage", sub.usage.isEmpty() ? "" : " " + sub.usage, "desc", sub.description)
+                .hoverEvent(HoverEvent.showText(Text.mm(hover.toString())))
+                .clickEvent(ClickEvent.suggestCommand("/" + label + " " + sub.name + " ")));
+    }
+
+    /** Escapes MiniMessage tags in plain text (usages like "<player>"). */
+    private static String escape(String raw) {
+        return net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(raw);
+    }
+
+    /** One line for the /aquatic commands overview: "/crew - Crew commands", clickable. */
+    public Component overviewLine(CommandSender sender) {
+        int count = 0;
+        for (Sub sub : subs.values()) {
+            if (!sub.hidden && sub.allowed(sender)) {
+                count++;
+            }
+        }
+        String aliases = getAliases().isEmpty() ? "" : "<newline><dark_gray>Aliases: /" + escape(String.join(", /", getAliases()));
+        return Text.mm("<dark_gray>▪</dark_gray> <aqua>/<name></aqua> <dark_gray>-</dark_gray> <gray><desc>", "name", getName(), "desc", getDescription())
+                .hoverEvent(HoverEvent.showText(Text.mm("<aqua><bold>/" + escape(getName()) + "</bold><newline><gray>"
+                        + escape(getDescription()) + "<newline><dark_gray>" + count + " sub-command(s)" + aliases
+                        + "<newline><newline><yellow>Click for its help page")))
+                .clickEvent(ClickEvent.runCommand("/" + getName() + " help"));
+    }
+
+    /** True when the sender may use the root command at all. */
+    public boolean usableBy(CommandSender sender) {
+        return getPermission() == null || sender.hasPermission(getPermission()) || sender.hasPermission("aquatic.admin");
     }
 
     /** Tab completion over the hidden sub-commands only (for a group like "/island admin ..."). */

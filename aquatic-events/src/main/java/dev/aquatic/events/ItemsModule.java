@@ -387,7 +387,7 @@ public final class ItemsModule extends AquaticModule implements ItemService {
             } else {
                 throw new CommandFail("<red>Usage: <white>/aitem fruit <set|info> ...");
             }
-        }).usage("<set <player> <fruit|none> | info [player]>").description("Manage devil fruit powers")
+        }).usage("<set <player> <fruit|none> | info [player]>").description("Manage abyss fruit powers")
                 .permission("aquatic.items.admin")
                 .completer((s, a) -> {
                     if (a.length == 1) {
@@ -405,11 +405,11 @@ public final class ItemsModule extends AquaticModule implements ItemService {
                 });
         registerCommand(cmd);
 
-        AquaticCommand fruit = new AquaticCommand("fruit", "Shows your devil fruit power", "devilfruit");
+        AquaticCommand fruit = new AquaticCommand("fruit", "Shows your abyss fruit power", "devilfruit");
         fruit.sub("info", (sender, args) -> {
             Player p = AquaticCommand.player(sender);
             fruitInfo(sender, p.getUniqueId(), p.getName());
-        }).description("Show your devil fruit power and cooldown").playerPermission("aquatic.items.fruit").playerOnly();
+        }).description("Show your abyss fruit power and cooldown").playerPermission("aquatic.items.fruit").playerOnly();
         fruit.defaultExecutor((sender, args) -> {
             Player p = AquaticCommand.player(sender);
             if (!p.hasPermission("aquatic.items.fruit")) {

@@ -1,5 +1,38 @@
 # Changelog
 
+## 1.4.0 (2026-11-12)
+
+### Changed: our own identity
+- **Original names:** every name players see is now our own, not taken from the anime.
+  - Abyss Fruits: Springcoil, Emberheart, Rimefrost, Thunderveil, Ghostglass, Riftshift, Hollowvoid, Behemoth
+  - Abyssal Iron, the Tide Compass and the Echo Conch
+  - the swords Tidecleaver, Nightbloom and Leviathan's Fang
+  - the Sea Sovereign title and its crown
+  - the Tidewatch enemies
+  - bounty titles up to Dread Tyrant
+  - the Endless Sea
+- **Unchanged:** internal item ids, so existing items and fruit powers keep working.
+- **Island names** are now generated from our own word lists per island type ("Palmreach Strand", "Cinderpeak Caldera", ...), never used twice.
+- **Getting the new names on an existing server:** your config files still contain the old texts. Run `/aquatic resetconfig <module> confirm` per module; a backup of the old file is kept.
+
+### Changed: islands
+- **Random island sizes:** small 100–200, medium 200–350, large 350–600 and huge 600–1000 blocks across. Huge ones are rare.
+- **Size limit:** admins can still place islands up to 1500 blocks across by hand.
+- **Water colour:** islands only change the biome above land, so the water around them keeps its ocean colour. This removes the square patches of different-coloured water.
+
+### Fixed
+- **`/island admin setspawn` set nothing:** it now sets the spawn **exactly where you stand**, including the direction you face, and also sets the world spawn. New players and players without a bed spawn there. Settings are under `spawn:` in `islands.yml`.
+
+### Added
+- **Help pages:** every command help is paged. Hovering a line shows the full command, a description and the permission; clicking puts it in your chat bar.
+- **`/aquatic commands`:** an overview of all commands, clickable.
+- **`/aquatic resetconfig <module>`:** a fresh config with the newest defaults, with a backup of the old one.
+- **Chat hover cards:**
+  - Hovering a name or crew tag shows crew, rank, reputation, bounty and title.
+  - Clicking the tag opens `/crew info`, clicking the name starts a `/msg`.
+- **Rank icons** (★ Captain, ☆ First Mate, ⚓ Navigator, ⚖ Quartermaster) in chat and the tab list.
+- **Tab list header and footer** with the server name, number online, your crew, Doubloons and bounty. Turn it off with `tablist.header-footer`.
+
 ## 1.3.0 (2026-11-12)
 
 ### Islands: from small to huge

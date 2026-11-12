@@ -261,12 +261,20 @@ final class CrewListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPublicChat(AsyncChatEvent event) {
         Component prefix = module.chatPrefix(event.getPlayer().getUniqueId());
-        if (prefix == null) {
+        Component card = module.playerCard(event.getPlayer().getUniqueId());
+        if (prefix == null && card == null) {
             return;
         }
         ChatRenderer base = event.renderer();
-        event.renderer((source, displayName, message, viewer) ->
-                Component.textOfChildren(prefix, base.render(source, displayName, message, viewer)));
+        String name = event.getPlayer().getName();
+        event.renderer((source, displayName, message, viewer) -> {
+            // hover the name for the player card, click it to start a private message
+            Component shownName = card == null ? displayName : displayName
+                    .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(card))
+                    .clickEvent(net.kyori.adventure.text.event.ClickEvent.suggestCommand("/msg " + name + " "));
+            Component line = base.render(source, shownName, message, viewer);
+            return prefix == null ? line : Component.textOfChildren(prefix, line);
+        });
     }
 
     // ------------------------------------------------------------------ /crew home warmup

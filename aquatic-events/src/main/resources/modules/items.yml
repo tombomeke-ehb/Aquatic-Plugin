@@ -1,8 +1,8 @@
 # =====================================================================================
 #  AquaticSMP - Items module (modules/items.yml)
 # =====================================================================================
-#  Custom pirate items: Devil Fruits, Sea Prism Stone, legendary swords (Meito), guns,
-#  cannons, the Log Pose, Den Den Mushi, rum and the Pirate King's crown.
+#  Custom pirate items: Abyss Fruits, Abyssal Iron, legendary swords (Meito), guns,
+#  cannons, the Tide Compass, Echo Conch, rum and the Sea Sovereign's crown.
 #
 #  Commands
 #    /aitem give <player> <id> [amount]       (aquatic.items.admin)
@@ -18,7 +18,7 @@
 # =====================================================================================
 
 # -------------------------------------------------------------------------------------
-#  Devil fruit rules
+#  Abyss fruit rules
 # -------------------------------------------------------------------------------------
 # Extra ability effects (shockwaves, beams, auras, trails). quality multiplies the particle amounts:
 # 0 = off (only the basic particles), 0.5 = light (big servers), 1 = normal, 1.5 = rich.
@@ -27,7 +27,7 @@ effects:
   quality: 1.0
 
 fruits:
-  # Only one devil fruit power per player.
+  # Only one abyss fruit power per player.
   one-per-player: true
   # What happens when someone who already has a power eats a second fruit:
   #   refuse = the fruit cannot be eaten (it stays in the hand)
@@ -54,7 +54,7 @@ fruits:
   show-cooldown-bar: true
   # How often (in ticks, 20 = 1 second) passive effects and sea weakness are refreshed.
   passive-interval-ticks: 20
-  # The sea rejects devil fruit users.
+  # The sea rejects abyss fruit users.
   sea-weakness:
     enabled: true
     # Also counts standing in the rain.
@@ -108,21 +108,21 @@ fruits:
 #  Ability damage is normal player damage: crewmates, PvP-off worlds and protected areas are respected.
 items:
 
-  # ================================ DEVIL FRUITS ================================
+  # ================================ ABYSS FRUITS ================================
   #  fruit.passives:   permanent effects (effect:level)
   #  fruit.immunities: damage causes that are ignored (Bukkit DamageCause names: FALL, FIRE, LAVA, ...)
   #  fruit.frost-walker-radius: freeze water you walk over (0 = off, max 5)
   gomu_gomu:
     type: fruit
     material: APPLE
-    name: "<gradient:#c44dff:#ff6ec7><bold>Gomu Gomu no Mi</bold></gradient>"
+    name: "<gradient:#c44dff:#ff6ec7><bold>Springcoil Fruit</bold></gradient>"
     lore:
       - "<gray>A swirly purple fruit. Tastes awful."
-      - "<dark_gray>Paramecia"
+      - "<dark_gray>Body"
       - ""
       - "<light_purple>Your body turns to rubber."
       - "<gray>No fall damage, high jumps."
-      - "<gray>Ability: <white>Gomu Gomu no Pistol"
+      - "<gray>Ability: <white>Coilshot"
       - ""
       - "<red>Eating it means you can never swim again."
     custom-model-data: 0
@@ -138,7 +138,7 @@ items:
       immunities:
         - FALL
       ability:
-        name: "<light_purple>Gomu Gomu no Pistol"
+        name: "<light_purple>Coilshot"
         type: punch
         cooldown: 8
         range: 14
@@ -151,14 +151,14 @@ items:
   mera_mera:
     type: fruit
     material: APPLE
-    name: "<gradient:#ff4b1f:#ff9068><bold>Mera Mera no Mi</bold></gradient>"
+    name: "<gradient:#ff4b1f:#ff9068><bold>Emberheart Fruit</bold></gradient>"
     lore:
       - "<gray>The fruit seems to flicker like a flame."
-      - "<dark_gray>Logia"
+      - "<dark_gray>Elemental"
       - ""
       - "<gold>Your body becomes fire."
       - "<gray>Immune to fire and lava."
-      - "<gray>Ability: <white>Hiken (Fire Fist)"
+      - "<gray>Ability: <white>Flare Fist (Fire Fist)"
       - ""
       - "<red>Eating it means you can never swim again."
     custom-model-data: 0
@@ -175,7 +175,7 @@ items:
         - LAVA
         - HOT_FLOOR
       ability:
-        name: "<gold>Hiken"
+        name: "<gold>Flare Fist"
         type: fireball
         cooldown: 10
         speed: 1.6
@@ -188,10 +188,10 @@ items:
   hie_hie:
     type: fruit
     material: APPLE
-    name: "<gradient:#a1c4fd:#c2e9fb><bold>Hie Hie no Mi</bold></gradient>"
+    name: "<gradient:#a1c4fd:#c2e9fb><bold>Rimefrost Fruit</bold></gradient>"
     lore:
       - "<gray>Cold to the touch."
-      - "<dark_gray>Logia"
+      - "<dark_gray>Elemental"
       - ""
       - "<aqua>Your body becomes ice."
       - "<gray>Freeze the sea you walk over."
@@ -224,14 +224,14 @@ items:
   goro_goro:
     type: fruit
     material: APPLE
-    name: "<gradient:#f7ff00:#db36a4><bold>Goro Goro no Mi</bold></gradient>"
+    name: "<gradient:#f7ff00:#db36a4><bold>Thunderveil Fruit</bold></gradient>"
     lore:
       - "<gray>It crackles in your hand."
-      - "<dark_gray>Logia"
+      - "<dark_gray>Elemental"
       - ""
       - "<yellow>Your body becomes lightning."
       - "<gray>Permanent speed."
-      - "<gray>Ability: <white>El Thor"
+      - "<gray>Ability: <white>Skyfall"
       - ""
       - "<red>Eating it means you can never swim again."
     custom-model-data: 0
@@ -245,7 +245,7 @@ items:
       immunities:
         - LIGHTNING
       ability:
-        name: "<yellow>El Thor"
+        name: "<yellow>Skyfall"
         type: lightning
         cooldown: 14
         range: 30
@@ -256,10 +256,10 @@ items:
   suke_suke:
     type: fruit
     material: APPLE
-    name: "<gradient:#e0e0e0:#7f8c8d><bold>Suke Suke no Mi</bold></gradient>"
+    name: "<gradient:#e0e0e0:#7f8c8d><bold>Ghostglass Fruit</bold></gradient>"
     lore:
       - "<gray>You can barely see it."
-      - "<dark_gray>Paramecia"
+      - "<dark_gray>Body"
       - ""
       - "<white>Turn invisible at will."
       - "<gray>Ability: <white>Invisibility (toggle)"
@@ -270,7 +270,7 @@ items:
     max-stack: 1
     always-edible: true
     fruit:
-      description: "Clear body: turn invisible for a while; use again to reappear. Sea Prism Stone reveals you."
+      description: "Clear body: turn invisible for a while; use again to reappear. Abyssal Iron reveals you."
       ability:
         name: "<white>Invisibility"
         type: invisibility
@@ -284,13 +284,13 @@ items:
   ope_ope:
     type: fruit
     material: APPLE
-    name: "<gradient:#ff9a9e:#fad0c4><bold>Ope Ope no Mi</bold></gradient>"
+    name: "<gradient:#ff9a9e:#fad0c4><bold>Riftshift Fruit</bold></gradient>"
     lore:
       - "<gray>Shaped like a heart."
-      - "<dark_gray>Paramecia"
+      - "<dark_gray>Body"
       - ""
       - "<light_purple>Create a Room and rearrange it."
-      - "<gray>Ability: <white>Shambles"
+      - "<gray>Ability: <white>Rift Swap"
       - ""
       - "<red>Eating it means you can never swim again."
     custom-model-data: 0
@@ -300,7 +300,7 @@ items:
     fruit:
       description: "Operation: swap places with whoever you look at and cut them for a little damage."
       ability:
-        name: "<light_purple>Shambles"
+        name: "<light_purple>Rift Swap"
         type: swap
         cooldown: 18
         range: 20
@@ -311,13 +311,13 @@ items:
   yami_yami:
     type: fruit
     material: APPLE
-    name: "<gradient:#232526:#6a3093><bold>Yami Yami no Mi</bold></gradient>"
+    name: "<gradient:#232526:#6a3093><bold>Hollowvoid Fruit</bold></gradient>"
     lore:
       - "<gray>Swallows the light around it."
-      - "<dark_gray>Logia"
+      - "<dark_gray>Elemental"
       - ""
       - "<dark_purple>Your body becomes darkness."
-      - "<gray>Ability: <white>Black Hole"
+      - "<gray>Ability: <white>Undertow"
       - ""
       - "<red>Eating it means you can never swim again."
     custom-model-data: 0
@@ -329,7 +329,7 @@ items:
       passives:
         - night_vision:1
       ability:
-        name: "<dark_purple>Black Hole"
+        name: "<dark_purple>Undertow"
         type: pull
         cooldown: 20
         radius: 8
@@ -344,10 +344,10 @@ items:
   ushi_ushi_bison:
     type: fruit
     material: APPLE
-    name: "<gradient:#8e5a2b:#d1913c><bold>Ushi Ushi no Mi, Model: Bison</bold></gradient>"
+    name: "<gradient:#8e5a2b:#d1913c><bold>Behemoth Fruit</bold></gradient>"
     lore:
       - "<gray>Heavy and earthy."
-      - "<dark_gray>Zoan"
+      - "<dark_gray>Beast"
       - ""
       - "<gold>Gain the strength of a bison."
       - "<gray>Permanent extra health."
@@ -359,7 +359,7 @@ items:
     max-stack: 1
     always-edible: true
     fruit:
-      description: "Zoan: permanent extra health; transform into a beast with great strength and toughness."
+      description: "Beast: permanent extra health; transform into a beast with great strength and toughness."
       passives:
         - health_boost:1
       ability:
@@ -375,17 +375,17 @@ items:
         sound: entity.ravager.roar
 
   # ================================ SEA PRISM STONE ================================
-  #  seastone.hit-seconds:  hitting a devil fruit user disables their power for this long
+  #  seastone.hit-seconds:  hitting a abyss fruit user disables their power for this long
   #  seastone.cuff-seconds: right-clicking a player with the item cuffs them (0 = cannot cuff)
   #  seastone.cuff-cooldown, cuff-effects, consume-cuffs (single use)
   sea_prism_blade:
     type: seastone
     material: IRON_SWORD
-    name: "<gradient:#43cea2:#185a9d><bold>Sea Prism Jitte</bold></gradient>"
+    name: "<gradient:#43cea2:#185a9d><bold>Abyssal Iron Baton</bold></gradient>"
     lore:
       - "<gray>Forged from Kairoseki, the solidified sea."
       - ""
-      - "<aqua>Hitting a devil fruit user disables"
+      - "<aqua>Hitting a abyss fruit user disables"
       - "<aqua>their power for <white>6s</white>."
     custom-model-data: 0
     seastone:
@@ -405,11 +405,11 @@ items:
   seastone_cuffs:
     type: seastone
     material: CHAIN
-    name: "<gradient:#43cea2:#185a9d><bold>Sea Prism Handcuffs</bold></gradient>"
+    name: "<gradient:#43cea2:#185a9d><bold>Abyssal Iron Shackles</bold></gradient>"
     lore:
       - "<gray>Right-click a player to cuff them."
       - ""
-      - "<aqua>A cuffed devil fruit user loses their"
+      - "<aqua>A cuffed abyss fruit user loses their"
       - "<aqua>power and is slowed for <white>20s</white>."
       - "<dark_gray>Single use."
     custom-model-data: 0
@@ -441,7 +441,7 @@ items:
   wado_ichimonji:
     type: sword
     material: IRON_SWORD
-    name: "<gradient:#ffffff:#bdc3c7><bold>Wado Ichimonji</bold></gradient>"
+    name: "<gradient:#ffffff:#bdc3c7><bold>Tidecleaver</bold></gradient>"
     lore:
       - "<dark_gray>One of the 21 Great Grade Swords"
       - ""
@@ -464,7 +464,7 @@ items:
         - slowness:2
       particle: SWEEP_ATTACK
     ability:
-      name: "<white>Sanjuroku Pound Ho"
+      name: "<white>Gale Cutter"
       type: slash
       trigger: right-click
       cooldown: 12
@@ -475,7 +475,7 @@ items:
   shusui:
     type: sword
     material: NETHERITE_SWORD
-    name: "<gradient:#3a1c71:#d76d77><bold>Shusui</bold></gradient>"
+    name: "<gradient:#3a1c71:#d76d77><bold>Nightbloom</bold></gradient>"
     lore:
       - "<dark_gray>A black blade, Great Grade"
       - ""
@@ -492,7 +492,7 @@ items:
       lifesteal: 0.15
       particle: DAMAGE_INDICATOR
     ability:
-      name: "<dark_purple>Shishi Sonson"
+      name: "<dark_purple>Lion's Lunge"
       type: dash
       trigger: right-click
       cooldown: 14
@@ -507,7 +507,7 @@ items:
   yoru:
     type: sword
     material: NETHERITE_SWORD
-    name: "<gradient:#000000:#c0392b><bold>Yoru</bold></gradient>"
+    name: "<gradient:#000000:#c0392b><bold>Leviathan's Fang</bold></gradient>"
     lore:
       - "<dark_gray>Supreme Grade. The strongest black blade."
       - ""
@@ -527,7 +527,7 @@ items:
       lightning: true
       particle: ELECTRIC_SPARK
     ability:
-      name: "<red>Kokuto Ichibyo"
+      name: "<red>Blackwater Edge"
       type: slash
       trigger: sneak-right-click
       cooldown: 25
@@ -641,7 +641,7 @@ items:
   log_pose:
     type: logpose
     material: COMPASS
-    name: "<gradient:#2193b0:#6dd5ed><bold>Log Pose</bold></gradient>"
+    name: "<gradient:#2193b0:#6dd5ed><bold>Tide Compass</bold></gradient>"
     lore:
       - "<gray>Holds the magnetic memory of the islands."
       - ""
@@ -663,7 +663,7 @@ items:
   den_den_mushi:
     type: denden
     material: TURTLE_SCUTE
-    name: "<gradient:#f6d365:#fda085><bold>Den Den Mushi</bold></gradient>"
+    name: "<gradient:#f6d365:#fda085><bold>Echo Conch</bold></gradient>"
     lore:
       - "<gray>Purupurupuru..."
       - ""
@@ -708,9 +708,9 @@ items:
   pirate_king_crown:
     type: plain
     material: GOLDEN_HELMET
-    name: "<gradient:#f7971e:#ffd200><bold>Crown of the Pirate King</bold></gradient>"
+    name: "<gradient:#f7971e:#ffd200><bold>Crown of the Sea Sovereign</bold></gradient>"
     lore:
-      - "<gray>Worn by the one who conquered the Grand Line."
+      - "<gray>Worn by the one who conquered the Endless Sea."
       - ""
       - "<gold>Only one may hold the throne."
     custom-model-data: 0
@@ -731,13 +731,13 @@ items:
 # -------------------------------------------------------------------------------------
 messages:
   unknown-item: "<red>Unknown item <white><id></white>. See <white>/aitem list</white>."
-  unknown-fruit: "<red><white><id></white> is not a devil fruit."
+  unknown-fruit: "<red><white><id></white> is not a abyss fruit."
   item-given: "<green>Gave <white><amount>x</white> <item> <green>to <white><player></white>."
   list-header: "<aqua>Custom items <gray>(<count>)</gray>:"
   list-entry: " <dark_gray>-</dark_gray> <white><id></white> <dark_gray>[<type>]</dark_gray> <item>"
   fruit-set: "<green><white><player></white> now has the power of <fruit><green>."
-  fruit-cleared: "<yellow><white><player></white> no longer has a devil fruit power."
-  fruit-none: "<gray><white><player></white> has not eaten a devil fruit."
+  fruit-cleared: "<yellow><white><player></white> no longer has a abyss fruit power."
+  fruit-none: "<gray><white><player></white> has not eaten a abyss fruit."
   fruit-info-header: "<aqua><player></aqua> <gray>ate the</gray> <fruit>"
   fruit-info-description: " <gray><description>"
   fruit-info-ability: " <gray>Ability:</gray> <ability> <dark_gray>|</dark_gray> <gray>cooldown <white><cooldown></white> <dark_gray>|</dark_gray> <white><status>"
@@ -745,9 +745,9 @@ messages:
   ready: "ready"
   fruit-eaten: "<light_purple>You ate the <fruit><light_purple>! <gray><description> <red>The sea now rejects you."
   fruit-eaten-broadcast: "<light_purple><player></light_purple> <gray>has eaten the <fruit><gray>!"
-  fruit-already: "<red>Your body already holds a devil fruit power. A second one would tear you apart."
-  fruit-second-lethal: "<dark_red>Your body tears itself apart... two devil fruit powers cannot coexist."
-  fruit-second-broadcast: "<dark_red><player> tried to hold two devil fruit powers and paid the price."
+  fruit-already: "<red>Your body already holds a abyss fruit power. A second one would tear you apart."
+  fruit-second-lethal: "<dark_red>Your body tears itself apart... two abyss fruit powers cannot coexist."
+  fruit-second-broadcast: "<dark_red><player> tried to hold two abyss fruit powers and paid the price."
   fruit-taken: "<red>The power of <fruit> <red>already belongs to someone else."
   fruit-lost: "<gray>Your <fruit> <gray>power leaves your body..."
   sea-weakness: "<blue>The sea drains your strength!"
@@ -756,18 +756,18 @@ messages:
   ability-used: "<ability><gray>!"
   ability-cooldown: "<ability> <red>is on cooldown: <white><seconds>s"
   ability-no-target: "<ability><gray>: no target in sight."
-  ability-seastone: "<dark_aqua>Sea Prism Stone blocks your power!"
+  ability-seastone: "<dark_aqua>Abyssal Iron blocks your power!"
   ability-sea: "<blue>You cannot use your power in the sea!"
   invisibility-off: "<gray>You are visible again."
-  seastoned: "<dark_aqua>Sea Prism Stone! Your power is sealed for <white><seconds>s"
+  seastoned: "<dark_aqua>Abyssal Iron! Your power is sealed for <white><seconds>s"
   seastone-hit: "<dark_aqua>Sealed <white><player></white>'s power for <white><seconds>s"
-  cuffed: "<dark_aqua><player> cuffed you with Sea Prism Stone! <gray>(<seconds>s)"
+  cuffed: "<dark_aqua><player> cuffed you with Abyssal Iron! <gray>(<seconds>s)"
   cuffed-other: "<dark_aqua>You cuffed <white><player></white>. <gray>(<seconds>s)"
   item-cooldown: "<item> <red>is reloading: <white><seconds>s"
   no-ammo: "<red>Out of ammo! <gray>Needs <white><amount>x <ammo>"
   headshot: "<red><bold>Headshot!"
-  logpose-bar: "<aqua>Log Pose <dark_gray>»</dark_gray> <white><island></white> <gray>(<type>) <yellow><distance>m"
-  logpose-arrived: "<aqua>Log Pose <dark_gray>»</dark_gray> <green>You are on <white><island></white>"
+  logpose-bar: "<aqua>Tide Compass <dark_gray>»</dark_gray> <white><island></white> <gray>(<type>) <yellow><distance>m"
+  logpose-arrived: "<aqua>Tide Compass <dark_gray>»</dark_gray> <green>You are on <white><island></white>"
   logpose-no-islands: "<gray>The needle spins aimlessly... no islands in this world."
   logpose-unavailable: "<gray>The needle does not move. (Islands are disabled)"
   denden-no-crew: "<red>Nobody answers... you are not in a crew."

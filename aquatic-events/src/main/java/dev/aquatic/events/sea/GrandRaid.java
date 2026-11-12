@@ -174,7 +174,7 @@ public final class GrandRaid extends SeaEvent {
                 LivingEntity e = spawn(mob, isBoss ? scale : 1.0);
                 if (e != null && isBoss && boss == null) {
                     boss = e.getUniqueId();
-                    bossName = Text.plain(Text.mm(mob.getString("name", "Admiral")));
+                    bossName = Text.plain(Text.mm(mob.getString("name", "High Warden")));
                 }
             }
         }

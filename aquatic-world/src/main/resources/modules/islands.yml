@@ -1,6 +1,6 @@
 # =====================================================================================
 #  AquaticSMP - ISLANDS module
-#  The Grand Line: procedurally generated islands that crews can claim, defend and conquer.
+#  The Endless Sea: procedurally generated islands that crews can claim, defend and conquer.
 #
 #  Quick start for server owners (all admin commands need aquatic.islands.admin, ops have it):
 #    1. Stand in the middle of your ocean and run   /island area 3000
@@ -51,17 +51,18 @@ generation:
   # Part of the radius that is dry land; the rest is beach and an underwater slope down to the sea floor.
   land-fraction: 0.72
   # Allowed radius for /island admin spawn and spawnrandom (in blocks from the centre to the edge).
-  # Islands are built chunk by chunk, so even radius 1000+ works without lag; it just takes longer
-  # (roughly 1-3 minutes for radius 300, 10-20 minutes for radius 1000, depending on the server).
+  # Islands are built chunk by chunk without lag (about 40 seconds for radius 400).
+  # radius-limit: the biggest island an admin can place by hand (750 = 1500 blocks across).
   min-radius: 16
-  radius-limit: 1500
+  radius-limit: 750
   # Island sizes for "/island admin spawnrandom <type> <count>" (when no min/max radius is given):
   # a size is picked by weight, then a radius within its range.
+  # (radius = centre to edge; the island is twice as wide: radius 50 = 100 blocks across)
   island-sizes:
-    small:  {min: 100, max: 180, weight: 5}
-    medium: {min: 180, max: 350, weight: 4}
-    large:  {min: 350, max: 600, weight: 2}
-    huge:   {min: 600, max: 1000, weight: 1}
+    small:  {min: 50,  max: 100, weight: 5}   # 100-200 blocks across
+    medium: {min: 100, max: 175, weight: 4}   # 200-350 across
+    large:  {min: 175, max: 300, weight: 2}   # 350-600 across
+    huge:   {min: 300, max: 500, weight: 1}   # 600-1000 across (rare)
   # Bigger islands get taller land: radius 70 uses the heights below, larger islands grow up to
   # max-height-boost times taller. height-scaling 0 = same heights for every size.
   height-scaling: 1.0
@@ -318,31 +319,54 @@ types:
         carpet: RED_CARPET
         light: SEA_LANTERN
 
-# Name pools for auto-named islands (/island spawnrandom, /island spawn without a name).
-names:
-  TROPICAL: [Coco Isle, Syrup Village, Orange Town, Baratie Reef, Sunny Cove, Lagoon Key, Mango Atoll, Coral Haven, Parrot Point, Shell Bay]
-  JUNGLE: [Little Garden, Boin Archipelago, Rusukaina, Green Bit, Vine Hollow, Serpent Isle, Kuraigana Thicket, Emerald Maw]
-  VOLCANIC: [Punk Hazard, Ember Rock, Magma Crown, Cinder Fang, Ashfall Isle, Brimstone Key]
-  SNOWY: [Drum Island, Frostbite Isle, Winter Fang, Glacier Rest, Whitebeard's Cradle, Iceberg Point]
-  DESERT: [Alabasta, Sandy Isle, Dune Spire, Mirage Key, Scorpion Atoll, Sunbleach Rock]
-  ANCIENT: [Ohara, Shandora, Jaya, Lost Atlantis, Poneglyph Rock, Forgotten Isle, Elder Reach]
-  CAPITAL: [Water 7, Sabaody, Mary Geoise, Loguetown, Port Royal, Fishman Isle]
-  # Used when a list runs out: "<prefix> <suffix>".
-  fallback-prefixes: [Skull, Rum, Black, Golden, Crimson, Silent, Storm, Rusty, Kraken, Grog, Lucky, Ghost]
-  fallback-suffixes: [Isle, Key, Rock, Atoll, Cay, Haven, Point, Reef, Cove, Island]
+# Auto-generated island names (/island admin spawnrandom, /island admin spawn without a name):
+# "<first> <second>", picked at random per island type, never used twice.
+# Add or remove words freely. "fixed" names are used first (one each) if you want hand-picked ones.
+island-names:
+  TROPICAL:
+    fixed: []
+    first: [Saltwhisper, Brightwater, Palmreach, Sunmere, Coralline, Tidesong, Goldsand, Breezeway, Lumen, Marigold, Seaglass, Driftwood, Azure, Honeytide, Shellmoor]
+    second: [Cay, Atoll, Lagoon, Shoals, Haven, Strand, Key, Sands, Isle, Reach]
+  JUNGLE:
+    fixed: []
+    first: [Verdant, Mossheart, Tanglewood, Greenmaw, Thornvale, Viridian, Canopy, Fernhollow, Wildroot, Liana, Emberleaf, Murkfern, Jadebark, Sprawl]
+    second: [Wilds, Thicket, Expanse, Hollow, Tangle, Isle, Frontier, Maze, Deep, Grove]
+  VOLCANIC:
+    fixed: []
+    first: [Cinderpeak, Ashmaw, Magmaforge, Obsidian, Scorch, Pyre, Blackglass, Emberfall, Sulphur, Brimfire, Smolder, Kilnstone]
+    second: [Crag, Caldera, Spire, Rock, Cone, Isle, Crown, Forge, Vent, Furnace]
+  SNOWY:
+    fixed: []
+    first: [Frostmere, Rimeholt, Glacier, Whitecap, Hoarfrost, Icewake, Snowdrift, Palewind, Wintersong, Northmark, Bitterchill, Crystalline]
+    second: [Isle, Reach, Shelf, Floe, Point, Holm, Spire, Hold, Rest, Fang]
+  DESERT:
+    fixed: []
+    first: [Sunscorch, Dunewalker, Mirage, Amber, Saffron, Dustveil, Bleached, Sandglass, Ochre, Sirocco, Kestrel, Copperdune]
+    second: [Waste, Dunes, Mesa, Flats, Isle, Atoll, Expanse, Sands, Crossing, Basin]
+  ANCIENT:
+    fixed: []
+    first: [Elderstone, Forgotten, Sunken, Hollowcrown, Runewatch, Gravemoss, Old, Silent, Lost, Moonlit, Vesper, Ashenveil]
+    second: [Ruins, Sanctum, Isle, Reliquary, Archive, Remnant, Throne, Vault, Barrow, Spire]
+  CAPITAL:
+    fixed: []
+    first: [Harbor, Crownport, Highmast, Anchorage, Freeport, Sovereign, Gilded, Tidecrown, Mainsail, Lanternhold]
+    second: [City, Port, Bastion, Haven, Citadel, Landing, Harbor, Throne]
+  # Generic words used when a type has no words left.
+  fallback-first: [Lonely, Windswept, Hidden, Drifting, Nameless, Distant, Sunlit, Stormy]
+  fallback-second: [Isle, Key, Rock, Atoll, Cay, Haven, Point, Reef, Cove, Island]
 
 # -------------------------------------------------------------------------------------
 # Spawn island (set with /island setspawn; it is made NEUTRAL)
 # -------------------------------------------------------------------------------------
-spawn-island:
-  # Teleport brand new players to the spawn island.
-  first-join-teleport: false
-  # Respawn players without a bed/anchor on the spawn island.
-  respawn-without-bed: false
 
-# -------------------------------------------------------------------------------------
-# Entering / leaving islands
-# -------------------------------------------------------------------------------------
+# Spawn point, set in-game with /island admin setspawn (exactly where you stand).
+spawn:
+  # New players start at the spawn point.
+  teleport-on-first-join: true
+  # Send everyone to spawn on every join (e.g. a lobby-style spawn).
+  teleport-on-every-join: false
+  # Players without a bed / respawn anchor respawn at the spawn point.
+  respawn-here: true
 presence:
   # How often (ticks) player positions are checked; players are only re-checked when they changed block.
   check-interval-ticks: 10
@@ -530,6 +554,8 @@ bluemap:
 #  Messages
 # =====================================================================================
 messages:
+  spawn-point-set-island: "<green>Spawn set at <white><x>, <y>, <z></white> on <aqua><island></aqua> (now a neutral safe zone). New players and players without a bed spawn here."
+  spawn-point-set: "<green>Spawn set at <white><x>, <y>, <z></white>. New players and players without a bed spawn here."
   # --- enter / leave (presence.display) ---
   enter: "<aqua><island></aqua> <dark_gray>|</dark_gray> <type> <dark_gray>|</dark_gray> <owner>"
   enter-title: "<aqua><island>"

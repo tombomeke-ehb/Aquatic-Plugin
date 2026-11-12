@@ -92,6 +92,8 @@ public final class IslandsModule extends AquaticModule implements IslandService,
     private QueuedJob currentJob;
     private int jobTicks;
     private String spawnIslandId;
+    /** Exact spawn point set with /island admin setspawn ("world;x;y;z;yaw;pitch"), or null. */
+    private String spawnPoint;
     private boolean dirty;
     private volatile boolean markersDirty;
     private ConquestManager conquest;
@@ -202,6 +204,7 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         rebuildIndex();
         YamlConfiguration state = loadData("state");
         spawnIslandId = state.getString("spawn-island");
+        spawnPoint = state.getString("spawn-point");
         ConfigurationSection seen = state.getConfigurationSection("crew-last-seen");
         if (seen != null) {
             for (String crew : seen.getKeys(false)) {
@@ -226,6 +229,7 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         saveData("islands", data);
         YamlConfiguration state = new YamlConfiguration();
         state.set("spawn-island", spawnIslandId);
+        state.set("spawn-point", spawnPoint);
         for (Map.Entry<String, Long> e : crewLastSeen.entrySet()) {
             state.set("crew-last-seen." + e.getKey(), e.getValue());
         }
@@ -770,6 +774,30 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         markDirty();
     }
 
+    /** Stores the exact spawn point (and sets the world spawn there). */
+    void setSpawnPoint(Location l) {
+        spawnPoint = l.getWorld().getName() + ";" + l.getX() + ";" + l.getY() + ";" + l.getZ() + ";" + l.getYaw() + ";" + l.getPitch();
+        l.getWorld().setSpawnLocation(l);
+        markDirty();
+    }
+
+    /** The spawn point: the exact /setspawn spot, else the spawn island, else null. */
+    Location spawnLocation() {
+        if (spawnPoint != null) {
+            String[] p = spawnPoint.split(";");
+            World w = p.length == 6 ? Bukkit.getWorld(p[0]) : null;
+            if (w != null) {
+                try {
+                    return new Location(w, Double.parseDouble(p[1]), Double.parseDouble(p[2]), Double.parseDouble(p[3]),
+                            Float.parseFloat(p[4]), Float.parseFloat(p[5]));
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        IslandImpl spawn = spawnIslandId == null ? null : islands.get(spawnIslandId);
+        return spawn == null ? null : teleportSpot(spawn);
+    }
+
     Set<String> discoveriesOf(UUID player) {
         Set<String> set = discoveries.get(player);
         return set == null ? Set.of() : set;
@@ -870,7 +898,7 @@ public final class IslandsModule extends AquaticModule implements IslandService,
                 }
             }
         }
-        int limit = config().getInt("generation.radius-limit", 1500), floor = config().getInt("generation.min-radius", 16);
+        int limit = config().getInt("generation.radius-limit", 750), floor = config().getInt("generation.min-radius", 16);
         if (list.isEmpty()) {
             return Math.max(floor, Math.min(limit, 100 + random.nextInt(250)));
         }
@@ -995,15 +1023,26 @@ public final class IslandsModule extends AquaticModule implements IslandService,
 
     /** Picks an unused island name for the type from the configured lists. */
     String randomName(IslandType type, Random random) {
-        List<String> names = new ArrayList<>(config().getStringList("names." + type.name()));
-        Collections.shuffle(names, random);
-        for (String n : names) {
+        String pool = "island-names." + type.name();
+        List<String> fixed = new ArrayList<>(config().getStringList(pool + ".fixed"));
+        Collections.shuffle(fixed, random);
+        for (String n : fixed) {
             if (nameFree(n)) {
                 return n;
             }
         }
-        List<String> prefixes = config().getStringList("names.fallback-prefixes");
-        List<String> suffixes = config().getStringList("names.fallback-suffixes");
+        // "<first> <second>" combinations: hundreds of unique names per type
+        List<String> first = config().getStringList(pool + ".first"), second = config().getStringList(pool + ".second");
+        if (!first.isEmpty() && !second.isEmpty()) {
+            for (int i = 0; i < 60; i++) {
+                String n = first.get(random.nextInt(first.size())) + " " + second.get(random.nextInt(second.size()));
+                if (nameFree(n)) {
+                    return n;
+                }
+            }
+        }
+        List<String> prefixes = config().getStringList("island-names.fallback-first");
+        List<String> suffixes = config().getStringList("island-names.fallback-second");
         if (!prefixes.isEmpty() && !suffixes.isEmpty()) {
             for (int i = 0; i < 40; i++) {
                 String n = prefixes.get(random.nextInt(prefixes.size())) + " " + suffixes.get(random.nextInt(suffixes.size()));
@@ -1542,9 +1581,10 @@ public final class IslandsModule extends AquaticModule implements IslandService,
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        if (!player.hasPlayedBefore() && config().getBoolean("spawn-island.first-join-teleport", false)) {
-            IslandImpl spawn = spawnIslandId == null ? null : islands.get(spawnIslandId);
-            Location spot = spawn == null ? null : teleportSpot(spawn);
+        boolean first = !player.hasPlayedBefore();
+        if ((first && config().getBoolean("spawn.teleport-on-first-join", true))
+                || config().getBoolean("spawn.teleport-on-every-join", false)) {
+            Location spot = spawnLocation();
             if (spot != null) {
                 player.teleportAsync(spot);
             }
@@ -1553,11 +1593,10 @@ public final class IslandsModule extends AquaticModule implements IslandService,
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onRespawn(PlayerRespawnEvent event) {
-        if (!config().getBoolean("spawn-island.respawn-without-bed", false) || event.isBedSpawn() || event.isAnchorSpawn()) {
+        if (!config().getBoolean("spawn.respawn-here", true) || event.isBedSpawn() || event.isAnchorSpawn()) {
             return;
         }
-        IslandImpl spawn = spawnIslandId == null ? null : islands.get(spawnIslandId);
-        Location spot = spawn == null ? null : teleportSpot(spawn);
+        Location spot = spawnLocation();
         if (spot != null) {
             event.setRespawnLocation(spot);
         }

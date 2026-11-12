@@ -30,7 +30,7 @@ name:
   blocked-words:
     - admin
     - staff
-    - marine
+    - tidewatch
 
 # Crew tags (shown in chat and the tab list). Tags are stored in upper case.
 # When /crew create is used without a tag, one is made from the first letters of the name.
@@ -98,6 +98,14 @@ flag:
     navy:
       base: white
       patterns: ["stripe_top:blue", "stripe_bottom:blue", "globe:light_blue"]
+
+# Small icon per rank, used as <rank_icon> in chat and the tab list ("" = no icon).
+rank-icons:
+  CAPTAIN: "<gold>★</gold>"
+  FIRST_MATE: "<yellow>☆</yellow>"
+  NAVIGATOR: "<aqua>⚓</aqua>"
+  QUARTERMASTER: "<green>⚖</green>"
+  MEMBER: "<gray>•</gray>"
 
 # Names shown for every rank.
 rank-names:
@@ -198,8 +206,14 @@ chat:
   # Put the crew tag in front of public chat messages.
   prefix-enabled: true
   # Tags: <tag> (crew tag in crew colour), <crew> (crew name in crew colour)
-  prefix-format: "<dark_gray>[<tag><dark_gray>] "
-  # Extra prefix for the reigning Pirate King (needs the tournament module). Empty = none.
+  # Tags: <tag> (crew tag in crew colour), <crew> (crew name), <rank_icon> (see rank-icons)
+  prefix-format: "<rank_icon> <dark_gray>[<tag><dark_gray>] "
+  # Prefix for players without a crew (empty = none), e.g. "<dark_gray>[<gray>Drifter<dark_gray>] "
+  no-crew-prefix: ""
+  # Hover over a name or crew tag in chat for a card with crew, rank, reputation and bounty.
+  # Clicking the tag opens /crew info, clicking the name starts a /msg.
+  hover-cards: true
+  # Extra prefix for the reigning Sea Sovereign (needs the tournament module). Empty = none.
   pirate-king-prefix: "<gold>👑 </gold>"
   # Crew chat (/cc <message> or /crew chat toggle). Tags: <crew> <tag> <rank> <player> <message>
   crew-format: "<dark_aqua>[<tag><dark_aqua>] <gray><rank> <white><player><dark_gray>: <aqua><message>"
@@ -209,8 +223,22 @@ chat:
 tablist:
   # Show the crew tag in front of names in the tab list.
   enabled: true
-  # Tags: <tag> <crew> <player>
-  format: "<dark_gray>[<tag><dark_gray>] <white><player>"
+  # Tags: <tag> <crew> <player> <rank_icon>
+  format: "<rank_icon> <dark_gray>[<tag><dark_gray>] <white><player>"
+  # Header and footer of the tab list (turn off when you use the TAB plugin).
+  # Tags: <player> <online> <max> <crew> <balance> <bounty>
+  header-footer: true
+  header:
+    - ""
+    - "<gradient:#1fa2ff:#12d8fa><bold>AQUATIC SMP</bold></gradient>"
+    - "<gray>Sail. Claim. Conquer."
+    - ""
+  footer:
+    - ""
+    - "<gray>Online: <white><online></white>/<white><max></white> <dark_gray>|</dark_gray> <gray>Crew: <crew>"
+    - "<gray>Doubloons: <yellow><balance></yellow> <dark_gray>|</dark_gray> <gray>Bounty: <red><bounty>"
+    - "<dark_gray>/guide for help"
+    - ""
 
 placeholderapi:
   # Register %aquatic_...% placeholders when PlaceholderAPI is installed.
@@ -224,6 +252,11 @@ placeholderapi:
 #  Messages (MiniMessage format). <placeholders> are filled in by the plugin.
 # ---------------------------------------------------------------------
 messages:
+  card-player: "<aqua><bold><player></bold></aqua> <title><newline><gray>Crew: <crew><newline><gray>Rank: <white><rank><newline><gray>Crew reputation: <white><reputation><newline><gray>Bounty: <red><bounty><newline><newline><yellow>Click to send a message"
+  card-crew: "<crew> <dark_gray>[<tag><dark_gray>]<newline><gray>Captain: <white><captain><newline><gray>Members: <white><members>/<max><newline><gray>Reputation: <white><reputation><newline><newline><yellow>Click for crew info"
+  card-no-crew: "<gray>no crew"
+  card-none: "none"
+  card-sovereign: "<gold>👑 Sea Sovereign"
   # general
   no-permission: "<red>Ye don't have permission to do that."
   no-crew-permission: "<red>Yer rank doesn't allow that, sailor."

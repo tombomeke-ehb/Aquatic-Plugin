@@ -146,7 +146,7 @@ public final class AquaticPlugin extends JavaPlugin {
     private void printBanner() {
         String version = getPluginMeta().getVersion();
         getLogger().info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        getLogger().info("  AquaticSMP v" + version + "  -  sail the Grand Line");
+        getLogger().info("  AquaticSMP v" + version + "  -  sail the Endless Sea");
         getLogger().info("  Developed by " + AUTHOR);
         getLogger().info("  " + REPO);
         getLogger().info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
@@ -157,8 +157,9 @@ public final class AquaticPlugin extends JavaPlugin {
         sender.sendMessage(Text.mm("<dark_aqua><strikethrough>                </strikethrough> <gradient:#1fa2ff:#12d8fa><bold>AquaticSMP</bold></gradient> <dark_aqua><strikethrough>                </strikethrough>"));
         sender.sendMessage(Text.mm(" <gray>Version <white><version>", "version", getPluginMeta().getVersion()));
         sender.sendMessage(Text.mm(" <gray>Developed by <gold><bold><author></bold>", "author", AUTHOR));
-        sender.sendMessage(Text.mm(" <gray>Pirate crews, islands, treasure, Devil Fruits and the Pirate King."));
+        sender.sendMessage(Text.mm(" <gray>Pirate crews, islands, treasure, Abyss Fruits and the Sea Sovereign."));
         sender.sendMessage(Text.mm(" <aqua><click:open_url:'" + REPO + "'><hover:show_text:'<gray>Open the project page'>" + REPO + "</hover></click>"));
+        sender.sendMessage(Text.mm(" <gray>All commands: <click:run_command:'/aquatic commands'><hover:show_text:'<gray>Click to list every command'><aqua>/aquatic commands</aqua></hover></click> <dark_gray>|</dark_gray> <gray>Guide: <click:run_command:'/guide'><hover:show_text:'<gray>Open the guide book'><aqua>/guide</aqua></hover></click>"));
     }
 
     private void loadPrefix() {
@@ -179,6 +180,16 @@ public final class AquaticPlugin extends JavaPlugin {
 
         cmd.sub("about", (sender, args) -> sendAbout(sender))
                 .aliases("credits", "version").description("Who made AquaticSMP");
+
+        cmd.sub("commands", (sender, args) -> {
+            sender.sendMessage(Text.mm("<dark_aqua><strikethrough>          </strikethrough> <aqua><bold>AquaticSMP commands</bold> <dark_aqua><strikethrough>          </strikethrough>"));
+            for (AquaticCommand root : AquaticCommand.registered()) {
+                if (root.usableBy(sender)) {
+                    sender.sendMessage(root.overviewLine(sender));
+                }
+            }
+            sender.sendMessage(Text.mm("<dark_gray>Click a command for its help page. <gray>/guide</gray> explains how everything works."));
+        }).aliases("cmds", "all").description("Every AquaticSMP command, clickable");
 
         cmd.sub("modules", (sender, args) -> {
             sender.sendMessage(prefix.append(Text.mm("<aqua>Modules:")));
@@ -222,6 +233,37 @@ public final class AquaticPlugin extends JavaPlugin {
                     "list", String.join(", ", enabledModuleIds()))));
         }).usage("[module]").permission("aquatic.admin").description("Reload configs (all modules or one)")
                 .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(modules.keySet(), a[0]) : List.of());
+
+        cmd.sub("resetconfig", (sender, args) -> {
+            if (args.length < 1 || !modules.containsKey(args[0].toLowerCase())) {
+                throw new CommandFail("<red>Usage: <white>/aquatic resetconfig <module> confirm");
+            }
+            AquaticModule module = modules.get(args[0].toLowerCase());
+            if (args.length < 2 || !args[1].equalsIgnoreCase("confirm")) {
+                sender.sendMessage(prefix.append(Text.mm("<yellow>This replaces <white>modules/<id>.yml</white> with the newest defaults. "
+                        + "Your current file is kept as a <white>.bak</white> backup. Type <white>/aquatic resetconfig <id> confirm</white>.", "id", module.id())));
+                return;
+            }
+            java.io.File file = module.configFile();
+            if (file.exists()) {
+                java.io.File backup = new java.io.File(file.getParentFile(), module.id() + ".yml.bak-" + System.currentTimeMillis());
+                if (!file.renameTo(backup)) {
+                    throw new CommandFail("<red>Could not back up the old file; nothing was changed.");
+                }
+            }
+            boolean was = module.isEnabled();
+            if (was) {
+                disableModule(module.id());
+            }
+            module.reloadConfig(); // writes the bundled default again
+            if (was) {
+                enableModule(module.id());
+            }
+            sender.sendMessage(prefix.append(Text.mm("<green>Fresh <white>modules/<id>.yml</white> written (old one saved as .bak).", "id", module.id())));
+        }).usage("<module> confirm").description("Replace a module's config with the newest defaults (keeps a backup)")
+                .permission("aquatic.admin")
+                .completer((s2, a2) -> a2.length == 1 ? AquaticCommand.filter(modules.keySet(), a2[0])
+                        : a2.length == 2 ? List.of("confirm") : List.of());
 
         cmd.register(this);
     }

@@ -64,6 +64,9 @@ public final class CrewsModule extends AquaticModule implements CrewService {
     private volatile String kingPrefix = "";
     private volatile boolean tabEnabled;
     private volatile String tabFormat = "";
+    /** Hover cards for chat names/tags, rebuilt on the main thread (the chat renderer runs async). */
+    private final java.util.Map<UUID, Component> playerCards = new ConcurrentHashMap<>();
+    private final java.util.Map<UUID, Component> crewTagCards = new ConcurrentHashMap<>();
 
     @Override
     public String id() {
@@ -94,6 +97,10 @@ public final class CrewsModule extends AquaticModule implements CrewService {
         for (AquaticCommand command : new CrewCommands(this, listener).build()) {
             registerCommand(command);
         }
+
+        playerCards.clear();
+        crewTagCards.clear();
+        runTimer(this::refreshCards, 20L, 100L);
 
         long period = Math.max(10, config().getLong("autosave-seconds", 120)) * 20L;
         runTimer(this::saveIfDirty, period, period);
@@ -814,6 +821,65 @@ public final class CrewsModule extends AquaticModule implements CrewService {
     // ------------------------------------------------------------------ chat & tab list
 
     /** Prefix for public chat (Pirate King crown + crew tag), or null when there is nothing to add. Thread-safe. */
+    String rankIcon(CrewRank rank) {
+        return rank == null ? "" : config().getString("rank-icons." + rank.name(), "");
+    }
+
+    /** Player hover card (crew, rank, reputation, bounty, title); null when cards are off. */
+    Component playerCard(UUID player) {
+        return playerCards.get(player);
+    }
+
+    /**
+     * Rebuilds the hover cards and tab list header/footer every few seconds on the main thread, so the
+     * async chat renderer only reads finished components.
+     */
+    private void refreshCards() {
+        boolean cards = config().getBoolean("chat.hover-cards", true);
+        dev.aquatic.api.BountyService bounty = service(dev.aquatic.api.BountyService.class);
+        dev.aquatic.api.EconomyService eco = service(dev.aquatic.api.EconomyService.class);
+        TournamentService tournament = service(TournamentService.class);
+        java.util.Set<UUID> online = new java.util.HashSet<>();
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            UUID id = p.getUniqueId();
+            online.add(id);
+            CrewImpl crew = byPlayer.get(id);
+            String bountyText = bounty == null || bounty.bountyOf(id) <= 0 ? rawText("card-none") : (eco != null ? eco.format(bounty.bountyOf(id)) : Text.number(bounty.bountyOf(id)));
+            if (cards) {
+                Component card = rawMsg("card-player", "player", p.getName(),
+                        "crew", crew == null ? rawMsg("card-no-crew") : crew.displayName(),
+                        "rank", crew == null ? Component.empty() : Text.mm(rankIcon(crew.rankOf(id)) + " " + rankName(crew.rankOf(id))),
+                        "reputation", crew == null ? "-" : String.valueOf(crew.reputation()),
+                        "bounty", bountyText,
+                        "title", tournament != null && tournament.isPirateKing(id) ? rawMsg("card-sovereign") : Component.empty());
+                playerCards.put(id, card);
+            }
+            if (config().getBoolean("tablist.header-footer", true)) {
+                Object[] ph = {"player", p.getName(), "online", Bukkit.getOnlinePlayers().size(), "max", Bukkit.getMaxPlayers(),
+                        "crew", crew == null ? rawMsg("card-no-crew") : crew.displayName(),
+                        "balance", eco == null ? "-" : eco.format(eco.balance(id)), "bounty", bountyText};
+                p.sendPlayerListHeaderAndFooter(Text.mm(String.join("<newline>", config().getStringList("tablist.header")), ph),
+                        Text.mm(String.join("<newline>", config().getStringList("tablist.footer")), ph));
+            }
+        }
+        playerCards.keySet().retainAll(online);
+        if (cards) {
+            for (CrewImpl crew : crews.values()) {
+                String captain = crew.captain() == null ? "?" : java.util.Objects.requireNonNullElse(Bukkit.getOfflinePlayer(crew.captain()).getName(), "?");
+                crewTagCards.put(crewUuid(crew), rawMsg("card-crew", "crew", crew.displayName(), "tag", crew.tagComponent(),
+                        "captain", captain, "members", crew.members().size(), "max", maxMembers(), "reputation", crew.reputation()));
+            }
+        }
+    }
+
+    private static UUID crewUuid(CrewImpl crew) {
+        return UUID.nameUUIDFromBytes(crew.id().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    }
+
+    private String rawText(String key) {
+        return Text.plain(rawMsg(key));
+    }
+
     Component chatPrefix(UUID player) {
         if (!chatPrefixEnabled) {
             return null;
@@ -828,8 +894,20 @@ public final class CrewsModule extends AquaticModule implements CrewService {
         }
         CrewImpl crew = byPlayer.get(player);
         if (crew != null) {
-            Component tag = Text.mm(chatPrefixFormat, "tag", crew.tagComponent(), "crew", crew.displayName());
+            Component tag = Text.mm(chatPrefixFormat, "tag", crew.tagComponent(), "crew", crew.displayName(),
+                    "rank_icon", Text.mm(rankIcon(crew.rankOf(player))));
+            Component card = crewTagCards.get(crewUuid(crew));
+            if (card != null) {
+                tag = tag.hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(card))
+                        .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/crew info " + crew.name()));
+            }
             prefix = prefix == null ? tag : Component.textOfChildren(prefix, tag);
+        } else {
+            String none = config().getString("chat.no-crew-prefix", "");
+            if (none != null && !none.isEmpty()) {
+                Component tag = Text.mm(none);
+                prefix = prefix == null ? tag : Component.textOfChildren(prefix, tag);
+            }
         }
         return prefix;
     }
@@ -842,7 +920,8 @@ public final class CrewsModule extends AquaticModule implements CrewService {
         if (crew == null) {
             player.playerListName(null);
         } else {
-            player.playerListName(Text.mm(tabFormat, "tag", crew.tagComponent(), "crew", crew.displayName(), "player", player.getName()));
+            player.playerListName(Text.mm(tabFormat, "tag", crew.tagComponent(), "crew", crew.displayName(), "player", player.getName(),
+                    "rank_icon", Text.mm(rankIcon(crew.rankOf(player.getUniqueId())))));
         }
     }
 

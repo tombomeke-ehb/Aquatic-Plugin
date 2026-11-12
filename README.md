@@ -2,7 +2,7 @@
 
 **Developed by [tombomeke](https://github.com/tombomeke).**
 
-One plugin jar for the Aquatic SMP pirate server (Paper 1.21.4+, Java 21): crews, Doubloons, bounties, procedurally generated islands with claiming and conquest, buried treasure with treasure maps, Devil Fruits and pirate gear, the Pirate King tournament and seven server events.
+One plugin jar for the Aquatic SMP pirate server (Paper 1.21.4+, Java 21): crews, Doubloons, bounties, procedurally generated islands with claiming and conquest, buried treasure with treasure maps, Abyss Fruits and pirate gear, the Sea Sovereign tournament and seven server events.
 
 Everything is split into **modules** that can be switched on and off at runtime. Each module has its own config file with every number, toggle and message in it.
 
@@ -42,7 +42,7 @@ plugins/AquaticSMP/
 │   ├── combat.yml      combat tag, respawn protection, new-player protection
 │   ├── islands.yml     ocean area, island block palettes, claiming, raiding, conquest, income
 │   ├── treasure.yml    loot tiers and tables, burial depth, natural spawning, map drops
-│   ├── items.yml       every custom item and Devil Fruit, ability numbers, triggers, recipes
+│   ├── items.yml       every custom item and Abyss Fruit, ability numbers, triggers, recipes
 │   ├── tournament.yml  stages, team size, rewards, crown, King perks
 │   ├── events.yml      each server event, rewards, auto-scheduler
 │   └── guide.yml       new-player intro, starter kit, tips and the /guide book
@@ -72,7 +72,7 @@ Settings most servers change first:
 | Conquest capture time | `islands.yml` | `conquest.capture-seconds` |
 | Passive island income | `islands.yml` | `income:` |
 | How often treasure appears | `treasure.yml` | `natural.interval-minutes` |
-| One Devil Fruit per player, second fruit refused or lethal | `items.yml` | `fruits.one-per-player`, `fruits.second-fruit` |
+| One Abyss Fruit per player, second fruit refused or lethal | `items.yml` | `fruits.one-per-player`, `fruits.second-fruit` |
 | Tournament entry fee, minimum crews | `tournament.yml` | `registration:` |
 | Finale length (best of N) | `tournament.yml` | `finale.best-of` |
 | Automatic events | `events.yml` | `scheduler.enabled`, `scheduler.interval-minutes` |
@@ -90,11 +90,11 @@ Settings most servers change first:
 | --- | --- | --- |
 | `economy` | `economy.yml` | Doubloon balances, `/pay`, `/baltop`, mob kill money, PvP death loss, Vault provider |
 | `crews` | `crews.yml` | Crews with Captain / First Mate / Navigator / Quartermaster / Member, bank, home, flag, crew chat, alliances, rivalries, wars, reputation, chat and tab tags |
-| `bounty` | `bounty.yml` | Player-placed bounties, automatic notoriety, bounty tiers (Rookie → Emperor), wanted posters. Needs `economy` |
+| `bounty` | `bounty.yml` | Player-placed bounties, automatic notoriety, bounty tiers (Rookie → Dread Tyrant), wanted posters. Needs `economy` |
 | `islands` | `islands.yml` | Island generator (7 types), claiming, raid protection, flag-capture conquest, discovery, passive income, BlueMap markers |
 | `treasure` | `treasure.yml` | Loot tiers, buried treasure chests, treasure maps with a red X, natural spawning and map drops |
-| `items` | `items.yml` | 8 Devil Fruits with powers and sea weakness, Sea Prism gear, legendary swords, flintlock, hand cannon, Log Pose, Den Den Mushi, rum, Pirate King crown |
-| `tournament` | `tournament.yml` | The Pirate King tournament: registration → qualifiers → bracket → best-of finale → coronation, Hall of Kings. Needs `crews` |
+| `items` | `items.yml` | 8 Abyss Fruits with powers and sea weakness, Abyssal Iron gear, legendary swords, flintlock, hand cannon, Tide Compass, Echo Conch, rum, Sea Sovereign crown |
+| `tournament` | `tournament.yml` | The Sea Sovereign tournament: registration → qualifiers → bracket → best-of finale → coronation, Hall of Kings. Needs `crews` |
 | `events` | `events.yml` | Treasure Hunt, Pirate War, Bounty Hunt, Lost Island, King's Challenge, Grand Raid, Naval Battle; optional auto-scheduler |
 | `combat` | `combat.yml` | Combat tag (no logging out or teleporting away mid-fight), respawn protection, new-player PvP protection |
 | `guide` | `guide.yml` | Welcome intro, starter kit with a treasure map, tips for new players, the `/guide` book |
@@ -151,14 +151,14 @@ A suggested order for a fresh ocean world:
 8. **Event locations:**
    - `/seaevent setlocation <event> [name]` for the King's Challenge hill and the Grand Raid spawn. Without a hill location, the King's Challenge uses the capital island.
 
-## Running the Pirate King tournament
+## Running the Sea Sovereign tournament
 
 | Step | Command | What happens |
 | --- | --- | --- |
 | 1 | `/tournament open [minutes]` | Registration opens. Crew officers run `/tournament register` and `/tournament roster add/remove <member>`. |
 | 2 | `/tournament start` | Moves to the qualifiers. Crews score points for kills, treasure, claims, conquests and bounties. |
 | 3 | `/tournament start` | The top crews go into the bracket. `/tournament next` runs each match (auto-advance is in config). |
-| 4 | — | The finale is best-of-3 by default. The winning captain is crowned Pirate King: crown item, prize, reputation, and your own console commands (e.g. a LuckPerms group). |
+| 4 | — | The finale is best-of-3 by default. The winning captain is crowned Sea Sovereign: crown item, prize, reputation, and your own console commands (e.g. a LuckPerms group). |
 
 Other commands: `/tournament status | bracket | standings | cancel | forcewin <crew>`, `/tournament admin setking <player|none>`, `/hallofkings`.
 
@@ -191,7 +191,7 @@ Players use `/seaevent info` and `/seaevent join`. Rewards, durations and minimu
 | Bounty | `/bounty admin add|remove|clear <player> [amount]` |
 | Items | `/aitem give <player> <id> [amount]`, `/aitem list`, `/aitem fruit set <player> <fruit|none>`, `/aitem fruit info [player]` |
 
-`devil_fruit_random` is a special item id that gives a random Devil Fruit. Treasure loot and event rewards can use it too.
+`devil_fruit_random` is a special item id that gives a random Abyss Fruit. Treasure loot and event rewards can use it too.
 
 ## Player commands
 
@@ -203,7 +203,7 @@ Players use `/seaevent info` and `/seaevent join`. Rewards, durations and minimu
 | `/bounty set|info|top|list`, `/wanted` | Bounties and wanted posters |
 | `/island info|here|list|map|discovered|top|claim|unclaim|flag` | Islands. Claiming needs Captain or First Mate. |
 | `/treasure info` | Active treasure hints |
-| `/fruit` | Your Devil Fruit power and cooldown |
+| `/fruit` | Your Abyss Fruit power and cooldown |
 | `/tournament register|roster|standings|bracket|info`, `/hallofkings` | Tournament |
 | `/seaevent info|join` | Events |
 
@@ -218,10 +218,10 @@ Every player permission is `aquatic.<module>.<feature>` and granted to everyone 
   - capture time
   - shield after a capture
 - **Raiding** (building, breaking or opening chests on enemy islands): `raiding.mode` = `always | war-only | never`.
-- **Devil Fruits:**
+- **Abyss Fruits:**
   - One per player. You lose the power when in water.
   - Use the ability with **sneak + F** (swap hands), or sneak + right-click while looking at a block. Minecraft does not send right-clicks on air with an empty hand.
-  - A Sea Prism hit shuts the power off for a few seconds.
+  - A Abyssal Iron hit shuts the power off for a few seconds.
   - Default fruit names are inspired by the anime and can be renamed in `items.yml`, along with every number.
 - **Custom item textures:** every item has an optional `custom-model-data`, so you can add textures later with a resource pack or Oraxen.
 

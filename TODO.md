@@ -2,7 +2,55 @@
 
 The roadmap for the next versions. Details are still open and will be worked out per feature.
 
+## 0. Rebrand: our own identity
+The idea came from an anime: powers from fruits, a sea full of islands, crews competing for one crown. The theme stays (pirates, sea, powers), but every name and its lore must be our own.
+
+**Done in 1.4.0:** player-visible names were renamed (internal ids are unchanged, so existing data keeps working).
+
+| Concept | New name |
+| --- | --- |
+| Power fruits | **Abyss Fruits** |
+| Fruit classes | **Elemental** / Body / Beast |
+| The 8 fruits | Springcoil, Emberheart, Rimefrost, Thunderveil, Ghostglass, Riftshift, Hollowvoid Fruit, Behemoth Fruit |
+| Fruit-cancelling metal | **Abyssal Iron** (baton and shackles) |
+| Swords | Tidecleaver, Nightbloom, Leviathan's Fang |
+| Island compass / crew phone | **Tide Compass** / **Echo Conch** |
+| Highest title | **Sea Sovereign** (Crown of the Sea Sovereign) |
+| Bounty titles | Rookie → Notorious → Rising Tide → Corsair Lord → Dread Tyrant |
+| Navy enemies | **The Tidewatch** (Recruit, Rifleman, Lieutenant, Warden Captain, High Warden Vex) |
+| The sea | **The Endless Sea**; zones: the Shallows → the Open Sea → the Abyssal Reach |
+| Spirit power (planned) | **Resolve**: Iron Resolve, Keen Resolve, Sovereign Resolve |
+| Island names | Generated from our own word lists per island type |
+
+**Still to do:**
+- [ ] **Rename the internal ids with a migration**, for example `gomu_gomu` → `springcoil`, `log_pose` → `tide_compass`, `pirate_king_crown` → `sovereign_crown`. Existing items and saved fruit powers have to be converted automatically, through an alias table that maps old ids to new ones.
+- [ ] **Write our own lore:**
+  - Where Abyss Fruits come from: for example, they grow on coral in the deep, and the sea wants its power back, which is why users can't swim.
+  - Who the Tidewatch are.
+  - What the Sea Sovereign means.
+  - Short lore lines on every item.
+- [ ] **New ability names** per fruit that fit the new theme. A few still describe the effect generically ("Ice Age", "Beast Form").
+- [ ] **Rename the code itself** (classes, permissions, commands where needed), for example `PirateKingCrownedEvent` → `SovereignCrownedEvent` and the `/hallofkings` command → `/hallofsovereigns`. Keep the old names as aliases for a while.
+- [ ] **Fresh look:**
+  - a plugin and server logo
+  - our own colour palette in the messages
+  - unique custom model data, plus a resource pack later
+- [ ] Go through all texts once more for anything that still sounds like the anime.
+- [ ] Decide the final server name and tagline (now "Aquatic SMP - Sail. Claim. Conquer.").
+
 ## Planned features
+
+### Sidebar (scoreboard HUD)
+- [ ] A sidebar on the right side of the screen showing:
+  - your Doubloons, crew, rank and bounty
+  - the island you're on and its owner
+  - your fruit power and its cooldown
+  - the current server event with its time left
+- [ ] Toggle it with `/sidebar`. Lines are configured in a `sidebar.yml`.
+- [ ] Context modes: during a tournament it shows the standings, during an event the event score, and normally the player info.
+- [ ] Works next to the TAB plugin: when TAB is installed, use its scoreboard or turn ours off.
+- [ ] No flicker: update every second with scoreboard teams, not by recreating the board.
+
 
 ### 1. Island management and development
 Owned islands should become something a crew builds up over time, not just a claim.
@@ -21,18 +69,18 @@ Owned islands should become something a crew builds up over time, not just a cla
 - [ ] **Server shop** (`/shop`) as a chest GUI, with categories: tools, food, ship parts, pirate gear, rare items.
 - [ ] Buy and sell for Doubloons. Prices go in a `shop.yml`, and support custom items (`item:<id>`).
 - [ ] **Configurable in-game:** admins add items, set prices and change categories through the GUI, without editing YAML.
-- [ ] Optional: limited stock, rotating daily deals, rank- or Pirate King-only items.
+- [ ] Optional: limited stock, rotating daily deals, rank- or Sea Sovereign-only items.
 - [ ] Optional: player shops / trading posts on neutral islands.
 - [ ] Decide whether the shop replaces or works alongside EssentialsX `/sell` and `/worth`.
 
-### 3. Haki
-- [ ] **Armament Haki (Busoshoku):** a toggle that adds damage and lets you **hit Logia devil fruit users**. A Logia user (for example `mera_mera`, `goro_goro` or `hie_hie`) should dodge normal hits unless the attacker uses Haki or Sea Prism.
-- [ ] **Observation Haki (Kenbunshoku):** sense nearby players through walls (glowing), a short dodge window, and warnings when someone targets you.
-- [ ] **Conqueror's Haki (Haoshoku):** **only some players have it**, either at random on first join, or rare and earned. It is an area blast that knocks back and stuns weaker players, and its power scales with your Haki level.
-- [ ] **Training and progression:** Haki XP from fighting, using Haki, training dummies or special training islands. Levels unlock longer duration, more power and lower cooldowns.
-- [ ] Haki energy / stamina bar, so it can't be used non-stop.
-- [ ] `/haki` command: status, levels and toggles, plus admin commands to set levels or grant Conqueror's Haki.
-- [ ] Add a "logia" flag to devil fruits in `items.yml`, so the dodge rule knows which fruits it applies to.
+### 3. Resolve
+- [ ] **Iron Resolve:** a toggle that adds damage and lets you **hit Elemental abyss fruit users**. A Elemental user (for example `mera_mera`, `goro_goro` or `hie_hie`) should dodge normal hits unless the attacker uses Resolve or Abyssal Iron.
+- [ ] **Keen Resolve:** sense nearby players through walls (glowing), a short dodge window, and warnings when someone targets you.
+- [ ] **Sovereign Resolve:** **only some players have it**, either at random on first join, or rare and earned. It is an area blast that knocks back and stuns weaker players, and its power scales with your Resolve level.
+- [ ] **Training and progression:** Resolve XP from fighting, using Resolve, training dummies or special training islands. Levels unlock longer duration, more power and lower cooldowns.
+- [ ] Resolve energy / stamina bar, so it can't be used non-stop.
+- [ ] `/resolve` command: status, levels and toggles, plus admin commands to set levels or grant Sovereign Resolve.
+- [ ] Add a "elemental" flag to abyss fruits in `items.yml`, so the dodge rule knows which fruits it applies to.
 
 ### 4. More and better abilities
 **Today's problems:** most abilities only work up close (punch, swap, slash), they feel weak, and they aren't balanced for real PvP.
@@ -46,17 +94,17 @@ Owned islands should become something a crew builds up over time, not just a cla
   - The current move and its cooldowns show in the action bar.
 - [ ] **Combos and synergy:**
   - Hie freezes a target, and Goro does extra damage to frozen targets.
-  - Haki breaks Logia defences (see Haki).
+  - Resolve breaks Elemental defences (see Resolve).
 - [ ] **Mobility moves:** dash, double jump, glide or flight, so fights aren't just standing still.
-- [ ] **Logia passive:** a chance to "phase through" normal hits, countered by Haki or Sea Prism.
+- [ ] **Elemental passive:** a chance to "phase through" normal hits, countered by Resolve or Abyssal Iron.
 - [ ] **Awakening:** a stronger version of a fruit after a lot of use (mastery XP per fruit).
-- [ ] More fruits: Paramecia, Zoan and Logia variety.
+- [ ] More fruits: Body, Beast and Elemental variety.
 - [x] Better visuals: shockwaves, beams, auras, trails, colours (done in 1.3.0).
 - [ ] A telegraph before big hits so they can be dodged.
 - [ ] **PvP balance pass**, tested with real players:
   - **Time-to-kill target:** an ability should take about 20–30% of a player's health, and a full combo should not one-shot a player in diamond or netherite armour.
   - **Armour:** abilities respect armour and Protection. Decide per move whether it does true damage.
-  - **Fair matchups:** a non-fruit player with Haki and a good sword should still have a fair chance.
+  - **Fair matchups:** a non-fruit player with Resolve and a good sword should still have a fair chance.
   - **Per-world/region multipliers:** separate damage multipliers for PvP and PvE.
   - **Test arena:** `/aitem test` dummies that show damage numbers.
 - [ ] **Ideas to discuss:**
@@ -80,15 +128,15 @@ Owned islands should become something a crew builds up over time, not just a cla
   - Volcanic: lava rivers and an obsidian lava cave.
   - Snowy: ice spikes.
   - Desert: an oasis and a buried temple.
-  - Ancient: a ruined city with a "Poneglyph" block that gives lore and a clue.
+  - Ancient: a ruined city with a "Runestone" block that gives lore and a clue.
 - [ ] **Structures:**
   - shipwrecks on the shore
   - pirate camps (with mobs)
-  - a Marine outpost (mini-boss)
+  - a Tidewatch outpost (mini-boss)
   - lighthouses
   - docks on neutral islands
   - Templates are loaded from `.schem` files (WorldEdit schematics) so builders can add their own.
-- [ ] **Rare special islands:** a sky island (floating), a "Thriller Bark"-style ghost island at night, a giant tree island.
+- [ ] **Rare special islands:** a sky island (floating), a ghost island at night, a giant tree island.
 - [ ] **Biome mixing:** two biomes on one big island (for example a jungle centre and a volcanic peak).
 - [ ] **Better looks:**
   - smoother coasts and reefs (coral and kelp in the shallows)
@@ -100,17 +148,17 @@ Owned islands should become something a crew builds up over time, not just a cla
 - [ ] **Placeable facilities on big islands:** buy a building (dock, market, watchtower, vault) in the shop and place it as a schematic, with a preview outline, on your own island. Each building gives its upgrade. See section 1.
 
 ### 4c. Custom map
-- [ ] **In-game map item:** a "Grand Line chart".
+- [ ] **In-game map item:** a "Endless Sea chart".
   - It only shows islands you have **discovered**, plus your crew's territory in its colour, and treasure rumours.
   - Built with the Bukkit map API (map renderer). It can be a 2×2 or 3×3 wall of item frames at spawn.
 - [ ] **Web map (BlueMap):**
   - Islands are coloured by owner, with popup info (type, owner, level).
   - Optional: hide undiscovered islands per player, which needs BlueMap's player-specific markers, or one map per crew.
-- [ ] **Sea zones:** the map is divided into named seas (East Blue, Grand Line, New World). Further from spawn means harder islands and better loot. Shown on the map and in an action bar when you sail into a new sea.
-- [ ] **Navigation:** the Log Pose "locks" onto an island you choose (`/logpose set <island>`). An Eternal Pose item points to one fixed island.
+- [ ] **Sea zones:** the map is divided into named seas (the Shallows, Endless Sea, Abyssal Reach). Further from spawn means harder islands and better loot. Shown on the map and in an action bar when you sail into a new sea.
+- [ ] **Navigation:** the Tide Compass "locks" onto an island you choose (`/logpose set <island>`). An Bound Compass item points to one fixed island.
 
 ### 5. More treasure items
-- [ ] More unique loot: legendary weapons and armour sets, accessories with passive buffs, ship upgrades, Haki training scrolls, rare cosmetics such as hats and titles.
+- [ ] More unique loot: legendary weapons and armour sets, accessories with passive buffs, ship upgrades, Resolve training scrolls, rare cosmetics such as hats and titles.
 - [ ] Item rarities shown in the name and lore.
 - [ ] Set bonuses for wearing matching pirate gear.
 
@@ -123,7 +171,7 @@ Owned islands should become something a crew builds up over time, not just a cla
 
 - [ ] **Test in-game** everything that needs players:
   - crews, claiming and conquest
-  - Devil Fruits and gear
+  - Abyss Fruits and gear
   - tournament matches
   - treasure maps
   - PvP events, combat tag, starter kit and tips
@@ -140,7 +188,7 @@ Owned islands should become something a crew builds up over time, not just a cla
   - My suggestion: try Movecraft first (A). If it doesn't run well on 1.21.4, go for B.
 - [ ] **Shop plugin or our own?**
   - Existing options: EssentialsX `/sell` and `/worth` (simple), or a GUI shop plugin such as EconomyShopGUI or ShopGUIPlus. These work with our Doubloons through Vault.
-  - Building our own (see the Shop section) makes sense if the shop should sell custom items, island upgrades and Haki training. My suggestion: build our own small shop for pirate items and upgrades, and leave general block trading to an existing plugin.
+  - Building our own (see the Shop section) makes sense if the shop should sell custom items, island upgrades and Resolve training. My suggestion: build our own small shop for pirate items and upgrades, and leave general block trading to an existing plugin.
 - [ ] **Personal world map:** only shows islands you have discovered (BlueMap currently shows everything).
 - [ ] **Seasons:** a command to start a new season, resetting bounties, reputation and/or islands.
 - [ ] **Known limitations:**

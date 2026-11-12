@@ -324,6 +324,11 @@ final class IslandGenerator extends AreaJob {
         if ((wx & 3) != 0 || (wz & 3) != 0 || (long) dx * dx + (long) dz * dz > (long) (radius + 3) * (radius + 3)) {
             return;
         }
+        // only above dry land: water keeps the ocean biome (otherwise square patches of different water colour)
+        byte k = kindAt(dx, dz);
+        if (k == NONE || k == SLOPE) {
+            return;
+        }
         int from = Math.max(minY, sea - 24), to = Math.min(maxY, sea + maxElevation + 32);
         for (int y = from; y <= to; y += 4) {
             world.setBiome(wx, y, wz, t.biome);

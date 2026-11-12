@@ -2,20 +2,22 @@
 
 ## What this plugin does
 
-AquaticSMP turns a survival server into a One Piece-style pirate world. In one plugin:
+AquaticSMP turns a survival server into a a pirate world. In one plugin:
 
 - **Pirate crews**: Captains, First Mates, Navigators and Quartermasters, with a shared treasury, a crew home and a flag. Crews can form alliances, declare rivalries and go to war.
 - **Doubloons**: the server currency. Shop and job plugins can use it too, through Vault.
 - **Bounties**: put a price on a pirate's head. Infamous killers get wanted posters and titles from *Rookie* up to *Emperor*.
 - **Islands**: generate tropical, jungle, volcanic, snowy, desert, ancient and capital islands with one command. Crews plant their flag on an island to claim it and defend it. Enemy crews take it over by holding the flag.
 - **Treasure**: buried chests with loot tiers, and treasure maps with a red X.
-- **Pirate gear**: Devil Fruits with powers (and the sea's curse), Sea Prism weapons, legendary swords, flintlocks, cannons, the Log Pose, rum and more.
-- **The Pirate King tournament**: registration, qualifiers, an elimination bracket and a best-of-3 finale. The winning captain is crowned Pirate King and enters the Hall of Kings.
+- **Pirate gear**: Abyss Fruits with powers (and the sea's curse), Abyssal Iron weapons, legendary swords, flintlocks, cannons, the Tide Compass, rum and more.
+- **The Sea Sovereign tournament**: registration, qualifiers, an elimination bracket and a best-of-3 finale. The winning captain is crowned Sea Sovereign and enters the Hall of Kings.
 - **Server events**: Treasure Hunt, Pirate War, Bounty Hunt, Lost Island, King's Challenge, Grand Raid and Naval Battle.
 
 Every feature is a **module** you can turn on or off. All numbers, costs and messages are in the config files.
 
 ## How to read this
+
+- In-game, every help page (`/crew help`, `/island help`, ...) can be hovered for details and clicked to fill in the command.
 
 - `<value>` is required, `[value]` is optional, and `a|b` means pick one.
 - **Player** permissions are given to everyone by default. Remove one with LuckPerms to lock that feature.
@@ -30,10 +32,12 @@ Every feature is a **module** you can turn on or off. All numbers, costs and mes
 | Command | What it does | Permission |
 | --- | --- | --- |
 | `/aquatic` or `/aquatic about` | Plugin version and credits (developed by tombomeke). Admins also see the admin help | Everyone |
+| `/aquatic commands` | Every command in the plugin, clickable (aliases `cmds`, `all`) | Everyone |
 | `/aquatic modules` | List all modules and whether they are on | `aquatic.admin` |
 | `/aquatic enable <module>` | Turn a module on (saved in `config.yml`) | `aquatic.admin` |
 | `/aquatic disable <module>` | Turn a module off; modules that depend on it go off too | `aquatic.admin` |
 | `/aquatic reload [module]` | Reload configs for all modules or just one, with no restart | `aquatic.admin` |
+| `/aquatic resetconfig <module> confirm` | Replace a module's config with the newest defaults. The old file is kept as a `.bak` | `aquatic.admin` |
 
 Aliases: `/aq`, `/aquaticsmp`. Module names: `economy`, `crews`, `bounty`, `combat`, `islands`, `treasure`, `items`, `tournament`, `events`, `guide`.
 
@@ -147,7 +151,7 @@ Ranks are Captain, First Mate, Navigator, Quartermaster and Member. `crews.yml` 
 | Command | What it does | Permission |
 | --- | --- | --- |
 | `/bounty set <player> <amount>` | Put a price on a pirate's head. You pay it, plus a tax. Aliases: `place`, `add` | Player: `aquatic.bounty.set` |
-| `/bounty info [player]` | A pirate's bounty and title (Rookie, Supernova, Warlord, Emperor, ...) | Player |
+| `/bounty info [player]` | A pirate's bounty and title (Rookie, Rising Tide, Warlord, Emperor, ...) | Player |
 | `/bounty top [page]` | Most wanted pirates | Player |
 | `/bounty list [page]` | Every active bounty, online pirates first | Player |
 | `/wanted [player]` | Get a "WANTED: DEAD OR ALIVE" poster item | Player: `aquatic.bounty.wanted` |
@@ -224,29 +228,29 @@ Right-click a treasure map to get a "warmer / colder" hint.
 
 ---
 
-## Items and Devil Fruits (`items`)
+## Items and Abyss Fruits (`items`)
 
 | Command | What it does | Permission |
 | --- | --- | --- |
-| `/fruit` | Your Devil Fruit power, its ability and cooldown (alias `/devilfruit`) | Player: `aquatic.items.fruit` |
+| `/fruit` | Your Abyss Fruit power, its ability and cooldown (alias `/devilfruit`) | Player: `aquatic.items.fruit` |
 | `/aitem give <player> <id> [amount]` | Give a custom item | Admin: `aquatic.items.admin` |
 | `/aitem list` | All custom item ids | Admin |
-| `/aitem fruit set <player> <fruit\|none>` | Give or remove a Devil Fruit power directly | Admin |
+| `/aitem fruit set <player> <fruit\|none>` | Give or remove a Abyss Fruit power directly | Admin |
 | `/aitem fruit info [player]` | Show a player's power | Admin |
 
 Aliases: `/aquaticitem`, `/pirateitem`.
 
 Default item ids:
-- **Devil Fruits:** `gomu_gomu`, `mera_mera`, `hie_hie`, `goro_goro`, `suke_suke`, `ope_ope`, `yami_yami`, `ushi_ushi_bison`
+- **Abyss Fruits:** `gomu_gomu`, `mera_mera`, `hie_hie`, `goro_goro`, `suke_suke`, `ope_ope`, `yami_yami`, `ushi_ushi_bison`
 - **Weapons:** `sea_prism_blade`, `seastone_cuffs`, `wado_ichimonji`, `shusui`, `yoru`, `flintlock`, `hand_cannon`, `cannonball`
 - **Tools and other:** `log_pose`, `den_den_mushi`, `rum`, `pirate_king_crown`
-- **Special:** `devil_fruit_random` gives a random Devil Fruit
+- **Special:** `devil_fruit_random` gives a random Abyss Fruit
 
-**Using a Devil Fruit power:** sneak + **F** (swap hands), or sneak + right-click while looking at a block. You cannot use powers while in water.
+**Using a Abyss Fruit power:** sneak + **F** (swap hands), or sneak + right-click while looking at a block. You cannot use powers while in water.
 
 ---
 
-## Pirate King tournament (`tournament`, needs `crews`)
+## Sea Sovereign tournament (`tournament`, needs `crews`)
 
 `/tournament` (aliases `/tourney`, `/pkt`)
 
@@ -257,10 +261,10 @@ Default item ids:
 | `/tournament register` | Register your crew (officers) | `aquatic.tournament.register` |
 | `/tournament unregister` | Withdraw your crew | `aquatic.tournament.register` |
 | `/tournament roster [add\|remove <member>]` | Show or choose your crew's fighters | `aquatic.tournament.register` |
-| `/tournament info` | Current stage and the reigning Pirate King | `aquatic.tournament.view` |
+| `/tournament info` | Current stage and the reigning Sea Sovereign | `aquatic.tournament.view` |
 | `/tournament standings` | Qualifier points | `aquatic.tournament.view` |
 | `/tournament bracket` | The elimination bracket | `aquatic.tournament.view` |
-| `/hallofkings` | Every past Pirate King with date, crew and season (alias `/kings`) | `aquatic.tournament.view` |
+| `/hallofkings` | Every past Sea Sovereign with date, crew and season (alias `/kings`) | `aquatic.tournament.view` |
 
 **Staff commands** (`aquatic.tournament.admin`)
 
@@ -278,7 +282,7 @@ Default item ids:
 | `/tournament arena delete <name>` | Delete an arena |
 | `/tournament arena list` | List arenas |
 | `/tournament setlobby` | Where players return after a match |
-| `/tournament admin setking <player\|none>` | Set or clear the Pirate King by hand |
+| `/tournament admin setking <player\|none>` | Set or clear the Sea Sovereign by hand |
 
 Nobody loses items in a match. Position, health and inventory are restored afterwards.
 
@@ -308,7 +312,7 @@ Staff with `aquatic.combat.bypass` never get tagged. Everything is in `combat.ym
 
 ## Guide and intro (`guide`)
 
-New players get a short intro on their first join: titles and chat tips about crews, islands and flags, treasure digging, bounties, Devil Fruits and the Pirate King. When it ends, the guide book opens.
+New players get a short intro on their first join: titles and chat tips about crews, islands and flags, treasure digging, bounties, Abyss Fruits and the Sea Sovereign. When it ends, the guide book opens.
 
 | Command | What it does | Permission |
 | --- | --- | --- |
@@ -322,7 +326,7 @@ New players get a short intro on their first join: titles and chat tips about cr
 | `/guide play <player>` | Play the intro for a player | Admin: `aquatic.guide.admin` |
 | `/guide reset <player\|all>` | Show the intro again on their next join | Admin: `aquatic.guide.admin` |
 
-Brand-new players also get a **starter kit**: a boat, food, a stone shovel and sword, a Log Pose, 100 Doubloons, and a **treasure map to a real buried treasure**, so treasure hunting is the first thing they learn.
+Brand-new players also get a **starter kit**: a boat, food, a stone shovel and sword, a Tide Compass, 100 Doubloons, and a **treasure map to a real buried treasure**, so treasure hunting is the first thing they learn.
 
 New players (under 5 hours of playtime) also get a short **tip** in chat every 10 minutes.
 
@@ -353,7 +357,7 @@ Event types:
 | `bounty_hunt` | Extra bounties go on the most wanted pirates. The hunter who claims the most wins. Unclaimed event bounties are removed afterwards |
 | `lost_island` | A new island rises from the sea, full of high-tier treasure, and sinks again when the event ends |
 | `kings_challenge` | King of the hill on the capital island, or on a location you set. The crew that holds it longest wins |
-| `grand_raid` | Waves of Marines attack, ending with an Admiral boss. Rewards are split by damage dealt |
+| `grand_raid` | Waves of Tidewatch soldiers attack, ending with a High Warden boss. Rewards are split by damage dealt |
 | `naval_battle` | Kills at sea or in boats score points for your crew. Cannons can be handed out at the start |
 
 ---
