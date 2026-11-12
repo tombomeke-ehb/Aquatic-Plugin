@@ -1,0 +1,311 @@
+# =====================================================================================
+#  AquaticSMP - TREASURE module
+#  Buried chests, treasure maps with a red X and the hunt for them.
+#
+#  Quick start (admin commands need aquatic.treasure.admin, ops have it):
+#    /treasure spawn legendary          bury a legendary chest where you stand
+#    /treasure spawn rare random        bury one on a random island
+#    /treasure map epic Steve           bury an epic chest somewhere and give Steve the map
+#    /treasure list | tp <n> | remove <n|all> | give-loot <tier>
+#  Players: /treasure info, and right-click a treasure map for hot/cold hints.
+#
+#  Works without the islands module (random land inside random-area is used instead),
+#  Doubloon payouts need the economy module, custom-item loot needs the items module
+#  (entries are skipped silently when it is off).
+# =====================================================================================
+
+autosave-seconds: 120
+
+# -------------------------------------------------------------------------------------
+# Loot tiers. Add as many as you like; the key is the tier id used in commands.
+#   display-name   MiniMessage name (colour = tier colour)
+#   chest          CHEST, TRAPPED_CHEST or BARREL
+#   rolls          how many loot entries are rolled ("min-max")
+#   doubloons      Doubloons paid to the finder on opening ("min-max")
+#   depth          blocks of earth above the chest (0 = sits on the surface)
+#   marker         put an X (see marker:) on the ground above it
+#   weight         default chance weight when no tier-weights are given
+#   broadcast      announce the find to the whole server
+#   reputation     reputation for the finder's crew
+#   vanish         empty = chest disappears once emptied and closed
+#                  close = disappears when closed (leftovers drop on the ground)
+#                  never = chest stays
+#   particles      particle shown above it to nearby players (none, HAPPY_VILLAGER, ENCHANT, WAX_ON, ...)
+#   beam           column of light visible from further away (makes it easy to find!)
+#   loot           list of entries:
+#       material: ITEM            amount: "min-max"      weight: relative chance
+#       enchants: [SHARPNESS:1-3, UNBREAKING:2]           (books get stored enchantments)
+#       random-enchant-level: 20-30   treasure-enchants: true   (enchanting-table style)
+#       name: "<gold>Cool name"   lore: ["<gray>line"]
+#       custom-item: <id>         (items module)
+#       doubloons: "min-max"      (entry that pays Doubloons instead of / besides an item)
+# -------------------------------------------------------------------------------------
+tiers:
+  common:
+    display-name: "<gray>Common</gray>"
+    chest: BARREL
+    rolls: 3-5
+    doubloons: 25-75
+    depth: 1
+    marker: true
+    weight: 10
+    broadcast: false
+    reputation: 1
+    vanish: empty
+    particles: none
+    beam: false
+    loot:
+      - {material: GOLD_NUGGET, amount: 4-16, weight: 10}
+      - {material: GOLD_INGOT, amount: 1-4, weight: 6}
+      - {material: IRON_INGOT, amount: 2-6, weight: 8}
+      - {material: EMERALD, amount: 1-4, weight: 5}
+      - {material: COOKED_COD, amount: 3-8, weight: 6}
+      - {material: BREAD, amount: 3-6, weight: 5}
+      - {material: ARROW, amount: 8-24, weight: 5}
+      - {material: GUNPOWDER, amount: 2-6, weight: 4}
+      - {material: NAUTILUS_SHELL, amount: 1, weight: 1.5}
+      - {material: NAME_TAG, amount: 1, weight: 1}
+      - {material: LEATHER_HELMET, weight: 2, name: "<gold>Weathered Tricorn", lore: ["<gray>Smells of salt and rum."]}
+      - {doubloons: 20-60, weight: 4}
+  rare:
+    display-name: "<aqua>Rare</aqua>"
+    chest: CHEST
+    rolls: 4-6
+    doubloons: 100-250
+    depth: 2
+    marker: true
+    weight: 5
+    broadcast: false
+    reputation: 3
+    vanish: empty
+    particles: none
+    beam: false
+    loot:
+      - {material: GOLD_INGOT, amount: 3-8, weight: 8}
+      - {material: EMERALD, amount: 3-10, weight: 7}
+      - {material: DIAMOND, amount: 1-3, weight: 4}
+      - {material: GOLDEN_APPLE, amount: 1-2, weight: 3}
+      - {material: NAUTILUS_SHELL, amount: 1-3, weight: 3}
+      - {material: NAME_TAG, amount: 1, weight: 2}
+      - {material: SADDLE, amount: 1, weight: 1.5}
+      - {material: EXPERIENCE_BOTTLE, amount: 4-12, weight: 4}
+      - {material: IRON_SWORD, weight: 3, random-enchant-level: 10-20, name: "<white>Sailor's Cutlass"}
+      - {material: BOW, weight: 2, random-enchant-level: 10-20}
+      - {material: ENCHANTED_BOOK, weight: 2, enchants: [DEPTH_STRIDER:1-3]}
+      - {material: ENCHANTED_BOOK, weight: 2, enchants: [RESPIRATION:1-3]}
+      - {material: MUSIC_DISC_CAT, weight: 1}
+      - {material: MUSIC_DISC_MALL, weight: 1}
+      - {custom-item: log_pose, weight: 1}
+      - {doubloons: 75-150, weight: 4}
+  epic:
+    display-name: "<light_purple>Epic</light_purple>"
+    chest: CHEST
+    rolls: 5-7
+    doubloons: 300-600
+    depth: 3
+    marker: true
+    weight: 2
+    broadcast: true
+    reputation: 8
+    vanish: empty
+    particles: none
+    beam: false
+    loot:
+      - {material: DIAMOND, amount: 2-6, weight: 7}
+      - {material: EMERALD_BLOCK, amount: 1-3, weight: 5}
+      - {material: GOLD_BLOCK, amount: 1-3, weight: 5}
+      - {material: HEART_OF_THE_SEA, amount: 1, weight: 2}
+      - {material: TRIDENT, weight: 2, enchants: [LOYALTY:1-3, IMPALING:1-3], name: "<aqua>Sea King's Fork"}
+      - {material: DIAMOND_SWORD, weight: 3, random-enchant-level: 20-30, name: "<light_purple>Grand Line Saber"}
+      - {material: DIAMOND_CHESTPLATE, weight: 2, random-enchant-level: 20-30}
+      - {material: ENCHANTED_BOOK, weight: 3, random-enchant-level: 25-30, treasure-enchants: true}
+      - {material: ENCHANTED_BOOK, weight: 1, enchants: [MENDING:1]}
+      - {material: ENCHANTED_GOLDEN_APPLE, amount: 1, weight: 0.7}
+      - {material: TOTEM_OF_UNDYING, amount: 1, weight: 0.8}
+      - {material: MUSIC_DISC_PIGSTEP, weight: 1}
+      - {material: SPYGLASS, weight: 2, name: "<gold>Navigator's Spyglass"}
+      - {custom-item: devil_fruit_random, weight: 0.5}
+      - {doubloons: 200-400, weight: 4}
+  legendary:
+    display-name: "<gradient:#ffcc00:#ff6a00><bold>Legendary</bold></gradient>"
+    chest: CHEST
+    rolls: 6-8
+    doubloons: 1000-2500
+    depth: 4
+    marker: true
+    weight: 0.5
+    broadcast: true
+    reputation: 25
+    vanish: empty
+    particles: WAX_ON
+    beam: false
+    loot:
+      - {material: NETHERITE_SCRAP, amount: 1-3, weight: 5}
+      - {material: NETHERITE_INGOT, amount: 1, weight: 1}
+      - {material: DIAMOND_BLOCK, amount: 1-3, weight: 4}
+      - {material: HEART_OF_THE_SEA, amount: 1-2, weight: 3}
+      - {material: ENCHANTED_GOLDEN_APPLE, amount: 1-2, weight: 2}
+      - {material: TRIDENT, weight: 2, enchants: [RIPTIDE:3, UNBREAKING:3, MENDING:1], name: "<gold>Trident of the Pirate King", lore: ["<gray>Rides the waves like they owe it Doubloons."]}
+      - {material: TRIDENT, weight: 2, enchants: [CHANNELING:1, LOYALTY:3, IMPALING:5], name: "<yellow>Thunder Bagua"}
+      - {material: NETHERITE_SWORD, weight: 1, enchants: [SHARPNESS:4-5, LOOTING:2-3, UNBREAKING:3], name: "<red>Yoru's Little Brother"}
+      - {material: ELYTRA, weight: 0.6}
+      - {material: TOTEM_OF_UNDYING, amount: 1-2, weight: 2}
+      - {material: MUSIC_DISC_OTHERSIDE, weight: 1}
+      - {material: MUSIC_DISC_RELIC, weight: 1}
+      - {material: NAME_TAG, weight: 1, name: "<gold>One Piece", lore: ["<gray>It was real all along."]}
+      - {custom-item: devil_fruit_random, weight: 2}
+      - {doubloons: 800-1500, weight: 4}
+
+# -------------------------------------------------------------------------------------
+# Placement
+# -------------------------------------------------------------------------------------
+placement:
+  # Search radius around the requested spot for dry, solid ground.
+  search-radius: 6
+  # Statuses of islands natural/random treasure may appear on.
+  island-statuses: [UNCLAIMED, OCCUPIED]
+  # Only use the inner part of the island (fraction of the radius), away from the beach.
+  island-inner-fraction: 0.6
+
+# Used when the islands module is off or no island qualifies: random dry land in this area.
+random-area:
+  world: world
+  center-x: 0
+  center-z: 0
+  radius: 2000
+  attempts: 12
+
+# The X that marks the spot.
+marker:
+  enabled: true
+  block: RED_WOOL
+  # Arm length of the X (1 = 5 blocks, 2 = 9 blocks).
+  size: 1
+  # Put the original ground back once the treasure is found.
+  remove-on-find: true
+
+# Name shown at the top of the chest window.
+chest-name:
+  enabled: true
+  format: "<tier> Treasure"
+
+effects:
+  # How often particles/beams are drawn (ticks) and how close players must be.
+  interval-ticks: 40
+  range: 24
+
+# -------------------------------------------------------------------------------------
+# Natural spawning
+# -------------------------------------------------------------------------------------
+natural:
+  enabled: true
+  interval-minutes: 20
+  # Never more than this many naturally spawned treasures at once.
+  max-active: 8
+  min-players-online: 1
+  # Unfound natural treasures crumble away after this many hours (0 = never).
+  expire-hours: 48
+  # Announce the rumour to the server (island name + rough hint, not the location).
+  announce: true
+  tier-weights:
+    common: 10
+    rare: 5
+    epic: 2
+    legendary: 0.4
+
+# Treasure maps dropping from sea creatures / fishing. Each drop buries a fresh treasure.
+map-drops:
+  # Chance per kill / catch (0.02 = 2%).
+  chances:
+    drowned: 0.02
+    guardian: 0.03
+    elder-guardian: 0.5
+    fishing: 0.005
+  require-player-kill: true
+  # No drops while this many treasures are active.
+  max-active: 15
+  tier-weights:
+    common: 8
+    rare: 5
+    epic: 2
+    legendary: 0.5
+
+# -------------------------------------------------------------------------------------
+# Treasure maps
+# -------------------------------------------------------------------------------------
+maps:
+  # The map is centred up to this many blocks away from the chest so the X is not dead centre.
+  center-jitter: 40
+  # CLOSEST, CLOSE, NORMAL, FAR, FARTHEST
+  scale: CLOSE
+  # Rounding of coordinates in hints when the treasure is not on an island.
+  coordinate-rounding: 100
+  name: "<gold>Treasure Map <dark_gray>(<tier><dark_gray>)"
+  lore:
+    - "<gray>A weathered chart, smudged with salt."
+    - "<gray>Island: <white><island>"
+    - "<gray>The X lies <white><hint></white>."
+    - ""
+    - "<yellow>Right-click while holding it"
+    - "<yellow>to sense how close you are."
+  gone-name: "<gray>Looted Treasure Map"
+  gone-lore:
+    - "<dark_gray>Someone beat you to it..."
+    - "<dark_gray>Only an empty hole remains."
+  hints:
+    cooldown-ms: 1000
+    # Compass direction only shown when farther than this (blocks).
+    show-direction-above: 12
+    # Rounded distance shown when farther than show-distance-above (0 = never show distance).
+    distance-rounding: 50
+    show-distance-above: 80
+    # "hot/cold": the first level whose distance (blocks) is >= the real distance is shown.
+    levels:
+      4: "<red><bold>BURNING!</bold> Dig right here!"
+      12: "<red>Hot!"
+      35: "<gold>Warm"
+      90: "<yellow>Lukewarm"
+      250: "<aqua>Cold"
+    beyond: "<blue>Freezing - the X is far away"
+
+info:
+  # /treasure info names the islands that hold treasure.
+  reveal-islands: true
+
+# =====================================================================================
+#  Messages
+# =====================================================================================
+messages:
+  no-island-name: "uncharted land"
+  hint-heart: "in the heart of the island"
+  hint-inland: "inland, toward the <direction>"
+  hint-shore: "near the <direction> shore"
+  hint-coords: "somewhere around X <x>, Z <z>"
+  hint-direction: "<gray>- the X lies to the <white><direction></white>"
+  hint-distance: "<gray>(~<distance> blocks)"
+  map-hint: "<temperature> <direction> <distance>"
+  map-gone: "<gray>The ink has faded... this treasure was already dug up."
+  map-wrong-world: "<gray>This map is of another world entirely."
+  natural-spawn: "<gold>Rumours spread of a <tier> <gold>treasure buried on <yellow><island></yellow>, <hint>!"
+  found: "<gold>You dug up a <tier> <gold>treasure on <yellow><island></yellow>!"
+  found-broadcast: "<gold><bold>X MARKS THE SPOT!</bold> <yellow><player></yellow> <gold>dug up a <tier> <gold>treasure on <yellow><island></yellow>!"
+  found-doubloons: "<gold>The chest held <yellow><amount></yellow>!"
+  found-reputation: "<gold><player> found a <tier> <gold>treasure: <green>+<reputation></green> crew reputation."
+  map-dropped: "<gold>A soggy treasure map washed out of the creature!"
+  map-fished: "<gold>You fished up a bottle with a treasure map inside!"
+  info-header: "<gold>Treasure hunters' rumours: <yellow><count></yellow> chest(s) still buried."
+  info-tier: "<dark_gray>- <tier><gray>: <white><count>"
+  info-islands: "<gray>Whispers mention: <white><islands>"
+  info-tip: "<gray>Treasure maps drop from drowned, guardians and fishing."
+  unknown-tier: "<red>Unknown tier <white><tier></white>. Tiers: <gray><tiers>"
+  bad-index: "<red>Index must be between 1 and <max>."
+  spawn-failed: "<red>Couldn't find a spot for the treasure (needs dry, solid ground)."
+  spawned: "<green>Buried a <tier> <green>treasure at <white><x>, <y>, <z></white> <gray>(<island>)"
+  map-received: "<gold>You received a <tier> <gold>treasure map. Happy hunting!"
+  map-given: "<green>Gave <player> a <tier> <green>map (treasure at <x>, <y>, <z>)."
+  list-empty: "<gray>No treasure is buried right now."
+  list-header: "<gold>Active treasures: <yellow><count>"
+  list-entry: "<gray>#<index> <tier> <white><x>, <y>, <z></white> <gray>(<world>, <island>) <dark_gray><age> old, <source>"
+  removed: "<yellow>Removed the treasure at <x>, <y>, <z>."
+  removed-all: "<yellow>Removed <count> treasure(s)."
+  loot-preview: "<green>Rolled <count> item(s) from <tier><green> plus <yellow><doubloons></yellow>."

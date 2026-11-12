@@ -1,0 +1,115 @@
+# =====================================================================
+#  AquaticSMP - Economy module (Doubloons)
+#  Reload with: /aquatic reload economy
+#  Balances are stored in plugins/AquaticSMP/data/economy/balances.yml
+# =====================================================================
+
+# Doubloons every new pirate starts with.
+starting-balance: 100
+
+# Hard cap on a single balance. Deposits above the cap are cut off.
+max-balance: 1000000000000
+
+# How often (seconds) changed balances are written to disk. They are always saved on shutdown/reload.
+autosave-seconds: 120
+
+# Tell an online player when an admin changes their balance with /doubloons give|take|set.
+notify-admin-changes: true
+
+currency:
+  singular: "Doubloon"
+  plural: "Doubloons"
+  # Optional symbol, usable in the format below as <symbol>.
+  symbol: "⛃"
+  # Number of decimals a balance can have. 0 = whole Doubloons only (recommended), max 4.
+  decimals: 0
+  # How amounts are written everywhere. Tags: <amount> <name> <symbol>
+  # Examples: "<amount> <name>" -> 1,250 Doubloons      "<symbol><amount>" -> ⛃1,250
+  format: "<amount> <name>"
+
+pay:
+  # Set to false to switch /pay off completely.
+  enabled: true
+  # Smallest amount that can be sent.
+  min-amount: 1
+  # Percentage of every payment that vanishes into Davy Jones' locker (0 = no tax).
+  tax-percent: 0
+  # Allow paying players that are offline (anyone who joined before).
+  allow-offline: true
+
+baltop:
+  # Entries per page of /baltop.
+  page-size: 10
+
+# Doubloons for killing mobs.
+mob-rewards:
+  enabled: true
+  # Also pay for mobs that came out of a spawner (false prevents spawner farms printing money).
+  spawner-mobs: false
+  # Show the reward above the hotbar.
+  action-bar: true
+  # Reward for every mob that is not listed below (0 = nothing).
+  default: 0
+  # Reward per mob type. Names are Bukkit EntityType names (ZOMBIE, WITHER_SKELETON, ...).
+  mobs:
+    ZOMBIE: 2
+    SKELETON: 2
+    SPIDER: 2
+    CREEPER: 3
+    DROWNED: 4
+    PHANTOM: 4
+    PILLAGER: 5
+    WITCH: 5
+    ENDERMAN: 6
+    GUARDIAN: 8
+    BLAZE: 8
+    WITHER_SKELETON: 10
+    ELDER_GUARDIAN: 250
+    WARDEN: 500
+    WITHER: 1000
+    ENDER_DRAGON: 2500
+
+# What happens to a pirate's purse when another player kills them.
+pvp-death:
+  # Percentage of the victim's Doubloons that is lost on a PvP death (0 = disabled).
+  lose-percent: 5
+  # Maximum Doubloons lost per death (-1 = no limit).
+  max-loss: 5000
+  # Percentage of the lost Doubloons that the killer receives (the rest is destroyed).
+  killer-share-percent: 100
+
+vault:
+  # Register Doubloons as the server economy in Vault (only when Vault is installed),
+  # so shop/auction/job plugins automatically use Doubloons.
+  enabled: true
+
+# ---------------------------------------------------------------------
+#  Messages (MiniMessage format: https://docs.advntr.dev/minimessage/format.html)
+#  <placeholders> are filled in by the plugin.
+# ---------------------------------------------------------------------
+messages:
+  balance-self: "<gray>Yer purse holds <gold><balance></gold>."
+  balance-other: "<white><player></white><gray> carries <gold><balance></gold>."
+  no-permission: "<red>Ye don't have permission to do that."
+  unknown-player: "<red>No pirate named <white><player></white> has ever sailed these seas."
+  player-offline: "<red><white><player></white> is not online."
+  invalid-amount: "<red><white><amount></white> is not a valid amount."
+  not-enough: "<red>Ye can't afford that! Ye need <gold><amount></gold> but only have <gold><balance></gold>."
+  balance-max: "<red><white><player></white>'s purse can't hold that much."
+  pay-disabled: "<red>Paying other pirates is disabled."
+  pay-self: "<red>Ye can't pay yerself, ye scallywag."
+  pay-min: "<red>The smallest payment is <gold><min></gold>."
+  pay-sent: "<gray>Ye paid <gold><amount></gold> to <white><player></white>. <dark_gray>(they received <received>, tax <tax>)"
+  pay-received: "<white><player></white><gray> paid ye <gold><amount></gold>."
+  baltop-header: "<gold><bold>Richest Pirates</bold> <dark_gray>(page <page>/<pages>)"
+  baltop-line: "<yellow>#<rank> <white><player> <dark_gray>- <gold><balance>"
+  baltop-empty: "<red>Nobody owns any Doubloons yet."
+  admin-give: "<green>Gave <gold><amount></gold> to <white><player></white>. New balance: <gold><balance></gold>."
+  admin-take: "<green>Took <gold><amount></gold> from <white><player></white>. New balance: <gold><balance></gold>."
+  admin-set: "<green>Set the balance of <white><player></white> to <gold><balance></gold>."
+  admin-give-notify: "<gray>Ye received <gold><amount></gold>. Purse: <gold><balance></gold>."
+  admin-take-notify: "<gray><gold><amount></gold> was taken from yer purse. Purse: <gold><balance></gold>."
+  admin-set-notify: "<gray>Yer purse was set to <gold><balance></gold>."
+  mob-reward: "<gold>+<amount> <gray>(<mob>)"
+  pvp-lost: "<red><white><killer></white> looted <gold><amount></gold> from yer corpse!"
+  pvp-gained: "<green>Ye looted <gold><amount></gold> from <white><victim></white>."

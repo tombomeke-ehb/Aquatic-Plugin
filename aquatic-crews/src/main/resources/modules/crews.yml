@@ -1,0 +1,340 @@
+# =====================================================================
+#  AquaticSMP - Crews module
+#  Pirate crews: ranks, diplomacy, wars, reputation, crew chat, bank and home.
+#  Reload with: /aquatic reload crews
+#  Crews are stored in plugins/AquaticSMP/data/crews/crews.yml
+# =====================================================================
+
+# Maximum number of pirates in one crew (captain included).
+max-members: 6
+
+# How often (seconds) changes are written to disk. Always saved on shutdown/reload.
+autosave-seconds: 120
+
+# Seconds before a /crew invite expires.
+invite-expire-seconds: 120
+
+# Entries per page of /crew list and /crew top.
+list-page-size: 10
+
+# Announce new crews and disbanded crews to the whole server.
+announce-creation: true
+announce-disband: true
+
+# Crew names: length, allowed characters (a Java regular expression) and forbidden words.
+# Names and tags are unique (case-insensitive), and a name may not equal another crew's tag.
+name:
+  min-length: 3
+  max-length: 16
+  allowed-characters: "[A-Za-z0-9_]+"
+  blocked-words:
+    - admin
+    - staff
+    - marine
+
+# Crew tags (shown in chat and the tab list). Tags are stored in upper case.
+# When /crew create is used without a tag, one is made from the first letters of the name.
+tag:
+  min-length: 2
+  max-length: 4
+  allowed-characters: "[A-Za-z0-9]+"
+
+# Colour new crews get. A colour name (aqua, gold, red, ...) or a hex code (#1fa2ff).
+default-color: aqua
+# May crews pick any hex colour with /crew color, or only the 16 named colours?
+allow-hex-colors: true
+# Colours nobody may pick (e.g. reserved for staff).
+blocked-colors:
+  - dark_red
+
+# Doubloons charged from the player's purse. Ignored when the economy module is disabled.
+costs:
+  create: 1000
+  color: 250
+  tag: 250
+  sethome: 0
+
+# Names shown for every rank.
+rank-names:
+  CAPTAIN: "Captain"
+  FIRST_MATE: "First Mate"
+  NAVIGATOR: "Navigator"
+  QUARTERMASTER: "Quartermaster"
+  MEMBER: "Deckhand"
+
+# How many members may hold a rank at once (-1 = unlimited). There is always exactly one Captain.
+rank-limits:
+  FIRST_MATE: 1
+  NAVIGATOR: 1
+  QUARTERMASTER: 1
+
+# Which ranks may do what. The Captain may always do everything.
+# Ranks: FIRST_MATE, NAVIGATOR, QUARTERMASTER, MEMBER
+# Nobody can kick or re-rank someone of equal or higher rank, except the Captain.
+permissions:
+  invite: [FIRST_MATE, NAVIGATOR, QUARTERMASTER]
+  kick: [FIRST_MATE]
+  setrank: [FIRST_MATE]
+  # /crew color, /crew tag and /crew flag
+  appearance: [FIRST_MATE]
+  sethome: [FIRST_MATE, NAVIGATOR]
+  friendlyfire: [FIRST_MATE]
+  bank-withdraw: [FIRST_MATE, QUARTERMASTER]
+  # /crew ally, /crew neutral, /crew rival
+  diplomacy: [FIRST_MATE]
+  # /crew war and /crew peace
+  war: [FIRST_MATE]
+
+friendly-fire:
+  # Friendly fire state of new crews (false = crewmates cannot hurt each other).
+  default: false
+  # May crews switch friendly fire on with /crew friendlyfire?
+  allow-toggle: true
+  # Also protect allied crews from each other (melee, arrows, tridents, TNT, harmful potions, pets).
+  protect-allies: true
+
+# Reputation = fame on the seas, used by /crew top.
+reputation:
+  # Reputation new crews start with.
+  starting: 0
+  # May reputation drop below 0?
+  allow-negative: false
+  # Gained by the killer's crew for killing a member of another (non-allied) crew.
+  kill: 10
+  # Gained for killing a member of a crew you are at war with.
+  war-kill: 25
+  # Gained for killing a player without a crew.
+  kill-crewless: 2
+  # Lost by the victim's crew when one of its members is killed by another player.
+  death: 5
+  # Lost when killed by a crew you are at war with.
+  war-death: 10
+  # The same killer/victim pair only counts once per this many seconds (stops alt farming).
+  repeat-kill-cooldown-seconds: 300
+
+bank:
+  # Maximum Doubloons a crew bank can hold.
+  max-balance: 1000000000
+  # Give the bank contents to the captain when the crew is disbanded (otherwise it is lost).
+  refund-on-disband: true
+
+diplomacy:
+  # Seconds before an unanswered alliance or peace offer expires.
+  request-expire-seconds: 300
+  # Maximum alliances per crew (-1 = unlimited).
+  max-allies: 3
+
+war:
+  enabled: true
+  # Announce war declarations and peace to the whole server (otherwise only the two crews).
+  announce: true
+  # Doubloons taken from the declaring crew's BANK to declare war (0 = free).
+  cost: 500
+  # Minimum minutes a war lasts before peace can be made (both crews must agree to peace).
+  min-duration-minutes: 60
+  # Maximum wars a crew can fight at once (-1 = unlimited).
+  max-active-wars: 2
+  # Both crews need at least this many members.
+  min-members: 1
+  # Only crews you declared rivals first can be attacked.
+  require-rival: false
+
+home:
+  enabled: true
+  # Seconds to stand still before teleporting. Moving or taking damage cancels it.
+  warmup-seconds: 5
+  # Seconds between two uses of /crew home (bypass: aquatic.crews.home.bypass-cooldown).
+  cooldown-seconds: 300
+  # Worlds where no crew home may be set.
+  blocked-worlds:
+    - world_the_end
+
+chat:
+  # Put the crew tag in front of public chat messages.
+  prefix-enabled: true
+  # Tags: <tag> (crew tag in crew colour), <crew> (crew name in crew colour)
+  prefix-format: "<dark_gray>[<tag><dark_gray>] "
+  # Extra prefix for the reigning Pirate King (needs the tournament module). Empty = none.
+  pirate-king-prefix: "<gold>👑 </gold>"
+  # Crew chat (/cc <message> or /crew chat toggle). Tags: <crew> <tag> <rank> <player> <message>
+  crew-format: "<dark_aqua>[<tag><dark_aqua>] <gray><rank> <white><player><dark_gray>: <aqua><message>"
+  # Also print crew chat in the console.
+  log-crew-chat: true
+
+tablist:
+  # Show the crew tag in front of names in the tab list.
+  enabled: true
+  # Tags: <tag> <crew> <player>
+  format: "<dark_gray>[<tag><dark_gray>] <white><player>"
+
+placeholderapi:
+  # Register %aquatic_...% placeholders when PlaceholderAPI is installed.
+  # %aquatic_crew% %aquatic_crew_tag% %aquatic_crew_tag_colored% %aquatic_crew_rank% %aquatic_crew_reputation%
+  # %aquatic_crew_members% %aquatic_balance% %aquatic_balance_formatted% %aquatic_bounty% %aquatic_bounty_formatted%
+  enabled: true
+  # Text shown by crew placeholders for players without a crew.
+  no-crew: ""
+
+# ---------------------------------------------------------------------
+#  Messages (MiniMessage format). <placeholders> are filled in by the plugin.
+# ---------------------------------------------------------------------
+messages:
+  # general
+  no-permission: "<red>Ye don't have permission to do that."
+  no-crew-permission: "<red>Yer rank doesn't allow that, sailor."
+  not-in-crew: "<red>Ye're not part of any crew. Found one with <white>/crew create <name></white>."
+  already-in-crew: "<red>Ye already sail with a crew."
+  captain-only: "<red>Only the captain can give that order."
+  unknown-crew: "<red>No crew named <white><crew></white> sails these seas."
+  unknown-player: "<red>No pirate named <white><player></white> is known."
+  player-no-crew: "<red><white><player></white> doesn't sail with a crew."
+  not-a-member: "<red><white><player></white> is not in yer crew."
+  cannot-afford: "<red>That costs <gold><cost></gold>, but ye only have <gold><balance></gold>."
+  economy-disabled: "<red>The Doubloon economy is closed right now."
+
+  # create / disband
+  name-length: "<red>A crew name must be <min> to <max> characters long."
+  name-invalid: "<red>That crew name contains forbidden characters."
+  name-blocked: "<red>That name is not allowed."
+  name-taken: "<red>The name <white><name></white> is already flown by another crew."
+  tag-length: "<red>A crew tag must be <min> to <max> characters long."
+  tag-invalid: "<red>That tag contains forbidden characters."
+  tag-taken: "<red>The tag <white><tag></white> is already in use."
+  tag-needed: "<red>Couldn't make a free tag from that name. Add one: <white>/crew create <name> <tag></white>."
+  crew-created: "<green>The <crew> <green>[<tag><green>] set sail! Ye are their Captain. <dark_gray>(cost: <cost>)"
+  crew-created-broadcast: "<gray>A new crew hoists its flag: <crew> <gray>under Captain <white><player></white>!"
+  disband-confirm: "<yellow>Are ye sure ye want to scuttle <crew><yellow>? Type <white>/crew disband confirm</white> within 30 seconds."
+  crew-disbanded: "<red>The <crew> <red>has been disbanded."
+  crew-disbanded-broadcast: "<gray>The <crew> <gray>has been scuttled and is no more."
+  crew-disbanded-admin: "<red>Yer crew <crew> <red>was disbanded by an admin."
+  bank-refunded: "<gray>The crew treasury of <gold><amount></gold> went to yer purse."
+
+  # members
+  crew-full: "<red>The crew is full (max <max> pirates)."
+  invite-self: "<red>Ye can't invite yerself."
+  target-in-crew: "<red><white><player></white> already sails with a crew."
+  invite-sent: "<gray><white><inviter></white> invited <white><player></white> aboard."
+  invite-received: "<gray><white><inviter></white> invites ye to join <crew><gray>! <click:run_command:'/crew accept'><green><bold>[Accept]</bold></green></click> <click:run_command:'/crew deny'><red><bold>[Deny]</bold></red></click> <dark_gray>(expires in <seconds>s)"
+  no-invites: "<red>Ye have no pending invitations."
+  no-invite-from: "<red>Ye have no invitation from <crew><red>."
+  invite-denied: "<gray>Ye declined the invitation of <crew><gray>."
+  invite-denied-crew: "<gray><white><player></white> declined yer invitation."
+  member-joined: "<green><white><player></white> joined <crew><green>! Welcome aboard!"
+  member-left: "<yellow><white><player></white> left the crew."
+  left-crew: "<yellow>Ye left <crew><yellow>."
+  captain-cannot-leave: "<red>A captain doesn't abandon ship! <white>/crew transfer <player></white> first, or <white>/crew disband</white>."
+  kick-self: "<red>Ye can't make yerself walk the plank."
+  member-kicked: "<yellow><white><player></white> was thrown overboard by <white><by></white>."
+  you-were-kicked: "<red>Ye were thrown overboard from <crew><red>!"
+
+  # ranks
+  rank-self: "<red>Ye can't change yer own rank."
+  use-transfer: "<red>Use <white>/crew transfer <player></white> to hand over the captaincy."
+  rank-too-high: "<red>Ye can only command pirates below yer own rank."
+  already-rank: "<red><white><player></white> already is <rank>."
+  rank-full: "<red>The crew already has the maximum of <limit> <rank>(s)."
+  unknown-rank: "<red>Unknown rank <white><rank></white>. Use first_mate, navigator, quartermaster or member."
+  cannot-promote: "<red><white><player></white> can't be promoted any further."
+  cannot-demote: "<red><white><player></white> can't be demoted any further."
+  rank-changed: "<aqua><white><player></white> is now <gold><rank></gold>. <dark_gray>(by <by>)"
+  captain-changed: "<gold><white><player></white> is the new Captain of <crew><gold>!"
+
+  # info / list / top
+  info-header: "<dark_aqua><strikethrough>      </strikethrough> <crew> <dark_gray>[<tag><dark_gray>] <dark_aqua><strikethrough>      </strikethrough>"
+  info-captain: "<gray>Captain: <gold><player>"
+  info-members: "<gray>Crew (<white><count>/<max></white>, <green><online> online</green>): <list>"
+  info-member-online: "<green><player> <dark_gray>(<rank>)"
+  info-member-offline: "<gray><player> <dark_gray>(<rank>)"
+  info-reputation: "<gray>Reputation: <yellow><reputation>"
+  info-bank: "<gray>Treasury: <gold><balance>"
+  info-allies: "<gray>Allies: <list>"
+  info-rivals: "<gray>Rivals: <list>"
+  info-wars: "<gray>At war with: <list>"
+  info-war-entry: "<crew> <dark_gray>(<green><our_kills></green>-<red><their_kills></red>, <duration>)"
+  info-none: "<dark_gray>none"
+  info-flags: "<gray>Friendly fire: <white><friendly_fire></white> <dark_gray>| <gray>Home: <white><home></white> <dark_gray>| <gray>Sailing for <white><days></white> days"
+  no-crews: "<red>No crews sail these seas yet."
+  list-header: "<gold><bold>Crews</bold> <dark_gray>(<count> total, page <page>/<pages>)"
+  list-line: "<dark_gray>- <crew> <dark_gray>[<tag><dark_gray>] <gray><members> pirates, <green><online> online</green>, <yellow><reputation> rep"
+  top-header: "<gold><bold>Most Infamous Crews</bold> <dark_gray>(page <page>/<pages>)"
+  top-line: "<yellow>#<rank> <crew> <dark_gray>- <yellow><reputation> reputation <dark_gray>(<members> pirates)"
+
+  # appearance
+  unknown-color: "<red><white><color></white> is not a colour. Try a name like <white>gold</white> or a hex code like <white>#1fa2ff</white>."
+  color-blocked: "<red>That colour is reserved."
+  color-changed: "<aqua>The crew colours are now <crew><aqua>. <dark_gray>(cost: <cost>)"
+  tag-changed: "<aqua>The crew tag is now <tag><aqua>. <dark_gray>(cost: <cost>)"
+  flag-hold-banner: "<red>Hold a banner in yer main hand to make it the crew flag."
+  flag-changed: "<aqua><white><player></white> raised a new crew flag!"
+
+  # home
+  home-disabled: "<red>Crew homes are disabled."
+  home-not-set: "<red>Yer crew has no home port yet. Set one with <white>/crew sethome</white>."
+  home-world-missing: "<red>The world of the crew home is not loaded."
+  home-world-blocked: "<red>Ye can't set a crew home in this world."
+  home-already-warming: "<red>Ye're already on yer way home."
+  home-cooldown: "<red>Ye must wait <white><time></white> before sailing home again."
+  home-warmup: "<gray>Setting sail for the home port in <white><seconds></white> seconds. Don't move!"
+  home-cancelled-move: "<red>Ye moved! The voyage home was cancelled."
+  home-cancelled-damage: "<red>Ye took damage! The voyage home was cancelled."
+  home-teleported: "<green>Welcome back to the home port."
+  home-failed: "<red>The voyage home failed."
+  home-set: "<aqua><white><player></white> set the crew home port. <dark_gray>(cost: <cost>)"
+
+  # chat & friendly fire
+  crew-chat-on: "<aqua>Crew chat <green>on</green>: yer messages now go to yer crew only."
+  crew-chat-off: "<aqua>Crew chat <red>off</red>: yer messages are public again."
+  friendly-fire-blocked: "<red>Ye can't hurt <white><player></white>, they're on yer side!"
+  friendly-fire-locked: "<red>Friendly fire can't be changed on this server."
+  friendly-fire-on: "<red>Friendly fire is now ON. <dark_gray>(by <player>)"
+  friendly-fire-off: "<green>Friendly fire is now OFF. <dark_gray>(by <player>)"
+
+  # reputation
+  reputation-gained: "<green>+<amount> reputation for sinking <white><victim></white>! <dark_gray>(<reputation>)"
+  reputation-lost: "<red>-<amount> reputation: <white><killer></white> sent ye to Davy Jones. <dark_gray>(<reputation>)"
+
+  # bank
+  bank-balance: "<gray>The treasury of <crew> <gray>holds <gold><balance></gold>."
+  bank-deposit: "<gray><white><player></white> deposited <gold><amount></gold>. Treasury: <gold><balance></gold>."
+  bank-withdraw: "<gray><white><player></white> withdrew <gold><amount></gold>. Treasury: <gold><balance></gold>."
+  bank-full: "<red>The treasury can't hold more than <gold><max></gold>."
+  bank-insufficient: "<red>The treasury only holds <gold><balance></gold>."
+
+  # diplomacy
+  diplomacy-self: "<red>That's yer own crew, ye barnacle."
+  ally-at-war: "<red>Ye're at war with <crew><red>. Make peace first."
+  already-allied: "<red>Ye're already allied with <crew><red>."
+  ally-limit: "<red>A crew can have at most <max> allies."
+  ally-requested: "<aqua>Alliance offered to <crew><aqua>. They must accept with /crew ally."
+  ally-request-received: "<aqua><crew> <aqua>offers an alliance! Accept with <white>/crew ally <tag></white>."
+  ally-formed: "<green>Yer crew is now allied with <crew><green>!"
+  ally-broken: "<yellow><crew> <yellow>ended the alliance."
+  ally-ended-disband: "<yellow>Yer ally <crew> <yellow>has been disbanded."
+  neutral-at-war: "<red>Ye're at war with <crew><red>. Use /crew peace."
+  already-neutral: "<red>Ye're already neutral towards <crew><red>."
+  now-neutral: "<gray>Yer crew is now neutral towards <crew><gray>."
+  rival-at-war: "<red>Ye're already at war with <crew><red>."
+  already-rival: "<red><crew> <red>already is yer rival."
+  rival-declared: "<gold>Yer crew declared <crew> <gold>a rival."
+  rival-declared-against: "<gold><crew> <gold>declared yer crew their rival!"
+
+  # war
+  war-disabled: "<red>Wars are disabled on this server."
+  already-at-war: "<red>Ye're already at war with <crew><red>."
+  war-needs-rival: "<red>Declare <crew> <red>a rival first."
+  war-limit: "<red>Yer crew can't fight more than <max> wars at once."
+  war-too-small: "<red>Both crews need at least <min> members for a war."
+  war-cannot-afford: "<red>Declaring war costs <gold><cost></gold> from the treasury, which holds <gold><balance></gold>."
+  war-declared: "<dark_red><bold>⚔ WAR!</bold></dark_red> <attacker> <red>has declared war on <defender><red>!"
+  war-ended: "<green>☮ Peace between <a> <green>and <b><green>. Final score <white><a_kills>-<b_kills></white>."
+  war-ended-disband: "<yellow>The war is over: <crew> <yellow>has been disbanded."
+  not-at-war: "<red>Ye're not at war with <crew><red>."
+  peace-too-early: "<red>This war must last <white><time></white> longer before peace can be made."
+  peace-already-offered: "<red>Ye already offered peace to <crew><red>."
+  peace-offered: "<aqua>Peace offered to <crew><aqua>. They must accept with /crew peace."
+  peace-offer-received: "<aqua><crew> <aqua>offers peace! Accept with <white>/crew peace <tag></white>."
+
+  # admin
+  admin-disbanded: "<green>Disbanded <crew><green>."
+  admin-setrep: "<green>Reputation of <crew> <green>set to <white><reputation></white>."
+  admin-done: "<green>Done."

@@ -1,0 +1,311 @@
+# =====================================================================================
+#  AquaticSMP - Tournament module (modules/tournament.yml)
+# =====================================================================================
+#  The Pirate King tournament. Requires the "crews" module.
+#
+#  Flow (staff-driven, automated in between):
+#    1. Registration  /tournament open [minutes]   crew officers: /tournament register
+#    2. Qualifiers    crews earn points for kills, treasure, islands, bounties
+#    3. Bracket       single elimination crew-vs-crew arena fights (byes for odd counts)
+#    4. Grand finale  best-of-N
+#    5. Coronation    the captain of the winning crew becomes the Pirate King
+#
+#  Player commands (everyone by default):
+#    /tournament register | unregister            aquatic.tournament.register (crew officers only)
+#    /tournament roster [add|remove <member>]     aquatic.tournament.register
+#    /tournament standings | bracket | info       aquatic.tournament.view
+#    /hallofkings                                 aquatic.tournament.view
+#  Staff commands (aquatic.tournament.admin):
+#    /tournament open [minutes] | start | next | cancel | status | forcewin <crew>
+#    /tournament arena create <name> | setspawn <name> <1|2> | setspectator <name> | delete <name> | list
+#    /tournament setlobby  (also /tournament arena setlobby)
+#    /tournament admin setking <player|none>
+#
+#  State (stage, entries, bracket) is saved to data/tournament/state.yml, so a restart during
+#  registration, qualifiers or the bracket resumes. A match that was running at shutdown is
+#  aborted (everyone restored) and simply replayed.
+# =====================================================================================
+
+teams:
+  # Fighters per crew in a match.
+  size: 3
+  # When roster members are offline, fill the team with other online crew members.
+  fill-missing: true
+
+registration:
+  # Default registration time for "/tournament open" without minutes (0 = until /tournament start).
+  default-minutes: 30
+  # Minimum registered crews; with fewer the tournament is cancelled when registration ends.
+  min-crews: 2
+  # Maximum registered crews (0 = unlimited).
+  max-crews: 0
+  # Minimum crew members to be allowed to register.
+  min-members: 1
+  # Doubloons taken from the crew bank when registering (0 = free).
+  entry-fee: 0
+  refund-on-unregister: true
+
+qualifiers:
+  # false = skip the points phase; seeding uses crew reputation instead.
+  enabled: true
+  duration-minutes: 60
+  # How many crews advance to the bracket (rounded down to a power of two: 2, 4, 8, 16...).
+  # Fewer crews registered -> all of them advance, missing slots become byes.
+  advance: 8
+  # Show live standings in a sidebar scoreboard to registered crew members.
+  sidebar: true
+  # Show that sidebar to every online player instead.
+  sidebar-everyone: false
+  # Broadcast the top 3 every X seconds (0 = off).
+  broadcast-interval-seconds: 300
+  # Action bar message when you earn points.
+  notify-points: true
+  points:
+    # Killing a member of another registered crew.
+    pvp-kill-entrant: 10
+    # Killing a player who is not in a registered crew.
+    pvp-kill-other: 0
+    # Mob kills by entity type ("default" for all others).
+    mob-kills:
+      default: 0
+      ZOMBIE: 1
+      SKELETON: 1
+      SPIDER: 1
+      CREEPER: 2
+      DROWNED: 2
+      PILLAGER: 3
+      VINDICATOR: 4
+      EVOKER: 8
+      ELDER_GUARDIAN: 25
+      WARDEN: 50
+      WITHER: 50
+      ENDER_DRAGON: 75
+    # Treasure found, by treasure tier ("default" for unknown tiers).
+    treasure:
+      default: 5
+      common: 5
+      rare: 12
+      epic: 20
+      legendary: 30
+    island-claim: 15
+    island-conquer: 30
+    # Bounty claimed: base + amount * per-doubloon.
+    bounty-claim: 5
+    bounty-per-doubloon: 0.01
+
+bracket:
+  # Seconds after a match before the next one starts automatically (-1 = staff runs /tournament next).
+  auto-next-delay-seconds: 30
+  # Display names by number of matches in the round (others: "Round of N").
+  round-names:
+    1: "Grand Finale"
+    2: "Semi-finals"
+    4: "Quarter-finals"
+
+match:
+  # Freeze countdown before the fight.
+  countdown-seconds: 5
+  # Time limit; when it runs out "sudden death" decides: the team with more survivors wins,
+  # then the team with the most total health, then a coin flip.
+  time-limit-seconds: 300
+  # own-gear = fighters use their own inventory (nothing is lost: deaths keep everything)
+  # kit      = inventories are saved, the kit below is given, and the inventory is restored afterwards
+  gear: own-gear
+  kit:
+    # Item specs: MATERIAL[:amount] or item:<custom item id>[:amount]
+    items:
+      - IRON_SWORD
+      - BOW
+      - ARROW:32
+      - COOKED_BEEF:16
+      - GOLDEN_APPLE:2
+    armor:
+      helmet: IRON_HELMET
+      chestplate: IRON_CHESTPLATE
+      leggings: IRON_LEGGINGS
+      boots: IRON_BOOTS
+      offhand: SHIELD
+    # Effects for the whole match (effect:level).
+    effects: []
+  # Remove potion effects when entering the arena.
+  clear-effects: true
+  # Where fighters go after the match: previous (where they were) | lobby (/tournament setlobby)
+  return-to: previous
+  # Fighters cannot teleport away (ender pearls inside the arena are allowed).
+  block-teleports: true
+  # Fighters cannot use commands except these (staff bypass).
+  block-commands: true
+  allowed-commands: [msg, tell, w, r, me]
+
+finale:
+  # The grand finale is best-of-N games (odd number).
+  best-of: 3
+
+coronation:
+  # Give the crown item (from the items module) to the new king. Skipped when the items module is off.
+  give-crown: true
+  crown-item: pirate_king_crown
+  # Fireworks launched around the king.
+  fireworks: 10
+  prize:
+    # Doubloons into the crew bank.
+    crew-bank: 50000
+    # Doubloons for every roster member (and the captain).
+    per-fighter: 5000
+    # Extra doubloons for the king himself.
+    king: 10000
+    # Crew reputation.
+    reputation: 500
+    # Console commands. Placeholders: {player} {uuid} {crew} {season}
+    commands: []
+    #  - "lp user {player} parent add pirateking"
+
+king-perks:
+  # The Pirate King glows.
+  glow: true
+  # Particle trail (Particle name, or none).
+  particle: END_ROD
+  # "The Pirate King has arrived" broadcast on join.
+  join-broadcast: true
+
+sounds:
+  announce: item.goat_horn.sound.0
+  finale: entity.wither.spawn
+  match-won: ui.toast.challenge_complete
+  coronation: ui.toast.challenge_complete
+  king-join: item.goat_horn.sound.1
+
+messages:
+  # stages
+  stage-none: "No tournament"
+  stage-registration: "Registration"
+  stage-qualifiers: "Qualifiers"
+  stage-bracket: "Elimination bracket"
+  manual: "until staff start it"
+  # flow
+  registration-open: "<gold><bold>THE PIRATE KING TOURNAMENT</bold></gold> <gray>(season <season>)</gray> <yellow>is open! Crew officers: <white>/tournament register</white>. Teams of <white><size></white>. Registration: <white><time>"
+  registration-reminder: "<yellow>Tournament registration closes in <white><time></white>. <gray>/tournament register"
+  join-reminder-registration: "<yellow>The Pirate King tournament is open for registration! <white>/tournament info"
+  registered: "<green><crew> <green>entered the tournament! <gray>(<count> crews)"
+  unregistered: "<yellow><crew> <yellow>withdrew from the tournament."
+  qualifiers-start: "<gold><bold>QUALIFIERS BEGIN!</bold> <yellow><count> crews have <white><time></white> to earn points. The top <white><top></white> advance. <gray>/tournament standings"
+  qualifiers-reminder: "<yellow>Qualifiers end in <white><time></white>!"
+  qualifiers-end: "<gold><bold>Qualifiers are over!</bold>"
+  bracket-start: "<gold><bold>The bracket is set!</bold> <yellow><count> crews: <white><crews>"
+  bye: "<gray><crew> <gray>advances with a bye."
+  round-start: "<gold><bold><round></bold> <yellow>begins!"
+  finale-announce: "<gold><bold>THE GRAND FINALE!</bold> <yellow>Best of <white><bestof></white>."
+  finale-title: "<gradient:#f7971e:#ffd200><bold>GRAND FINALE"
+  finale-subtitle: "<a> <gray>vs</gray> <b>"
+  next-match-in: "<yellow>Next match: <a> <gray>vs</gray> <b> <yellow>in <white><seconds>s"
+  staff-next-hint: "<gray>Next match: <a> <gray>vs</gray> <b><gray>. Run <white>/tournament next</white> to start it."
+  match-start: "<gold><round>: <a> <gray>vs</gray> <b> <gold>in arena <white><arena></white>!"
+  finale-game-start: "<gold><bold>Finale game <game>/<bestof>:</bold> <a> <white><wins_a></white><gray>-</gray><white><wins_b></white> <b>"
+  finale-game-won: "<gold><crew> <gold>wins the game! <gray>(<reason>) <a> <white><wins_a></white><gray>-</gray><white><wins_b></white> <b>"
+  match-won: "<green><crew> <green>defeats <loser><green>! <gray>(<reason>)"
+  forfeit-disbanded: "<gray><crew> <gray>advances: the opponent no longer exists."
+  forfeit-offline: "<gray><crew> <gray>wins by forfeit: <loser> <gray>has no fighters online."
+  reason-eliminated: "all enemies eliminated"
+  reason-both-eliminated: "mutual destruction, coin flip"
+  reason-time-up: "time up, sudden death"
+  reason-disbanded: "opponent disbanded"
+  reason-forced: "decided by staff"
+  # match
+  countdown-title: "<gold><bold><seconds>"
+  countdown-subtitle: "<gray>Get ready..."
+  fight-title: "<red><bold>FIGHT!"
+  bossbar-match: "<a> <white><alive_a></white> <gray>vs</gray> <white><alive_b></white> <b> <dark_gray>|</dark_gray> <yellow><time>"
+  bossbar-finale: "<gold>Finale game <game></gold> <dark_gray>|</dark_gray> <a> <white><alive_a></white> <gray>vs</gray> <white><alive_b></white> <b> <dark_gray>|</dark_gray> <yellow><time>"
+  fighter-eliminated: "<red><player> <gray>has been eliminated."
+  fighter-eliminated-by: "<red><player> <gray>was eliminated by <white><killer></white>."
+  fighter-quit: "<red><player> <gray>fled the arena and is eliminated."
+  command-blocked: "<red>You cannot use that command during a tournament match."
+  # coronation
+  crowned-title: "<gradient:#f7971e:#ffd200><bold><player>"
+  crowned-subtitle: "<yellow>is the new Pirate King! <gray>(<crew><gray>, season <season>)"
+  crowned: "<gold><bold>ALL HAIL THE PIRATE KING!</bold> <white><player></white> <gold>of</gold> <crew> <gold>has conquered the Grand Line! <gray>(season <season>)"
+  prize: "<yellow><crew> <yellow>receives <white><bank></white> in the crew bank, <white><each></white> per fighter, <white><king></white> for the king and <white><reputation></white> reputation."
+  crown-skipped: "<gray>(The crown item could not be given: the items module is disabled.)"
+  crown-received: "<gold>You received the Crown of the Pirate King!"
+  no-winner: "<red>The winning crew no longer exists. The tournament ends without a new king."
+  king-joined: "<gold><bold>The Pirate King has arrived!</bold> <white><player></white> <gold>sets foot on the server."
+  king-set: "<green><player> is now the Pirate King."
+  king-cleared: "<yellow>The throne is now empty."
+  king-appointed: "<gold><player> <gold>has been named Pirate King!"
+  throne-empty: "<gray>The throne of the Pirate King stands empty..."
+  # status / info
+  resumed: "<yellow>The tournament resumes: <white><stage></white>."
+  resumed-bracket: "<yellow>The tournament bracket resumes. Interrupted matches will be replayed."
+  cancelled: "<red>The Pirate King tournament has been cancelled."
+  cancelled-not-enough: "<red>The tournament was cancelled: at least <white><min></white> crews are needed."
+  info: "<gold>Tournament: <white><stage></white> <gray>(season <season>)</gray> <dark_gray>|</dark_gray> <gold>Pirate King: <white><king>"
+  status-header: "<gold>Tournament status <gray>(season <season>)</gray>: <white><stage>"
+  status-time: " <gray>Stage ends in <white><time>"
+  status-entries: " <gray>Registered crews: <white><count>"
+  status-king: " <gray>Pirate King: <white><king>"
+  status-arenas: " <gray>Arenas ready: <white><count>/<total>"
+  status-match: " <gray>Match running: <a> <gray>vs</gray> <b>"
+  standings-header: "<gold>Standings <gray>(<stage>)"
+  standings-broadcast-header: "<gold>Qualifier standings:"
+  standings-entry: " <gray>#<rank></gray> <crew> <dark_gray>-</dark_gray> <white><points> pts"
+  standings-entry-qualified: " <green>#<rank></green> <crew> <dark_gray>-</dark_gray> <white><points> pts <green>✔"
+  standings-empty: " <gray>No crews registered."
+  sidebar-title: "<gold><bold>Qualifiers</bold> <gray><time>"
+  points-gained: "<gold>+<points> <yellow>tournament points <gray>(<reason>) <dark_gray>|</dark_gray> <white><total>"
+  points-pvp: "rival slain"
+  points-mob: "monster slain"
+  points-treasure: "treasure found"
+  points-claim: "island claimed"
+  points-conquer: "island conquered"
+  points-bounty: "bounty claimed"
+  bracket-header: "<gold>Bracket <gray>(season <season>)"
+  bracket-round: "<yellow><round>"
+  bracket-bye: "  <a> <gray>(bye)"
+  bracket-done: "  <a> <gray>vs</gray> <b> <dark_gray>»</dark_gray> <green><winner></green><gray><score>"
+  bracket-live: "  <red>● LIVE</red> <a> <gray>vs</gray> <b><gray><score>"
+  bracket-pending: "  <a> <gray>vs</gray> <b><gray><score>"
+  no-bracket: "<red>There is no bracket yet."
+  roster-show: "<aqua>Tournament roster <gray>(max <size>)</gray>: <white><roster>"
+  hall-header: "<gold><bold>Hall of Kings</bold> <gray>(<count>)"
+  hall-entry: " <gold>Season <season></gold> <dark_gray>-</dark_gray> <white><player></white> <gray>of <crew> <dark_gray>(<date>)"
+  hall-empty: " <gray>No Pirate King has ever been crowned."
+  hall-current: "<gold>Current Pirate King: <white><king>"
+  # arenas
+  arena-created: "<green>Arena <white><arena></white> created. Set both spawns with <white>/tournament arena setspawn <arena> 1|2</white>."
+  arena-deleted: "<yellow>Arena <white><arena></white> deleted."
+  arena-exists: "<red>Arena <white><arena></white> already exists."
+  arena-spawn-set: "<green>Spawn <white><spawn></white> of arena <white><arena></white> set."
+  arena-spectator-set: "<green>Spectator point of arena <white><arena></white> set."
+  arena-list-header: "<aqua>Arenas (<count>):"
+  arena-list-entry: " <dark_gray>-</dark_gray> <white><arena></white> <gray>(<state>)"
+  arena-ready: "ready"
+  arena-incomplete: "missing spawns"
+  arena-lobby: " <gray>Lobby: <white><lobby>"
+  lobby-set: "<green>Tournament lobby set."
+  unknown-arena: "<red>Unknown arena <white><arena></white>."
+  invalid-name: "<red>Names may only contain a-z, 0-9, _ and - (max 32)."
+  # errors
+  already-running: "<red>A tournament is already running. <gray>/tournament status"
+  not-running: "<red>No tournament is running."
+  not-bracket: "<red>The tournament is not in the bracket stage."
+  match-running: "<red>A match is already running."
+  no-arena: "<red>No arena is ready. Create one with <white>/tournament arena create <name></white>."
+  nobody-online: "<red>Neither <a> <red>nor <b> <red>has fighters online. Wait, or use <white>/tournament forcewin <crew></white>."
+  not-in-next-match: "<red><crew> is not in the current or next match."
+  unknown-crew: "<red>Unknown crew <white><crew></white>."
+  no-crew: "<red>You are not in a crew."
+  not-officer: "<red>Only the captain or first mate can do that."
+  registration-closed: "<red>Registration is not open."
+  unregister-closed: "<red>You can only withdraw during registration."
+  already-registered: "<red>Your crew is already registered."
+  not-registered: "<red>Your crew is not registered."
+  registration-full: "<red>The tournament is full (<max> crews)."
+  too-few-members: "<red>Your crew needs at least <min> members."
+  fee-missing: "<red>Your crew bank cannot pay the entry fee of <white><fee></white>."
+  roster-locked: "<red>Your crew is fighting right now; the roster is locked."
+  roster-full: "<red>The roster is full (<size>). Remove someone first."
+  not-member: "<red><player> is not in your crew."
+  already-in-roster: "<red><player> is already on the roster."
+  not-in-roster: "<red><player> is not on the roster."
+  crew-disbanded-bracket: "<red><crew> was disbanded and forfeits the tournament."
+  crew-disbanded-removed: "<red><crew> was disbanded and removed from the tournament."

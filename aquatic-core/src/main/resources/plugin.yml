@@ -1,0 +1,10 @@
+name: AquaticSMP
+version: '${project.version}'
+main: dev.aquatic.core.AquaticPlugin
+api-version: '1.21'
+description: Pirate crews, island conquest, treasure, bounties and the Pirate King.
+softdepend: [Vault, PlaceholderAPI, BlueMap, WorldEdit, WorldGuard]
+permissions:
+  aquatic.admin:
+    description: Full access to every AquaticSMP admin command.
+    default: op

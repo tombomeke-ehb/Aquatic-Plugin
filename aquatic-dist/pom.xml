@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>dev.aquatic</groupId>
+    <artifactId>aquatic-parent</artifactId>
+    <version>1.0.1</version>
+  </parent>
+  <artifactId>aquatic-dist</artifactId>
+  <dependencies>
+    <dependency><groupId>dev.aquatic</groupId><artifactId>aquatic-core</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>dev.aquatic</groupId><artifactId>aquatic-crews</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>dev.aquatic</groupId><artifactId>aquatic-world</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>dev.aquatic</groupId><artifactId>aquatic-events</artifactId><version>${project.version}</version></dependency>
+  </dependencies>
+  <build>
+    <finalName>AquaticSMP-${project.version}</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.6.0</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals><goal>shade</goal></goals>
+            <configuration>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <artifactSet>
+                <includes><include>dev.aquatic:*</include></includes>
+              </artifactSet>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

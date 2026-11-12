@@ -1,0 +1,621 @@
+# =====================================================================================
+#  AquaticSMP - ISLANDS module
+#  The Grand Line: procedurally generated islands that crews can claim, defend and conquer.
+#
+#  Quick start for server owners (all admin commands need aquatic.islands.admin, ops have it):
+#    1. Stand in the middle of your ocean and run   /island area 3000
+#       (sets the ocean area used for random islands and random treasure)
+#    2. Build a spawn island where you stand:        /island spawn capital 70 Port Royal
+#       then mark it as the safe spawn island:       /island setspawn   (stand on it)
+#    3. Scatter islands over the ocean:              /island spawnrandom random 15
+#    4. Already built something by hand? Register it: /island register My_Island tropical 50
+#  Generation is spread over many ticks (see generation.millis-per-tick) and reports progress.
+#
+#  Block lists accept "MATERIAL" or "MATERIAL:weight" entries (weight = relative chance).
+#  Messages use MiniMessage (https://docs.advntr.dev/minimessage/format.html); <placeholders>
+#  are filled in by the plugin.
+# =====================================================================================
+
+# How often (seconds) changed data is written to plugins/AquaticSMP/data/islands/ (also saved on shutdown).
+autosave-seconds: 120
+
+# -------------------------------------------------------------------------------------
+# Ocean area: where /island spawnrandom puts islands and where the treasure module looks for
+# random land when no islands exist. Set it in-game with /island area <radius> [spacing].
+# -------------------------------------------------------------------------------------
+ocean-area:
+  world: world
+  center-x: 0
+  center-z: 0
+  # Islands are placed within this many blocks (square) of the centre.
+  radius: 3000
+  # Minimum open water between the borders of two islands.
+  min-spacing: 150
+  # Random spots tried per island before giving up.
+  attempts: 80
+  # Only use spots that are really ocean (sea floor at least min-water-depth below sea level).
+  require-ocean: true
+  min-water-depth: 8
+  # Free ocean spots are checked in the background ahead of time, so events like the Lost Island can
+  # rise instantly without lag. prefetch-radius = the biggest island radius those spots must fit.
+  prefetch-spots: 4
+  prefetch-radius: 80
+
+# -------------------------------------------------------------------------------------
+# Generation
+# -------------------------------------------------------------------------------------
+generation:
+  # Time budget per server tick for terrain work (milliseconds, 1-45). Lower = smoother TPS, slower building.
+  millis-per-tick: 20
+  # Part of the radius that is dry land; the rest is beach and an underwater slope down to the sea floor.
+  land-fraction: 0.72
+  # Allowed radius for /island spawn and spawnrandom.
+  min-radius: 16
+  max-radius: 160
+  # Default radius range for /island spawnrandom when none is given.
+  random-min-radius: 35
+  random-max-radius: 70
+  # Maximum islands per /island spawnrandom call.
+  max-spawnrandom: 30
+  # Chance weights of each type for "/island spawnrandom random ...".
+  random-type-weights:
+    TROPICAL: 4
+    JUNGLE: 3
+    VOLCANIC: 1.5
+    SNOWY: 2
+    DESERT: 2
+    ANCIENT: 1.5
+    CAPITAL: 0
+
+# What /island delete <island> restore and /island regen turn the area back into.
+restore:
+  # Sea floor depth below sea level.
+  depth: 22
+  floor: [GRAVEL:3, SAND:2, CLAY:0.3]
+  # Biome painted back (any biome key, or none to leave biomes alone).
+  biome: ocean
+
+# -------------------------------------------------------------------------------------
+# Island types. Every type has:
+#   display-name     MiniMessage name shown to players
+#   status           UNCLAIMED or NEUTRAL: status of freshly generated islands of this type
+#   biome            biome painted over the island (minecraft key, e.g. jungle, snowy_plains; none = keep)
+#   max-height       height of the hills above sea level
+#   beach-height     land lower than this (above sea level) becomes beach
+#   roughness        hill noise frequency (higher = bumpier)
+#   coast-variation  0..0.3, how irregular the coastline is
+#   surface / subsurface / core / beach / underwater   block palettes
+#   top-layer        optional block laid on top of the surface (e.g. SNOW)
+#   frozen-shore     freeze the water around the island
+#   ores             blocks + chance per core block
+#   trees            density = trees per 100 land blocks; types = org.bukkit.TreeType names
+#                    (TREE, BIG_TREE, BIRCH, REDWOOD, TALL_REDWOOD, MEGA_PINE, JUNGLE, SMALL_JUNGLE,
+#                    COCOA_TREE, JUNGLE_BUSH, ACACIA, DARK_OAK, CHERRY, AZALEA, ...) or PALM (custom)
+#   decorations      block: chance per land column (plants, flowers, cacti ...)
+#   ruins            density = ruins per 10,000 land blocks; walls or pillar clusters
+#   volcano          cone with a lava crater
+#   plaza            flat central plaza (+ throne)
+# -------------------------------------------------------------------------------------
+types:
+  TROPICAL:
+    display-name: "<gradient:#ffd36b:#3fd0c9>Tropical</gradient>"
+    status: UNCLAIMED
+    biome: sparse_jungle
+    max-height: 9
+    beach-height: 2
+    roughness: 0.9
+    coast-variation: 0.25
+    surface: [GRASS_BLOCK]
+    subsurface: [DIRT:4, COARSE_DIRT:1]
+    core: [STONE:5, ANDESITE:1, DIORITE:1]
+    beach: [SAND]
+    underwater: [SAND:4, GRAVEL:1]
+    ores:
+      chance: 0.015
+      blocks: [COAL_ORE:3, IRON_ORE:2, COPPER_ORE:2]
+    trees:
+      density: 0.9
+      types: [PALM:6, JUNGLE_BUSH:2, SMALL_JUNGLE:1]
+      palms-on-beach: true
+      palm-log: JUNGLE_LOG
+      palm-leaves: JUNGLE_LEAVES
+    decorations:
+      SHORT_GRASS: 0.22
+      TALL_GRASS: 0.04
+      DANDELION: 0.015
+      POPPY: 0.01
+      MELON: 0.004
+  JUNGLE:
+    display-name: "<green>Jungle</green>"
+    status: UNCLAIMED
+    biome: jungle
+    max-height: 18
+    beach-height: 2
+    roughness: 1.3
+    coast-variation: 0.28
+    surface: [GRASS_BLOCK:6, PODZOL:1, MOSS_BLOCK:1]
+    subsurface: [DIRT:4, ROOTED_DIRT:1]
+    core: [STONE:5, ANDESITE:1, TUFF:1]
+    beach: [SAND:3, MUD:1]
+    underwater: [SAND:3, CLAY:1, GRAVEL:1]
+    ores:
+      chance: 0.02
+      blocks: [COAL_ORE:3, IRON_ORE:2, GOLD_ORE:1, EMERALD_ORE:0.3]
+    trees:
+      density: 3.2
+      types: [JUNGLE:2, SMALL_JUNGLE:3, COCOA_TREE:2, JUNGLE_BUSH:4]
+      palms-on-beach: true
+    decorations:
+      SHORT_GRASS: 0.25
+      FERN: 0.12
+      LARGE_FERN: 0.04
+      BAMBOO: 0.02
+      MELON: 0.006
+    ruins:
+      density: 1.5
+      blocks: [MOSSY_COBBLESTONE:3, COBBLESTONE:1, MOSSY_STONE_BRICKS:2]
+      pillars: false
+  VOLCANIC:
+    display-name: "<gradient:#ff4d00:#ffb300>Volcanic</gradient>"
+    status: UNCLAIMED
+    # basalt_deltas gives ash particles but would also let nether mobs spawn; this is the safe choice.
+    biome: windswept_gravelly_hills
+    max-height: 8
+    beach-height: 2
+    roughness: 1.4
+    coast-variation: 0.22
+    surface: [BLACKSTONE:3, BASALT:2, TUFF:2, COARSE_DIRT:2, MAGMA_BLOCK:0.3]
+    subsurface: [BLACKSTONE:2, BASALT:2, TUFF:1]
+    core: [STONE:3, BLACKSTONE:2, DEEPSLATE:2]
+    beach: [GRAVEL:3, TUFF:1]
+    underwater: [GRAVEL:3, MAGMA_BLOCK:0.2, BASALT:1]
+    # Volcanic islands are rich: lots of ores in the core.
+    ores:
+      chance: 0.07
+      blocks: [COAL_ORE:3, IRON_ORE:3, GOLD_ORE:2, REDSTONE_ORE:2, LAPIS_ORE:1, DIAMOND_ORE:0.4, OBSIDIAN:0.6]
+    trees:
+      density: 0.05
+      types: [ACACIA]
+      palms-on-beach: false
+    decorations:
+      DEAD_BUSH: 0.02
+    volcano:
+      enabled: true
+      # Height of the cone above the island and its size relative to the land radius.
+      cone-height: 28
+      cone-size: 0.55
+      crater-size: 0.14
+      crater-depth: 7
+      crater-fluid: LAVA
+      blocks: [BASALT:4, BLACKSTONE:3, SMOOTH_BASALT:1, MAGMA_BLOCK:0.5, TUFF:1]
+  SNOWY:
+    display-name: "<aqua>Snowy</aqua>"
+    status: UNCLAIMED
+    biome: snowy_taiga
+    max-height: 16
+    beach-height: 2
+    roughness: 1.1
+    coast-variation: 0.25
+    surface: [GRASS_BLOCK:5, SNOW_BLOCK:2, PACKED_ICE:0.2]
+    subsurface: [DIRT:3, SNOW_BLOCK:1]
+    core: [STONE:5, ANDESITE:1, PACKED_ICE:0.3]
+    beach: [GRAVEL:2, SNOW_BLOCK:2, SAND:1]
+    underwater: [GRAVEL:3, SAND:1]
+    top-layer: SNOW
+    frozen-shore: true
+    ores:
+      chance: 0.02
+      blocks: [COAL_ORE:3, IRON_ORE:2, LAPIS_ORE:1]
+    trees:
+      density: 1.4
+      types: [REDWOOD:3, TALL_REDWOOD:2, MEGA_PINE:0.4]
+      palms-on-beach: false
+    decorations:
+      SWEET_BERRY_BUSH: 0.01
+      FERN: 0.03
+  DESERT:
+    display-name: "<yellow>Desert</yellow>"
+    status: UNCLAIMED
+    biome: desert
+    max-height: 10
+    beach-height: 2
+    roughness: 0.8
+    coast-variation: 0.2
+    surface: [SAND]
+    subsurface: [SAND:3, SANDSTONE:1]
+    core: [SANDSTONE:4, STONE:2]
+    beach: [SAND]
+    underwater: [SAND]
+    ores:
+      chance: 0.015
+      blocks: [GOLD_ORE:2, IRON_ORE:2, COAL_ORE:2]
+    trees:
+      density: 0.12
+      types: [PALM]
+      palms-on-beach: true
+    decorations:
+      CACTUS: 0.012
+      DEAD_BUSH: 0.02
+    ruins:
+      density: 6
+      blocks: [SANDSTONE:3, CUT_SANDSTONE:2, SMOOTH_SANDSTONE:1, CHISELED_SANDSTONE:0.4]
+      pillars: true
+      pillar-cap: CHISELED_SANDSTONE
+  ANCIENT:
+    display-name: "<dark_green>Ancient</dark_green>"
+    status: UNCLAIMED
+    biome: dark_forest
+    max-height: 14
+    beach-height: 2
+    roughness: 1.0
+    coast-variation: 0.22
+    surface: [GRASS_BLOCK:5, MOSS_BLOCK:2, COARSE_DIRT:0.5]
+    subsurface: [DIRT]
+    core: [STONE:4, ANDESITE:1, MOSSY_COBBLESTONE:0.3]
+    beach: [SAND:3, GRAVEL:1]
+    underwater: [SAND:2, GRAVEL:2]
+    ores:
+      chance: 0.02
+      blocks: [COAL_ORE:2, IRON_ORE:2, GOLD_ORE:1, EMERALD_ORE:0.4]
+    trees:
+      density: 0.8
+      types: [DARK_OAK:2, TREE:1, BIG_TREE:0.5, AZALEA:0.5]
+      palms-on-beach: false
+    decorations:
+      SHORT_GRASS: 0.2
+      FERN: 0.06
+      MOSS_CARPET: 0.05
+      LILY_OF_THE_VALLEY: 0.008
+    ruins:
+      density: 10
+      blocks: [MOSSY_STONE_BRICKS:3, CRACKED_STONE_BRICKS:2, STONE_BRICKS:2, MOSSY_COBBLESTONE:1, CHISELED_STONE_BRICKS:0.3]
+      pillars: true
+      pillar-cap: CHISELED_STONE_BRICKS
+  CAPITAL:
+    display-name: "<gold>Capital</gold>"
+    # Capitals are safe zones by default (no PvP, no building, no conquest).
+    status: NEUTRAL
+    biome: plains
+    max-height: 7
+    beach-height: 2
+    roughness: 0.6
+    coast-variation: 0.12
+    surface: [GRASS_BLOCK]
+    subsurface: [DIRT]
+    core: [STONE]
+    beach: [SAND]
+    underwater: [SAND:3, GRAVEL:1]
+    trees:
+      density: 0.35
+      types: [TREE:3, BIRCH:1, CHERRY:0.5]
+      palms-on-beach: false
+    decorations:
+      SHORT_GRASS: 0.15
+      POPPY: 0.01
+      CORNFLOWER: 0.01
+    plaza:
+      enabled: true
+      # Radius of the flat plaza relative to the land radius, and its height above sea level.
+      size: 0.4
+      height: 4
+      blocks: [POLISHED_ANDESITE:3, STONE_BRICKS:2, SMOOTH_STONE:2, CHISELED_STONE_BRICKS:0.2]
+      throne:
+        enabled: true
+        base: POLISHED_ANDESITE
+        accent: GOLD_BLOCK
+        seat: QUARTZ_STAIRS
+        carpet: RED_CARPET
+        light: SEA_LANTERN
+
+# Name pools for auto-named islands (/island spawnrandom, /island spawn without a name).
+names:
+  TROPICAL: [Coco Isle, Syrup Village, Orange Town, Baratie Reef, Sunny Cove, Lagoon Key, Mango Atoll, Coral Haven, Parrot Point, Shell Bay]
+  JUNGLE: [Little Garden, Boin Archipelago, Rusukaina, Green Bit, Vine Hollow, Serpent Isle, Kuraigana Thicket, Emerald Maw]
+  VOLCANIC: [Punk Hazard, Ember Rock, Magma Crown, Cinder Fang, Ashfall Isle, Brimstone Key]
+  SNOWY: [Drum Island, Frostbite Isle, Winter Fang, Glacier Rest, Whitebeard's Cradle, Iceberg Point]
+  DESERT: [Alabasta, Sandy Isle, Dune Spire, Mirage Key, Scorpion Atoll, Sunbleach Rock]
+  ANCIENT: [Ohara, Shandora, Jaya, Lost Atlantis, Poneglyph Rock, Forgotten Isle, Elder Reach]
+  CAPITAL: [Water 7, Sabaody, Mary Geoise, Loguetown, Port Royal, Fishman Isle]
+  # Used when a list runs out: "<prefix> <suffix>".
+  fallback-prefixes: [Skull, Rum, Black, Golden, Crimson, Silent, Storm, Rusty, Kraken, Grog, Lucky, Ghost]
+  fallback-suffixes: [Isle, Key, Rock, Atoll, Cay, Haven, Point, Reef, Cove, Island]
+
+# -------------------------------------------------------------------------------------
+# Spawn island (set with /island setspawn; it is made NEUTRAL)
+# -------------------------------------------------------------------------------------
+spawn-island:
+  # Teleport brand new players to the spawn island.
+  first-join-teleport: false
+  # Respawn players without a bed/anchor on the spawn island.
+  respawn-without-bed: false
+
+# -------------------------------------------------------------------------------------
+# Entering / leaving islands
+# -------------------------------------------------------------------------------------
+presence:
+  # How often (ticks) player positions are checked; players are only re-checked when they changed block.
+  check-interval-ticks: 10
+  # actionbar | title | chat | none
+  display: actionbar
+
+discovery:
+  enabled: true
+  # Big title on the first visit of an island.
+  title: true
+  sound: ui.toast.challenge_complete
+  sound-volume: 0.8
+  sound-pitch: 1.0
+  # Doubloons for discovering an island (needs the economy module). Per-type values override.
+  reward: 25
+  reward-per-type:
+    VOLCANIC: 50
+    ANCIENT: 50
+    CAPITAL: 10
+
+# /island map (alias /island near)
+map:
+  count: 8
+  # Distances are rounded to this many blocks.
+  distance-rounding: 10
+  # Islands the player has not discovered show as "???" (admins always see names).
+  hide-undiscovered-names: true
+
+# -------------------------------------------------------------------------------------
+# Claiming (/island claim, needs the crews module; only Captain / First Mate)
+# -------------------------------------------------------------------------------------
+claiming:
+  enabled: true
+  # Maximum islands per crew (0 = unlimited).
+  max-per-crew: 3
+  # Minimum crew size to claim.
+  min-members: 1
+  # Price: cost + cost-per-owned-island * islands already owned.
+  cost: 1000
+  cost-per-owned-island: 500
+  # bank = paid from the crew bank, player = paid by the claiming officer (needs the economy module).
+  pay-from: bank
+  # Reputation the crew gains for claiming.
+  reputation: 10
+  # Optional protection from conquest right after claiming (seconds, 0 = none).
+  shield-seconds: 600
+  # Server-wide announcement (otherwise only the crew is told).
+  announce: true
+  # Types that cannot be claimed at all.
+  unclaimable-types: [CAPITAL]
+
+flag:
+  # The flag pole: this many blocks of pole-material with the crew banner on top.
+  pole-height: 3
+  pole-material: OAK_FENCE
+  # Banner used when the crew has no flag.
+  default-banner: WHITE_BANNER
+
+# -------------------------------------------------------------------------------------
+# Protection
+# -------------------------------------------------------------------------------------
+protection:
+  # May anyone build on unclaimed islands?
+  unclaimed-build: true
+  unclaimed-explosions: true
+  # Allies of the owning crew may build on its islands.
+  allies-can-build: true
+  occupied:
+    # Containers (chests, barrels, furnaces, ...) count as protected for non-members.
+    protect-containers: true
+    # Explosions on occupied islands: raid = only while the island can be raided, always, never.
+    explosions: raid
+    fire-spread: false
+    # Endermen etc. may change blocks on occupied islands.
+    mob-griefing: true
+  neutral:
+    pvp: false
+    # Use doors, buttons, levers... on neutral islands.
+    allow-interact: true
+    # Open chests (e.g. shops) on neutral islands.
+    allow-containers: false
+
+raiding:
+  # When may enemies build/break/loot on an occupied island?
+  #   always   = any non-allied crew
+  #   war-only = only crews at WAR with the owners
+  #   never    = occupied islands are fully protected (conquest still possible, see conquest.mode)
+  mode: war-only
+  allow-break: true
+  allow-place: true
+  allow-containers: true
+  # Players without a crew may raid (only with mode: always).
+  crewless-can-raid: false
+  # A conquest/claim shield also stops raiding.
+  respect-shield: true
+
+offline-protection:
+  # Islands cannot be raided or conquered while no member of the owning crew is online ...
+  enabled: true
+  # ... once this many seconds passed since the last member logged out.
+  grace-seconds: 300
+
+# -------------------------------------------------------------------------------------
+# Conquest: hold the enemy flag to take the island
+# -------------------------------------------------------------------------------------
+conquest:
+  enabled: true
+  # always | war-only | never (same meaning as raiding.mode)
+  mode: war-only
+  # Attackers must stand within this many blocks of the flag (and capture-height vertically).
+  capture-radius: 6
+  capture-height: 6
+  # Seconds of uncontested holding needed.
+  capture-seconds: 120
+  # Progress lost per second while nobody is capturing.
+  decay-per-second: 1.0
+  # Attackers of one crew needed inside the radius.
+  min-attackers: 1
+  # Allies of the owners standing at the flag defend it (pause the capture).
+  allies-defend: true
+  # Shield after an island changed hands (seconds): no conquest/raiding during it.
+  shield-seconds: 3600
+  # Owners are alerted at most this often.
+  alert-cooldown-seconds: 60
+  alert-sound: block.bell.use
+  success-sound: ui.toast.challenge_complete
+  # Broadcast to the whole server when a capture starts.
+  announce-start: false
+  reputation:
+    # Taken from the losers and given to the conquerors.
+    steal: 50
+    # Extra reputation for the conquerors.
+    bonus: 25
+  bossbar:
+    color: RED
+    contested-color: YELLOW
+    # PROGRESS, NOTCHED_6, NOTCHED_10, NOTCHED_12, NOTCHED_20
+    overlay: NOTCHED_10
+
+# -------------------------------------------------------------------------------------
+# Passive income: Doubloons paid into the crew bank per owned island
+# -------------------------------------------------------------------------------------
+income:
+  enabled: true
+  interval-minutes: 30
+  # Only pay crews with at least one member online.
+  require-online: true
+  default: 100
+  per-type:
+    TROPICAL: 100
+    JUNGLE: 120
+    VOLCANIC: 200
+    SNOWY: 120
+    DESERT: 120
+    ANCIENT: 180
+    CAPITAL: 0
+
+# Optional BlueMap markers (only used when BlueMap is installed).
+bluemap:
+  enabled: true
+  label: Islands
+  # Draw the island border as a circle (coloured by owner).
+  circles: true
+  hidden-by-default: false
+
+# =====================================================================================
+#  Messages
+# =====================================================================================
+messages:
+  # --- enter / leave (presence.display) ---
+  enter: "<aqua><island></aqua> <dark_gray>|</dark_gray> <type> <dark_gray>|</dark_gray> <owner>"
+  enter-title: "<aqua><island>"
+  enter-subtitle: "<owner>"
+  leave: "<gray>You sail away from <white><island></white> into open waters."
+  leave-title: ""
+  leave-subtitle: "<gray>Open waters"
+  owner-occupied: "<gray>Territory of</gray> <crew>"
+  owner-unclaimed: "<green>Unclaimed</green>"
+  owner-neutral: "<aqua>Neutral waters</aqua>"
+  unknown-crew: "<gray>an unknown crew</gray>"
+  # --- discovery ---
+  discover-title: "<gold><bold>LAND HO!</bold>"
+  discover-subtitle: "<yellow><island></yellow> <dark_gray>-</dark_gray> <type>"
+  discovered: "<gold>You discovered <yellow><island></yellow>! It's been added to your logbook."
+  discover-reward: "<gold>You discovered <yellow><island></yellow>! <green>+<amount></green> for charting new waters."
+  # --- protection ---
+  deny-neutral: "<red><island> is neutral waters - no fighting or building here."
+  deny-unclaimed: "<red>Claim <island> before building on it."
+  deny-occupied: "<red>This is the territory of <crew>. Keep your hands off, scallywag!"
+  deny-offline: "<red>The owners of <island> are ashore - it's protected while they're away."
+  deny-shield: "<red><island> is under a truce for another <time>."
+  deny-flag: "<red>That flag can only be taken by holding it, not by smashing it!"
+  deny-pvp: "<red>No duels in neutral waters!"
+  # --- conquest ---
+  conquest-bar: "<red><crew> <white>is capturing</white> <gold><island></gold> <gray>- <percent>% (<time>)"
+  conquest-bar-contested: "<yellow>Contested!</yellow> <crew> <white>vs the defenders of</white> <gold><island></gold> <gray>- <percent>%"
+  conquest-alert: "<red><bold>TO ARMS!</bold> <crew> <red>is taking the flag on <yellow><island></yellow> <gray>(<x>, <y>, <z>)"
+  conquest-started: "<red><crew> has launched an attack on <yellow><island></yellow>, held by <owner>!"
+  conquest-success: "<gold><bold>CONQUERED!</bold> <crew> <gold>seized <yellow><island></yellow> from <owner> <gray>(+<reputation> reputation)"
+  conquest-lost: "<red>We lost <yellow><island></yellow> to <crew>! Rally the crew and take it back!"
+  conquest-need-more: "<yellow>You need at least <min> crewmates at the flag to capture <island>."
+  # --- claiming ---
+  claim-announce: "<gold><crew> <gold>planted their flag on <yellow><island></yellow>! <gray>(by <player>)"
+  claim-paid: "<gray>Paid <yellow><cost></yellow> for the claim."
+  claim-disabled: "<red>Claiming islands is disabled."
+  claim-neutral: "<red><island> is neutral waters and cannot be claimed."
+  claim-occupied: "<red><island> already belongs to <crew>. Take it by force: hold their flag!"
+  claim-type-blocked: "<red><type> islands cannot be claimed."
+  claim-max: "<red>Your crew already holds the maximum of <max> islands."
+  claim-min-members: "<red>Your crew needs at least <min> members to claim an island."
+  claim-cannot-afford: "<red>Claiming costs <cost> and you can't afford it."
+  claim-cannot-afford-bank: "<red>Claiming costs <cost> and the crew bank doesn't hold enough."
+  claim-cancelled: "<red>The claim was refused."
+  flag-no-space: "<red>There's no room for a flag pole here."
+  flag-no-ground: "<red>Stand on solid ground to plant the flag."
+  flag-too-close-to-edge: "<red>Plant the flag further inland."
+  flag-placed: "<green>Your flag now flies over <yellow><island></yellow> right here."
+  unclaim-confirm: "<yellow>Really abandon <island>? Run <white>/island unclaim confirm</white>."
+  unclaimed: "<yellow><player> abandoned <white><island></white>; it is free to claim again."
+  island-abandoned: "<yellow><island> has been abandoned and is free to claim!"
+  no-crew: "<red>You are not in a crew."
+  not-officer: "<red>Only the captain and first mate can do that."
+  not-your-island: "<red>This island doesn't belong to your crew."
+  not-occupied: "<red><island> isn't owned by a crew."
+  under-attack: "<red>Not while the island is under attack!"
+  crews-disabled: "<red>Crews are disabled on this server."
+  # --- income ---
+  income-paid: "<gold>Your <count> island(s) paid <yellow><amount></yellow> into the crew bank."
+  # --- info / list / map ---
+  open-sea: "<aqua>You're on the open sea."
+  not-on-island: "<red>You're not standing on an island."
+  unknown-island: "<red>No island called <white><island></white>."
+  unknown-island-name: "???"
+  unknown-island-type: "<gray>uncharted</gray>"
+  info-header: "<dark_aqua><strikethrough>      </strikethrough> <aqua><bold><island></bold> <dark_aqua><strikethrough>      </strikethrough>"
+  info-type: "<gray>Type: <type> <dark_gray>(<id>)"
+  info-owner: "<gray>Status: <owner>"
+  info-location: "<gray>Centre: <white><x>, <z></white> in <white><world></white>, radius <white><radius>"
+  info-spawn: "<aqua>This is the spawn island."
+  info-shield: "<gray>Truce: <white><time></white> left"
+  info-flag: "<gray>Flag: <white><x>, <y>, <z>"
+  info-under-attack: "<red><bold>Under attack!"
+  info-income: "<gray>Income: <yellow><amount></yellow> every <minutes> minutes"
+  info-discovered: "<green>In your logbook."
+  info-undiscovered: "<gray>Not yet discovered by you."
+  list-empty: "<gray>No islands have been charted yet."
+  list-header: "<aqua>Islands <gray>(<count>) - page <page>/<pages>"
+  list-entry: "<dark_gray>- <aqua><island></aqua> <type> <dark_gray>|</dark_gray> <owner> <dark_gray>|</dark_gray> <gray><distance>"
+  list-footer: "<gray>Next page: <white>/island list <next>"
+  map-header: "<aqua>Nearest islands:"
+  map-entry: "<dark_gray>- <aqua><island></aqua> <type> <gray><distance>m <white><direction></white> <owner>"
+  map-entry-here: "<dark_gray>- <green><island></green> <type> <green>(you are here)</green> <owner>"
+  discovered-header: "<aqua><player>'s logbook: <white><count>/<total></white> islands"
+  discovered-list: "<gray><islands>"
+  discovered-none: "<gray>No islands discovered yet. Set sail!"
+  top-header: "<gold>Crews by islands held:"
+  top-entry: "<gray>#<rank> <crew> <dark_gray>-</dark_gray> <yellow><count></yellow> island(s)"
+  top-empty: "<gray>No crew holds an island yet."
+  # --- admin ---
+  bad-radius: "<red>Radius must be between <min> and <max>."
+  bad-count: "<red>Count must be between 1 and <max>."
+  name-taken: "<red>An island called <white><name></white> already exists."
+  overlap: "<red>That area overlaps another island (or the name is taken)."
+  no-free-spot: "<red>No free ocean spot found. Enlarge the area (/island area) or lower ocean-area.min-spacing."
+  spawn-started: "<green>Raising <yellow><island></yellow> (<type>, radius <radius>) from the sea... <gray>(<queued> job(s) queued)"
+  spawnrandom-searching: "<gray>Charting free waters for <white><count></white> island(s)..."
+  spawnrandom-started: "<green>Queued <count>/<requested> islands: <gray><islands>"
+  registered: "<green>Registered <yellow><island></yellow> <gray>(<id>, radius <radius>)."
+  deleted: "<yellow>Island <island> unregistered (terrain kept)."
+  deleted-restore: "<yellow>Island <island> unregistered; the sea is reclaiming it..."
+  status-set: "<green><island> is now <status>."
+  owner-set: "<green><island> now belongs to <crew>."
+  owner-cleared: "<green><island> is unclaimed again."
+  renamed: "<green><old> is now called <island>."
+  radius-set: "<green><island> now has radius <radius>."
+  teleported: "<aqua>Welcome to <island>."
+  regen-started: "<green>Regenerating <island>... <gray>(<queued> job(s) queued)"
+  spawn-set: "<green><island> is now the neutral spawn island."
+  area-set: "<green>Ocean area: <white><world></white> centre <white><x>, <z></white>, radius <white><radius></white>, spacing <white><spacing>"
+  jobs-cancelled: "<yellow>Cancelled <count> terrain job(s)."
+  shield-set: "<green><island> is shielded for <time>."
+  world-missing: "<red>World <world> is not loaded."
+  job-progress: "<aqua>Shaping <white><label></white>: <yellow><percent>%</yellow> <gray>(+<queued> queued)"
+  job-done: "<green>Finished <white><label></white>. <gray>(<queued> job(s) left)"
+  job-failed: "<red>Terrain job <label> failed, see console."
+  job-restore-label: "the sea over <island>"
+  unknown-crew-name: "<red>No crew called <white><crew></white>."

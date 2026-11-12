@@ -1,0 +1,768 @@
+# =====================================================================================
+#  AquaticSMP - Items module (modules/items.yml)
+# =====================================================================================
+#  Custom pirate items: Devil Fruits, Sea Prism Stone, legendary swords (Meito), guns,
+#  cannons, the Log Pose, Den Den Mushi, rum and the Pirate King's crown.
+#
+#  Commands
+#    /aitem give <player> <id> [amount]       (aquatic.items.admin)
+#    /aitem list                              (aquatic.items.admin)
+#    /aitem fruit set <player> <fruit|none>   (aquatic.items.admin)
+#    /aitem fruit info [player]               (aquatic.items.admin)
+#    /fruit                                   (aquatic.items.fruit, everyone by default)
+#
+#  Other modules (treasure loot tables, events, the tournament) reference items by their id
+#  below, e.g. "item:gomu_gomu" in a reward list.
+#
+#  Reload with /aquatic reload items
+# =====================================================================================
+
+# -------------------------------------------------------------------------------------
+#  Devil fruit rules
+# -------------------------------------------------------------------------------------
+fruits:
+  # Only one devil fruit power per player.
+  one-per-player: true
+  # What happens when someone who already has a power eats a second fruit:
+  #   refuse = the fruit cannot be eaten (it stays in the hand)
+  #   lethal = the body cannot take two powers: the player dies (the fruit is consumed)
+  second-fruit: refuse
+  # When true each fruit power can only be owned by one player at a time.
+  unique-fruits: false
+  # Broadcast to the whole server when someone eats a fruit.
+  announce: true
+  # Lose the power on death.
+  lose-on-death: false
+  # When the power is lost on death, the fruit "reincarnates": it drops where the player died.
+  reincarnate-drop: true
+  # How to trigger the active ability of your fruit. Any of:
+  #   sneak-right-click  (sneak + right-click with an EMPTY main hand; the Minecraft client only
+  #                       reports this while looking at a block, so keep a swap-hands trigger too)
+  #   sneak-left-click   (sneak + left-click with an EMPTY main hand)
+  #   swap-hands         (the swap-hands key, default F; replaces swapping for fruit users!)
+  #   sneak-swap-hands   (sneak + swap-hands key)
+  triggers:
+    - sneak-right-click
+    - sneak-swap-hands
+  # Show the cooldown of your ability on the action bar.
+  show-cooldown-bar: true
+  # How often (in ticks, 20 = 1 second) passive effects and sea weakness are refreshed.
+  passive-interval-ticks: 20
+  # The sea rejects devil fruit users.
+  sea-weakness:
+    enabled: true
+    # Also counts standing in the rain.
+    rain: false
+    # Effects while in water. Format: effect:level  (minecraft effect names)
+    effects:
+      - slowness:3
+      - weakness:2
+      - mining_fatigue:2
+    # Prevent swimming and pull the player down (they sink like a hammer). Boats are safe.
+    sink: true
+    # Downwards speed in blocks/tick while sinking.
+    sink-speed: 0.12
+    # Fruit passives (and immunities) stop working in water.
+    disable-passives: true
+    # Fruit abilities cannot be used in water.
+    disable-abilities: true
+
+# -------------------------------------------------------------------------------------
+#  Item definitions
+# -------------------------------------------------------------------------------------
+#  Every item has:
+#    type:              fruit | sword | seastone | gun | cannon | logpose | denden | drink | plain
+#    material:          vanilla material
+#    name / lore:       MiniMessage text
+#    custom-model-data: optional number for resource packs / Oraxen skins (0 = none)
+#    glint, unbreakable, max-stack, color (#RRGGBB for potions / leather), flags (ItemFlag names)
+#    enchants:          <minecraft enchantment key>: <level>
+#    attributes:        list of {attribute, amount, operation (ADD_NUMBER | ADD_SCALAR | MULTIPLY_SCALAR_1), slot}
+#                       slot: any | mainhand | offhand | hand | head | chest | legs | feet | armor
+#                       NOTE: adding attributes replaces the vanilla weapon damage/speed, so give both.
+#    always-edible / nutrition / saturation: for food materials (fruits)
+#    recipe:            optional shaped crafting recipe (never used for fruits):
+#                         enabled, amount, shape (3 rows), ingredients (symbol: MATERIAL or item:<id>)
+#
+#  Ability types (used by fruit.ability and by swords' "ability"):
+#    punch        hits the entity you look at (range, damage, knockback); with nothing in sight
+#                 you leap forward instead (leap-power, 0 = no leap)
+#    fireball     shoots a fireball exploding in an area (speed, radius, damage, fire-ticks)
+#    nova         damages everything around you (radius, damage, effects, freeze-ticks)
+#    lightning    strikes what you look at (range, radius, damage)
+#    invisibility become invisible for "duration" seconds; with toggle: true, using it again ends it
+#    swap         swap places with the entity you look at (range, damage)
+#    pull         pulls everything in the radius towards you (radius, pull-strength, damage, effects)
+#    transform    gives yourself self-effects for "duration" seconds
+#    dash         dash forward hitting everything you pass (power, dash-ticks, damage)
+#    slash        flying slash in a line (range, damage)
+#  Common options: name, cooldown (seconds), damage, effects (applied to victims, effect:level[:seconds]),
+#    effect-seconds, self-effects (effect:level, length = duration), duration, fire-ticks, freeze-ticks,
+#    knockback, particle (Particle name or none), sound (minecraft sound key), sound-pitch.
+#  Ability damage is normal player damage: crewmates, PvP-off worlds and protected areas are respected.
+items:
+
+  # ================================ DEVIL FRUITS ================================
+  #  fruit.passives:   permanent effects (effect:level)
+  #  fruit.immunities: damage causes that are ignored (Bukkit DamageCause names: FALL, FIRE, LAVA, ...)
+  #  fruit.frost-walker-radius: freeze water you walk over (0 = off, max 5)
+  gomu_gomu:
+    type: fruit
+    material: APPLE
+    name: "<gradient:#c44dff:#ff6ec7><bold>Gomu Gomu no Mi</bold></gradient>"
+    lore:
+      - "<gray>A swirly purple fruit. Tastes awful."
+      - "<dark_gray>Paramecia"
+      - ""
+      - "<light_purple>Your body turns to rubber."
+      - "<gray>No fall damage, high jumps."
+      - "<gray>Ability: <white>Gomu Gomu no Pistol"
+      - ""
+      - "<red>Eating it means you can never swim again."
+    custom-model-data: 0
+    glint: true
+    max-stack: 1
+    always-edible: true
+    nutrition: 4
+    saturation: 2.4
+    fruit:
+      description: "Rubber body: immune to fall damage, jumps higher. Stretch a punch at whatever you look at, or leap forward."
+      passives:
+        - jump_boost:2
+      immunities:
+        - FALL
+      ability:
+        name: "<light_purple>Gomu Gomu no Pistol"
+        type: punch
+        cooldown: 8
+        range: 14
+        damage: 7
+        knockback: 2.2
+        leap-power: 2.0
+        particle: CRIT
+        sound: entity.player.attack.strong
+
+  mera_mera:
+    type: fruit
+    material: APPLE
+    name: "<gradient:#ff4b1f:#ff9068><bold>Mera Mera no Mi</bold></gradient>"
+    lore:
+      - "<gray>The fruit seems to flicker like a flame."
+      - "<dark_gray>Logia"
+      - ""
+      - "<gold>Your body becomes fire."
+      - "<gray>Immune to fire and lava."
+      - "<gray>Ability: <white>Hiken (Fire Fist)"
+      - ""
+      - "<red>Eating it means you can never swim again."
+    custom-model-data: 0
+    glint: true
+    max-stack: 1
+    always-edible: true
+    fruit:
+      description: "Fire body: immune to fire and lava. Hurl a fist of fire that explodes on impact."
+      passives:
+        - fire_resistance:1
+      immunities:
+        - FIRE
+        - FIRE_TICK
+        - LAVA
+        - HOT_FLOOR
+      ability:
+        name: "<gold>Hiken"
+        type: fireball
+        cooldown: 10
+        speed: 1.6
+        radius: 3
+        damage: 7
+        fire-ticks: 80
+        particle: FLAME
+        sound: entity.blaze.shoot
+
+  hie_hie:
+    type: fruit
+    material: APPLE
+    name: "<gradient:#a1c4fd:#c2e9fb><bold>Hie Hie no Mi</bold></gradient>"
+    lore:
+      - "<gray>Cold to the touch."
+      - "<dark_gray>Logia"
+      - ""
+      - "<aqua>Your body becomes ice."
+      - "<gray>Freeze the sea you walk over."
+      - "<gray>Ability: <white>Ice Age"
+      - ""
+      - "<red>Eating it means you can never swim again."
+    custom-model-data: 0
+    glint: true
+    max-stack: 1
+    always-edible: true
+    fruit:
+      description: "Ice body: walk on frozen water, immune to freezing. Freeze and slow everything around you."
+      frost-walker-radius: 3
+      immunities:
+        - FREEZE
+      ability:
+        name: "<aqua>Ice Age"
+        type: nova
+        cooldown: 15
+        radius: 6
+        damage: 5
+        freeze-ticks: 140
+        effect-seconds: 4
+        effects:
+          - slowness:4
+          - mining_fatigue:2
+        particle: SNOWFLAKE
+        sound: block.glass.break
+
+  goro_goro:
+    type: fruit
+    material: APPLE
+    name: "<gradient:#f7ff00:#db36a4><bold>Goro Goro no Mi</bold></gradient>"
+    lore:
+      - "<gray>It crackles in your hand."
+      - "<dark_gray>Logia"
+      - ""
+      - "<yellow>Your body becomes lightning."
+      - "<gray>Permanent speed."
+      - "<gray>Ability: <white>El Thor"
+      - ""
+      - "<red>Eating it means you can never swim again."
+    custom-model-data: 0
+    glint: true
+    max-stack: 1
+    always-edible: true
+    fruit:
+      description: "Lightning body: always fast. Call down lightning where you look."
+      passives:
+        - speed:2
+      immunities:
+        - LIGHTNING
+      ability:
+        name: "<yellow>El Thor"
+        type: lightning
+        cooldown: 14
+        range: 30
+        radius: 3
+        damage: 9
+        particle: ELECTRIC_SPARK
+
+  suke_suke:
+    type: fruit
+    material: APPLE
+    name: "<gradient:#e0e0e0:#7f8c8d><bold>Suke Suke no Mi</bold></gradient>"
+    lore:
+      - "<gray>You can barely see it."
+      - "<dark_gray>Paramecia"
+      - ""
+      - "<white>Turn invisible at will."
+      - "<gray>Ability: <white>Invisibility (toggle)"
+      - ""
+      - "<red>Eating it means you can never swim again."
+    custom-model-data: 0
+    glint: true
+    max-stack: 1
+    always-edible: true
+    fruit:
+      description: "Clear body: turn invisible for a while; use again to reappear. Sea Prism Stone reveals you."
+      ability:
+        name: "<white>Invisibility"
+        type: invisibility
+        toggle: true
+        cooldown: 25
+        duration: 20
+        self-effects:
+          - speed:1
+        particle: CLOUD
+
+  ope_ope:
+    type: fruit
+    material: APPLE
+    name: "<gradient:#ff9a9e:#fad0c4><bold>Ope Ope no Mi</bold></gradient>"
+    lore:
+      - "<gray>Shaped like a heart."
+      - "<dark_gray>Paramecia"
+      - ""
+      - "<light_purple>Create a Room and rearrange it."
+      - "<gray>Ability: <white>Shambles"
+      - ""
+      - "<red>Eating it means you can never swim again."
+    custom-model-data: 0
+    glint: true
+    max-stack: 1
+    always-edible: true
+    fruit:
+      description: "Operation: swap places with whoever you look at and cut them for a little damage."
+      ability:
+        name: "<light_purple>Shambles"
+        type: swap
+        cooldown: 18
+        range: 20
+        damage: 3
+        particle: PORTAL
+        sound: entity.enderman.teleport
+
+  yami_yami:
+    type: fruit
+    material: APPLE
+    name: "<gradient:#232526:#6a3093><bold>Yami Yami no Mi</bold></gradient>"
+    lore:
+      - "<gray>Swallows the light around it."
+      - "<dark_gray>Logia"
+      - ""
+      - "<dark_purple>Your body becomes darkness."
+      - "<gray>Ability: <white>Black Hole"
+      - ""
+      - "<red>Eating it means you can never swim again."
+    custom-model-data: 0
+    glint: true
+    max-stack: 1
+    always-edible: true
+    fruit:
+      description: "Darkness: pull everyone around you in and blind them."
+      passives:
+        - night_vision:1
+      ability:
+        name: "<dark_purple>Black Hole"
+        type: pull
+        cooldown: 20
+        radius: 8
+        pull-strength: 1.3
+        damage: 4
+        effect-seconds: 4
+        effects:
+          - blindness:1
+          - darkness:1
+        particle: SQUID_INK
+
+  ushi_ushi_bison:
+    type: fruit
+    material: APPLE
+    name: "<gradient:#8e5a2b:#d1913c><bold>Ushi Ushi no Mi, Model: Bison</bold></gradient>"
+    lore:
+      - "<gray>Heavy and earthy."
+      - "<dark_gray>Zoan"
+      - ""
+      - "<gold>Gain the strength of a bison."
+      - "<gray>Permanent extra health."
+      - "<gray>Ability: <white>Beast Form"
+      - ""
+      - "<red>Eating it means you can never swim again."
+    custom-model-data: 0
+    glint: true
+    max-stack: 1
+    always-edible: true
+    fruit:
+      description: "Zoan: permanent extra health; transform into a beast with great strength and toughness."
+      passives:
+        - health_boost:1
+      ability:
+        name: "<gold>Beast Form"
+        type: transform
+        cooldown: 60
+        duration: 30
+        self-effects:
+          - strength:2
+          - resistance:1
+          - slowness:1
+        particle: ANGRY_VILLAGER
+        sound: entity.ravager.roar
+
+  # ================================ SEA PRISM STONE ================================
+  #  seastone.hit-seconds:  hitting a devil fruit user disables their power for this long
+  #  seastone.cuff-seconds: right-clicking a player with the item cuffs them (0 = cannot cuff)
+  #  seastone.cuff-cooldown, cuff-effects, consume-cuffs (single use)
+  sea_prism_blade:
+    type: seastone
+    material: IRON_SWORD
+    name: "<gradient:#43cea2:#185a9d><bold>Sea Prism Jitte</bold></gradient>"
+    lore:
+      - "<gray>Forged from Kairoseki, the solidified sea."
+      - ""
+      - "<aqua>Hitting a devil fruit user disables"
+      - "<aqua>their power for <white>6s</white>."
+    custom-model-data: 0
+    seastone:
+      hit-seconds: 6
+      cuff-seconds: 0
+    recipe:
+      enabled: true
+      amount: 1
+      shape:
+        - " P "
+        - " P "
+        - " S "
+      ingredients:
+        P: PRISMARINE_CRYSTALS
+        S: STICK
+
+  seastone_cuffs:
+    type: seastone
+    material: CHAIN
+    name: "<gradient:#43cea2:#185a9d><bold>Sea Prism Handcuffs</bold></gradient>"
+    lore:
+      - "<gray>Right-click a player to cuff them."
+      - ""
+      - "<aqua>A cuffed devil fruit user loses their"
+      - "<aqua>power and is slowed for <white>20s</white>."
+      - "<dark_gray>Single use."
+    custom-model-data: 0
+    max-stack: 16
+    seastone:
+      hit-seconds: 3
+      cuff-seconds: 20
+      cuff-cooldown: 30
+      consume-cuffs: true
+      cuff-effects:
+        - slowness:3
+        - weakness:2
+        - mining_fatigue:3
+    recipe:
+      enabled: true
+      amount: 2
+      shape:
+        - "PIP"
+        - "I I"
+        - "PIP"
+      ingredients:
+        P: PRISMARINE_CRYSTALS
+        I: IRON_INGOT
+
+  # ================================ LEGENDARY SWORDS (MEITO) ================================
+  #  on-hit:  effects on a normal (fully charged) melee hit: chance (0-1), cooldown, extra-damage,
+  #           effects, self-effects, effect-seconds, fire-ticks, lifesteal (fraction), lightning, sound
+  #  ability: right-click ability (trigger: right-click | sneak-right-click), see ability types above
+  wado_ichimonji:
+    type: sword
+    material: IRON_SWORD
+    name: "<gradient:#ffffff:#bdc3c7><bold>Wado Ichimonji</bold></gradient>"
+    lore:
+      - "<dark_gray>One of the 21 Great Grade Swords"
+      - ""
+      - "<gray>On hit: <white>25% chance to cut deep (+3, slowness)"
+      - "<gray>Right-click: <white>Flying Slash"
+    custom-model-data: 0
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE]
+    enchants:
+      sharpness: 3
+    attributes:
+      - {attribute: attack_damage, amount: 7, operation: ADD_NUMBER, slot: mainhand}
+      - {attribute: attack_speed, amount: -2.2, operation: ADD_NUMBER, slot: mainhand}
+    on-hit:
+      chance: 0.25
+      cooldown: 3
+      extra-damage: 3
+      effect-seconds: 3
+      effects:
+        - slowness:2
+      particle: SWEEP_ATTACK
+    ability:
+      name: "<white>Sanjuroku Pound Ho"
+      type: slash
+      trigger: right-click
+      cooldown: 12
+      range: 12
+      damage: 8
+      particle: SWEEP_ATTACK
+
+  shusui:
+    type: sword
+    material: NETHERITE_SWORD
+    name: "<gradient:#3a1c71:#d76d77><bold>Shusui</bold></gradient>"
+    lore:
+      - "<dark_gray>A black blade, Great Grade"
+      - ""
+      - "<gray>On hit: <white>steals 15% of the damage as health"
+      - "<gray>Right-click: <white>Lion Strike dash (withers)"
+    custom-model-data: 0
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE]
+    attributes:
+      - {attribute: attack_damage, amount: 8, operation: ADD_NUMBER, slot: mainhand}
+      - {attribute: attack_speed, amount: -2.4, operation: ADD_NUMBER, slot: mainhand}
+    on-hit:
+      chance: 1.0
+      lifesteal: 0.15
+      particle: DAMAGE_INDICATOR
+    ability:
+      name: "<dark_purple>Shishi Sonson"
+      type: dash
+      trigger: right-click
+      cooldown: 14
+      power: 2.0
+      dash-ticks: 8
+      damage: 9
+      effect-seconds: 3
+      effects:
+        - wither:1
+      particle: CRIT
+
+  yoru:
+    type: sword
+    material: NETHERITE_SWORD
+    name: "<gradient:#000000:#c0392b><bold>Yoru</bold></gradient>"
+    lore:
+      - "<dark_gray>Supreme Grade. The strongest black blade."
+      - ""
+      - "<gray>On hit: <white>20% chance for +4 damage and lightning"
+      - "<gray>Sneak + right-click: <white>World-cleaving slash"
+    custom-model-data: 0
+    unbreakable: true
+    glint: true
+    flags: [HIDE_UNBREAKABLE]
+    attributes:
+      - {attribute: attack_damage, amount: 9, operation: ADD_NUMBER, slot: mainhand}
+      - {attribute: attack_speed, amount: -2.6, operation: ADD_NUMBER, slot: mainhand}
+    on-hit:
+      chance: 0.2
+      cooldown: 5
+      extra-damage: 4
+      lightning: true
+      particle: ELECTRIC_SPARK
+    ability:
+      name: "<red>Kokuto Ichibyo"
+      type: slash
+      trigger: sneak-right-click
+      cooldown: 25
+      range: 20
+      damage: 12
+      knockback: 1.2
+      particle: SWEEP_ATTACK
+
+  # ================================ FIREARMS ================================
+  #  gun / cannon section: ammo (MATERIAL or item:<id>, empty = free), ammo-per-shot, cooldown,
+  #    speed, gravity, spread, damage, headshot-multiplier (gun), radius + knockback (cannon),
+  #    block-damage-power (cannon; 0 = no block damage, 4 = like TNT), fire, recoil,
+  #    projectile-item (what the bullet looks like), sound, sound-pitch
+  flintlock:
+    type: gun
+    material: CROSSBOW
+    name: "<gradient:#b79891:#94716b><bold>Flintlock Pistol</bold></gradient>"
+    lore:
+      - "<gray>A trusty pirate sidearm."
+      - ""
+      - "<gray>Right-click to fire. Uses <white>gunpowder</white>."
+      - "<gray>Headshots deal extra damage."
+    custom-model-data: 0
+    max-stack: 1
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE]
+    gun:
+      ammo: GUNPOWDER
+      ammo-per-shot: 1
+      cooldown: 1.5
+      speed: 4.0
+      gravity: false
+      spread: 0.01
+      damage: 8
+      headshot-multiplier: 1.5
+      projectile-item: IRON_NUGGET
+      recoil: 0.1
+      particle: SMOKE
+      sound: entity.firework_rocket.blast
+      sound-pitch: 0.6
+    recipe:
+      enabled: true
+      amount: 1
+      shape:
+        - "III"
+        - " FW"
+        - "  W"
+      ingredients:
+        I: IRON_INGOT
+        F: FLINT
+        W: OAK_PLANKS
+
+  hand_cannon:
+    type: cannon
+    material: IRON_HORSE_ARMOR
+    name: "<gradient:#434343:#9a9a9a><bold>Hand Cannon</bold></gradient>"
+    lore:
+      - "<gray>Heavy. Very heavy."
+      - ""
+      - "<gray>Right-click to fire a <white>Cannonball</white>."
+      - "<gray>Explodes on impact."
+    custom-model-data: 0
+    cannon:
+      ammo: "item:cannonball"
+      ammo-per-shot: 1
+      cooldown: 6
+      speed: 1.8
+      gravity: true
+      damage: 10
+      radius: 4
+      knockback: 1.2
+      # 0 = the explosion does not break blocks (default, safe for an SMP). E.g. 2.5 for block damage.
+      block-damage-power: 0
+      fire: false
+      recoil: 0.6
+      projectile-item: COAL_BLOCK
+      particle: LARGE_SMOKE
+      sound: entity.generic.explode
+      sound-pitch: 1.4
+    recipe:
+      enabled: true
+      amount: 1
+      shape:
+        - "III"
+        - "  T"
+        - "III"
+      ingredients:
+        I: IRON_BLOCK
+        T: TNT
+
+  cannonball:
+    type: plain
+    material: FIREWORK_STAR
+    name: "<dark_gray><bold>Cannonball</bold>"
+    lore:
+      - "<gray>Ammunition for hand cannons."
+    custom-model-data: 0
+    max-stack: 16
+    recipe:
+      enabled: true
+      amount: 4
+      shape:
+        - " I "
+        - "IGI"
+        - " I "
+      ingredients:
+        I: IRON_INGOT
+        G: GUNPOWDER
+
+  # ================================ NAVIGATION & TOOLS ================================
+  log_pose:
+    type: logpose
+    material: COMPASS
+    name: "<gradient:#2193b0:#6dd5ed><bold>Log Pose</bold></gradient>"
+    lore:
+      - "<gray>Holds the magnetic memory of the islands."
+      - ""
+      - "<gray>Right-click: <white>point to the next island"
+      - "<gray>Sneak + right-click: <white>nearest island"
+    custom-model-data: 0
+    max-stack: 1
+    recipe:
+      enabled: true
+      amount: 1
+      shape:
+        - " G "
+        - "GCG"
+        - " G "
+      ingredients:
+        G: GLASS_PANE
+        C: COMPASS
+
+  den_den_mushi:
+    type: denden
+    material: TURTLE_SCUTE
+    name: "<gradient:#f6d365:#fda085><bold>Den Den Mushi</bold></gradient>"
+    lore:
+      - "<gray>Purupurupuru..."
+      - ""
+      - "<gray>Right-click: <white>call your crew to your position"
+    custom-model-data: 0
+    max-stack: 1
+    denden:
+      cooldown: 30
+      glow-seconds: 5
+      sound: block.note_block.bell
+
+  rum:
+    type: drink
+    material: POTION
+    name: "<gold><bold>Pirate Rum</bold>"
+    lore:
+      - "<gray>Yo-ho-ho!"
+      - ""
+      - "<gray>A burst of courage... and a spinning head."
+    custom-model-data: 0
+    color: "#8B4513"
+    flags: [HIDE_ADDITIONAL_TOOLTIP]
+    drink:
+      duration: 45
+      heal: 2
+      effects:
+        - speed:1
+        - strength:1
+        - nausea:1:8
+      message: "<gold>Yo-ho-ho! <gray>The rum warms your belly."
+    recipe:
+      enabled: true
+      amount: 1
+      shape:
+        - " S "
+        - "SBS"
+        - " S "
+      ingredients:
+        S: SUGAR_CANE
+        B: GLASS_BOTTLE
+
+  pirate_king_crown:
+    type: plain
+    material: GOLDEN_HELMET
+    name: "<gradient:#f7971e:#ffd200><bold>Crown of the Pirate King</bold></gradient>"
+    lore:
+      - "<gray>Worn by the one who conquered the Grand Line."
+      - ""
+      - "<gold>Only one may hold the throne."
+    custom-model-data: 0
+    glint: true
+    unbreakable: true
+    max-stack: 1
+    flags: [HIDE_UNBREAKABLE]
+    enchants:
+      protection: 4
+    attributes:
+      - {attribute: armor, amount: 4, operation: ADD_NUMBER, slot: head}
+      - {attribute: armor_toughness, amount: 3, operation: ADD_NUMBER, slot: head}
+      - {attribute: max_health, amount: 4, operation: ADD_NUMBER, slot: head}
+      - {attribute: knockback_resistance, amount: 0.1, operation: ADD_NUMBER, slot: head}
+
+# -------------------------------------------------------------------------------------
+#  Messages (MiniMessage). Placeholders are written as <name>.
+# -------------------------------------------------------------------------------------
+messages:
+  unknown-item: "<red>Unknown item <white><id></white>. See <white>/aitem list</white>."
+  unknown-fruit: "<red><white><id></white> is not a devil fruit."
+  item-given: "<green>Gave <white><amount>x</white> <item> <green>to <white><player></white>."
+  list-header: "<aqua>Custom items <gray>(<count>)</gray>:"
+  list-entry: " <dark_gray>-</dark_gray> <white><id></white> <dark_gray>[<type>]</dark_gray> <item>"
+  fruit-set: "<green><white><player></white> now has the power of <fruit><green>."
+  fruit-cleared: "<yellow><white><player></white> no longer has a devil fruit power."
+  fruit-none: "<gray><white><player></white> has not eaten a devil fruit."
+  fruit-info-header: "<aqua><player></aqua> <gray>ate the</gray> <fruit>"
+  fruit-info-description: " <gray><description>"
+  fruit-info-ability: " <gray>Ability:</gray> <ability> <dark_gray>|</dark_gray> <gray>cooldown <white><cooldown></white> <dark_gray>|</dark_gray> <white><status>"
+  fruit-info-trigger: " <dark_gray>Use your ability with sneak + right-click (empty hand) or sneak + F.</dark_gray>"
+  ready: "ready"
+  fruit-eaten: "<light_purple>You ate the <fruit><light_purple>! <gray><description> <red>The sea now rejects you."
+  fruit-eaten-broadcast: "<light_purple><player></light_purple> <gray>has eaten the <fruit><gray>!"
+  fruit-already: "<red>Your body already holds a devil fruit power. A second one would tear you apart."
+  fruit-second-lethal: "<dark_red>Your body tears itself apart... two devil fruit powers cannot coexist."
+  fruit-second-broadcast: "<dark_red><player> tried to hold two devil fruit powers and paid the price."
+  fruit-taken: "<red>The power of <fruit> <red>already belongs to someone else."
+  fruit-lost: "<gray>Your <fruit> <gray>power leaves your body..."
+  sea-weakness: "<blue>The sea drains your strength!"
+  cooldown-bar: "<ability> <gray>ready in <white><seconds>s"
+  ability-ready: "<ability> <green>is ready!"
+  ability-used: "<ability><gray>!"
+  ability-cooldown: "<ability> <red>is on cooldown: <white><seconds>s"
+  ability-no-target: "<ability><gray>: no target in sight."
+  ability-seastone: "<dark_aqua>Sea Prism Stone blocks your power!"
+  ability-sea: "<blue>You cannot use your power in the sea!"
+  invisibility-off: "<gray>You are visible again."
+  seastoned: "<dark_aqua>Sea Prism Stone! Your power is sealed for <white><seconds>s"
+  seastone-hit: "<dark_aqua>Sealed <white><player></white>'s power for <white><seconds>s"
+  cuffed: "<dark_aqua><player> cuffed you with Sea Prism Stone! <gray>(<seconds>s)"
+  cuffed-other: "<dark_aqua>You cuffed <white><player></white>. <gray>(<seconds>s)"
+  item-cooldown: "<item> <red>is reloading: <white><seconds>s"
+  no-ammo: "<red>Out of ammo! <gray>Needs <white><amount>x <ammo>"
+  headshot: "<red><bold>Headshot!"
+  logpose-bar: "<aqua>Log Pose <dark_gray>»</dark_gray> <white><island></white> <gray>(<type>) <yellow><distance>m"
+  logpose-arrived: "<aqua>Log Pose <dark_gray>»</dark_gray> <green>You are on <white><island></white>"
+  logpose-no-islands: "<gray>The needle spins aimlessly... no islands in this world."
+  logpose-unavailable: "<gray>The needle does not move. (Islands are disabled)"
+  denden-no-crew: "<red>Nobody answers... you are not in a crew."
+  denden-call: "<gold>Purupuru! <white><player></white> <gray>calls the crew to <white><x>, <y>, <z></white> <dark_gray>(<world>)"

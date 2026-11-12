@@ -1,0 +1,13 @@
+# AquaticSMP - main configuration
+# Each module has its own file in plugins/AquaticSMP/modules/<module>.yml
+# Toggle modules here, or in-game with /aquatic enable|disable <module>.
+prefix: "<gradient:#1fa2ff:#12d8fa><bold>Aquatic</bold></gradient> <dark_gray>»</dark_gray> "
+modules:
+  economy: true
+  crews: true
+  bounty: true
+  islands: true
+  treasure: true
+  items: true
+  tournament: true
+  events: true

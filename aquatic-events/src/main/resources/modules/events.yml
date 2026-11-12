@@ -1,0 +1,415 @@
+# =====================================================================================
+#  AquaticSMP - Events module (modules/events.yml)
+# =====================================================================================
+#  Seven server events, started by staff or by the optional auto-scheduler.
+#
+#  Commands (/seaevent, aliases /event, /sevent):
+#    /seaevent start <type> [args]            aquatic.events.admin
+#        treasure_hunt [tier]
+#        pirate_war [crewA crewB]             (no crews = auto-pick two crews at WAR / RIVAL)
+#        bounty_hunt
+#        lost_island [island name]
+#        kings_challenge
+#        grand_raid [location name | island id]
+#        naval_battle
+#    /seaevent stop [type] [finish]           aquatic.events.admin  (finish = end now WITH results)
+#    /seaevent list                           aquatic.events.admin
+#    /seaevent schedule <on|off>              aquatic.events.admin
+#    /seaevent setlocation <event> [name] [remove]   aquatic.events.admin
+#        kings_challenge hill     -> the hill (otherwise the first CAPITAL island is used)
+#        grand_raid [name]        -> raid spots ("default" is used without arguments)
+#        naval_battle             -> centre of the battle zone (when zone-radius > 0)
+#    /seaevent info                           aquatic.events.info  (everyone)
+#    /seaevent join [type]                    aquatic.events.join  (everyone)
+#
+#  Rewards (per event, under rewards.<section>):
+#    doubloons: 1000            paid to each rewarded player (economy module)
+#    items: [ "DIAMOND:3", "item:rum:2" ]   vanilla MATERIAL[:amount] or item:<custom id>[:amount]
+#    commands: [ "say {player} won" ]       console commands, {player} placeholder
+#    reputation: 50             crew reputation
+#    crew-bank: 5000            (crew rewards only) doubloons into the crew bank
+#  For crew rewards ("winner" of pirate_war, kings_challenge, naval_battle) the doubloons/items/
+#  commands are given to every ONLINE member, crew-bank and reputation once to the crew.
+#  Anything whose module is disabled is skipped silently.
+# =====================================================================================
+
+# How many events may run at the same time.
+max-concurrent: 1
+
+scheduler:
+  # Start a random event automatically (can be toggled in-game with /seaevent schedule on|off).
+  enabled: false
+  interval-minutes: 90
+  # Minimum online players for an automatic event.
+  min-players: 5
+  # Relative chance per event type (0 = never picked automatically).
+  weights:
+    treasure_hunt: 30
+    pirate_war: 10
+    bounty_hunt: 15
+    lost_island: 15
+    kings_challenge: 10
+    grand_raid: 15
+    naval_battle: 5
+
+sounds:
+  start: item.goat_horn.sound.2
+
+events:
+  # Common keys: enabled, display-name, description, duration-minutes, min-players (only checked by
+  # the scheduler; staff can always /seaevent start), bossbar, bossbar-color
+  # (PINK, BLUE, RED, GREEN, YELLOW, PURPLE, WHITE), join-teleport (/seaevent join teleports there).
+
+  treasure_hunt:
+    enabled: true
+    display-name: "<gold>Treasure Hunt"
+    description: "<gray>A legendary treasure was buried! Follow the hints and dig it up first."
+    duration-minutes: 30
+    min-players: 3
+    bossbar-color: YELLOW
+    # Treasure tier (from the treasure module) used when no tier is given.
+    tier: legendary
+    # Treasure maps handed to the captains (or a random member) of this many random online crews.
+    treasure-maps: 2
+    hint-interval-seconds: 120
+    # Hint precision in blocks, one per hint (0 = name of the island / world). The last one repeats.
+    hint-precision: [0, 500, 200, 75, 25]
+    rewards:
+      winner:
+        doubloons: 2500
+        reputation: 50
+        items: []
+        commands: []
+
+  pirate_war:
+    enabled: true
+    display-name: "<red>Pirate War"
+    description: "<gray>An official war between two crews. The crew with the most kills wins!"
+    duration-minutes: 30
+    min-players: 4
+    bossbar-color: RED
+    # Relations searched (in this order) when crews are picked automatically.
+    auto-relations: [WAR, RIVAL]
+    min-online-per-crew: 2
+    # End early when a crew reaches this many kills (0 = play the full duration).
+    kill-target: 0
+    announce-kills: true
+    # Reputation change for the losing crew.
+    loser-reputation: -25
+    rewards:
+      winner:
+        crew-bank: 5000
+        reputation: 100
+        doubloons: 500
+        items: []
+        commands: []
+
+  bounty_hunt:
+    enabled: true
+    display-name: "<dark_red>Bounty Hunt"
+    description: "<gray>Extra bounties are placed on wanted pirates. Claim the most bounty value to win!"
+    duration-minutes: 30
+    min-players: 4
+    bossbar-color: PURPLE
+    # Number of targets that receive an extra event bounty.
+    targets: 3
+    # Minimum number of targets needed to start.
+    min-targets: 1
+    # top = the most wanted online players first (filled up with random players); random = random online players.
+    target-mode: top
+    # Extra bounty added to each target (paid out by the bounty module when claimed).
+    bounty-amount: 5000
+    reason: "Bounty Hunt event"
+    end-when-all-claimed: true
+    # When the event ends, take the event bounty off targets nobody managed to claim.
+    remove-unclaimed-bounties: true
+    rewards:
+      # The hunter with the highest total claimed value.
+      winner:
+        doubloons: 3000
+        reputation: 50
+      # Every other hunter who claimed a bounty.
+      participant:
+        doubloons: 250
+
+  lost_island:
+    enabled: true
+    display-name: "<aqua>The Lost Island"
+    description: "<gray>An ancient island rises from the sea, full of treasure... before it sinks again."
+    duration-minutes: 30
+    min-players: 3
+    bossbar-color: GREEN
+    join-teleport: false
+    names:
+      - "Skypiea Fragment"
+      - "Fishman Ruins"
+      - "Lost Isle of Ohara"
+      - "Thriller Bark Wreck"
+      - "Island of the Raft"
+      - "Raftel's Shadow"
+    # TROPICAL, JUNGLE, VOLCANIC, SNOWY, DESERT, ANCIENT or random (CAPITAL is never used).
+    island-type: ANCIENT
+    radius: 35
+    # Treasures spawned once the island has had time to generate.
+    treasures: 3
+    treasure-tiers: [legendary, epic, rare]
+    treasure-delay-seconds: 15
+    # End (and start sinking) as soon as all treasures were found.
+    end-when-looted: true
+    # Warning countdown before the island sinks (0 = sink immediately).
+    sink-warning-seconds: 60
+    # true = the island stays forever as a normal island.
+    keep-island: false
+    rewards:
+      # Each player who opens one of the island's treasures (on top of the treasure loot).
+      finder:
+        doubloons: 500
+        reputation: 15
+
+  kings_challenge:
+    enabled: true
+    display-name: "<gold>The King's Challenge"
+    description: "<gray>Hold the throne! The crew that controls the hill the longest wins."
+    duration-minutes: 15
+    min-players: 4
+    bossbar-color: YELLOW
+    join-teleport: true
+    # Location: /seaevent setlocation kings_challenge hill  (fallback: first CAPITAL island centre).
+    radius: 6
+    # Refuse to start when there is no Pirate King (or the tournament module is disabled).
+    require-king: false
+    # Seconds counted per second for the king's own crew while it holds the hill (defender bonus).
+    king-crew-points-per-second: 1
+    rewards:
+      winner:
+        crew-bank: 4000
+        reputation: 100
+        doubloons: 300
+
+  grand_raid:
+    enabled: true
+    display-name: "<red>Grand Raid"
+    description: "<gray>The Marines are attacking! Work together to repel every wave and defeat the Admiral."
+    duration-minutes: 25
+    min-players: 4
+    bossbar-color: RED
+    join-teleport: true
+    # Location: /seaevent setlocation grand_raid [name], or start with an island id.
+    first-wave-delay-seconds: 30
+    wave-delay-seconds: 15
+    spawn-radius: 14
+    # Mobs that wander further than this are pulled back.
+    leash: true
+    leash-radius: 60
+    # Extra mobs per online player beyond the first (0.1 = +10%), capped by max-scale. Bosses get extra health instead.
+    scale-per-player: 0.1
+    max-scale: 3.0
+    drop-loot: false
+    exp-per-kill: 10
+    # Mob templates. type = entity type; health-multiplier OR health; damage-/speed-multiplier;
+    # equipment items (MATERIAL or item:<id>); effects (effect:level); boss: true = shown on the boss bar.
+    mobs:
+      marine:
+        type: ZOMBIE
+        name: "<blue>Marine Recruit"
+        health-multiplier: 1.5
+        damage-multiplier: 1.2
+        equipment:
+          helmet: LEATHER_HELMET
+          chestplate: LEATHER_CHESTPLATE
+          mainhand: IRON_SWORD
+      marine_rifleman:
+        type: SKELETON
+        name: "<blue>Marine Rifleman"
+        health-multiplier: 1.5
+        equipment:
+          helmet: CHAINMAIL_HELMET
+          mainhand: BOW
+      marine_officer:
+        type: VINDICATOR
+        name: "<dark_blue>Marine Lieutenant"
+        health-multiplier: 2.0
+        damage-multiplier: 1.2
+        equipment:
+          helmet: IRON_HELMET
+          mainhand: IRON_AXE
+      vice_admiral:
+        type: PIGLIN_BRUTE
+        name: "<dark_aqua>Vice Admiral"
+        health-multiplier: 2.5
+        effects: [resistance:1]
+        equipment:
+          helmet: DIAMOND_HELMET
+          mainhand: DIAMOND_AXE
+      admiral:
+        type: WITHER_SKELETON
+        name: "<gold><bold>Admiral Akainu"
+        boss: true
+        health: 400
+        damage-multiplier: 1.6
+        speed-multiplier: 1.15
+        effects: [fire_resistance:1, resistance:1]
+        equipment:
+          helmet: NETHERITE_HELMET
+          chestplate: NETHERITE_CHESTPLATE
+          mainhand: NETHERITE_SWORD
+    # Waves, in order: list of "template:count". Put the boss in the last wave.
+    waves:
+      - ["marine:6", "marine_rifleman:2"]
+      - ["marine:6", "marine_rifleman:4", "marine_officer:1"]
+      - ["marine:4", "marine_officer:3", "vice_admiral:1"]
+      - ["admiral:1", "marine_officer:2", "marine_rifleman:3"]
+    rewards:
+      # Doubloons split between all damage dealers by their share of the total damage.
+      pool-doubloons: 20000
+      # Most damage dealt.
+      mvp:
+        doubloons: 2000
+        reputation: 50
+        items: ["item:shusui"]
+      # Everyone who dealt damage (on top of their share).
+      participant:
+        items: ["item:rum:2"]
+
+  naval_battle:
+    enabled: true
+    display-name: "<dark_aqua>Naval Battle"
+    description: "<gray>Crews clash at sea! Kills made on the water score for your crew."
+    duration-minutes: 20
+    min-players: 4
+    bossbar-color: BLUE
+    join-teleport: false
+    min-crews: 2
+    # Battle zone radius around /seaevent setlocation naval_battle (0 = the whole world).
+    zone-radius: 0
+    # Only kills where the killer or the victim is in a boat or in water count.
+    sea-only: true
+    points-per-kill: 1
+    # Extra points when both killer and victim are in boats.
+    boat-to-boat-bonus: 1
+    announce-kills: true
+    # Given to every online crew member at the start (skipped when the items module is disabled).
+    give-items: ["item:hand_cannon", "item:cannonball:8"]
+    rewards:
+      winner:
+        crew-bank: 5000
+        reputation: 100
+        doubloons: 500
+      # Everyone who scored a kill.
+      participant:
+        doubloons: 100
+
+messages:
+  # framework
+  event-started: "<gold><bold>EVENT!</bold></gold> <event> <dark_gray>»</dark_gray> <description> <gray>(<time>) <dark_gray>/seaevent info"
+  event-cancelled: "<red>The event <event> <red>was stopped."
+  bossbar: "<event> <dark_gray>|</dark_gray> <status> <dark_gray>|</dark_gray> <yellow><time>"
+  info-header: "<aqua>Running events (<count>):"
+  info-entry: " <dark_gray>-</dark_gray> <event> <dark_gray>|</dark_gray> <status> <dark_gray>|</dark_gray> <yellow><time> left"
+  list-header: "<aqua>Event types:"
+  list-entry: " <dark_gray>-</dark_gray> <white><type></white> <name> <gray>(<state>, min <min> players)"
+  list-scheduler: "<gray>Scheduler: <white><state></white> <gray>(next roll in <white><time></white>)"
+  state-running: "running"
+  state-ready: "ready"
+  state-disabled: "disabled"
+  state-on: "on"
+  state-off: "off"
+  started: "<green>Started <event><green>."
+  stopped: "<yellow>Stopped <event><yellow>."
+  stopped-all: "<yellow>All events stopped."
+  none-running: "<gray>No event is running right now."
+  not-running: "<red>Event <white><type></white> is not running."
+  already-running: "<red>Event <white><type></white> is already running."
+  too-many: "<red>Only <max> event(s) may run at the same time."
+  unknown-type: "<red>Unknown event <white><type></white>. Types: <white><types>"
+  type-disabled: "<red>Event <white><type></white> is disabled in the config."
+  not-enough-players: "<red>At least <min> players must be online."
+  requires-module: "<red>This event needs the <white><module></white> module, which is disabled."
+  joined: "<green>You joined <event><green>!"
+  joined-teleport: "<green>You joined <event><green> and were taken to it!"
+  join-notice: "<gold><count> event(s) running! <white>/seaevent info"
+  scheduler-on: "<green>Automatic events enabled (every <minutes> minutes)."
+  scheduler-off: "<yellow>Automatic events disabled."
+  location-set: "<green>Location <white><event>/<name></white> set to <white><coords></white>."
+  location-removed: "<yellow>Location <white><event>/<name></white> removed."
+  invalid-name: "<red>Names may only contain a-z, 0-9, _ and - (max 32)."
+  unknown-crew: "<red>Unknown crew <white><crew></white>."
+  # treasure hunt
+  unknown-tier: "<red>Unknown treasure tier <white><tier></white>. Tiers: <white><tiers>"
+  treasure-failed: "<red>No spot for the treasure could be found."
+  treasure-map-received: "<gold><player> <yellow>received a treasure map for the hunt!"
+  treasure-hint-island: "<gold>Treasure Hunt hint: <yellow>the treasure lies on <white><island></white>!"
+  treasure-hint-world: "<gold>Treasure Hunt hint: <yellow>the treasure is buried somewhere in <white><world></white>, on no known island..."
+  treasure-hint-coords: "<gold>Treasure Hunt hint: <yellow>around <white>X <x>, Z <z></white> <gray>(±<precision> blocks)"
+  treasure-found: "<gold><bold><player></bold> <yellow>found the treasure!"
+  treasure-lost: "<gray>Nobody found the treasure... it sinks back into legend."
+  treasure-status: "<yellow>Tier: <white><tier>"
+  # pirate war
+  same-crew: "<red>A crew cannot fight itself."
+  war-no-pair: "<red>No two crews at war (or rivals) with enough members online."
+  war-declared: "<red><bold>WAR!</bold> <a> <red>vs</red> <b><red>! Every kill counts."
+  war-kill: "<red><killer> <gray>killed <white><victim></white>. <a> <white><kills_a></white><gray>-</gray><white><kills_b></white> <b>"
+  war-won: "<gold><winner> <gold>wins the war against <loser><gold>! <a> <white><kills_a></white><gray>-</gray><white><kills_b></white> <b>"
+  war-draw: "<gray>The war between <a> <gray>and <b> <gray>ends in a draw (<kills_a>-<kills_b>)."
+  war-status: "<a> <white><kills_a></white><gray>-</gray><white><kills_b></white> <b>"
+  # bounty hunt
+  bounty-no-targets: "<red>Not enough online players to put bounties on."
+  bounty-targets: "<dark_red><bold>WANTED!</bold> <white><targets></white> <gray>each carry an extra bounty of <white><amount></white>!"
+  bounty-you-are-target: "<dark_red>You are a Bounty Hunt target! <gray>An extra <white><amount></white> was put on your head."
+  bounty-target-down: "<dark_red><target> <gray>was hunted down by <white><hunter></white> <gray>(<amount>). <white><left></white> targets left."
+  bounty-no-claims: "<gray>The Bounty Hunt ends: no bounties were claimed."
+  bounty-results: "<dark_red>Bounty Hunt results:"
+  bounty-result-entry: " <gray>#<rank></gray> <white><player></white> <dark_gray>-</dark_gray> <gold><amount>"
+  bounty-winner: "<gold><player> <yellow>is the greatest bounty hunter of the seas!"
+  bounty-status: "<white><left></white> <gray>targets left"
+  # lost island
+  lost-island-no-spot: "<red>No free spot in the ocean for the island."
+  lost-island-failed: "<red>The island could not be created (names taken or the area overlaps)."
+  lost-island-risen: "<aqua><bold>A LOST ISLAND RISES!</bold> <white><island></white> <gray>(<type>) at <white>X <x>, Z <z></white> <gray>in <world>"
+  lost-island-treasures: "<aqua><count> treasures <gray>are hidden on <white><island></white>!"
+  lost-island-no-treasure: "<gray>(The treasure module is disabled: the island holds no treasure.)"
+  lost-island-treasure-found: "<aqua><player> <gray>found a treasure on the lost island! <white><left></white> left."
+  lost-island-sink-warning: "<red><bold><island> is sinking</bold> <red>in <white><seconds>s</white>! Get to your ships!"
+  lost-island-sunk: "<gray><island> sank back beneath the waves. <white><found></white> treasures were found."
+  lost-island-remains: "<aqua><island> <gray>remains above the sea. <white><found></white> treasures were found."
+  lost-island-status: "<white><island></white> <gray>X <x> Z <z> <dark_gray>|</dark_gray> <white><left></white> <gray>treasures"
+  lost-island-status-sinking: "<red><bold><island> IS SINKING"
+  # king's challenge
+  kings-no-hill: "<red>No hill: set one with <white>/seaevent setlocation kings_challenge hill</white> or create a CAPITAL island."
+  kings-no-king: "<red>There is no Pirate King to challenge."
+  kings-start: "<gold><bold>THE KING'S CHALLENGE!</bold> <yellow>Take the throne from <white><king></white>'s crew at <white><x>, <y>, <z></white>!"
+  kings-start-empty: "<gold><bold>THE KING'S CHALLENGE!</bold> <yellow>The throne is empty. Hold it at <white><x>, <y>, <z></white>!"
+  kings-hill-taken: "<gold><crew> <yellow>holds the throne!"
+  kings-defended: "<gold>The crew of the Pirate King <white><king></white>, <crew><gold>, defended the throne! <gray>(<time>)"
+  kings-won: "<gold><crew> <gold>held the throne the longest <gray>(<time>)<gold>! The Pirate King <white><king></white> has been humiliated."
+  kings-nobody: "<gray>Nobody held the throne."
+  kings-status-free: "<gray>The throne is free"
+  kings-status-contested: "<red>Contested!"
+  kings-status-held: "<crew> <gray>holds it (<time>)"
+  # grand raid
+  raid-unknown-place: "<red>Unknown raid location or island <white><place></white>."
+  raid-no-location: "<red>No raid location: use <white>/seaevent setlocation grand_raid</white> or give an island id."
+  raid-no-waves: "<red>No waves are configured for the Grand Raid."
+  raid-start: "<red><bold>MARINE RAID!</bold> <yellow>The Marines attack <white><place></white> <gray>(<x>, <y>, <z>)<yellow> in <white><seconds>s</white>! <white><waves></white> waves. <gray>/seaevent join"
+  raid-wave: "<red>Wave <white><wave>/<waves></white> lands: <white><count></white> Marines!"
+  raid-wave-cleared: "<green>Wave <white><wave>/<waves></white> repelled!"
+  raid-boss: "<dark_red><bold><boss> HAS ARRIVED!"
+  raid-boss-down: "<gold><bold><boss> has fallen!</bold> <gray>Final blow: <white><player>"
+  raid-boss-bar: "<boss> <dark_gray>|</dark_gray> <red><health>/<max> ❤ <dark_gray>|</dark_gray> <yellow><time>"
+  raid-victory: "<green><bold>The raid has been repelled!</bold> <white><players></white> <gray>pirates fought."
+  raid-failed: "<red>The Marines held their ground... the raid failed at wave <wave>/<waves>."
+  raid-share: "<green>Your share: <white><percent>%</white> of the damage, <white><amount></white>, <white><kills></white> kills."
+  raid-mvp: "<gold>Raid MVP: <white><player></white> <gray>(<damage> damage)"
+  raid-status: "<gray>Wave <white><wave>/<waves></white> <dark_gray>|</dark_gray> <white><left></white> <gray>Marines left"
+  raid-status-waiting: "<gray>First wave in <white><seconds>s"
+  # naval battle
+  naval-not-enough-crews: "<red>At least <min> crews must have members online."
+  naval-no-zone: "<red>No battle zone: use <white>/seaevent setlocation naval_battle</white> or set zone-radius to 0."
+  naval-start: "<dark_aqua><bold>NAVAL BATTLE!</bold> <aqua>Kills made at sea score for your crew!"
+  naval-start-zone: "<dark_aqua><bold>NAVAL BATTLE!</bold> <aqua>Fight within <white><radius></white> blocks of <white>X <x>, Z <z></white>!"
+  naval-kill: "<dark_aqua><killer> <gray>sank <white><victim></white>! <crew> <gray>now has <white><points></white> points."
+  naval-won: "<dark_aqua><crew> <aqua>rules the waves with <white><points></white> points!"
+  naval-draw: "<gray>The naval battle ends in a draw between <a> <gray>and <b> <gray>(<points> points)."
+  naval-no-winner: "<gray>The naval battle ends without a single kill at sea."
+  naval-status: "<crew> <gray>leads with <white><points></white>"
+  naval-status-none: "<gray>No kills yet"

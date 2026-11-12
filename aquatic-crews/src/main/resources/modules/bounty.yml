@@ -1,0 +1,158 @@
+# =====================================================================
+#  AquaticSMP - Bounty module
+#  Prices on pirate heads, notoriety, bounty titles and wanted posters.
+#  Needs the economy module. Reload with: /aquatic reload bounty
+#  Bounties are stored in plugins/AquaticSMP/data/bounty/bounties.yml (kept for offline players).
+# =====================================================================
+
+# Highest bounty a single pirate can have.
+max-bounty: 1000000000000
+
+# How often (seconds) changes are written to disk. Always saved on shutdown/reload.
+autosave-seconds: 120
+
+# Entries per page of /bounty top and /bounty list.
+page-size: 10
+
+# Broadcasts.
+announce-placed: true
+announce-claimed: true
+# Announce when a pirate's bounty reaches a new title (see tiers).
+announce-tier-up: true
+
+# /bounty set <player> <amount>
+placing:
+  # Smallest bounty that can be placed.
+  min-amount: 100
+  # Extra percentage the placer pays on top; it disappears (100 bounty at 10% costs 110).
+  tax-percent: 10
+  # Seconds between two bounties placed by the same player.
+  cooldown-seconds: 30
+  # Hide who placed the bounty in the broadcast.
+  anonymous: true
+  # May players put a bounty on themselves?
+  allow-self: false
+  # May players put a bounty on their own crewmates?
+  allow-crewmates: false
+
+# Who gets paid when a wanted pirate is killed (the killer receives the full bounty).
+claiming:
+  crewmates-can-claim: false
+  allies-can-claim: false
+
+# Notoriety: bounties rise automatically for killing other players.
+notoriety:
+  enabled: true
+  # Added to the killer's bounty for every PvP kill.
+  per-kill: 50
+  # Extra on top when the victim had no bounty ("innocent").
+  innocent-kill: 100
+  # Killstreak: from the "streak-start"-th kill in a row (without dying), every kill multiplies
+  # the gain by 1 + (kills since start + 1) * streak-multiplier, capped at max-multiplier.
+  streak-start: 2
+  streak-multiplier: 0.25
+  max-multiplier: 3
+  # Broadcast every Nth kill of a streak (0 = never).
+  announce-streak-every: 5
+  # Kills of crewmates/allies give no notoriety.
+  ignore-friendly-kills: true
+  # The same killer/victim pair only counts once per this many seconds (stops alt farming).
+  repeat-kill-cooldown-seconds: 300
+
+# Reasons shown to a player whose bounty rises.
+reasons:
+  kill: "Piracy on the high seas"
+  innocent: "Slaying an innocent"
+  admin: "By order of the World Government"
+
+# Bounty titles, lowest first. A pirate holds the highest title whose "min" their bounty reaches.
+# Titles are MiniMessage.
+tiers:
+  - title: "<gray>Rookie"
+    min: 1
+  - title: "<green>Notorious Pirate"
+    min: 5000
+  - title: "<aqua>Supernova"
+    min: 25000
+  - title: "<light_purple>Warlord of the Sea"
+    min: 100000
+  - title: "<gold><bold>Emperor of the Sea</bold>"
+    min: 500000
+
+# /wanted [player]
+poster:
+  # Give a poster item (true) or only show the poster in chat (false). The console always gets chat.
+  give-item: true
+  # Doubloons a poster costs (0 = free).
+  cost: 0
+  # Seconds between two posters.
+  cooldown-seconds: 30
+  # Allow posters of pirates without a bounty.
+  allow-without-bounty: false
+  material: PAPER
+  # Resource pack model (0 = none).
+  custom-model-data: 0
+  glint: true
+  # Tags: <player> <bounty> <tier> <crew>
+  name: "<dark_red><bold>WANTED</bold> <gray>- <white><player>"
+  lore:
+    - "<dark_gray>━━━━━━━━━━━━━━━━━━"
+    - "<red><bold>   DEAD OR ALIVE"
+    - ""
+    - "<white>  <player>"
+    - "<gray>  Crew: <crew>"
+    - "<gray>  Title: <tier>"
+    - ""
+    - "<gold><bold>  ⛃ <bounty>"
+    - "<dark_gray>━━━━━━━━━━━━━━━━━━"
+    - "<dark_gray><italic>By order of the World Government"
+  # Shown in chat instead of an item. Tags: <player> <bounty> <tier>
+  chat:
+    - "<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━"
+    - "<dark_red><bold>        WANTED"
+    - "<red>     DEAD OR ALIVE"
+    - "<white>       <player>"
+    - "<gray>       <tier>"
+    - "<gold><bold>     ⛃ <bounty>"
+    - "<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# ---------------------------------------------------------------------
+#  Messages (MiniMessage format). <placeholders> are filled in by the plugin.
+# ---------------------------------------------------------------------
+messages:
+  no-permission: "<red>Ye don't have permission to do that."
+  unknown-player: "<red>No pirate named <white><player></white> is known."
+  economy-disabled: "<red>The Doubloon economy is closed right now."
+  cannot-afford: "<red>That costs <gold><cost></gold>, but ye only have <gold><balance></gold>."
+  place-self: "<red>Ye can't put a price on yer own head."
+  place-crewmate: "<red>Ye can't put a bounty on yer own crewmate."
+  place-min: "<red>The smallest bounty is <gold><min></gold>."
+  place-max: "<red>No bounty can exceed <gold><max></gold>."
+  place-cooldown: "<red>Wait <white><time></white> before placing another bounty."
+  placed: "<gray>Ye put <gold><amount></gold> on <white><player></white>'s head <dark_gray>(tax <tax>)<gray>. Their bounty: <gold><bounty></gold>."
+  placed-broadcast: "<dark_red>☠</dark_red> <placer> <gray>put <gold><amount></gold> on <white><player></white>'s head! Total bounty: <gold><bounty></gold>."
+  placed-on-you: "<red>Someone put <gold><amount></gold> on yer head! Yer bounty: <gold><bounty></gold>."
+  anonymous: "<gray>A mysterious stranger"
+  bounty-raised: "<red>Yer bounty rose by <gold><amount></gold> <dark_gray>(<reason>)</dark_gray> to <gold><bounty></gold>."
+  tier-reached: "<gold>📜 <white><player></white> is now known as <tier><gold>! Bounty: <bounty>."
+  claimed-broadcast: "<gold>⚔ <white><killer></white> claimed the bounty of <gold><bounty></gold> on <white><player></white>'s head!"
+  claim-blocked: "<red>Ye can't claim the bounty of yer own crewmate or ally <white><player></white>."
+  streak-broadcast: "<red>☠ <white><player></white> is on a <streak>-kill rampage! Bounty: <gold><bounty></gold>."
+  no-tier: "<dark_gray>Nobody"
+  no-crew: "<dark_gray>None"
+  info-header: "<dark_red><strikethrough>      </strikethrough> <gold><bold>Bounty of <player></bold> <dark_red><strikethrough>      </strikethrough>"
+  info-bounty: "<gray>Bounty: <gold><bounty>"
+  info-tier: "<gray>Title: <tier> <next>"
+  info-next: "<dark_gray>(<needed> until <tier><dark_gray>)"
+  info-streak: "<gray>Killstreak: <red><streak>"
+  info-crew: "<gray>Crew: <crew>"
+  no-bounties: "<gray>The seas are calm: no bounties right now."
+  top-header: "<dark_red><bold>Most Wanted</bold> <dark_gray>(page <page>/<pages>)"
+  list-header: "<dark_red><bold>Active Bounties</bold> <dark_gray>(page <page>/<pages>)"
+  list-line: "<yellow>#<rank> <status> <white><player> <dark_gray>- <gold><bounty> <dark_gray>(<tier><dark_gray>)"
+  status-online: "<green>●"
+  status-offline: "<dark_gray>●"
+  no-bounty: "<red><white><player></white> has no bounty."
+  poster-cooldown: "<red>Wait <white><time></white> before taking another poster."
+  poster-given: "<gray>Ye took a wanted poster of <white><player></white>."
+  admin-done: "<green>Bounty of <white><player></white> is now <gold><bounty></gold>."
