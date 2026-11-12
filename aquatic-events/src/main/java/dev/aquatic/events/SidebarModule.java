@@ -189,6 +189,10 @@ public final class SidebarModule extends AquaticModule implements Listener {
         ph.put("island", island == null ? rawMsg("open-sea") : Component.text(island.name()));
         ph.put("island_owner", island == null ? Component.empty() : islandOwner(island, crews));
         ph.put("fruit", fruit == null ? rawMsg("none") : Text.mm(fruit));
+        dev.aquatic.api.LevelService levels = service(dev.aquatic.api.LevelService.class);
+        ph.put("level", levels == null ? "-" : String.valueOf(levels.level(id)));
+        ph.put("fruit_level", plugin().module("items") instanceof ItemsModule im && im.isEnabled() && im.fruits() != null
+                ? String.valueOf(im.fruits().masteryLevel(id)) : "-");
         Object[] move = moveInfo(id);
         ph.put("move", move[0]);
         ph.put("move_cd", move[1]);

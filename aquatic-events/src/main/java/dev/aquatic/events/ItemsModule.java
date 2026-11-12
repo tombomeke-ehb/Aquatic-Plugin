@@ -381,17 +381,24 @@ public final class ItemsModule extends AquaticModule implements ItemService {
                 if (online != null) {
                     send(online, "fruit-eaten", "fruit", def.displayName(), "description", def.cfg.getString("fruit.description", ""));
                 }
+            } else if (args[0].equalsIgnoreCase("level")) {
+                AquaticCommand.need(args, 3, "/aitem fruit level <player> <level>");
+                OfflinePlayer target = offline(args[1]);
+                fruits.setMasteryLevel(target.getUniqueId(), AquaticCommand.integer(args[2]));
+                fruits.save();
+                sender.sendMessage(plugin().prefix().append(dev.aquatic.util.Text.mm("<green>Fruit mastery of <white><p></white> set to <white><l></white>.",
+                        "p", name(target), "l", fruits.masteryLevel(target.getUniqueId()))));
             } else if (args[0].equalsIgnoreCase("info")) {
                 OfflinePlayer target = args.length > 1 ? offline(args[1]) : AquaticCommand.player(sender);
                 fruitInfo(sender, target.getUniqueId(), name(target));
             } else {
-                throw new CommandFail("<red>Usage: <white>/aitem fruit <set|info> ...");
+                throw new CommandFail("<red>Usage: <white>/aitem fruit <set|level|info> ...");
             }
-        }).usage("<set <player> <fruit|none> | info [player]>").description("Manage abyss fruit powers")
+        }).usage("<set <player> <fruit|none> | level <player> <level> | info [player]>").description("Manage abyss fruit powers")
                 .permission("aquatic.items.admin")
                 .completer((s, a) -> {
                     if (a.length == 1) {
-                        return AquaticCommand.filter(List.of("set", "info"), a[0]);
+                        return AquaticCommand.filter(List.of("set", "info", "level"), a[0]);
                     }
                     if (a.length == 2) {
                         return AquaticCommand.playerNames(a[1]);
@@ -435,6 +442,13 @@ public final class ItemsModule extends AquaticModule implements ItemService {
                     "cooldown", Text.duration(ability.getLong("cooldown", 0)),
                     "status", cd > 0 ? Text.duration(cd) : Text.plain(rawMsg("ready"))));
         }
+        int lvl = fruits.masteryLevel(uuid);
+        long next = lvl >= fruits.maxMastery() ? 0 : fruits.masteryXpFor(lvl + 1) - fruits.masteryXp(uuid);
+        sender.sendMessage(rawMsg("fruit-info-mastery", "level", lvl, "max", fruits.maxMastery(),
+                "next", next, "damage", Math.round((fruits.damageScale(uuid) - 1) * 100),
+                "range", Math.round((fruits.rangeScale(uuid) - 1) * 100),
+                "cooldown", Math.round((1 - fruits.cooldownScale(uuid)) * 100),
+                "hearts", Text.number(fruits.bonusHealth(uuid) / 2.0)));
         sender.sendMessage(rawMsg("fruit-info-trigger"));
     }
 

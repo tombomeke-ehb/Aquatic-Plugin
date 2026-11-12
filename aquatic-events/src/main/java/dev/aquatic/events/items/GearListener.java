@@ -163,7 +163,41 @@ public final class GearListener implements Listener {
     }
 
     /** Light periodic task: log pose action bar and projectile bookkeeping. */
+    /**
+     * Armour sets: items with "set: <id>" in items.yml. Wearing "armor-sets.<id>.pieces" of them gives
+     * the set bonus (effects + extra health) as long as they are worn.
+     */
+    private void tickSets(Player p) {
+        Map<String, Integer> worn = new HashMap<>();
+        for (ItemStack piece : p.getInventory().getArmorContents()) {
+            ItemDef def = module.defOf(piece);
+            String set = def == null ? null : def.cfg.getString("set");
+            if (set != null) {
+                worn.merge(set, 1, Integer::sum);
+            }
+        }
+        double health = 0;
+        ConfigurationSection sets = module.config().getConfigurationSection("armor-sets");
+        for (Map.Entry<String, Integer> e : worn.entrySet()) {
+            ConfigurationSection set = sets == null ? null : sets.getConfigurationSection(e.getKey());
+            if (set == null || e.getValue() < set.getInt("pieces", 4)) {
+                continue;
+            }
+            for (org.bukkit.potion.PotionEffect fx : Util.parseEffects(set.getStringList("effects"), 60)) {
+                p.addPotionEffect(fx);
+            }
+            health += set.getDouble("bonus-health", 0);
+            if (abilities.fx().quality() > 0 && p.getTicksLived() % 40 < 20) {
+                abilities.fx().dust(p.getLocation().add(0, 0.2, 0), Fx.color(set.getString("color"), org.bukkit.Color.AQUA), 1.0f, 3, 0.4);
+            }
+        }
+        dev.aquatic.util.Stats.health(p, "armor_set", health);
+    }
+
     public void tick() {
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            tickSets(online);
+        }
         long now = System.currentTimeMillis();
         projectiles.entrySet().removeIf(e -> {
             if (e.getValue().expires() >= now) {

@@ -22,6 +22,7 @@ public final class AquaticPlugin extends JavaPlugin {
             {"crews", "dev.aquatic.crews.CrewsModule"},
             {"bounty", "dev.aquatic.crews.BountyModule"},
             {"combat", "dev.aquatic.crews.CombatModule"},
+            {"levels", "dev.aquatic.crews.LevelsModule"},
             {"islands", "dev.aquatic.world.IslandsModule"},
             {"treasure", "dev.aquatic.world.TreasureModule"},
             {"items", "dev.aquatic.events.ItemsModule"},

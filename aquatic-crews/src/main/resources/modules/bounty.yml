@@ -119,6 +119,15 @@ poster:
 # ---------------------------------------------------------------------
 #  Messages (MiniMessage format). <placeholders> are filled in by the plugin.
 # ---------------------------------------------------------------------
+# Notoriety makes you dangerous: every bounty tier you reach (see "tiers" above) gives extra max
+# health (half-hearts) and melee damage. A Dread Tyrant (tier 5) gets +5 hearts and +20% damage,
+# which also makes them a juicier target. max-tiers caps how many tiers count.
+power-perks:
+  enabled: true
+  health-per-tier: 2
+  damage-per-tier: 0.04
+  max-tiers: 5
+
 messages:
   no-permission: "<red>Ye don't have permission to do that."
   unknown-player: "<red>No pirate named <white><player></white> is known."

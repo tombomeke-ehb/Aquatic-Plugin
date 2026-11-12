@@ -40,6 +40,8 @@ public final class Abilities {
         final Set<UUID> hit = new HashSet<>();
         int ticksLeft;
 
+        double damage;
+
         Dash(UUID player, ConfigurationSection cfg, int ticks) {
             this.player = player;
             this.cfg = cfg;
@@ -54,6 +56,17 @@ public final class Abilities {
     private final Map<UUID, Long> invisible = new HashMap<>();
 
     private final Fx fx;
+
+    /**
+     * Scaling of the move being cast: set by FruitManager (mastery) around execute(); 0 = not a fruit
+     * cast, then the item multiplier from items.yml applies (swords and other gear).
+     */
+    double castDamageScale;
+    double castRangeScale = 1;
+
+    private double damageScale() {
+        return castDamageScale > 0 ? castDamageScale : module.config().getDouble("abilities.item-damage-multiplier", 1.3);
+    }
 
     Abilities(ItemsModule module, GearListener gear) {
         this.module = module;
@@ -136,6 +149,14 @@ public final class Abilities {
     private boolean strike(Player source, LivingEntity target, ConfigurationSection cfg, double damage) {
         if (!hurt(source, target, damage)) {
             return false;
+        }
+        // impact: sparks, a crit flash and a punchy sound
+        Location hitAt = target.getLocation().add(0, target.getHeight() * 0.6, 0);
+        fx.burst(hitAt, Particle.CRIT, 12, 0.3, 0.25);
+        fx.burst(hitAt, Particle.ENCHANTED_HIT, 6, 0.3, 0.2);
+        Util.sound(hitAt, "entity.player.attack.crit", 0.7f, 1.1f);
+        if (module.fruits() != null && module.fruits().isFruitMove(cfg)) {
+            module.fruits().addMastery(source, module.config().getLong("fruits.mastery.xp-per-hit", 3));
         }
         int defTicks = (int) (cfg.getDouble("effect-seconds", 5) * 20);
         for (PotionEffect e : Util.parseEffects(cfg.getStringList("effects"), defTicks)) {
@@ -259,9 +280,18 @@ public final class Abilities {
         fx.wave(p.getLocation().add(0, 0.1, 0), 1.6, windup, c, Particle.ENCHANT, true);
         sound(a.getConfigurationSection("windup") != null ? a.getConfigurationSection("windup") : a, "block.beacon.power_select", p.getLocation());
         p.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, windup, 2, true, false, false));
+        double ds = castDamageScale, rs = castRangeScale;
         module.runLater(() -> {
             if (p.isOnline() && !p.isDead()) {
-                execute(p, a);
+                double oldD = castDamageScale, oldR = castRangeScale;
+                castDamageScale = ds;
+                castRangeScale = rs;
+                try {
+                    execute(p, a);
+                } finally {
+                    castDamageScale = oldD;
+                    castRangeScale = oldR;
+                }
             }
         }, windup);
         return true;
@@ -274,9 +304,9 @@ public final class Abilities {
      */
     public boolean execute(Player p, ConfigurationSection a) {
         String type = a.getString("type", "").toLowerCase(Locale.ROOT);
-        double damage = a.getDouble("damage", 0);
-        double range = a.getDouble("range", 12);
-        double radius = a.getDouble("radius", 4);
+        double damage = a.getDouble("damage", 0) * damageScale();
+        double range = a.getDouble("range", 12) * castRangeScale;
+        double radius = a.getDouble("radius", 4) * castRangeScale;
         Location eye = p.getEyeLocation();
         Vector dir = eye.getDirection();
         switch (type) {
@@ -409,7 +439,9 @@ public final class Abilities {
                 push(p, v);
                 p.setFallDistance(0);
                 dashes.removeIf(d -> d.player.equals(p.getUniqueId()));
-                dashes.add(new Dash(p.getUniqueId(), a, Math.max(1, a.getInt("dash-ticks", 8))));
+                Dash dash = new Dash(p.getUniqueId(), a, Math.max(1, a.getInt("dash-ticks", 8)));
+                dash.damage = damage;
+                dashes.add(dash);
                 fx.burst(p.getLocation().add(0, 0.5, 0), Particle.CLOUD, 12, 0.3, 0.05);
                 sound(a, "entity.player.attack.sweep", p.getLocation());
                 selfEffects(p, a);
@@ -582,7 +614,8 @@ public final class Abilities {
 
     /** Called from a projectile hit: area blast of a fireball-type ability. */
     void blast(Player shooter, Location at, ConfigurationSection a) {
-        area(shooter, at, a.getDouble("radius", 3), a.getDouble("damage", 6), a);
+        double scale = module.fruits() != null && module.fruits().isFruitMove(a) ? module.fruits().damageScale(shooter.getUniqueId()) : 1;
+        area(shooter, at, a.getDouble("radius", 3), a.getDouble("damage", 6) * scale, a);
         particles(a, "FLAME", at, 60, a.getDouble("radius", 3) / 2.5);
         fx.burst(at, Particle.EXPLOSION, 2, 0.4, 0);
         fx.wave(at.clone().add(0, 0.3, 0), a.getDouble("radius", 3) + 0.5, 6, colorOf(a, "blast"), Particle.FLAME, false);
@@ -602,7 +635,7 @@ public final class Abilities {
                 dashes.remove(d);
                 continue;
             }
-            double damage = d.cfg.getDouble("damage", 0);
+            double damage = d.damage;
             for (Entity e : p.getNearbyEntities(1.6, 1.6, 1.6)) {
                 if (e instanceof LivingEntity le && d.hit.add(e.getUniqueId())) {
                     strike(p, le, d.cfg, damage);

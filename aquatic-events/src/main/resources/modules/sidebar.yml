@@ -13,11 +13,12 @@ title: "<gradient:#1fa2ff:#12d8fa><bold>AQUATIC SMP</bold></gradient>"
 # Up to 15 lines, top to bottom (MiniMessage). Every line must be different: add a space at the end
 # of an empty line to make it unique ("", " ", "  ").
 # Tags: <player> <balance> <bounty> <crew> <rank> <reputation> <island> <island_owner> <fruit>
-#       <event> <event_time> <conqueror> <online> <x> <z> <move> <move_cd>
+#       <event> <event_time> <conqueror> <online> <x> <z> <move> <move_cd> <level> <fruit_level>
 # Start a line with "?crew:", "?nocrew:", "?island:", "?sea:", "?fruit:", "?event:", "?bounty:" or
 # "?conqueror:" to only show it when that applies.
 lines:
   - "<dark_gray>━━━━━━━━━━━━━━━"
+  - "<gray>Level: <aqua><level>"
   - "<gray>Doubloons: <yellow><balance>"
   - "?bounty:<gray>Bounty: <red><bounty>"
   - "?crew:<gray>Crew: <crew>"
@@ -27,7 +28,7 @@ lines:
   - "?island:<aqua><island>"
   - "?island:<gray>» <island_owner>"
   - "?sea:<dark_aqua>Open sea <dark_gray>(<x>, <z>)"
-  - "?fruit:<gray>Power: <fruit>"
+  - "?fruit:<gray>Power: <fruit> <light_purple>(M<fruit_level>)"
   - "?fruit:<gray>Move: <move> <move_cd>"
   - "?event:  "
   - "?event:<gold>Event: <event>"

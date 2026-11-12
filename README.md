@@ -40,6 +40,7 @@ plugins/AquaticSMP/
 │   ├── crews.yml       crew size, costs, rank limits and rights, war rules, home, chat/tab tags
 │   ├── bounty.yml      minimum bounty, tax, notoriety, bounty titles
 │   ├── combat.yml      combat tag, respawn protection, new-player protection
+│   ├── levels.yml      pirate levels: XP sources, level curve, bonuses
 │   ├── islands.yml     ocean area, island block palettes, claiming, raiding, conquest, income
 │   ├── treasure.yml    loot tiers and tables, burial depth, natural spawning, map drops
 │   ├── items.yml       every custom item and Abyss Fruit, ability numbers, triggers, recipes
@@ -70,6 +71,9 @@ Settings most servers change first:
 | Island sizes for spawnrandom (small … huge) | `islands.yml` | `generation.island-sizes`, `generation.radius-limit` |
 | How common each island type is, rarity rewards | `islands.yml` | `generation.island-type-weights`, `rarities:` |
 | Ability effects amount / colours | `items.yml` | `effects.quality`, `color:` per ability |
+| How hard abilities hit, fruit mastery, extra hearts | `items.yml` | `abilities.*-damage-multiplier`, `fruits.mastery`, `fruits.bonus-health` |
+| Bounty power (hearts/damage per tier) | `bounty.yml` | `power-perks` |
+| Armour set bonuses | `items.yml` | `armor-sets` |
 | Island claim price and limit | `islands.yml` | `claiming.cost`, `claiming.max-per-crew` |
 | When enemies can raid or conquer | `islands.yml` | `raiding.mode`, `conquest.mode` (`always`, `war-only` or `never`) |
 | Conquest capture time | `islands.yml` | `conquest.capture-seconds` |
@@ -101,6 +105,7 @@ Settings most servers change first:
 | `items` | `items.yml` | 8 Abyss Fruits with powers and sea weakness, Abyssal Iron gear, legendary swords, flintlock, hand cannon, Tide Compass, Echo Conch, rum, Conqueror of the Sea crown |
 | `tournament` | `tournament.yml` | The Conqueror of the Sea tournament: registration → qualifiers → bracket → best-of finale → coronation, Hall of Kings. Needs `crews` |
 | `events` | `events.yml` | Treasure Hunt, Pirate War, Bounty Hunt, Lost Island, King's Challenge, Grand Raid, Naval Battle; optional auto-scheduler |
+| `levels` | `levels.yml` | Pirate levels 1–50: XP from fights, treasure and exploring; extra damage and hearts |
 | `combat` | `combat.yml` | Combat tag (no logging out or teleporting away mid-fight), respawn protection, new-player PvP protection |
 | `shop` | `shop.yml` | Harbor Market: buy and sell for Doubloons, editable in-game with `/shop admin` |
 | `sidebar` | `sidebar.yml` | Stats sidebar: Doubloons, bounty, crew, island, fruit power, events (`/sidebar` to hide) |

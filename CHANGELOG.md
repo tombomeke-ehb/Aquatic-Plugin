@@ -1,5 +1,32 @@
 # Changelog
 
+## 2.0.0 (2026-11-12)
+
+The power update: fruits, gear and progression should really make a difference in PvP.
+
+### Added
+- **Stronger abilities:**
+  - Fruit moves do **1.5×** their base damage (`abilities.fruit-damage-multiplier`), and sword and gear abilities **1.3×**.
+  - Every hit shows sparks, a crit flash and a sound.
+- **Fruits give health:** having an Abyss Fruit power gives **+3 hearts** (`fruits.bonus-health`).
+- **Fruit mastery (1–20):** train your fruit by using it (XP per use and per hit).
+  - Every level gives **+4% damage**, **+2% range** and **-1.5% cooldown** (down to at least 60% of the original), plus **one more heart every 4 levels**.
+  - Mastery is per fruit. A level-up shows a title and an effect.
+  - `/fruit` shows your mastery. Staff can set it with `/aitem fruit level <player> <level>`.
+- **Pirate levels (1–50)** (new `levels` module): XP from PvP kills (worth more against higher levels, and the same player only counts every 10 minutes), monsters, treasure, discoveries and bounties.
+  - Every level gives +0.5% damage, and every 5 levels +1 heart. Level 50 is +10 hearts and +24.5% damage.
+  - `/level`, `/level top`. Staff: `/level give` and `/level set`.
+- **Bounty power:** every bounty tier gives **+1 heart** and **+4% damage**. A Dread Tyrant has +5 hearts and +20% damage, and is therefore also a big target (`power-perks` in `bounty.yml`).
+- **Armour sets with recipes:**
+  - **Tidewarden** (heavy): diamond, heart of the sea and prismarine crystals. Stronger than diamond, with +5 hearts across the set. Set bonus: Resistance, Water Breathing, Dolphin's Grace and +2 hearts.
+  - **Corsair** (light): leather, gold and emeralds. Extra damage and speed. Set bonus: Speed, Jump Boost and +2 hearts.
+- **Sidebar:** shows your pirate level and fruit mastery.
+- **TODO.md** is completely rewritten: what's done, what's next (priorities) and the backlog per topic.
+
+### Notes
+- All bonuses stack: fruit, mastery, level, bounty and armour. Test in-game and adjust the multipliers if PvP gets too fast.
+- **Existing servers:** run `/aquatic resetconfig items confirm` for the armour sets, multipliers and mastery settings. Levels and bounty power work right away.
+
 ## 1.9.0 (2026-11-12)
 
 ### Added

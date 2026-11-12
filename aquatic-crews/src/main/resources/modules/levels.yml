@@ -1,0 +1,71 @@
+# =====================================================================================
+#  AquaticSMP - Pirate levels
+#  Earn XP by fighting, hunting treasure and exploring. Levels make you a little stronger.
+# =====================================================================================
+max-level: 50
+# XP needed for each level: base * level ^ exponent (level 2 = 100, level 10 ~ 2400, level 30 ~ 13900).
+curve:
+  base: 100
+  exponent: 1.45
+# Action bar "+XP" messages.
+show-xp-gains: true
+# Broadcast every N levels.
+announce-every: 10
+
+perks:
+  # +0.5% melee damage per level (level 50 = +24.5%), capped at max-damage.
+  damage-per-level: 0.005
+  max-damage: 0.25
+  # One extra heart every 5 levels (level 50 = +10 hearts), capped at max-health (half-hearts).
+  heart-every: 5
+  max-health: 20
+
+xp:
+  pvp-kill: 60
+  # The same player only counts once per this many minutes (no farming).
+  pvp-cooldown-minutes: 10
+  discover-island: 30
+  bounty-per-doubloon: 0.05
+  treasure:
+    common: 25
+    uncommon: 40
+    rare: 70
+    epic: 120
+    legendary: 250
+    default: 40
+  # Monsters from spawners give only a part of the XP.
+  spawner-multiplier: 0.2
+  mobs:
+    default: 6
+    zombie: 6
+    skeleton: 7
+    creeper: 8
+    spider: 6
+    drowned: 10
+    guardian: 15
+    elder_guardian: 200
+    witch: 15
+    pillager: 12
+    ravager: 60
+    warden: 500
+    ender_dragon: 1500
+    wither: 1000
+
+messages:
+  xp-gain: "<aqua>+<amount> XP <dark_gray><reason>"
+  reason-pvp: "(pirate defeated)"
+  reason-treasure: "(treasure)"
+  reason-discover: "(island discovered)"
+  reason-bounty: "(bounty claimed)"
+  levelup-title: "<gold><bold>LEVEL <level>"
+  levelup-subtitle: "<yellow>You grow stronger, pirate"
+  levelup: "<gold>Level <white><level></white>! <gray>Bonus now: <white>+<damage>%</white> damage, <white>+<hearts></white> hearts."
+  levelup-broadcast: "<gold><white><player></white> reached pirate level <white><level></white>!"
+  info: "<aqua><player></aqua> <gray>- pirate level <white><level></white>/<max>"
+  info-next: " <gray>XP: <white><xp></white> <dark_gray>(<next> to the next level)"
+  info-max: " <gray>XP: <white><xp></white> <gold>(max level)"
+  info-perks: " <gray>Bonus: <white>+<damage>%</white> damage, <white>+<hearts></white> hearts"
+  top-header: "<gold>Highest-level pirates:"
+  top-entry: " <gray>#<rank> <white><player></white> <dark_gray>-</dark_gray> <aqua>level <level>"
+  admin-given: "<green>Gave <white><amount></white> XP to <white><player></white>."
+  admin-set: "<green><white><player></white> is now level <white><level></white>."

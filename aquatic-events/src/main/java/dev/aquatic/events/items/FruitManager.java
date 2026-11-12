@@ -90,6 +90,116 @@ public final class FruitManager implements Listener {
     private final Set<UUID> inSea = new HashSet<>();
     private final Set<UUID> coolingDown = new HashSet<>();
     private final Map<String, List<PotionEffect>> passiveCache = new HashMap<>();
+    /** Mastery XP per player per fruit: "uuid|fruit" -> xp. */
+    private final Map<String, Long> mastery = new HashMap<>();
+    private boolean masteryDirty;
+    private java.util.Set<ConfigurationSection> fruitMoves;
+
+    // ------------------------------------------------------------------ mastery
+
+    private ConfigurationSection masteryCfg() {
+        ConfigurationSection c = module.config().getConfigurationSection("fruits.mastery");
+        return c != null ? c : new YamlConfiguration();
+    }
+
+    public int maxMastery() {
+        return Math.max(1, masteryCfg().getInt("max-level", 20));
+    }
+
+    /** Total XP to reach a mastery level (level 1 = 0). */
+    public long masteryXpFor(int level) {
+        double base = masteryCfg().getDouble("curve-base", 60), exp = masteryCfg().getDouble("curve-exponent", 1.5);
+        long total = 0;
+        for (int l = 1; l < level; l++) {
+            total += Math.round(base * Math.pow(l, exp));
+        }
+        return total;
+    }
+
+    public long masteryXp(UUID player) {
+        String f = fruitOf.get(player);
+        return f == null ? 0 : mastery.getOrDefault(player + "|" + f, 0L);
+    }
+
+    public int masteryLevel(UUID player) {
+        if (!masteryCfg().getBoolean("enabled", true)) {
+            return 1;
+        }
+        long xp = masteryXp(player);
+        int level = 1;
+        while (level < maxMastery() && xp >= masteryXpFor(level + 1)) {
+            level++;
+        }
+        return level;
+    }
+
+    public void setMasteryLevel(UUID player, int level) {
+        String f = fruitOf.get(player);
+        if (f != null) {
+            mastery.put(player + "|" + f, masteryXpFor(Math.max(1, Math.min(maxMastery(), level))));
+            masteryDirty = true;
+        }
+    }
+
+    /** Training: XP for the player's current fruit; announces level-ups. */
+    public void addMastery(Player p, long amount) {
+        String f = fruitOf.get(p.getUniqueId());
+        if (f == null || amount <= 0 || !masteryCfg().getBoolean("enabled", true)) {
+            return;
+        }
+        int before = masteryLevel(p.getUniqueId());
+        mastery.merge(p.getUniqueId() + "|" + f, amount, Long::sum);
+        masteryDirty = true;
+        int after = masteryLevel(p.getUniqueId());
+        if (after > before) {
+            ItemDef def = module.def(f);
+            p.showTitle(net.kyori.adventure.title.Title.title(module.rawMsg("mastery-title", "level", after),
+                    module.rawMsg("mastery-subtitle", "fruit", def == null ? net.kyori.adventure.text.Component.text(f) : def.displayName())));
+            module.send(p, "mastery-levelup", "level", after, "damage", Math.round((damageScale(p.getUniqueId()) - 1) * 100),
+                    "hearts", Text.number(bonusHealth(p.getUniqueId()) / 2.0));
+            p.getWorld().spawnParticle(org.bukkit.Particle.END_ROD, p.getLocation().add(0, 1, 0), 60, 0.6, 1, 0.6, 0.15);
+            p.playSound(p.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1f, 0.8f);
+        }
+    }
+
+    /** Damage multiplier of fruit moves: the global fruit multiplier x mastery. */
+    public double damageScale(UUID player) {
+        double global = module.config().getDouble("abilities.fruit-damage-multiplier", 1.5);
+        return global * (1 + (masteryLevel(player) - 1) * masteryCfg().getDouble("damage-per-level", 0.04));
+    }
+
+    public double rangeScale(UUID player) {
+        return 1 + (masteryLevel(player) - 1) * masteryCfg().getDouble("range-per-level", 0.02);
+    }
+
+    public double cooldownScale(UUID player) {
+        return Math.max(masteryCfg().getDouble("min-cooldown", 0.6),
+                1 - (masteryLevel(player) - 1) * masteryCfg().getDouble("cooldown-per-level", 0.015));
+    }
+
+    /** Extra max health (half-hearts) from having a fruit: a base amount plus a heart every few mastery levels. */
+    public double bonusHealth(UUID player) {
+        if (fruitOf.get(player) == null) {
+            return 0;
+        }
+        int every = Math.max(1, masteryCfg().getInt("heart-every", 4));
+        return module.config().getDouble("fruits.bonus-health", 6) + (masteryLevel(player) / every) * 2.0;
+    }
+
+    /** True when the section is one of the configured fruit moves (identity check). */
+    public boolean isFruitMove(ConfigurationSection section) {
+        if (fruitMoves == null) {
+            java.util.Set<ConfigurationSection> set = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+            for (String id : module.itemIds()) {
+                ItemDef def = module.def(id);
+                if (def != null && def.isFruit()) {
+                    set.addAll(def.moves());
+                }
+            }
+            fruitMoves = set;
+        }
+        return section != null && fruitMoves.contains(section);
+    }
 
     public FruitManager(ItemsModule module) {
         this.module = module;
@@ -109,11 +219,32 @@ public final class FruitManager implements Listener {
             } catch (IllegalArgumentException ignored) {
             }
         }
+        loadMastery();
+    }
+
+    private void loadMastery() {
+        mastery.clear();
+        ConfigurationSection m = module.loadData("fruits").getConfigurationSection("mastery");
+        if (m != null) {
+            for (String player : m.getKeys(false)) {
+                ConfigurationSection per = m.getConfigurationSection(player);
+                if (per != null) {
+                    for (String fruit : per.getKeys(false)) {
+                        mastery.put(player + "|" + fruit, per.getLong(fruit));
+                    }
+                }
+            }
+        }
     }
 
     public void save() {
         YamlConfiguration data = new YamlConfiguration();
         fruitOf.forEach((uuid, fruit) -> data.set("players." + uuid, fruit));
+        mastery.forEach((key, xp) -> {
+            String[] parts = key.split("\\|", 2);
+            data.set("mastery." + parts[0] + "." + parts[1], xp);
+        });
+        masteryDirty = false;
         module.saveData("fruits", data);
     }
 
@@ -130,6 +261,10 @@ public final class FruitManager implements Listener {
             fruitOf.put(player, fruitId);
         }
         save();
+        Player p = Bukkit.getPlayer(player);
+        if (p != null) {
+            dev.aquatic.util.Stats.health(p, "fruit", bonusHealth(player));
+        }
     }
 
     private ItemDef fruitDef(Player p) {
@@ -184,6 +319,9 @@ public final class FruitManager implements Listener {
         long now = System.currentTimeMillis();
         cooldowns.values().removeIf(until -> until < now);
         seastoned.values().removeIf(until -> until < now);
+        if (masteryDirty && now % 60000 < 1500) {
+            save(); // mastery XP, about once a minute
+        }
         if (fruitOf.isEmpty()) {
             return;
         }
@@ -196,6 +334,7 @@ public final class FruitManager implements Listener {
                 continue;
             }
             UUID uuid = p.getUniqueId();
+            dev.aquatic.util.Stats.health(p, "fruit", bonusHealth(uuid));
             boolean wet = seaWeak(p);
             if (wet) {
                 if (inSea.add(uuid)) {
@@ -473,8 +612,18 @@ public final class FruitManager implements Listener {
             module.actionBar(p, "ability-cooldown", "ability", name, "seconds", left);
             return;
         }
-        if (abilities.executeWithWindup(p, ability)) {
-            setCooldown(uuid, key, ability.getDouble("cooldown", 10));
+        boolean ok;
+        abilities.castDamageScale = damageScale(uuid);
+        abilities.castRangeScale = rangeScale(uuid);
+        try {
+            ok = abilities.executeWithWindup(p, ability);
+        } finally {
+            abilities.castDamageScale = 0;
+            abilities.castRangeScale = 1;
+        }
+        if (ok) {
+            addMastery(p, masteryCfg().getLong("xp-per-use", 6));
+            setCooldown(uuid, key, ability.getDouble("cooldown", 10) * cooldownScale(uuid));
             module.actionBar(p, "ability-used", "ability", name);
         } else {
             module.actionBar(p, "ability-no-target", "ability", name);
@@ -488,6 +637,9 @@ public final class FruitManager implements Listener {
         coolingDown.remove(uuid);
         lastTrigger.remove(uuid);
         selectedMove.remove(uuid);
+        if (masteryDirty) {
+            save();
+        }
         module.gear().abilities().forget(uuid);
     }
 }

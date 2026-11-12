@@ -87,10 +87,14 @@ public final class BountyModule extends AquaticModule implements BountyService, 
         long period = Math.max(10, config().getLong("autosave-seconds", 120)) * 20L;
         runTimer(this::saveIfDirty, period, period);
         runTimer(this::purge, 20L * 60, 20L * 60);
+        runTimer(this::applyPowerPerks, 40L, 100L);
     }
 
     @Override
     protected void onDisable() {
+        for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
+            dev.aquatic.util.Stats.clear(p, "bounty");
+        }
         dirty = true;
         saveIfDirty();
         entries.clear();
@@ -240,6 +244,22 @@ public final class BountyModule extends AquaticModule implements BountyService, 
     }
 
     /** Sets a bounty (clamped) and handles tier changes. */
+    /**
+     * Notoriety makes you dangerous: every bounty tier you reach gives extra hearts and damage
+     * ("power-perks" in bounty.yml). Checked every few seconds for online players.
+     */
+    private void applyPowerPerks() {
+        boolean on = config().getBoolean("power-perks.enabled", true);
+        double hearts = config().getDouble("power-perks.health-per-tier", 2);
+        double dmg = config().getDouble("power-perks.damage-per-tier", 0.04);
+        int maxTiers = Math.max(0, config().getInt("power-perks.max-tiers", 5));
+        for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
+            int tiers = on ? Math.min(maxTiers, tierIndex(bountyOf(p.getUniqueId())) + 1) : 0;
+            dev.aquatic.util.Stats.health(p, "bounty", tiers * hearts);
+            dev.aquatic.util.Stats.damage(p, "bounty", tiers * dmg);
+        }
+    }
+
     private void setBounty(UUID id, double amount) {
         Entry e = entry(id);
         double old = e.bounty;

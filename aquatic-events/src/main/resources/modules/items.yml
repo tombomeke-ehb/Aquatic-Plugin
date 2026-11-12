@@ -26,7 +26,32 @@
 effects:
   quality: 1.0
 
+# How hard abilities hit. All "damage" numbers in this file are multiplied by these.
+abilities:
+  # Fruit moves (on top of this, mastery adds damage per level).
+  fruit-damage-multiplier: 1.5
+  # Abilities of swords and other gear.
+  item-damage-multiplier: 1.3
+
 fruits:
+  # Extra max health (half-hearts) just for carrying an Abyss Fruit power: 6 = +3 hearts.
+  bonus-health: 6
+  # Mastery: train your fruit by using it. Every level: more damage, more range, shorter cooldowns,
+  # and every "heart-every" levels one more heart. Mastery is per fruit (a new fruit starts at 1).
+  mastery:
+    enabled: true
+    max-level: 20
+    xp-per-use: 6
+    xp-per-hit: 3
+    # XP for each level: curve-base * level ^ curve-exponent (level 2 = 60, level 10 ~ 1900).
+    curve-base: 60
+    curve-exponent: 1.5
+    damage-per-level: 0.04
+    range-per-level: 0.02
+    cooldown-per-level: 0.015
+    # Cooldowns never drop below this part of the base cooldown.
+    min-cooldown: 0.6
+    heart-every: 4
   # Only one abyss fruit power per player.
   one-per-player: true
   # What happens when someone who already has a power eats a second fruit:
@@ -1115,6 +1140,160 @@ items:
         - haste:2
       message: "<aqua>The wind fills your sails!"
 
+  # ================================ ARMOUR SETS ================================
+  # Craftable (see "recipe"). Every piece is stronger than diamond; wearing the full set gives the set
+  # bonus from "armor-sets" below. Each piece has "set: <id>".
+  tidewarden_helmet:
+    type: plain
+    material: DIAMOND_HELMET
+    set: tidewarden
+    name: "<gradient:#1fa2ff:#12d8fa><bold>Tidewarden Helm</bold></gradient>"
+    lore: ["<gray>Forged from the hulls of sunken warships.", "", "<dark_aqua>Set: Tidewarden (4 pieces)"]
+    custom-model-data: 0
+    max-stack: 1
+    enchants: {protection: 3, respiration: 3}
+    attributes:
+      - {attribute: armor, amount: 4, operation: ADD_NUMBER, slot: head}
+      - {attribute: armor_toughness, amount: 3, operation: ADD_NUMBER, slot: head}
+      - {attribute: max_health, amount: 2, operation: ADD_NUMBER, slot: head}
+    recipe:
+      enabled: true
+      amount: 1
+      shape: ["DHD", "C C"]
+      ingredients: {D: DIAMOND, H: HEART_OF_THE_SEA, C: PRISMARINE_CRYSTALS}
+  tidewarden_chestplate:
+    type: plain
+    material: DIAMOND_CHESTPLATE
+    set: tidewarden
+    name: "<gradient:#1fa2ff:#12d8fa><bold>Tidewarden Cuirass</bold></gradient>"
+    lore: ["<gray>Forged from the hulls of sunken warships.", "", "<dark_aqua>Set: Tidewarden (4 pieces)"]
+    custom-model-data: 0
+    max-stack: 1
+    enchants: {protection: 3}
+    attributes:
+      - {attribute: armor, amount: 9, operation: ADD_NUMBER, slot: chest}
+      - {attribute: armor_toughness, amount: 3, operation: ADD_NUMBER, slot: chest}
+      - {attribute: max_health, amount: 4, operation: ADD_NUMBER, slot: chest}
+      - {attribute: knockback_resistance, amount: 0.1, operation: ADD_NUMBER, slot: chest}
+    recipe:
+      enabled: true
+      amount: 1
+      shape: ["D D", "DHD", "CDC"]
+      ingredients: {D: DIAMOND, H: HEART_OF_THE_SEA, C: PRISMARINE_CRYSTALS}
+  tidewarden_leggings:
+    type: plain
+    material: DIAMOND_LEGGINGS
+    set: tidewarden
+    name: "<gradient:#1fa2ff:#12d8fa><bold>Tidewarden Greaves</bold></gradient>"
+    lore: ["<gray>Forged from the hulls of sunken warships.", "", "<dark_aqua>Set: Tidewarden (4 pieces)"]
+    custom-model-data: 0
+    max-stack: 1
+    enchants: {protection: 3}
+    attributes:
+      - {attribute: armor, amount: 7, operation: ADD_NUMBER, slot: legs}
+      - {attribute: armor_toughness, amount: 3, operation: ADD_NUMBER, slot: legs}
+      - {attribute: max_health, amount: 2, operation: ADD_NUMBER, slot: legs}
+    recipe:
+      enabled: true
+      amount: 1
+      shape: ["DHD", "C C", "D D"]
+      ingredients: {D: DIAMOND, H: HEART_OF_THE_SEA, C: PRISMARINE_CRYSTALS}
+  tidewarden_boots:
+    type: plain
+    material: DIAMOND_BOOTS
+    set: tidewarden
+    name: "<gradient:#1fa2ff:#12d8fa><bold>Tidewarden Boots</bold></gradient>"
+    lore: ["<gray>Forged from the hulls of sunken warships.", "", "<dark_aqua>Set: Tidewarden (4 pieces)"]
+    custom-model-data: 0
+    max-stack: 1
+    enchants: {protection: 3, depth_strider: 3}
+    attributes:
+      - {attribute: armor, amount: 4, operation: ADD_NUMBER, slot: feet}
+      - {attribute: armor_toughness, amount: 3, operation: ADD_NUMBER, slot: feet}
+      - {attribute: max_health, amount: 2, operation: ADD_NUMBER, slot: feet}
+    recipe:
+      enabled: true
+      amount: 1
+      shape: ["CHC", "D D"]
+      ingredients: {D: DIAMOND, H: HEART_OF_THE_SEA, C: PRISMARINE_CRYSTALS}
+
+  corsair_hat:
+    type: plain
+    material: CHAINMAIL_HELMET
+    set: corsair
+    name: "<gradient:#f7971e:#c0392b><bold>Corsair's Tricorn</bold></gradient>"
+    lore: ["<gray>Light, sharp and a little flashy.", "", "<gold>Set: Corsair (4 pieces)"]
+    custom-model-data: 0
+    max-stack: 1
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE]
+    attributes:
+      - {attribute: armor, amount: 3, operation: ADD_NUMBER, slot: head}
+      - {attribute: attack_damage, amount: 0.05, operation: ADD_SCALAR, slot: head}
+      - {attribute: movement_speed, amount: 0.03, operation: ADD_SCALAR, slot: head}
+    recipe:
+      enabled: true
+      amount: 1
+      shape: ["LGL", "E E"]
+      ingredients: {L: LEATHER, G: GOLD_INGOT, E: EMERALD}
+  corsair_coat:
+    type: plain
+    material: CHAINMAIL_CHESTPLATE
+    set: corsair
+    name: "<gradient:#f7971e:#c0392b><bold>Corsair's Longcoat</bold></gradient>"
+    lore: ["<gray>Light, sharp and a little flashy.", "", "<gold>Set: Corsair (4 pieces)"]
+    custom-model-data: 0
+    max-stack: 1
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE]
+    attributes:
+      - {attribute: armor, amount: 6, operation: ADD_NUMBER, slot: chest}
+      - {attribute: attack_damage, amount: 0.08, operation: ADD_SCALAR, slot: chest}
+      - {attribute: movement_speed, amount: 0.03, operation: ADD_SCALAR, slot: chest}
+    recipe:
+      enabled: true
+      amount: 1
+      shape: ["L L", "GEG", "LDL"]
+      ingredients: {L: LEATHER, G: GOLD_INGOT, E: EMERALD, D: DIAMOND}
+  corsair_breeches:
+    type: plain
+    material: CHAINMAIL_LEGGINGS
+    set: corsair
+    name: "<gradient:#f7971e:#c0392b><bold>Corsair's Breeches</bold></gradient>"
+    lore: ["<gray>Light, sharp and a little flashy.", "", "<gold>Set: Corsair (4 pieces)"]
+    custom-model-data: 0
+    max-stack: 1
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE]
+    attributes:
+      - {attribute: armor, amount: 5, operation: ADD_NUMBER, slot: legs}
+      - {attribute: attack_damage, amount: 0.05, operation: ADD_SCALAR, slot: legs}
+      - {attribute: movement_speed, amount: 0.03, operation: ADD_SCALAR, slot: legs}
+    recipe:
+      enabled: true
+      amount: 1
+      shape: ["LGL", "E E", "L L"]
+      ingredients: {L: LEATHER, G: GOLD_INGOT, E: EMERALD}
+  corsair_boots:
+    type: plain
+    material: CHAINMAIL_BOOTS
+    set: corsair
+    name: "<gradient:#f7971e:#c0392b><bold>Corsair's Boots</bold></gradient>"
+    lore: ["<gray>Light, sharp and a little flashy.", "", "<gold>Set: Corsair (4 pieces)"]
+    custom-model-data: 0
+    max-stack: 1
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE]
+    attributes:
+      - {attribute: armor, amount: 2, operation: ADD_NUMBER, slot: feet}
+      - {attribute: attack_damage, amount: 0.04, operation: ADD_SCALAR, slot: feet}
+      - {attribute: movement_speed, amount: 0.05, operation: ADD_SCALAR, slot: feet}
+    recipe:
+      enabled: true
+      amount: 1
+      shape: ["L L", "G G"]
+      ingredients: {L: LEATHER, G: GOLD_INGOT}
+
   pirate_king_crown:
     type: plain
     material: GOLDEN_HELMET
@@ -1136,10 +1315,27 @@ items:
       - {attribute: max_health, amount: 4, operation: ADD_NUMBER, slot: head}
       - {attribute: knockback_resistance, amount: 0.1, operation: ADD_NUMBER, slot: head}
 
+# Armour set bonuses: active while wearing at least "pieces" items with "set: <id>".
+armor-sets:
+  tidewarden:
+    pieces: 4
+    bonus-health: 4
+    effects: ["resistance:1", "water_breathing:1", "dolphins_grace:1"]
+    color: "#12d8fa"
+  corsair:
+    pieces: 4
+    bonus-health: 4
+    effects: ["speed:1", "jump_boost:1"]
+    color: "#f7971e"
+
 # -------------------------------------------------------------------------------------
 #  Messages (MiniMessage). Placeholders are written as <name>.
 # -------------------------------------------------------------------------------------
 messages:
+  mastery-title: "<light_purple><bold>MASTERY <level>"
+  mastery-subtitle: "<fruit> <gray>grows stronger"
+  mastery-levelup: "<light_purple>Fruit mastery <white><level></white>! <gray>Moves now hit <white>+<damage>%</white>, power gives <white>+<hearts></white> hearts."
+  fruit-info-mastery: " <light_purple>Mastery <white><level>/<max></white> <dark_gray>(<next> XP to next)</dark_gray> <gray>| +<damage>% damage, +<range>% range, -<cooldown>% cooldown, +<hearts> hearts"
   move-selected: "<aqua>Move <white><n>/<total></white>: <ability> <dark_gray>(sneak + scroll to switch)"
   unknown-item: "<red>Unknown item <white><id></white>. See <white>/aitem list</white>."
   unknown-fruit: "<red><white><id></white> is not an abyss fruit."

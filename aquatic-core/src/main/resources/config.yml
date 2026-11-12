@@ -8,6 +8,8 @@ modules:
   bounty: true
   # Combat tag (no logging out mid-fight), respawn protection, new-player PvP protection.
   combat: true
+  # Pirate levels: XP from fights, treasure and exploring; small health/damage bonuses.
+  levels: true
   islands: true
   treasure: true
   items: true

@@ -39,7 +39,7 @@ Every feature is a **module** you can turn on or off. All numbers, costs and mes
 | `/aquatic reload [module]` | Reload configs for all modules or just one, with no restart | `aquatic.admin` |
 | `/aquatic resetconfig <module> confirm` | Replace a module's config with the newest defaults. The old file is kept as a `.bak` | `aquatic.admin` |
 
-Aliases: `/aq`, `/aquaticsmp`. Module names: `economy`, `crews`, `bounty`, `combat`, `islands`, `treasure`, `items`, `tournament`, `events`, `guide`, `sidebar`, `shop`.
+Aliases: `/aq`, `/aquaticsmp`. Module names: `economy`, `crews`, `bounty`, `combat`, `levels`, `islands`, `treasure`, `items`, `tournament`, `events`, `guide`, `sidebar`, `shop`.
 
 ---
 
@@ -240,7 +240,8 @@ Right-click a treasure map to get a "warmer / colder" hint.
 | `/aitem give <player> <id> [amount]` | Give a custom item | Admin: `aquatic.items.admin` |
 | `/aitem list` | All custom item ids | Admin |
 | `/aitem fruit set <player> <fruit\|none>` | Give or remove an Abyss Fruit power directly | Admin |
-| `/aitem fruit info [player]` | Show a player's power | Admin |
+| `/aitem fruit info [player]` | Show a player's power and mastery | Admin |
+| `/aitem fruit level <player> <level>` | Set someone's fruit mastery (1–20) | Admin |
 
 Aliases: `/aquaticitem`, `/pirateitem`.
 
@@ -250,6 +251,7 @@ Default item ids:
 - **Throwables (right-click):** `smoke_bomb`, `frost_bomb`, `fire_bomb`
 - **Tools and other:** `log_pose`, `den_den_mushi`, `rum`, `healing_tonic`, `gale_grog`, `pirate_king_crown`
 - **Gear:** `coral_trident`, `captains_coat`, `marauders_buckler`
+- **Armour sets (craftable):** `tidewarden_helmet`, `tidewarden_chestplate`, `tidewarden_leggings`, `tidewarden_boots`, `corsair_hat`, `corsair_coat`, `corsair_breeches`, `corsair_boots`
 - **Special:** `devil_fruit_random` gives a random Abyss Fruit
 
 **Using an Abyss Fruit power:** sneak + **F** (swap hands), or sneak + right-click while looking at a block. Fruits have 2–3 moves: **sneak + scroll** (empty hand) switches between them. You cannot use powers while in water.
@@ -313,6 +315,19 @@ These rules keep PvP fair. Tournament matches use their own rules instead.
 | `/pvp protect <player>` | Give back new-player protection, if they are still under the playtime limit | Admin: `aquatic.combat.admin` |
 
 Staff with `aquatic.combat.bypass` never get tagged. Everything is in `combat.yml`, including the list of blocked commands.
+
+---
+
+## Pirate levels (`levels`)
+
+| Command | What it does | Permission |
+| --- | --- | --- |
+| `/level [player]` | Your (or someone's) level, XP and bonuses (aliases `/lvl`, `/levels`) | Everyone |
+| `/level top` | The highest-level pirates | Everyone |
+| `/level give <player> <xp>` | Give XP | Admin: `aquatic.levels.admin` |
+| `/level set <player> <level>` | Set a level | Admin: `aquatic.levels.admin` |
+
+XP comes from PvP kills, monsters, treasure, discovering islands and claiming bounties. Every level gives a little extra damage, and every 5 levels an extra heart.
 
 ---
 
