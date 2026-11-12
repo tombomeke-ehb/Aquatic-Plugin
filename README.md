@@ -39,12 +39,13 @@ plugins/AquaticSMP/
 │   ├── economy.yml     currency name, starting balance, mob money, PvP loss, Vault
 │   ├── crews.yml       crew size, costs, rank limits and rights, war rules, home, chat/tab tags
 │   ├── bounty.yml      minimum bounty, tax, notoriety, bounty titles
+│   ├── combat.yml      combat tag, respawn protection, new-player protection
 │   ├── islands.yml     ocean area, island block palettes, claiming, raiding, conquest, income
 │   ├── treasure.yml    loot tiers and tables, burial depth, natural spawning, map drops
 │   ├── items.yml       every custom item and Devil Fruit, ability numbers, triggers, recipes
 │   ├── tournament.yml  stages, team size, rewards, crown, King perks
 │   ├── events.yml      each server event, rewards, auto-scheduler
-│   └── guide.yml       new-player intro steps and the /guide book
+│   └── guide.yml       new-player intro, starter kit, tips and the /guide book
 └── data/               saved game state (don't edit while the server runs)
 ```
 
@@ -76,6 +77,10 @@ Settings most servers change first:
 | Flag designs and the default flag | `crews.yml` | `flag.presets`, `flag.default-preset` |
 | Anyone may dig up treasure on claimed islands | `islands.yml` | `treasure-digging` |
 | New-player intro (on/off, first join or every join) | `guide.yml` | `intro.enabled`, `intro.mode` |
+| Starter kit items, Doubloons, treasure map | `guide.yml` | `starter-kit:` |
+| Tips for new players | `guide.yml` | `tips:` |
+| Combat tag length, logout punishment, blocked commands | `combat.yml` | `combat-tag:` |
+| New-player PvP protection time | `combat.yml` | `new-player-protection.minutes` |
 
 ## Modules
 
@@ -89,7 +94,8 @@ Settings most servers change first:
 | `items` | `items.yml` | 8 Devil Fruits with powers and sea weakness, Sea Prism gear, legendary swords, flintlock, hand cannon, Log Pose, Den Den Mushi, rum, Pirate King crown |
 | `tournament` | `tournament.yml` | The Pirate King tournament: registration → qualifiers → bracket → best-of finale → coronation, Hall of Kings. Needs `crews` |
 | `events` | `events.yml` | Treasure Hunt, Pirate War, Bounty Hunt, Lost Island, King's Challenge, Grand Raid, Naval Battle; optional auto-scheduler |
-| `guide` | `guide.yml` | Welcome intro on first join and the `/guide` book |
+| `combat` | `combat.yml` | Combat tag (no logging out or teleporting away mid-fight), respawn protection, new-player PvP protection |
+| `guide` | `guide.yml` | Welcome intro, starter kit with a treasure map, tips for new players, the `/guide` book |
 
 Modules talk to each other only through shared services, so turning one off just disables the features that need it. For example, without `crews`, islands can still be generated and discovered but not claimed.
 

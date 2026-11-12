@@ -6,6 +6,8 @@ modules:
   economy: true
   crews: true
   bounty: true
+  # Combat tag (no logging out mid-fight), respawn protection, new-player PvP protection.
+  combat: true
   islands: true
   treasure: true
   items: true

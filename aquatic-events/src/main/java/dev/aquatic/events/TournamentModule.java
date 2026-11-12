@@ -283,6 +283,11 @@ public final class TournamentModule extends AquaticModule implements TournamentS
         return stage != Stage.NONE;
     }
 
+    @Override
+    public boolean isInMatch(UUID player) {
+        return runner != null && runner.isFighter(player);
+    }
+
     // ------------------------------------------------------------------ helpers used by the match runner
 
     public Location lobby() {

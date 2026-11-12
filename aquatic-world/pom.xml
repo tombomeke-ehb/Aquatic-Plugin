@@ -4,7 +4,7 @@
   <parent>
     <groupId>dev.aquatic</groupId>
     <artifactId>aquatic-parent</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
   </parent>
   <artifactId>aquatic-world</artifactId>
   <repositories>

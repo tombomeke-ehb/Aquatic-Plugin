@@ -1,0 +1,73 @@
+# =====================================================================================
+#  AquaticSMP - Combat module
+#  Fair PvP: no combat logging, no spawn camping, and a safe start for new players.
+#  Tournament matches are not affected (the tournament has its own rules).
+#  Bypass permission for staff: aquatic.combat.bypass
+# =====================================================================================
+
+combat-tag:
+  enabled: true
+  # Hitting a player, or being hit by one, puts both in combat for this many seconds.
+  seconds: 15
+  # Red countdown bar at the top of the screen while in combat.
+  bossbar: true
+  # What happens when a player logs out while in combat:
+  #   kill = they die on the spot (items drop, the attacker gets the kill and any bounty)
+  #   none = nothing
+  logout-punishment: kill
+  announce-logout: true
+  # Commands that cannot be used while in combat. "crew home" blocks only that sub-command,
+  # "spawn" blocks /spawn with any arguments.
+  blocked-commands:
+    - crew home
+    - c home
+    - spawn
+    - home
+    - homes
+    - warp
+    - tpa
+    - tpahere
+    - tpaccept
+    - back
+    - rtp
+    - wild
+  # Block teleports by commands/plugins while in combat (ender pearls and chorus fruit still work).
+  block-teleports: true
+  # The winner of a fight is released from combat right away.
+  untag-killer: true
+
+# A few seconds of PvP immunity after respawning, so nobody gets camped at spawn.
+# Attacking someone ends your protection immediately.
+respawn-protection:
+  enabled: true
+  seconds: 10
+
+# New players cannot fight or be attacked by other players during their first minutes of playtime.
+# They can end it early with /pvp on.
+new-player-protection:
+  enabled: true
+  # Minutes of total playtime (counted by Minecraft, across sessions).
+  minutes: 30
+
+messages:
+  tagged: "<red>⚔ You are in combat with <white><player></white>! <gray>Don't log out for <white><seconds></white>s."
+  untagged: "<green>You are no longer in combat."
+  bossbar: "<red><bold>IN COMBAT</bold> <gray>- <white><seconds>s"
+  command-blocked: "<red>You can't use that command in combat. <gray>(<white><seconds></white>s left)"
+  teleport-blocked: "<red>You can't teleport away in combat. <gray>(<white><seconds></white>s left)"
+  combat-logged: "<red><white><player></white> fled from a fight and was lost at sea!"
+  respawn-protected: "<aqua>You are protected from other players for <white><seconds></white>s."
+  target-respawn-protected: "<gray><white><player></white> just respawned and is protected (<white><seconds></white>s)."
+  you-are-protected: "<aqua>You have new-player protection (<white><minutes></white> min). <gray>Type <white>/pvp on</white> to fight."
+  target-new-player: "<gray><white><player></white> is a new pirate and protected for <white><minutes></white> more min."
+  pvp-on-confirm: "<yellow>You still have <white><minutes></white> min of new-player protection. <gray>Type <white>/pvp on confirm</white> to give it up and fight."
+  pvp-on: "<red>⚔ PvP enabled. <gray>Other pirates can attack you now. Good luck!"
+  already-pvp: "<gray>You don't have new-player protection anymore."
+  status-header: "<aqua>Combat status of <white><player></white>"
+  status-newbie: " <aqua>New-player protection: <white><minutes></white> min left <gray>(/pvp on to end it)"
+  status-newbie-off: " <gray>New-player protection: off"
+  status-tagged: " <red>In combat: <white><seconds></white>s left"
+  status-not-tagged: " <green>Not in combat"
+  status-respawn: " <aqua>Respawn protection: <white><seconds></white>s left"
+  admin-untagged: "<green>Removed the combat tag of <white><player></white>."
+  admin-protect: "<green><white><player></white> has new-player protection again (if still within the playtime limit)."

@@ -65,7 +65,8 @@ intro:
         - "<red><bold>Bounties:</bold> <gray>defeating pirates raises your bounty. Claim one by taking down a wanted pirate."
         - "<gray>Check with <white>/bounty info</white> and <white>/bounty top</white>."
         - "<light_purple><bold>Devil Fruits</bold> <gray>give powers (<white>sneak + F</white>), but the sea takes them away while you swim."
-      seconds: 8
+        - "<aqua>You are safe from PvP for your first 30 minutes. <gray>Check with <white>/pvp</white>. Never log out in a fight!"
+      seconds: 9
 
     - title: "<gold><bold>Become the Pirate King"
       subtitle: "<gray>Win the tournament, claim the crown"
@@ -80,6 +81,46 @@ intro:
         - "<aqua>Type <white>/guide</white> any time for the pirate's guide book."
       seconds: 4
       sound: entity.player.levelup
+
+# -------------------------------------------------------------------------------------
+# Starter kit: given once, on a player's very first join (also when the intro is off).
+# Staff can hand it out with /guide kit <player>.
+# Items: vanilla "MATERIAL[:amount]" or a custom item "item:<id>[:amount]" (items module).
+# -------------------------------------------------------------------------------------
+starter-kit:
+  enabled: true
+  items:
+    - "OAK_BOAT"
+    - "COOKED_COD:16"
+    - "STONE_SHOVEL"
+    - "STONE_SWORD"
+    - "item:log_pose"
+  doubloons: 100
+  # Also bury a real treasure on a random island and give a treasure map to it: the best way to
+  # learn treasure hunting. (Needs the treasure module.)
+  treasure-map: true
+  treasure-map-tier: common
+
+# -------------------------------------------------------------------------------------
+# Tips: every few minutes one tip in chat (in this order), for players who are still new.
+# Players can turn them off with /guide tips off.
+# -------------------------------------------------------------------------------------
+tips:
+  enabled: true
+  interval-minutes: 10
+  # Only players with less than this many hours of playtime get tips (0 = everyone).
+  only-first-hours: 5
+  messages:
+    - "Lost? <white>/island map</white> shows the nearest islands with direction and distance."
+    - "A <red><bold>red X</bold></red> on the ground means buried treasure. Dig straight down!"
+    - "Hold a <white>Log Pose</white> to see the way to the nearest island."
+    - "Right-click a treasure map to find out if you are getting warmer or colder."
+    - "Join forces! <white>/crew create <name></white> starts your own pirate crew."
+    - "Your crew flag flies on every island you claim. Design it with <white>/crew flag</white>."
+    - "New pirates are safe from PvP for a while. Check it with <white>/pvp</white>."
+    - "Don't log out in a fight: pirates who flee are lost at sea!"
+    - "Bigger fights mean bigger bounties. See the most wanted with <white>/bounty top</white>."
+    - "Type <white>/guide</white> any time to read the pirate's guide."
 
 # -------------------------------------------------------------------------------------
 # The guide book (/guide). Chapters are shown in this order; /guide <chapter> opens one.
@@ -113,6 +154,11 @@ book:
       - "<dark_aqua><bold>6. Pirate King</bold>\n\n<black>Crews compete in the tournament:\n\nRegistration\nQualifiers\nBracket fights\nGrand finale\n\nThe winning captain is crowned <gold><bold>Pirate King</bold></gold><black>!\n\n<dark_gray>/tournament info\n/hallofkings"
 
 messages:
+  starter-kit: "<gold>Here is your starter kit, pirate! <gray>(boat, food, tools and a Log Pose)"
+  starter-kit-map: "<gold>Here is your starter kit, pirate! <gray>There is a <white>treasure map</white> in it: follow the red X and dig. Right-click the map for hints!"
+  tip-format: "<dark_aqua>[Tip]</dark_aqua> <gray><tip> <dark_gray>(/guide tips off)"
+  tips-off: "<gray>Tips turned off. <white>/guide tips on</white> brings them back."
+  tips-on: "<green>Tips turned on."
   intro-skip-hint: "<gray>Welcome! <dark_gray>(Type <white>/guide skip</white> to skip the intro.)"
   intro-finished: "<aqua>That's the basics! <gray>Read the full guide any time with <white>/guide</white>."
   intro-skipped: "<gray>Intro skipped. Type <white>/guide</white> for the guide book or <white>/guide intro</white> to watch it again."
@@ -122,4 +168,5 @@ messages:
   chapters: "<aqua>Guide chapters: <white><chapters></white> <gray>- /guide <chapter>"
   admin-played: "<green>Playing the intro for <white><player></white>."
   admin-reset: "<green><white><player></white> will see the intro again on their next join."
+  admin-kit: "<green>Gave the starter kit to <white><player></white>."
   admin-reset-all: "<green>Everyone will see the intro again on their next join."

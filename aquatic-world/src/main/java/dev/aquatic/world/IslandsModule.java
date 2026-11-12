@@ -158,6 +158,7 @@ public final class IslandsModule extends AquaticModule implements IslandService,
 
     @Override
     protected void onDisable() {
+        cancelSpawnRuns();
         hideAllJobBars();
         lastPresenceKey.clear();
         lastPresenceAt.clear();
@@ -844,6 +845,32 @@ public final class IslandsModule extends AquaticModule implements IslandService,
     }
 
     /** Aborts running/queued jobs; islandId null = everything. @return number of jobs removed */
+    /** A running /island admin spawnrandom: islands are placed one by one, so cancel must stop the chain too. */
+    static final class SpawnRun {
+        final int total;
+        int placed;
+        boolean cancelled;
+
+        SpawnRun(int total) {
+            this.total = total;
+        }
+    }
+
+    final List<SpawnRun> spawnRuns = new ArrayList<>();
+
+    /** Stops every running spawnrandom chain. @return how many were running. */
+    int cancelSpawnRuns() {
+        int n = 0;
+        for (SpawnRun run : spawnRuns) {
+            if (!run.cancelled) {
+                run.cancelled = true;
+                n++;
+            }
+        }
+        spawnRuns.clear();
+        return n;
+    }
+
     int cancelJobs(String islandId) {
         int removed = 0;
         if (currentJob != null && (islandId == null || islandId.equals(currentJob.islandId()))) {
@@ -899,7 +926,11 @@ public final class IslandsModule extends AquaticModule implements IslandService,
                 }
             }
             if (q.sender() != null && !(q.sender() instanceof Player p && !p.isOnline())) {
-                send(q.sender(), "job-done", "label", q.job().label(), "queued", jobs.size());
+                if (jobs.isEmpty()) {
+                    send(q.sender(), "job-finished", "label", q.job().label());
+                } else {
+                    send(q.sender(), "job-finished-queued", "label", q.job().label(), "queued", jobs.size());
+                }
             }
             if (q.sender() instanceof Player p && jobs.stream().noneMatch(o -> o.sender() == p)) {
                 hideJobBar(p);

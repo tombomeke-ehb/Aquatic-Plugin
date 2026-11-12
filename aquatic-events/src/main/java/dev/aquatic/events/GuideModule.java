@@ -49,6 +49,11 @@ public final class GuideModule extends AquaticModule implements Listener {
     private final Set<UUID> seen = new HashSet<>();
     /** Intro sequences that are playing right now. */
     private final Map<UUID, BukkitTask> playing = new HashMap<>();
+    /** Players who already received the starter kit. */
+    private final Set<UUID> kitGiven = new HashSet<>();
+    /** Players who turned the tips off with /guide tips off. */
+    private final Set<UUID> tipsOff = new HashSet<>();
+    private int nextTip;
 
     @Override
     public String id() {
@@ -59,14 +64,16 @@ public final class GuideModule extends AquaticModule implements Listener {
     protected void onEnable() {
         seen.clear();
         playing.clear();
-        for (String raw : loadData("seen").getStringList("players")) {
-            try {
-                seen.add(UUID.fromString(raw));
-            } catch (IllegalArgumentException ignored) {
-            }
-        }
+        kitGiven.clear();
+        tipsOff.clear();
+        YamlConfiguration data = loadData("seen");
+        readUuids(data.getStringList("players"), seen);
+        readUuids(data.getStringList("kit-given"), kitGiven);
+        readUuids(data.getStringList("tips-off"), tipsOff);
         registerListener(this);
         registerCommands();
+        long tipTicks = Math.max(1, config().getLong("tips.interval-minutes", 10)) * 60L * 20L;
+        runTimer(this::broadcastTips, tipTicks, tipTicks);
     }
 
     @Override
@@ -78,12 +85,85 @@ public final class GuideModule extends AquaticModule implements Listener {
 
     private void save() {
         YamlConfiguration data = new YamlConfiguration();
-        List<String> list = new ArrayList<>();
-        for (UUID u : seen) {
-            list.add(u.toString());
-        }
-        data.set("players", list);
+        data.set("players", writeUuids(seen));
+        data.set("kit-given", writeUuids(kitGiven));
+        data.set("tips-off", writeUuids(tipsOff));
         saveData("seen", data);
+    }
+
+    private static void readUuids(List<String> raw, Set<UUID> into) {
+        for (String s : raw) {
+            try {
+                into.add(UUID.fromString(s));
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+    }
+
+    private static List<String> writeUuids(Set<UUID> set) {
+        List<String> list = new ArrayList<>();
+        set.forEach(u -> list.add(u.toString()));
+        return list;
+    }
+
+    // ------------------------------------------------------------------ starter kit
+
+    /** Gives the starter kit once per player (independent of the intro). */
+    private void giveStarterKit(Player p) {
+        giveStarterKit(p, false);
+    }
+
+    /** @param force give it even when the player already had it (staff command). */
+    private void giveStarterKit(Player p, boolean force) {
+        if (!config().getBoolean("starter-kit.enabled", true) || (!force && kitGiven.contains(p.getUniqueId()))) {
+            return;
+        }
+        kitGiven.add(p.getUniqueId());
+        save();
+        for (String spec : config().getStringList("starter-kit.items")) {
+            org.bukkit.inventory.ItemStack item = Util.parseItem(this, spec);
+            if (item != null) {
+                Util.give(p, item);
+            }
+        }
+        double doubloons = config().getDouble("starter-kit.doubloons", 0);
+        dev.aquatic.api.EconomyService eco = service(dev.aquatic.api.EconomyService.class);
+        if (doubloons > 0 && eco != null) {
+            eco.deposit(p.getUniqueId(), doubloons);
+        }
+        boolean map = false;
+        String tier = config().getString("starter-kit.treasure-map-tier", "common");
+        dev.aquatic.api.TreasureService treasure = service(dev.aquatic.api.TreasureService.class);
+        if (config().getBoolean("starter-kit.treasure-map", true) && treasure != null) {
+            org.bukkit.Location spot = treasure.spawnRandomTreasure(tier);
+            org.bukkit.inventory.ItemStack mapItem = spot == null ? null : treasure.createTreasureMap(spot, tier);
+            if (mapItem != null) {
+                Util.give(p, mapItem);
+                map = true;
+            }
+        }
+        send(p, map ? "starter-kit-map" : "starter-kit");
+    }
+
+    // ------------------------------------------------------------------ tips
+
+    /** Every few minutes: one tip in chat for players who are still new (and did not turn tips off). */
+    private void broadcastTips() {
+        List<String> tips = config().getStringList("tips.messages");
+        if (!config().getBoolean("tips.enabled", true) || tips.isEmpty()) {
+            return;
+        }
+        String tip = tips.get(nextTip++ % tips.size());
+        long maxTicks = (long) (config().getDouble("tips.only-first-hours", 5) * 60 * 60 * 20);
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (tipsOff.contains(p.getUniqueId())) {
+                continue;
+            }
+            if (maxTicks > 0 && p.getStatistic(org.bukkit.Statistic.PLAY_ONE_MINUTE) > maxTicks) {
+                continue;
+            }
+            p.sendMessage(rawMsg("tip-format", "tip", Text.mm(tip, "player", p.getName())));
+        }
     }
 
     // ------------------------------------------------------------------ intro
@@ -91,6 +171,13 @@ public final class GuideModule extends AquaticModule implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player p = event.getPlayer();
+        if (!p.hasPlayedBefore()) {
+            runLater(() -> {
+                if (p.isOnline()) {
+                    giveStarterKit(p);
+                }
+            }, 40L);
+        }
         if (!config().getBoolean("intro.enabled", true)) {
             return;
         }
@@ -245,6 +332,18 @@ public final class GuideModule extends AquaticModule implements Listener {
                 send(p, "intro-not-playing");
             }
         }).description("Stop the intro").playerOnly();
+        cmd.sub("tips", (sender, args) -> {
+            Player p = AquaticCommand.player(sender);
+            boolean off = args.length > 0 ? args[0].equalsIgnoreCase("off") : !tipsOff.contains(p.getUniqueId());
+            if (off) {
+                tipsOff.add(p.getUniqueId());
+            } else {
+                tipsOff.remove(p.getUniqueId());
+            }
+            save();
+            send(p, off ? "tips-off" : "tips-on");
+        }).usage("[on|off]").description("Turn the helpful tips in chat on or off").playerOnly()
+                .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(List.of("on", "off"), a[0]) : List.of());
         cmd.sub("chapters", (sender, args) -> send(sender, "chapters", "chapters", String.join(", ", chapters())))
                 .description("List the guide chapters (/guide <chapter> opens one)");
 
@@ -254,6 +353,13 @@ public final class GuideModule extends AquaticModule implements Listener {
             playIntro(target);
             send(sender, "admin-played", "player", target.getName());
         }).usage("<player>").description("Play the intro for a player").permission(ADMIN)
+                .completer((s, a) -> a.length == 1 ? AquaticCommand.playerNames(a[0]) : List.of());
+        cmd.sub("kit", (sender, args) -> {
+            AquaticCommand.need(args, 1, "/guide kit <player>");
+            Player target = AquaticCommand.onlinePlayer(args[0]);
+            giveStarterKit(target, true);
+            send(sender, "admin-kit", "player", target.getName());
+        }).usage("<player>").description("Give a player the starter kit").permission(ADMIN)
                 .completer((s, a) -> a.length == 1 ? AquaticCommand.playerNames(a[0]) : List.of());
         cmd.sub("reset", (sender, args) -> {
             AquaticCommand.need(args, 1, "/guide reset <player|all>");

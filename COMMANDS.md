@@ -35,7 +35,7 @@ Every feature is a **module** you can turn on or off. All numbers, costs and mes
 | `/aquatic disable <module>` | Turn a module off; modules that depend on it go off too | `aquatic.admin` |
 | `/aquatic reload [module]` | Reload configs for all modules or just one, with no restart | `aquatic.admin` |
 
-Aliases: `/aq`, `/aquaticsmp`. Module names: `economy`, `crews`, `bounty`, `islands`, `treasure`, `items`, `tournament`, `events`, `guide`.
+Aliases: `/aq`, `/aquaticsmp`. Module names: `economy`, `crews`, `bounty`, `combat`, `islands`, `treasure`, `items`, `tournament`, `events`, `guide`.
 
 ---
 
@@ -191,7 +191,7 @@ Run `/island admin` for this list in-game. The short form without `admin` (e.g. 
 | `/island admin register <name> <type> <radius>` | Turn terrain you already built into an island (no generation) |
 | `/island admin delete <island> [restore]` | Remove an island. `restore` turns it back into ocean |
 | `/island admin regen <island> [newseed]` | Wipe and regenerate the terrain |
-| `/island admin cancel [island]` | Stop running or queued generation jobs |
+| `/island admin cancel [island]` | Stop island generation, including a running `spawnrandom`. Islands that were half built stay registered; remove them with `/island admin delete <island> restore` |
 | `/island admin setspawn` | Make the island you stand on the neutral spawn island |
 | `/island admin setstatus <island> <unclaimed\|neutral>` | Change status. Neutral = safe zone: no PvP, building, claiming or explosions |
 | `/island admin setowner <island> <crew\|none>` | Give an island to a crew, or free it |
@@ -284,6 +284,28 @@ Nobody loses items in a match. Position, health and inventory are restored after
 
 ---
 
+## Combat (`combat`)
+
+These rules keep PvP fair. Tournament matches use their own rules instead.
+
+- **Combat tag:** when you hit a player or get hit, both of you are *in combat* for 15 seconds. A red bar shows at the top of the screen.
+  - You cannot use escape commands such as `/crew home`, `/spawn`, `/home`, `/tpa` or `/warp`, or teleport by command.
+  - Logging out in combat kills you: your items drop and your attacker gets the kill and any bounty.
+- **Respawn protection:** after respawning you are immune to other players for 10 seconds, so nobody can camp spawn. Attacking someone ends it.
+- **New-player protection:** for your first 30 minutes of playtime you can't attack players and they can't attack you. Use `/pvp on` to end it early.
+
+| Command | What it does | Permission |
+| --- | --- | --- |
+| `/pvp` | Your protection and combat status (alias `/combat`) | Everyone |
+| `/pvp on [confirm]` | Give up new-player protection early | Player: `aquatic.combat.optout` |
+| `/pvp status [player]` | Status of yourself, or another player (admins) | Everyone |
+| `/pvp untag <player>` | Remove a player's combat tag | Admin: `aquatic.combat.admin` |
+| `/pvp protect <player>` | Give back new-player protection, if they are still under the playtime limit | Admin: `aquatic.combat.admin` |
+
+Staff with `aquatic.combat.bypass` never get tagged. Everything is in `combat.yml`, including the list of blocked commands.
+
+---
+
 ## Guide and intro (`guide`)
 
 New players get a short intro on their first join: titles and chat tips about crews, islands and flags, treasure digging, bounties, Devil Fruits and the Pirate King. When it ends, the guide book opens.
@@ -295,10 +317,16 @@ New players get a short intro on their first join: titles and chat tips about cr
 | `/guide chapters` | List the chapters | Everyone |
 | `/guide intro` | Watch the intro again | Player: `aquatic.guide.use` |
 | `/guide skip` | Stop the intro | Everyone |
+| `/guide tips [on\|off]` | Turn the tips in chat on or off | Everyone |
+| `/guide kit <player>` | Give a player the starter kit | Admin: `aquatic.guide.admin` |
 | `/guide play <player>` | Play the intro for a player | Admin: `aquatic.guide.admin` |
 | `/guide reset <player\|all>` | Show the intro again on their next join | Admin: `aquatic.guide.admin` |
 
-All texts, timing and book pages are in `guide.yml`. For testing, set `intro.mode: every-join`.
+Brand-new players also get a **starter kit**: a boat, food, a stone shovel and sword, a Log Pose, 100 Doubloons, and a **treasure map to a real buried treasure**, so treasure hunting is the first thing they learn.
+
+New players (under 5 hours of playtime) also get a short **tip** in chat every 10 minutes.
+
+All texts, timing, kit items and tips are in `guide.yml`. For testing, set `intro.mode: every-join`.
 
 ---
 

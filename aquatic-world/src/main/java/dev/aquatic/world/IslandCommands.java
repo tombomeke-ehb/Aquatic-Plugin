@@ -131,7 +131,7 @@ final class IslandCommands {
         cmd.sub("area", this::area).usage("<radius> [spacing]").description("Set the ocean area for random islands/treasure at your position")
                 .permission(ADMIN).hidden().playerOnly()
                 .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(List.of("1500", "3000", "5000"), a[0]) : List.of());
-        cmd.sub("cancel", this::cancel).usage("[island]").description("Abort queued/running terrain jobs")
+        cmd.sub("cancel", this::cancel).usage("[island]").description("Stop island generation (also a running spawnrandom)")
                 .permission(ADMIN).hidden().completer((s, a) -> a.length == 1 ? islandNames(a[0]) : List.of());
         cmd.sub("shield", this::shield).usage("<island> <minutes>").description("Protect an island from conquest for a while")
                 .permission(ADMIN).hidden().completer((s, a) -> a.length == 1 ? islandNames(a[0]) : List.of());
@@ -583,12 +583,19 @@ final class IslandCommands {
             maxR = t;
         }
         m.send(sender, "spawnrandom-searching", "count", count);
-        spawnRandomNext(sender, fixed, count, minR, maxR, 0, new ArrayList<>());
+        IslandsModule.SpawnRun run = new IslandsModule.SpawnRun(count);
+        m.spawnRuns.add(run);
+        spawnRandomNext(run, sender, fixed, count, minR, maxR, 0, new ArrayList<>());
     }
 
     /** Places the islands one after another; each spot is searched with asynchronously loaded chunks. */
-    private void spawnRandomNext(CommandSender sender, IslandType fixed, int count, int minR, int maxR, int done, List<String> names) {
+    private void spawnRandomNext(IslandsModule.SpawnRun run, CommandSender sender, IslandType fixed, int count, int minR, int maxR,
+                                 int done, List<String> names) {
+        if (run.cancelled) {
+            return; // /island admin cancel (the cancel message already went out)
+        }
         if (done >= count) {
+            m.spawnRuns.remove(run);
             finishSpawnRandom(sender, count, names);
             return;
         }
@@ -596,15 +603,21 @@ final class IslandCommands {
         IslandType type = fixed != null ? fixed : m.randomType(random);
         int radius = minR + random.nextInt(maxR - minR + 1);
         m.findFreeOceanSpotAsync(radius, spot -> {
+            if (run.cancelled) {
+                return;
+            }
             if (spot == null) {
+                m.spawnRuns.remove(run);
                 finishSpawnRandom(sender, count, names);
                 return;
             }
             IslandImpl is = m.createIsland(m.randomName(type, ThreadLocalRandom.current()), type, spot, radius, true, sender);
             if (is != null) {
+                run.placed++;
                 names.add(is.name + " (" + is.x + ", " + is.z + ")");
+                m.send(sender, "spawnrandom-progress", "n", run.placed, "total", count, "island", is.name, "x", is.x, "z", is.z);
             }
-            spawnRandomNext(sender, fixed, count, minR, maxR, done + 1, names);
+            spawnRandomNext(run, sender, fixed, count, minR, maxR, done + 1, names);
         });
     }
 
@@ -753,8 +766,13 @@ final class IslandCommands {
 
     private void cancel(CommandSender sender, String[] args) {
         String id = args.length > 0 ? island(args[0]).id : null;
+        int runs = id == null ? m.cancelSpawnRuns() : 0;
         int removed = m.cancelJobs(id);
-        m.send(sender, "jobs-cancelled", "count", removed);
+        if (runs == 0 && removed == 0) {
+            m.send(sender, "nothing-to-cancel");
+            return;
+        }
+        m.send(sender, "generation-stopped", "count", removed, "runs", runs);
     }
 
     private void shield(CommandSender sender, String[] args) {

@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.2.0 (2026-11-12)
+
+### Added
+- **Combat module** (new `combat` module, settings in `combat.yml`):
+  - **Combat tag:** hitting or being hit by a player puts both in combat for 15 seconds, with a red countdown bar.
+    - Escape commands are blocked: `/crew home`, `/spawn`, `/home`, `/tpa`, `/warp`, and teleporting by command.
+    - Logging out in combat kills you: items drop, and your attacker gets the kill and any bounty.
+  - **Respawn protection:** 10 seconds of PvP immunity after respawning, so nobody can be spawn-camped.
+  - **New-player protection:** no PvP during the first 30 minutes of playtime. `/pvp on` ends it early.
+  - **`/pvp`** shows your status. Staff: `/pvp untag`, `/pvp protect`, and the bypass permission `aquatic.combat.bypass`.
+  - Tournament matches are not affected.
+- **Starter kit:** brand-new players get a boat, food, a stone shovel and sword, a Log Pose, 100 Doubloons, and a treasure map to a real buried treasure. Staff can give it out with `/guide kit <player>`.
+- **Tips:** new players (under 5 hours of playtime) get a helpful tip in chat every 10 minutes. `/guide tips off` turns them off.
+- **Intro:** now also mentions new-player PvP protection.
+- `TournamentService.isInMatch` was added to the API.
+
+### Fixed
+- **`/island admin cancel` didn't stop a running `spawnrandom`:** it kept generating and reported "0 jobs". Cancel now stops the run too, and reports what it stopped.
+- **Generation progress:** now shows as "Island 3/25: Name at x, z" instead of the confusing "(0 job(s) left)".
+
 ## 1.1.0 (2026-11-12)
 
 ### Added

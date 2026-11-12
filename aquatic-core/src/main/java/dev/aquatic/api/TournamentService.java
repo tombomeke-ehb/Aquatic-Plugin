@@ -13,6 +13,11 @@ public interface TournamentService {
 
     boolean isPirateKing(UUID player);
 
+    /** True while the player is fighting in a tournament match (deaths and logouts are handled by the tournament). */
+    default boolean isInMatch(UUID player) {
+        return false;
+    }
+
     /** True while a tournament is in progress (registration through finale). */
     boolean tournamentRunning();
 }
