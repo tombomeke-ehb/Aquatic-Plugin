@@ -62,7 +62,7 @@ Settings most servers change first:
 | Currency name and starting Doubloons | `economy.yml` | `currency:`, `starting-balance` |
 | Max crew size (default 6) | `crews.yml` | `max-members` |
 | Cost to found a crew or declare war | `crews.yml` | `costs:`, `war:` |
-| Where random islands and treasure go | `islands.yml` | `ocean-area:` (or `/island area` in-game) |
+| Where random islands and treasure go | `islands.yml` | `ocean-area:` (or `/island admin area` in-game) |
 | Island claim price and limit | `islands.yml` | `claiming.cost`, `claiming.max-per-crew` |
 | When enemies can raid or conquer | `islands.yml` | `raiding.mode`, `conquest.mode` (`always`, `war-only` or `never`) |
 | Conquest capture time | `islands.yml` | `conquest.capture-seconds` |
@@ -106,22 +106,22 @@ A suggested order for a fresh ocean world:
    ```
 2. **Spawn island.** Generate it and mark it as the neutral spawn:
    ```
-   /island spawn capital 70 Spawn
-   /island setspawn
+   /island admin spawn capital 70 Spawn
+   /island admin setspawn
    ```
    Neutral islands have no PvP, building, claiming or explosions.
 3. **Scatter islands:**
    ```
-   /island spawnrandom random 25 30 70
+   /island admin spawnrandom random 25 30 70
    ```
-   This creates 25 islands of random types with radius 30–70, auto-named. Generation runs a little each tick, so the server keeps running, and progress shows in your action bar. `/island cancel` stops it.
+   This creates 25 islands of random types with radius 30–70, auto-named. Generation runs a little each tick, so the server keeps running, and progress shows in your action bar. `/island admin cancel` stops it.
 4. **Single islands:**
-   - `/island spawn <tropical|jungle|volcanic|snowy|desert|ancient|capital> <radius> [name]` generates at your feet.
-   - `/island register <name> <type> <radius>` turns terrain you built yourself into an island.
+   - `/island admin spawn <tropical|jungle|volcanic|snowy|desert|ancient|capital> <radius> [name]` generates at your feet.
+   - `/island admin register <name> <type> <radius>` turns terrain you built yourself into an island.
 5. **Manage islands:**
-   - `/island delete <island> restore`, `/island regen <island>`
-   - `/island setstatus <island> neutral`, `/island setowner <island> <crew|none>`
-   - `/island rename`, `/island setradius`, `/island tp`, `/island shield <island> <minutes>`
+   - `/island admin delete <island> restore`, `/island admin regen <island>`
+   - `/island admin setstatus <island> neutral`, `/island admin setowner <island> <crew|none>`
+   - `/island admin rename`, `/island admin setradius`, `/island admin tp`, `/island admin shield <island> <minutes>`
 6. **Treasure:**
    - `/treasure spawn <common|rare|epic|legendary> [here|random]`
    - `/treasure map <tier> [player]` spawns a treasure and hands out a map to it.

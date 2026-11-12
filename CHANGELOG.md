@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.3 (2026-11-12)
+
+### Changed
+- **Island admin commands:** these are now listed only under `/island admin`, so admins no longer see every command twice in help and tab completion. The short form, such as `/island spawn`, still works.
+- **`/island list`:** now shows each island's coordinates. Admins also get a clickable **[TP]** button behind every island.
+  - Existing servers keep the old line format, because the message is already saved in their `islands.yml`.
+  - To get coordinates there, delete the `list-entry:` line from the `messages:` section of `islands.yml`, then run `/aquatic reload islands`.
+
 ## 1.0.2 (2026-11-12)
 
 ### Added

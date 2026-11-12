@@ -52,6 +52,7 @@ public class AquaticCommand extends Command {
         private String description = "";
         private String permission;
         private boolean playerOnly;
+        private boolean hidden;
         private Completer completer = (s, a) -> List.of();
 
         private Sub(String name, Executor executor) {
@@ -86,6 +87,15 @@ public class AquaticCommand extends Command {
         public Sub playerPermission(String node) {
             this.permission = node;
             ensurePermission(node, PermissionDefault.TRUE);
+            return this;
+        }
+
+        /**
+         * Keeps the sub-command working but leaves it out of the main help and first-argument tab completion.
+         * Use it for a group shown under another sub-command, see {@link #sendHiddenHelp} and {@link #completeHidden}.
+         */
+        public Sub hidden() {
+            this.hidden = true;
             return this;
         }
 
@@ -230,12 +240,45 @@ public class AquaticCommand extends Command {
     public void sendHelp(CommandSender sender, String label) {
         sender.sendMessage(Text.mm("<dark_aqua><strikethrough>        </strikethrough> <aqua><bold>/<label></bold> <dark_aqua><strikethrough>        </strikethrough>", "label", label));
         for (Sub sub : subs.values()) {
-            if (!sub.allowed(sender)) {
+            if (sub.hidden || !sub.allowed(sender)) {
                 continue;
             }
-            sender.sendMessage(Text.mm("<aqua>/<label> <name><white><usage> <dark_gray>-</dark_gray> <gray><desc>",
-                    "label", label, "name", sub.name, "usage", sub.usage.isEmpty() ? "" : " " + sub.usage, "desc", sub.description));
+            helpLine(sender, label, sub);
         }
+    }
+
+    /** Help page listing only the hidden sub-commands, e.g. sendHiddenHelp(sender, "island admin"). */
+    public void sendHiddenHelp(CommandSender sender, String label) {
+        sender.sendMessage(Text.mm("<dark_aqua><strikethrough>        </strikethrough> <aqua><bold>/<label></bold> <dark_aqua><strikethrough>        </strikethrough>", "label", label));
+        for (Sub sub : subs.values()) {
+            if (sub.hidden && sub.allowed(sender)) {
+                helpLine(sender, label, sub);
+            }
+        }
+    }
+
+    private static void helpLine(CommandSender sender, String label, Sub sub) {
+        sender.sendMessage(Text.mm("<aqua>/<label> <name><white><usage> <dark_gray>-</dark_gray> <gray><desc>",
+                "label", label, "name", sub.name, "usage", sub.usage.isEmpty() ? "" : " " + sub.usage, "desc", sub.description));
+    }
+
+    /** Tab completion over the hidden sub-commands only (for a group like "/island admin ..."). */
+    public List<String> completeHidden(CommandSender sender, String[] args) {
+        if (args.length <= 1) {
+            List<String> out = new ArrayList<>();
+            for (Sub sub : subs.values()) {
+                if (sub.hidden && sub.allowed(sender)) {
+                    out.add(sub.name);
+                }
+            }
+            return filter(out, args.length == 0 ? "" : args[0]);
+        }
+        Sub sub = lookup.get(args[0].toLowerCase());
+        if (sub == null || !sub.hidden || !sub.allowed(sender)) {
+            return List.of();
+        }
+        List<String> result = sub.completer.complete(sender, Arrays.copyOfRange(args, 1, args.length));
+        return result == null ? List.of() : result;
     }
 
     @Override
@@ -245,7 +288,7 @@ public class AquaticCommand extends Command {
                 String prefix = args.length == 0 ? "" : args[0];
                 List<String> out = new ArrayList<>();
                 for (Sub sub : subs.values()) {
-                    if (sub.allowed(sender)) {
+                    if (!sub.hidden && sub.allowed(sender)) {
                         out.add(sub.name);
                     }
                 }

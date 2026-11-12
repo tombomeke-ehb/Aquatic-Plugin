@@ -165,7 +165,7 @@ Killing a pirate with a bounty pays you the full amount. Crewmates and allies of
 | --- | --- | --- |
 | `/island info [island]` | Type, size, status, owner and shield of an island | `aquatic.islands.info` |
 | `/island here` | Which island you are standing on | `aquatic.islands.info` |
-| `/island list [page]` | All islands | `aquatic.islands.list` |
+| `/island list [page]` | All islands with their coordinates and distance. Admins get a clickable **[TP]** button per island | `aquatic.islands.list` |
 | `/island map` | Nearest islands with direction and distance (alias `near`) | `aquatic.islands.map` |
 | `/island discovered [player]` | Islands you have discovered | `aquatic.islands.discovered` |
 | `/island top` | Crews ranked by islands owned | `aquatic.islands.top` |
@@ -175,24 +175,24 @@ Killing a pirate with a bounty pays you the full amount. Crewmates and allies of
 
 **Admin commands** (`aquatic.islands.admin`)
 
-These work as `/island <sub>` or `/island admin <sub>`.
+Run `/island admin` for this list in-game. The short form without `admin` (e.g. `/island spawn`) also works, but only `/island admin` shows these in help and tab completion.
 
 | Command | What it does |
 | --- | --- |
-| `/island spawn <type> <radius> [name]` | Generate an island at your position. Types: `tropical`, `jungle`, `volcanic`, `snowy`, `desert`, `ancient`, `capital` |
-| `/island spawnrandom <type\|random> <count> [minRadius] [maxRadius]` | Scatter many islands over the ocean area, auto-named and spaced apart |
-| `/island area <radius> [spacing]` | Set the ocean area for random islands and treasure, centred on you |
-| `/island register <name> <type> <radius>` | Turn terrain you already built into an island (no generation) |
-| `/island delete <island> [restore]` | Remove an island. `restore` turns it back into ocean |
-| `/island regen <island> [newseed]` | Wipe and regenerate the terrain |
-| `/island cancel [island]` | Stop running or queued generation jobs |
-| `/island setspawn` | Make the island you stand on the neutral spawn island |
-| `/island setstatus <island> <unclaimed\|neutral>` | Change status. Neutral = safe zone: no PvP, building, claiming or explosions |
-| `/island setowner <island> <crew\|none>` | Give an island to a crew, or free it |
-| `/island rename <island> <new name>` | Rename an island |
-| `/island setradius <island> <radius>` | Change the protected radius |
-| `/island shield <island> <minutes>` | Protect an island from conquest for a while |
-| `/island tp <island>` | Teleport to an island |
+| `/island admin spawn <type> <radius> [name]` | Generate an island at your position. Types: `tropical`, `jungle`, `volcanic`, `snowy`, `desert`, `ancient`, `capital` |
+| `/island admin spawnrandom <type\|random> <count> [minRadius] [maxRadius]` | Scatter many islands over the ocean area, auto-named and spaced apart |
+| `/island admin area <radius> [spacing]` | Set the ocean area for random islands and treasure, centred on you |
+| `/island admin register <name> <type> <radius>` | Turn terrain you already built into an island (no generation) |
+| `/island admin delete <island> [restore]` | Remove an island. `restore` turns it back into ocean |
+| `/island admin regen <island> [newseed]` | Wipe and regenerate the terrain |
+| `/island admin cancel [island]` | Stop running or queued generation jobs |
+| `/island admin setspawn` | Make the island you stand on the neutral spawn island |
+| `/island admin setstatus <island> <unclaimed\|neutral>` | Change status. Neutral = safe zone: no PvP, building, claiming or explosions |
+| `/island admin setowner <island> <crew\|none>` | Give an island to a crew, or free it |
+| `/island admin rename <island> <new name>` | Rename an island |
+| `/island admin setradius <island> <radius>` | Change the protected radius |
+| `/island admin shield <island> <minutes>` | Protect an island from conquest for a while |
+| `/island admin tp <island>` | Teleport to an island |
 
 Bypass all island protection: `aquatic.islands.bypass`.
 

@@ -71,21 +71,21 @@ final class IslandCommands {
         // ---------------------------------------------------------------- admin
         cmd.sub("admin", (s, a) -> {
             if (a.length == 0) {
-                cmd.sendHelp(s, "island");
+                cmd.sendHiddenHelp(s, "island admin");
                 return;
             }
             cmd.execute(s, "island", a);
-        }).usage("<sub> ...").description("Admin commands (also usable directly)").permission(ADMIN)
-                .completer((s, a) -> cmd.tabComplete(s, "island", a));
+        }).usage("<sub> ...").description("Island admin commands").permission(ADMIN)
+                .completer((s, a) -> cmd.completeHidden(s, a));
         cmd.sub("spawn", this::spawn).usage("<type> <radius> [name]").description("Generate an island where you stand")
-                .permission(ADMIN).playerOnly()
+                .permission(ADMIN).hidden().playerOnly()
                 .completer((s, a) -> switch (a.length) {
                     case 1 -> typeNames(a[0], false);
                     case 2 -> AquaticCommand.filter(List.of("40", "60", "80"), a[1]);
                     default -> List.of();
                 });
         cmd.sub("spawnrandom", this::spawnRandom).usage("<type|random> <count> [minRadius] [maxRadius]")
-                .description("Scatter islands over the ocean area").permission(ADMIN)
+                .description("Scatter islands over the ocean area").permission(ADMIN).hidden()
                 .completer((s, a) -> switch (a.length) {
                     case 1 -> typeNames(a[0], true);
                     case 2 -> AquaticCommand.filter(List.of("1", "5", "10"), a[1]);
@@ -94,47 +94,47 @@ final class IslandCommands {
                     default -> List.of();
                 });
         cmd.sub("register", this::register).usage("<name> <type> <radius>")
-                .description("Register existing terrain as an island (no generation)").permission(ADMIN).playerOnly()
+                .description("Register existing terrain as an island (no generation)").permission(ADMIN).hidden().playerOnly()
                 .completer((s, a) -> a.length == 2 ? typeNames(a[1], false) : List.of());
         cmd.sub("delete", this::delete).usage("<island> [restore]").description("Unregister an island, optionally back to ocean")
-                .permission(ADMIN).completer((s, a) -> switch (a.length) {
+                .permission(ADMIN).hidden().completer((s, a) -> switch (a.length) {
                     case 1 -> islandNames(a[0]);
                     case 2 -> AquaticCommand.filter(List.of("restore"), a[1]);
                     default -> List.of();
                 });
         cmd.sub("setstatus", this::setStatus).usage("<island> <unclaimed|neutral>").description("Change an island's status")
-                .permission(ADMIN).completer((s, a) -> switch (a.length) {
+                .permission(ADMIN).hidden().completer((s, a) -> switch (a.length) {
                     case 1 -> islandNames(a[0]);
                     case 2 -> AquaticCommand.filter(List.of("unclaimed", "neutral"), a[1]);
                     default -> List.of();
                 });
         cmd.sub("setowner", this::setOwner).usage("<island> <crew|none>").description("Give an island to a crew")
-                .permission(ADMIN).completer((s, a) -> switch (a.length) {
+                .permission(ADMIN).hidden().completer((s, a) -> switch (a.length) {
                     case 1 -> islandNames(a[0]);
                     case 2 -> crewNames(a[1]);
                     default -> List.of();
                 });
         cmd.sub("rename", this::rename).usage("<island> <new name>").description("Rename an island")
-                .permission(ADMIN).completer((s, a) -> a.length == 1 ? islandNames(a[0]) : List.of());
+                .permission(ADMIN).hidden().completer((s, a) -> a.length == 1 ? islandNames(a[0]) : List.of());
         cmd.sub("setradius", this::setRadius).usage("<island> <radius>").description("Change an island's protected radius")
-                .permission(ADMIN).completer((s, a) -> a.length == 1 ? islandNames(a[0]) : List.of());
-        cmd.sub("tp", this::tp).usage("<island>").description("Teleport to an island").permission(ADMIN).playerOnly()
+                .permission(ADMIN).hidden().completer((s, a) -> a.length == 1 ? islandNames(a[0]) : List.of());
+        cmd.sub("tp", this::tp).usage("<island>").description("Teleport to an island").permission(ADMIN).hidden().playerOnly()
                 .completer((s, a) -> a.length == 1 ? islandNames(a[0]) : List.of());
         cmd.sub("regen", this::regen).usage("<island> [newseed]").description("Clear and regenerate an island's terrain")
-                .permission(ADMIN).completer((s, a) -> switch (a.length) {
+                .permission(ADMIN).hidden().completer((s, a) -> switch (a.length) {
                     case 1 -> islandNames(a[0]);
                     case 2 -> AquaticCommand.filter(List.of("newseed"), a[1]);
                     default -> List.of();
                 });
         cmd.sub("setspawn", (s, a) -> setSpawn(AquaticCommand.player(s))).description("Make the island you stand on the neutral spawn island")
-                .permission(ADMIN).playerOnly();
+                .permission(ADMIN).hidden().playerOnly();
         cmd.sub("area", this::area).usage("<radius> [spacing]").description("Set the ocean area for random islands/treasure at your position")
-                .permission(ADMIN).playerOnly()
+                .permission(ADMIN).hidden().playerOnly()
                 .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(List.of("1500", "3000", "5000"), a[0]) : List.of());
         cmd.sub("cancel", this::cancel).usage("[island]").description("Abort queued/running terrain jobs")
-                .permission(ADMIN).completer((s, a) -> a.length == 1 ? islandNames(a[0]) : List.of());
+                .permission(ADMIN).hidden().completer((s, a) -> a.length == 1 ? islandNames(a[0]) : List.of());
         cmd.sub("shield", this::shield).usage("<island> <minutes>").description("Protect an island from conquest for a while")
-                .permission(ADMIN).completer((s, a) -> a.length == 1 ? islandNames(a[0]) : List.of());
+                .permission(ADMIN).hidden().completer((s, a) -> a.length == 1 ? islandNames(a[0]) : List.of());
         return cmd;
     }
 
@@ -288,8 +288,15 @@ final class IslandCommands {
             IslandImpl is = all.get(i);
             String dist = here != null && here.getWorld() != null && here.getWorld().getName().equals(is.world)
                     ? Text.number(Math.round(is.distance(here.getBlockX(), here.getBlockZ()))) + "m" : "-";
-            sender.sendMessage(m.rawMsg("list-entry", "island", is.name, "id", is.id, "type", m.typeName(is.type),
-                    "owner", m.ownerLine(is), "distance", dist));
+            net.kyori.adventure.text.Component line = m.rawMsg("list-entry", "island", is.name, "id", is.id,
+                    "type", m.typeName(is.type), "owner", m.ownerLine(is), "distance", dist, "x", is.x, "z", is.z);
+            if (sender.hasPermission(ADMIN) && sender instanceof Player) {
+                // admins get a clickable teleport button behind every island
+                line = line.append(net.kyori.adventure.text.Component.space()).append(m.rawMsg("list-tp")
+                        .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/island admin tp " + is.id))
+                        .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(m.rawMsg("list-tp-hover", "island", is.name))));
+            }
+            sender.sendMessage(line);
         }
         if (page < pages) {
             sender.sendMessage(m.rawMsg("list-footer", "next", page + 1));
