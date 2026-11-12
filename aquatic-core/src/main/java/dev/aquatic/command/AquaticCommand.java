@@ -132,6 +132,35 @@ public class AquaticCommand extends Command {
     private final Map<String, Sub> subs = new LinkedHashMap<>();
     private final Map<String, Sub> lookup = new LinkedHashMap<>();
     private Executor defaultExecutor;
+    /** Claim the command names even when another plugin (e.g. EssentialsX) registered them too. */
+    private boolean takeOver;
+
+    /**
+     * Makes this command win its names (and aliases) over other plugins, also when they load later.
+     * The other plugin's version stays reachable as /plugin:name (e.g. /essentials:pay).
+     */
+    public AquaticCommand takeOver(boolean on) {
+        this.takeOver = on;
+        return this;
+    }
+
+    private void claimLabels() {
+        try {
+            Map<String, Command> known = Bukkit.getCommandMap().getKnownCommands();
+            List<String> labels = new ArrayList<>();
+            labels.add(getName().toLowerCase());
+            for (String alias : getAliases()) {
+                labels.add(alias.toLowerCase());
+            }
+            for (String label : labels) {
+                if (known.get(label) != this) {
+                    known.put(label, this);
+                }
+            }
+        } catch (Throwable t) {
+            AquaticPlugin.get().getLogger().log(Level.WARNING, "Could not claim the name /" + getName(), t);
+        }
+    }
     private Completer defaultCompleter;
 
     public AquaticCommand(String name, String description, String... aliases) {
@@ -175,6 +204,16 @@ public class AquaticCommand extends Command {
         }
         Bukkit.getCommandMap().register("aquatic", this);
         REGISTERED.put(getName(), this);
+        if (takeOver) {
+            claimLabels();
+            // plugins that load after us (EssentialsX ...) may grab the names again: claim them once more
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                if (REGISTERED.get(getName()) == this) {
+                    claimLabels();
+                    syncCommands();
+                }
+            }, 40L);
+        }
         syncCommands();
     }
 

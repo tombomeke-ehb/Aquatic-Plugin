@@ -67,6 +67,12 @@ public final class CrewsModule extends AquaticModule implements CrewService {
     /** Hover cards for chat names/tags, rebuilt on the main thread (the chat renderer runs async). */
     private final java.util.Map<UUID, Component> playerCards = new ConcurrentHashMap<>();
     private final java.util.Map<UUID, Component> crewTagCards = new ConcurrentHashMap<>();
+    /** Level per online player for the chat badge (filled on the main thread). */
+    private final java.util.Map<UUID, Integer> levelCache = new ConcurrentHashMap<>();
+
+    Integer cachedLevel(UUID player) {
+        return levelCache.get(player);
+    }
 
     @Override
     public String id() {
@@ -853,6 +859,12 @@ public final class CrewsModule extends AquaticModule implements CrewService {
                         "bounty", bountyText,
                         "title", tournament != null && tournament.isPirateKing(id) ? rawMsg("card-sovereign") : Component.empty());
                 playerCards.put(id, card);
+            }
+            dev.aquatic.api.LevelService levels = service(dev.aquatic.api.LevelService.class);
+            if (levels != null) {
+                levelCache.put(id, levels.level(id));
+            } else {
+                levelCache.remove(id);
             }
             if (config().getBoolean("tablist.header-footer", true)) {
                 Object[] ph = {"player", p.getName(), "online", Bukkit.getOnlinePlayers().size(), "max", Bukkit.getMaxPlayers(),

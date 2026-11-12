@@ -138,6 +138,7 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         runTimer(() -> upgrades.tickHarbor(presence), 40L, 40L);
         conquest = new ConquestManager(this);
         registerCommand(new IslandCommands(this).build());
+        registerSpawnCommand();
 
         runTimer(this::tickJobs, 1L, 1L);
         spotPool.clear();
@@ -794,6 +795,116 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         spawnPoint = l.getWorld().getName() + ";" + l.getX() + ";" + l.getY() + ";" + l.getZ() + ";" + l.getYaw() + ";" + l.getPitch();
         l.getWorld().setSpawnLocation(l);
         markDirty();
+    }
+
+    // ------------------------------------------------------------------ /spawn
+
+    private final Map<UUID, org.bukkit.scheduler.BukkitTask> spawnWarmups = new HashMap<>();
+    private final Map<UUID, Long> spawnCooldowns = new HashMap<>();
+
+    /** Where /spawn goes: the exact /setspawn point, else the spawn island, else the capital, else the world spawn. */
+    Location spawnDestination() {
+        Location set = spawnLocation();
+        if (set != null) {
+            return set;
+        }
+        for (IslandImpl is : islands.values()) {
+            if (is.type == IslandType.CAPITAL) {
+                Location spot = teleportSpot(is);
+                if (spot != null) {
+                    return spot;
+                }
+            }
+        }
+        World w = Bukkit.getWorld(config().getString("ocean-area.world", "world"));
+        return w == null ? null : w.getSpawnLocation();
+    }
+
+    private void registerSpawnCommand() {
+        if (!config().getBoolean("spawn.command.enabled", true)) {
+            return;
+        }
+        dev.aquatic.command.AquaticCommand cmd = new dev.aquatic.command.AquaticCommand("spawn", "Sail back to spawn / the capital");
+        cmd.defaultExecutor((sender, args) -> {
+            Player p = dev.aquatic.command.AquaticCommand.player(sender);
+            if (args.length > 0 && sender.hasPermission("aquatic.islands.admin")) {
+                Player target = dev.aquatic.command.AquaticCommand.onlinePlayer(args[0]);
+                Location to = spawnDestination();
+                if (to == null) {
+                    throw new dev.aquatic.command.CommandFail(rawMsg("spawn-none"));
+                }
+                target.teleportAsync(to);
+                send(sender, "spawn-sent", "player", target.getName());
+                return;
+            }
+            startSpawnWarmup(p);
+        });
+        cmd.takeOver(config().getBoolean("spawn.command.take-over", true));
+        registerCommand(cmd);
+    }
+
+    private void startSpawnWarmup(Player p) {
+        Location to = spawnDestination();
+        if (to == null) {
+            throw new dev.aquatic.command.CommandFail(rawMsg("spawn-none"));
+        }
+        UUID id = p.getUniqueId();
+        boolean bypass = p.hasPermission("aquatic.islands.admin");
+        long cooldown = Math.max(0, config().getLong("spawn.command.cooldown-seconds", 30)) * 1000L;
+        Long last = spawnCooldowns.get(id);
+        if (!bypass && last != null && System.currentTimeMillis() - last < cooldown) {
+            throw new dev.aquatic.command.CommandFail(rawMsg("spawn-cooldown", "seconds",
+                    (cooldown - (System.currentTimeMillis() - last) + 999) / 1000));
+        }
+        if (spawnWarmups.containsKey(id)) {
+            throw new dev.aquatic.command.CommandFail(rawMsg("spawn-already"));
+        }
+        int warmup = bypass ? 0 : Math.max(0, config().getInt("spawn.command.warmup-seconds", 3));
+        if (warmup == 0) {
+            p.teleportAsync(to);
+            spawnCooldowns.put(id, System.currentTimeMillis());
+            send(p, "spawn-arrived");
+            return;
+        }
+        Location start = p.getLocation();
+        double health = p.getHealth();
+        send(p, "spawn-warmup", "seconds", warmup);
+        int[] ticks = {0};
+        spawnWarmups.put(id, runTimer(() -> {
+            if (!p.isOnline()) {
+                cancelSpawnWarmup(id, null);
+                return;
+            }
+            if (p.getLocation().getWorld() != start.getWorld() || p.getLocation().distanceSquared(start) > 1.0) {
+                cancelSpawnWarmup(id, p);
+                return;
+            }
+            if (p.getHealth() < health) {
+                cancelSpawnWarmup(id, p);
+                return;
+            }
+            ticks[0] += 5;
+            p.getWorld().spawnParticle(org.bukkit.Particle.PORTAL, p.getLocation().add(0, 1, 0), 15, 0.4, 0.6, 0.4, 0.2);
+            if (ticks[0] >= warmup * 20) {
+                org.bukkit.scheduler.BukkitTask task = spawnWarmups.remove(id);
+                if (task != null) {
+                    task.cancel();
+                }
+                p.teleportAsync(spawnDestination() != null ? spawnDestination() : to);
+                spawnCooldowns.put(id, System.currentTimeMillis());
+                send(p, "spawn-arrived");
+            }
+        }, 5L, 5L));
+    }
+
+    private void cancelSpawnWarmup(UUID id, Player tell) {
+        org.bukkit.scheduler.BukkitTask task = spawnWarmups.remove(id);
+        if (task != null) {
+            task.cancel();
+        }
+        if (tell != null) {
+            send(tell, "spawn-cancelled");
+        }
     }
 
     Location islandSpawnSpot(IslandImpl is) {

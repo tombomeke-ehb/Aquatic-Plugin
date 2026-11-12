@@ -87,6 +87,10 @@ vault:
 #  Messages (MiniMessage format: https://docs.advntr.dev/minimessage/format.html)
 #  <placeholders> are filled in by the plugin.
 # ---------------------------------------------------------------------
+# /doubloons (/balance, /bal, /money), /pay and /baltop always belong to AquaticSMP, even when another
+# plugin such as EssentialsX has commands with the same names. Theirs stay usable as /essentials:pay.
+take-over-commands: true
+
 messages:
   balance-self: "<gray>Yer purse holds <gold><balance></gold>."
   balance-other: "<white><player></white><gray> carries <gold><balance></gold>."

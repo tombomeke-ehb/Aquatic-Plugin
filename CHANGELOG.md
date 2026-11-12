@@ -1,5 +1,25 @@
 # Changelog
 
+## 2.1.0 (2026-11-12)
+
+### Added
+- **`/spawn`:** sails you back to the spawn set with `/island admin setspawn`. If none is set, it goes to the capital island, and otherwise to the world spawn.
+  - A 3-second warmup that cancels if you move or take damage, and a 30-second cooldown.
+  - Blocked during combat.
+  - Staff can send someone with `/spawn <player>`.
+  - Configure it under `spawn.command` in `islands.yml`.
+- **Better chat:**
+  - Our own chat line, `[12] ★ [TAG] Name » message`, with a level badge, rank icon and crew tag.
+  - **@mentions:** an online player's name lights up and that player hears a ping.
+  - **`[item]`:** shows the item in your hand in chat, and you can hover over it for all its details.
+  - Everything can be configured or turned off under `chat:` in `crews.yml` (for example if you use EssentialsX Chat later).
+
+### Changed
+- **The economy commands always belong to AquaticSMP:** `/balance`, `/bal`, `/money`, `/pay` and `/baltop`, even if EssentialsX is installed (also when it loads later). The same goes for `/spawn`.
+  - EssentialsX's versions stay reachable as `/essentials:pay` and so on.
+  - You no longer need `disabled-commands` in EssentialsX.
+  - Turn it off with `take-over-commands: false` (in `economy.yml`) or `spawn.command.take-over: false`.
+
 ## 2.0.0 (2026-11-12)
 
 The power update: fruits, gear and progression should really make a difference in PvP.

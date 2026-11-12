@@ -31,6 +31,7 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -260,20 +261,85 @@ final class CrewListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPublicChat(AsyncChatEvent event) {
-        Component prefix = module.chatPrefix(event.getPlayer().getUniqueId());
-        Component card = module.playerCard(event.getPlayer().getUniqueId());
-        if (prefix == null && card == null) {
+        Player player = event.getPlayer();
+        UUID id = player.getUniqueId();
+        Component prefix = module.chatPrefix(id);
+        Component card = module.playerCard(id);
+        org.bukkit.configuration.ConfigurationSection cfg = module.config().getConfigurationSection("chat");
+        boolean format = cfg != null && cfg.getBoolean("format.enabled", true);
+        String line = cfg == null ? "" : cfg.getString("format.line", "<level><prefix><name><dark_gray> » <white><message>");
+        Integer level = module.cachedLevel(id);
+        Component badge = level == null || cfg == null || cfg.getString("format.level-badge", "").isEmpty() ? Component.empty()
+                : dev.aquatic.util.Text.mm(cfg.getString("format.level-badge"), "level", level);
+
+        // [item]: shows the item in your hand, hover for all its details
+        Component item = null;
+        String itemTag = cfg == null ? "[item]" : cfg.getString("item-tag", "[item]");
+        String plain = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(event.message());
+        if (itemTag != null && !itemTag.isEmpty() && plain.contains(itemTag)) {
+            org.bukkit.inventory.ItemStack hand = player.getInventory().getItemInMainHand();
+            if (!hand.getType().isAir()) {
+                item = hand.displayName();
+            }
+        }
+
+        // @mentions: highlight the name and ping that player
+        List<String> mentioned = new ArrayList<>();
+        boolean mentions = cfg == null || cfg.getBoolean("mentions.enabled", true);
+        if (mentions) {
+            String lower = plain.toLowerCase(java.util.Locale.ROOT);
+            for (Player online : Bukkit.getOnlinePlayers()) {
+                String n = online.getName().toLowerCase(java.util.Locale.ROOT);
+                if (!online.equals(player) && java.util.regex.Pattern.compile("(?<![a-z0-9_])@?" + java.util.regex.Pattern.quote(n)
+                        + "(?![a-z0-9_])").matcher(lower).find()) {
+                    mentioned.add(online.getName());
+                }
+            }
+        }
+        if (!mentioned.isEmpty()) {
+            String sound = cfg == null ? "entity.experience_orb.pickup" : cfg.getString("mentions.sound", "entity.experience_orb.pickup");
+            List<String> names = new ArrayList<>(mentioned);
+            Bukkit.getScheduler().runTask(module.plugin(), () -> {
+                for (String n : names) {
+                    Player target = Bukkit.getPlayerExact(n);
+                    if (target != null) {
+                        try {
+                            target.playSound(net.kyori.adventure.sound.Sound.sound(net.kyori.adventure.key.Key.key(sound),
+                                    net.kyori.adventure.sound.Sound.Source.PLAYER, 1f, 1.4f));
+                        } catch (RuntimeException ignored) {
+                        }
+                    }
+                }
+            });
+        }
+        String highlight = cfg == null ? "<yellow>@<name></yellow>" : cfg.getString("mentions.highlight", "<yellow>@<name></yellow>");
+
+        if (prefix == null && card == null && !format && item == null && mentioned.isEmpty()) {
             return;
         }
         ChatRenderer base = event.renderer();
-        String name = event.getPlayer().getName();
+        String name = player.getName();
+        Component itemComponent = item;
         event.renderer((source, displayName, message, viewer) -> {
+            Component msg = message;
+            if (itemComponent != null) {
+                msg = msg.replaceText(b -> b.matchLiteral(itemTag).once().replacement(itemComponent));
+            }
+            for (String n : mentioned) {
+                Component hl = dev.aquatic.util.Text.mm(highlight, "name", n);
+                msg = msg.replaceText(b -> b.match("(?i)(?<![A-Za-z0-9_])@?" + java.util.regex.Pattern.quote(n) + "(?![A-Za-z0-9_])")
+                        .replacement(hl));
+            }
             // hover the name for the player card, click it to start a private message
             Component shownName = card == null ? displayName : displayName
                     .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(card))
                     .clickEvent(net.kyori.adventure.text.event.ClickEvent.suggestCommand("/msg " + name + " "));
-            Component line = base.render(source, shownName, message, viewer);
-            return prefix == null ? line : Component.textOfChildren(prefix, line);
+            if (format) {
+                return dev.aquatic.util.Text.mm(line, "level", badge, "prefix", prefix == null ? Component.empty() : prefix,
+                        "name", shownName, "message", msg);
+            }
+            Component rendered = base.render(source, shownName, msg, viewer);
+            return prefix == null ? rendered : Component.textOfChildren(prefix, rendered);
         });
     }
 

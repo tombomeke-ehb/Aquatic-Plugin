@@ -24,7 +24,7 @@ Output: `aquatic-dist/target/AquaticSMP-1.0.0.jar`. The script uses `mvn` from P
    - `modules/<module>.yml`: one file per module, heavily commented.
    - `data/`: saved state (do not edit while the server runs).
 
-> **Using EssentialsX?** EssentialsX also has `/pay`, `/balance`, `/bal`, `/money` and `/baltop`, so the two plugins fight over those names. The fix: add the EssentialsX economy commands to `disabled-commands` in `plugins/Essentials/config.yml`, install Vault, then restart. Do not turn off AquaticSMP's `economy` module instead: bounties, crew banks and claim costs need it. The full steps, plus the TAB and chat plugin overlaps, are in [COMMANDS.md → EssentialsX conflict](COMMANDS.md#essentialsx-conflict).
+> **Using EssentialsX?** It works side by side: AquaticSMP keeps `/pay`, `/bal`, `/baltop` and `/spawn` for itself (EssentialsX's stay usable as `/essentials:pay`). Install **Vault** too, so Doubloons become the server currency. EssentialsX Spawn and Chat aren't needed. See [COMMANDS.md → EssentialsX conflict](COMMANDS.md#essentialsx-conflict).
 >
 > See **[COMMANDS.md](COMMANDS.md)** for every command, what it does and its permission.
 

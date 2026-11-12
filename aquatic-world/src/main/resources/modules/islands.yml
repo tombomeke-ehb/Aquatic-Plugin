@@ -487,6 +487,14 @@ spawn:
   teleport-on-every-join: false
   # Players without a bed / respawn anchor respawn at the spawn point.
   respawn-here: true
+  # /spawn: back to the spawn point (or the capital when no spawn is set). Admins: /spawn <player>.
+  # Blocked in combat (see combat.yml). take-over = the name /spawn belongs to AquaticSMP even when
+  # another plugin (EssentialsX Spawn) has it too.
+  command:
+    enabled: true
+    warmup-seconds: 3
+    cooldown-seconds: 30
+    take-over: true
 presence:
   # How often (ticks) player positions are checked; players are only re-checked when they changed block.
   check-interval-ticks: 10
@@ -735,6 +743,13 @@ bluemap:
 #  Messages
 # =====================================================================================
 messages:
+  spawn-none: "<red>No spawn is set yet. <gray>(an admin uses /island admin setspawn)"
+  spawn-warmup: "<aqua>Setting sail for spawn in <white><seconds></white>s... <gray>Don't move."
+  spawn-cancelled: "<red>Trip cancelled: you moved or got hurt."
+  spawn-arrived: "<green>Welcome back to port."
+  spawn-already: "<gray>You're already on your way."
+  spawn-cooldown: "<red>Wait <white><seconds></white>s before using /spawn again."
+  spawn-sent: "<green>Sent <white><player></white> to spawn."
   info-rarity: "<gray>Rarity: <rarity>"
   deny-officers-only: "<red>Only officers may build here. <gray>(build access: officers only)"
   manage-access-all: "<green><bold>Build access: all crewmates"

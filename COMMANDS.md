@@ -165,6 +165,15 @@ Killing a pirate with a bounty pays you the full amount. Crewmates and allies of
 
 ---
 
+## Spawn
+
+| Command | What it does | Permission |
+| --- | --- | --- |
+| `/spawn` | Back to spawn (the point from `/island admin setspawn`, otherwise the capital). 3 s warmup, cancelled if you move or get hurt; not in combat | Everyone |
+| `/spawn <player>` | Send someone to spawn right away | Admin: `aquatic.islands.admin` |
+
+---
+
 ## Islands (`islands`)
 
 `/island` (aliases `/is`, `/islands`)
@@ -409,40 +418,17 @@ Event types:
 
 ## EssentialsX conflict
 
-EssentialsX and AquaticSMP both have economy commands. Command names used by both plugins:
+EssentialsX also has `/balance`, `/bal`, `/money`, `/pay`, `/baltop` and (with EssentialsX Spawn) `/spawn`.
 
-| Shared name | AquaticSMP | EssentialsX |
-| --- | --- | --- |
-| `/balance`, `/bal`, `/money` | Doubloons balance | Essentials balance |
-| `/pay` | Pays Doubloons | Pays Essentials money |
-| `/baltop` | Doubloons ranking | Essentials ranking |
+**Since 2.1.0, AquaticSMP always wins these names**, even if EssentialsX loads later. You don't have to change anything in EssentialsX.
+- EssentialsX's own versions stay reachable as `/essentials:pay`, `/essentials:spawn` and so on.
+- To give those names back to EssentialsX: set `take-over-commands: false` in `economy.yml` and `spawn.command.take-over: false` in `islands.yml`.
 
-When two plugins use the same name, whichever registers first gets the short name. That depends on plugin load order, so players could end up using a different currency from one restart to the next. Both versions are always reachable through the long forms: `/aquatic:pay` and `/essentials:pay`.
-
-**Recommended: keep AquaticSMP's Doubloons and turn off EssentialsX's economy commands.**
-
-AquaticSMP's own features (bounties, crew bank, claim costs, war costs, rewards) always use Doubloons, so this is the only setup where everything uses one currency.
-
-1. In `plugins/Essentials/config.yml`, add the economy commands to `disabled-commands`:
-   ```yaml
-   disabled-commands:
-     - balance
-     - balancetop
-     - pay
-     - eco
-   ```
-2. Install **Vault** and leave `vault.enabled: true` in `modules/economy.yml`. AquaticSMP registers Doubloons with Vault at the highest priority. Every Vault-based plugin, including EssentialsX's `/sell` and `/worth` and shop or job plugins, then pays in Doubloons.
-3. Restart the server, not just reload, so the short names are re-registered.
-4. Check: `/bal` should answer with the AquaticSMP prefix and "Doubloons".
-
-The rest of EssentialsX (homes, warps, `/tpa`, kits, ...) keeps working normally.
-
-**Not recommended: turning off the `economy` module instead.**
-
-- The `bounty` module needs `economy` and turns off with it.
-- Crew bank, claim and war costs, Doubloon treasure and event money rewards stop working, because they don't read EssentialsX balances.
-
-Only do this if you don't want an economy in AquaticSMP at all.
+**Recommended setup with EssentialsX:**
+1. Install **EssentialsX** (core) for homes, warps, `/tpa`, `/msg` and kits.
+2. Install **Vault**. It's a separate plugin, not part of EssentialsX. AquaticSMP then registers Doubloons with Vault, so EssentialsX's `/sell` and `/worth` and other plugins pay in Doubloons.
+3. **EssentialsX Spawn: not needed.** AquaticSMP handles spawn, first-join and respawn locations and `/spawn` itself. If you install it anyway, set `respawn-listener-priority: none` and `spawn-on-join: false` in its config.
+4. **EssentialsX Chat: not needed.** AquaticSMP formats chat itself (crew tags, level badges, mentions, `[item]`). If you do use it, set `chat.format.enabled: false` in `crews.yml` and add `%aquatic_crew_tag%` (needs PlaceholderAPI) to its format.
 
 **Other overlaps:**
 - **Tab list:** AquaticSMP's crew tags in the tab list can fight with the **TAB** plugin. If you use TAB, set `tablist.enabled: false` in `crews.yml` and use the `%aquatic_crew_tag%` placeholder (needs PlaceholderAPI) in TAB instead.

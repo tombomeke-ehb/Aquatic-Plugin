@@ -205,7 +205,6 @@ home:
 chat:
   # Put the crew tag in front of public chat messages.
   prefix-enabled: true
-  # Tags: <tag> (crew tag in crew colour), <crew> (crew name in crew colour)
   # Tags: <tag> (crew tag in crew colour), <crew> (crew name), <rank_icon> (see rank-icons)
   prefix-format: "<rank_icon> <dark_gray>[<tag><dark_gray>] "
   # Prefix for players without a crew (empty = none), e.g. "<dark_gray>[<gray>Drifter<dark_gray>] "
@@ -213,6 +212,20 @@ chat:
   # Hover over a name or crew tag in chat for a card with crew, rank, reputation and bounty.
   # Clicking the tag opens /crew info, clicking the name starts a /msg.
   hover-cards: true
+  # The whole chat line. Turn "enabled" off when another chat plugin (EssentialsX Chat, ...) formats chat;
+  # the crew prefix is then put in front of that plugin's line.
+  # Tags: <level> (level badge), <prefix> (crown + crew tag), <name> (hover card), <message>
+  format:
+    enabled: true
+    line: "<level><prefix><white><name><dark_gray> » <gray><message>"
+    level-badge: "<dark_gray>[<aqua><level><dark_gray>] "
+  # Mentioning an online player (with or without @) highlights the name and plays a ping for them.
+  mentions:
+    enabled: true
+    highlight: "<yellow>@<name></yellow>"
+    sound: entity.experience_orb.pickup
+  # Typing this in a message shows the item in your hand (hover it for the details). "" = off.
+  item-tag: "[item]"
   # Extra prefix for the reigning Conqueror of the Sea (needs the tournament module). Empty = none.
   pirate-king-prefix: "<gold>👑 </gold>"
   # Crew chat (/cc <message> or /crew chat toggle). Tags: <crew> <tag> <rank> <player> <message>

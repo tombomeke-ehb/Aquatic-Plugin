@@ -400,6 +400,7 @@ public final class EconomyModule extends AquaticModule implements EconomyService
             notifyTarget(sender, id, "admin-set-notify", balance(id));
         }).usage("<player> <amount>").description("Set the Doubloons of a player (works offline)")
                 .permission(PERM_ADMIN).completer(this::adminComplete);
+        bal.takeOver(config().getBoolean("take-over-commands", true));
         registerCommand(bal);
 
         // /pay <player> <amount>
@@ -407,12 +408,14 @@ public final class EconomyModule extends AquaticModule implements EconomyService
         pay.defaultExecutor((sender, args) -> pay(AquaticCommand.player(sender), args));
         pay.defaultCompleter((s, a) -> a.length <= 1 ? AquaticCommand.playerNames(a.length == 0 ? "" : a[0])
                 : a.length == 2 ? AquaticCommand.filter(List.of("10", "100", "1000"), a[1]) : List.of());
+        pay.takeOver(config().getBoolean("take-over-commands", true));
         registerCommand(pay);
 
         // /baltop [page]
         AquaticCommand top = new AquaticCommand("baltop", "The richest pirates", "doubloonstop", "richest");
         top.defaultExecutor(this::baltop);
         top.defaultCompleter((s, a) -> a.length <= 1 ? List.of("1", "2", "3") : List.of());
+        top.takeOver(config().getBoolean("take-over-commands", true));
         registerCommand(top);
     }
 
