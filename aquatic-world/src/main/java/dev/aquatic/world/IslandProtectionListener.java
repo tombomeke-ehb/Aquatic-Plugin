@@ -76,6 +76,9 @@ final class IslandProtectionListener implements Listener {
             module.deny(player, is, "deny-flag");
             return;
         }
+        if (module.isTreasureDigSpot(event.getBlock())) {
+            return; // buried treasure is up for grabs, even on protected land
+        }
         if (denied(player, event.getBlock(), IslandsModule.Action.BREAK)) {
             event.setCancelled(true);
         }
@@ -124,6 +127,9 @@ final class IslandProtectionListener implements Listener {
         IslandImpl is = module.at(block);
         if (is == null || is.status == IslandStatus.UNCLAIMED) {
             return;
+        }
+        if (module.isTreasureDigSpot(block)) {
+            return; // anyone may open a buried treasure chest
         }
         Material type = block.getType();
         BlockState state = block.getState(false);

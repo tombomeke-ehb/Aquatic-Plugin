@@ -126,10 +126,15 @@ final class CrewImpl implements Crew {
         return out;
     }
 
+    /** True when the crew designed its own flag (otherwise the default flag in the crew colour is used). */
+    boolean hasCustomFlag() {
+        return flag != null;
+    }
+
     @Override
     public ItemStack flag() {
         ItemStack current = flag;
-        return current != null ? current.clone() : new ItemStack(Material.WHITE_BANNER);
+        return current != null ? current.clone() : module.flags().defaultFlag(color);
     }
 
     @Override

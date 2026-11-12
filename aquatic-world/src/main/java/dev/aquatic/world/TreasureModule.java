@@ -340,6 +340,27 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
     }
 
     @Override
+    public boolean isTreasureDigSpot(Location block) {
+        if (block == null || block.getWorld() == null) {
+            return false;
+        }
+        String world = block.getWorld().getName();
+        int bx = block.getBlockX(), by = block.getBlockY(), bz = block.getBlockZ();
+        for (Treasure t : treasures.values()) {
+            if (t.x != bx || t.z != bz || !t.world.equals(world)) {
+                continue;
+            }
+            LootTier tier = tiers.get(t.tier);
+            int depth = tier == null ? 4 : tier.depth;
+            // the chest itself, the earth above it and the marker block on the surface
+            if (by >= t.y && by <= t.y + depth + 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public void removeTreasure(Location treasure) {
         if (treasure == null || treasure.getWorld() == null) {
             return;

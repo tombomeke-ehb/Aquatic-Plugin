@@ -35,7 +35,7 @@ Every feature is a **module** you can turn on or off. All numbers, costs and mes
 | `/aquatic disable <module>` | Turn a module off; modules that depend on it go off too | `aquatic.admin` |
 | `/aquatic reload [module]` | Reload configs for all modules or just one, with no restart | `aquatic.admin` |
 
-Aliases: `/aq`, `/aquaticsmp`. Module names: `economy`, `crews`, `bounty`, `islands`, `treasure`, `items`, `tournament`, `events`.
+Aliases: `/aq`, `/aquaticsmp`. Module names: `economy`, `crews`, `bounty`, `islands`, `treasure`, `items`, `tournament`, `events`, `guide`.
 
 ---
 
@@ -99,7 +99,13 @@ Ranks are Captain, First Mate, Navigator, Quartermaster and Member. `crews.yml` 
 | --- | --- | --- |
 | `/crew color <color>` | Crew colour for the name and chat tag | Officers |
 | `/crew tag <tag>` | Short tag shown in chat and the tab list | Officers |
-| `/crew flag` | Use the banner in your hand as the crew flag (it gets planted on claimed islands) | Officers |
+| `/crew flag` | Show your flag. With a banner in your hand: make it the crew flag | Members / officers |
+| `/crew flag set` | Use the banner in your hand as the crew flag. Design any banner you like in a loom | Officers |
+| `/crew flag color <dye>` | New base colour, same design (`red`, `black`, `light_blue`, ...) | Officers |
+| `/crew flag preset <name>` | Use a ready-made design | Officers |
+| `/crew flag presets` | List the designs: `crew_colors`, `jolly_roger`, `crossbones`, `blood_skull`, `sea_kraken`, `sun_pirates`, `navy` | Everyone |
+| `/crew flag get` | Get a copy of the flag banner | Members |
+| `/crew flag reset` | Back to the default flag in the crew colour | Officers |
 | `/crew sethome` | Set the crew home where you stand | Officers |
 | `/crew home` | Teleport home after a warmup. Moving or taking damage cancels it; there is a cooldown | Members (`aquatic.crews.home`) |
 
@@ -275,6 +281,24 @@ Default item ids:
 | `/tournament admin setking <player\|none>` | Set or clear the Pirate King by hand |
 
 Nobody loses items in a match. Position, health and inventory are restored afterwards.
+
+---
+
+## Guide and intro (`guide`)
+
+New players get a short intro on their first join: titles and chat tips about crews, islands and flags, treasure digging, bounties, Devil Fruits and the Pirate King. When it ends, the guide book opens.
+
+| Command | What it does | Permission |
+| --- | --- | --- |
+| `/guide` | Open the pirate's guide book (aliases `/tutorial`, `/pirateguide`) | Everyone |
+| `/guide <chapter>` | Open one chapter: `welcome`, `crews`, `islands`, `treasure`, `bounties`, `fruits`, `pirate-king` | Everyone |
+| `/guide chapters` | List the chapters | Everyone |
+| `/guide intro` | Watch the intro again | Player: `aquatic.guide.use` |
+| `/guide skip` | Stop the intro | Everyone |
+| `/guide play <player>` | Play the intro for a player | Admin: `aquatic.guide.admin` |
+| `/guide reset <player\|all>` | Show the intro again on their next join | Admin: `aquatic.guide.admin` |
+
+All texts, timing and book pages are in `guide.yml`. For testing, set `intro.mode: every-join`.
 
 ---
 

@@ -24,6 +24,12 @@ public interface TreasureService {
     /** A treasure map item pointing to an existing treasure location. */
     ItemStack createTreasureMap(Location treasure, String tier);
 
-    /** Removes an unopened treasure (used by events that time out). */
+    /**
+     * True when the block is a buried treasure chest or one of the blocks right above it (the shaft a
+     * player digs down). Protection can use this to let anyone dig up treasure, even on claimed land.
+     */
+    boolean isTreasureDigSpot(Location block);
+
+        /** Removes an unopened treasure (used by events that time out). */
     void removeTreasure(Location treasure);
 }

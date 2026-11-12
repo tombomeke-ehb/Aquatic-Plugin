@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.1.0 (2026-11-12)
+
+### Added
+- **New-player intro** (new `guide` module):
+  - On a player's first join, a short series of titles and chat tips explains crews, claiming islands, flags, digging up treasure, bounties, Devil Fruits and the Pirate King. The guide book opens at the end.
+  - Players can skip it with `/guide skip`.
+  - Everything is in `guide.yml`: steps, texts, timing, and first join vs. every join.
+- **`/guide` book:** an in-game written book with 7 chapters, which can also be opened one chapter at a time (`/guide treasure`).
+  - Staff: `/guide play <player>` and `/guide reset <player|all>`.
+- **Crew flag designer:**
+  - `/crew flag set`: the banner in your hand becomes the flag.
+  - `/crew flag color <dye>`, `/crew flag preset <name>` and `/crew flag presets`.
+  - `/crew flag get`: a copy of the flag banner.
+  - `/crew flag reset`: back to the default flag.
+  - 7 built-in designs. Add your own under `flag.presets` in `crews.yml`.
+  - Optional costs: `costs.flag` and `costs.flag-copy`.
+- **Default crew flag:** new crews fly a banner in their crew colour instead of a plain white one. It follows `/crew color` until the crew designs its own flag.
+- **Treasure can be dug up anywhere:** anyone may dig straight down to a buried treasure chest and open it, even on claimed or neutral islands. Only the blocks directly above the chest are affected. Turn this off with `treasure-digging: false` in `islands.yml`.
+
+### Changed
+- **Planted flags update automatically:** when a crew changes its flag, the banner on every island it owns is updated. Islands that aren't loaded update the next time someone comes near.
+- **New config sections are added automatically:** when a newer version adds a section that your existing config file doesn't have yet (such as `flag:` in `crews.yml`), the defaults now apply. Your files are not rewritten.
+- `CrewFlagChangeEvent` and `TreasureService.isTreasureDigSpot` were added to the API.
+
 ## 1.0.4 (2026-11-12)
 
 ### Fixed

@@ -1,0 +1,125 @@
+# =====================================================================================
+#  AquaticSMP - Guide module
+#  A welcome intro for new players and an in-game guide book (/guide).
+#  All texts use MiniMessage (https://docs.advntr.dev/minimessage/format).
+#  Placeholder: <player> = the player's name.
+# =====================================================================================
+
+intro:
+  enabled: true
+  # first-join = only the very first time a player joins (default)
+  # every-join = every time (handy while testing)
+  mode: first-join
+  # Wait this long after joining before the intro starts (lets the world load).
+  start-delay-seconds: 3
+  # Default time a title stays on screen, per step it can be changed with "title-seconds".
+  title-seconds: 4
+  sound: block.note_block.chime
+  # Tell players they can type /guide skip.
+  show-skip-hint: true
+  # Open the guide book when the intro is over.
+  open-book-at-end: true
+  # The steps, played one after another. Per step:
+  #   title / subtitle   big text in the middle of the screen (optional)
+  #   chat               lines in chat (optional)
+  #   seconds            how long before the next step starts
+  #   sound              sound key (optional, "none" for silence)
+  steps:
+    - title: "<gradient:#1fa2ff:#12d8fa><bold>Welcome aboard!"
+      subtitle: "<gray>The Grand Line awaits, <white><player>"
+      chat:
+        - "<gradient:#1fa2ff:#12d8fa><bold>AQUATIC SMP</bold></gradient> <gray>- a world of ocean, islands and pirates."
+        - "<gray>Every player is a pirate. The goal: become the <gold><bold>Pirate King</bold></gold>."
+      seconds: 6
+      sound: ui.toast.challenge_complete
+
+    - title: "<aqua><bold>1. Form a crew"
+      subtitle: "<gray>/crew create <name>"
+      chat:
+        - "<aqua><bold>Crews</bold> <gray>are pirate gangs of up to 6 players."
+        - "<gray>Start one with <white>/crew create <name></white>, or ask a captain for an invite <gray>(<white>/crew accept</white>)."
+        - "<gray>Chat with your crew using <white>/cc <message></white>."
+      seconds: 7
+
+    - title: "<green><bold>2. Claim an island"
+      subtitle: "<gray>/island claim"
+      chat:
+        - "<green><bold>Islands</bold> <gray>are scattered across the sea. Sail out and explore!"
+        - "<gray>Your Captain or First Mate plants the crew <white>flag</white> with <white>/island claim</white>."
+        - "<gray>Design your flag with <white>/crew flag</white>. Enemies conquer islands by holding your flag, so defend it!"
+        - "<gray>Find islands with <white>/island map</white>."
+      seconds: 8
+
+    - title: "<gold><bold>3. Hunt for treasure"
+      subtitle: "<gray>Look for the red <red><bold>X</bold></red><gray> and dig!"
+      chat:
+        - "<gold><bold>Treasure</bold> <gray>is buried on islands. A <red><bold>red X</bold></red> <gray>marks the spot."
+        - "<gray>Dig <white>straight down</white> under the X (1 to 4 blocks) and open the chest. First one there gets the Doubloons!"
+        - "<gray>Treasure maps show a red X. Right-click the map to feel if you are getting <red>warmer</red> or <aqua>colder</aqua>."
+        - "<gray>Rumours: <white>/treasure info</white>."
+      seconds: 9
+
+    - title: "<red><bold>4. Bounties & powers"
+      subtitle: "<gray>Fame has a price"
+      chat:
+        - "<red><bold>Bounties:</bold> <gray>defeating pirates raises your bounty. Claim one by taking down a wanted pirate."
+        - "<gray>Check with <white>/bounty info</white> and <white>/bounty top</white>."
+        - "<light_purple><bold>Devil Fruits</bold> <gray>give powers (<white>sneak + F</white>), but the sea takes them away while you swim."
+      seconds: 8
+
+    - title: "<gold><bold>Become the Pirate King"
+      subtitle: "<gray>Win the tournament, claim the crown"
+      chat:
+        - "<gold>The <bold>Pirate King</bold> is crowned in a server-wide crew tournament."
+        - "<gray>Watch for announcements, and see past kings with <white>/hallofkings</white>."
+      seconds: 6
+
+    - title: "<aqua>Good luck, pirate!"
+      subtitle: "<gray>Type <white>/guide</white> any time to read this again"
+      chat:
+        - "<aqua>Type <white>/guide</white> any time for the pirate's guide book."
+      seconds: 4
+      sound: entity.player.levelup
+
+# -------------------------------------------------------------------------------------
+# The guide book (/guide). Chapters are shown in this order; /guide <chapter> opens one.
+# Each chapter is a list of pages. A page fits about 14 short lines; use \n for a new line.
+# -------------------------------------------------------------------------------------
+book:
+  title: "<gold>Pirate's Guide"
+  author: "AquaticSMP"
+  chapters:
+    welcome:
+      - "<dark_aqua><bold>AQUATIC SMP</bold></dark_aqua>\n<dark_gray>The Pirate's Guide\n\n<black>Ahoy, <player>!\n\nThis world is a vast ocean full of islands, treasure and rival pirates.\n\n<dark_gray>Turn the page to learn the ropes."
+      - "<dark_aqua><bold>Contents</bold>\n\n<black>1. Crews\n2. Islands & flags\n3. Treasure\n4. Bounties\n5. Devil Fruits & gear\n6. The Pirate King\n\n<dark_gray>/guide <chapter> opens one chapter."
+    crews:
+      - "<dark_aqua><bold>1. Crews</bold>\n\n<black>A crew is your pirate gang (max 6).\n\n<dark_gray>/crew create <name>\n/crew invite <player>\n/crew accept\n/crew info\n/cc <message></dark_gray>\n\nRanks: Captain, First Mate, Navigator, Quartermaster, Member."
+      - "<dark_aqua><bold>Crew life</bold>\n\n<black>Share Doubloons in the <dark_gray>/crew bank</dark_gray>, set a <dark_gray>/crew sethome</dark_gray>, make allies or enemies:\n\n<dark_gray>/crew ally <crew>\n/crew rival <crew>\n/crew war <crew>\n/crew peace <crew></dark_gray>\n\n<black>War lets you raid and conquer!"
+    islands:
+      - "<dark_aqua><bold>2. Islands</bold>\n\n<black>Islands are tropical, jungle, volcanic, snowy, desert or ancient.\n\nSail out to <dark_gray>discover</dark_gray> them, you get a reward for each new one.\n\n<dark_gray>/island map\n/island list\n/island info"
+      - "<dark_aqua><bold>Claiming</bold>\n\n<black>Captain or First Mate: stand on an unclaimed island and type\n<dark_gray>/island claim</dark_gray>\n\n<black>Your crew flag is planted on a pole. Only your crew can build there."
+      - "<dark_aqua><bold>Flags</bold>\n\n<black>Design your flag:\n<dark_gray>/crew flag set</dark_gray> <black>(banner in hand, make it in a loom)\n<dark_gray>/crew flag color <dye>\n/crew flag preset <name>\n/crew flag presets\n/crew flag get</dark_gray>\n\n<black>All your islands update."
+      - "<dark_aqua><bold>Conquest</bold>\n\n<black>At war, enemies capture an island by standing at its flag. The bar fills while no defender is near.\n\nStay close to your flag to stop them!\n\nIslands are safe while your whole crew is offline."
+    treasure:
+      - "<dark_aqua><bold>3. Treasure</bold>\n\n<black>Treasure is buried on islands. Look for a <red><bold>red X</bold></red> <black>of wool on the ground.\n\nDig <bold>straight down</bold> under the middle of the X and open the chest."
+      - "<dark_aqua><bold>Depth</bold>\n\n<black>Common: 1 block\nRare: 2 blocks\nEpic: 3 blocks\nLegendary: 4 blocks\n\nFirst to open it gets the Doubloons and the loot! You may dig up treasure on any island."
+      - "<dark_aqua><bold>Treasure maps</bold>\n\n<black>A map shows a red X near the treasure (not exactly on it).\n\n<bold>Right-click</bold> the map: it tells you if you are getting warmer or colder.\n\n<dark_gray>/treasure info</dark_gray> <black>gives rumours."
+    bounties:
+      - "<dark_aqua><bold>4. Bounties</bold>\n\n<black>Defeating pirates raises your bounty. Big bounties earn titles, from Rookie to Emperor.\n\nKill a wanted pirate to claim their bounty!\n\n<dark_gray>/bounty info\n/bounty top\n/bounty set <player> <amount>\n/wanted"
+    fruits:
+      - "<dark_aqua><bold>5. Devil Fruits</bold>\n\n<black>Rare fruits found in treasure. Eating one gives a power, but only one per pirate.\n\nUse it: <bold>sneak + F</bold>\n\nWater takes your power away while you swim!\n\n<dark_gray>/fruit"
+      - "<dark_aqua><bold>Pirate gear</bold>\n\n<black>Look out for legendary swords, flintlocks, cannons, Sea Prism weapons (they cancel fruit powers) and the Log Pose, which points to the nearest island."
+    pirate-king:
+      - "<dark_aqua><bold>6. Pirate King</bold>\n\n<black>Crews compete in the tournament:\n\nRegistration\nQualifiers\nBracket fights\nGrand finale\n\nThe winning captain is crowned <gold><bold>Pirate King</bold></gold><black>!\n\n<dark_gray>/tournament info\n/hallofkings"
+
+messages:
+  intro-skip-hint: "<gray>Welcome! <dark_gray>(Type <white>/guide skip</white> to skip the intro.)"
+  intro-finished: "<aqua>That's the basics! <gray>Read the full guide any time with <white>/guide</white>."
+  intro-skipped: "<gray>Intro skipped. Type <white>/guide</white> for the guide book or <white>/guide intro</white> to watch it again."
+  intro-not-playing: "<gray>The intro isn't playing. <white>/guide intro</white> starts it."
+  book-empty: "<red>The guide book has no pages."
+  unknown-chapter: "<red>No chapter called <white><chapter></white>. <gray>Chapters: <white><chapters>"
+  chapters: "<aqua>Guide chapters: <white><chapters></white> <gray>- /guide <chapter>"
+  admin-played: "<green>Playing the intro for <white><player></white>."
+  admin-reset: "<green><white><player></white> will see the intro again on their next join."
+  admin-reset-all: "<green>Everyone will see the intro again on their next join."

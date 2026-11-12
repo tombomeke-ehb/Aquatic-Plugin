@@ -26,6 +26,7 @@ public final class AquaticPlugin extends JavaPlugin {
             {"items", "dev.aquatic.events.ItemsModule"},
             {"tournament", "dev.aquatic.events.TournamentModule"},
             {"events", "dev.aquatic.events.EventsModule"},
+            {"guide", "dev.aquatic.events.GuideModule"},
     };
 
     /** Credit shown on startup and in /aquatic about. */

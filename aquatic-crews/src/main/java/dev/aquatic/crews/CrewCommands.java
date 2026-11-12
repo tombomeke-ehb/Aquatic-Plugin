@@ -207,8 +207,20 @@ final class CrewCommands {
         cmd.sub("tag", (s, a) -> tag(AquaticCommand.player(s), a))
                 .usage("<tag>").description("Change the crew tag").playerOnly();
 
-        cmd.sub("flag", (s, a) -> flag(AquaticCommand.player(s)))
-                .description("Use the banner in your hand as the crew flag").playerOnly();
+        cmd.sub("flag", (s, a) -> {
+                    if (a.length > 0 && a[0].equalsIgnoreCase("presets")) {
+                        s.sendMessage(module.msg("flag-presets", "presets", String.join(", ", module.flags().presetNames())));
+                        return;
+                    }
+                    flag(AquaticCommand.player(s), a);
+                })
+                .usage("[set|color|preset|presets|get|reset]").description("Design the crew flag (planted on your islands)")
+                .completer((s, a) -> switch (a.length) {
+                    case 1 -> AquaticCommand.filter(List.of("set", "color", "preset", "presets", "get", "reset"), a[0]);
+                    case 2 -> a[0].equalsIgnoreCase("color") ? AquaticCommand.filter(FlagDesigner.dyeNames(), a[1])
+                            : a[0].equalsIgnoreCase("preset") ? AquaticCommand.filter(module.flags().presetNames(), a[1]) : List.of();
+                    default -> List.of();
+                });
 
         cmd.sub("home", (s, a) -> home(AquaticCommand.player(s)))
                 .description("Sail to the crew home").playerOnly()
@@ -655,6 +667,9 @@ final class CrewCommands {
         crew.color = color;
         module.markDirty();
         module.updateTab(crew);
+        if (!crew.hasCustomFlag()) {
+            module.flagChanged(crew); // the default flag is drawn in the crew colour
+        }
         crew.broadcast(module.msg("color-changed", "crew", crew.displayName(), "cost", module.money(paid)));
     }
 
@@ -674,16 +689,81 @@ final class CrewCommands {
         crew.broadcast(module.msg("tag-changed", "tag", crew.tagComponent(), "cost", module.money(paid)));
     }
 
-    private void flag(Player p) {
+    /**
+     * /crew flag                 info (or: set, when holding a banner)
+     * /crew flag set             the banner in your hand becomes the flag (design it in a loom!)
+     * /crew flag color <dye>     new base colour, same patterns
+     * /crew flag preset <name>   a ready-made design from crews.yml (flag.presets)
+     * /crew flag presets         list the designs
+     * /crew flag get             a copy of the flag banner for yourself
+     * /crew flag reset           back to the default flag in the crew colour
+     */
+    private void flag(Player p, String[] args) {
         CrewImpl crew = myCrew(p);
+        String action = args.length == 0 ? "" : args[0].toLowerCase(Locale.ROOT);
+        FlagDesigner flags = module.flags();
+        switch (action) {
+            case "" -> {
+                if (FlagDesigner.isBanner(p.getInventory().getItemInMainHand())) {
+                    setFlagFromHand(p, crew); // old behaviour: /crew flag with a banner in hand
+                    return;
+                }
+                p.sendMessage(module.msg("flag-info", "crew", crew.displayName(),
+                        "design", crew.hasCustomFlag() ? module.rawMsg("flag-design-custom") : module.rawMsg("flag-design-default"),
+                        "color", FlagDesigner.baseOf(crew.flag()).name().toLowerCase(Locale.ROOT)));
+                p.sendMessage(module.rawMsg("flag-help"));
+            }
+            case "set" -> setFlagFromHand(p, crew);
+            case "color", "colour" -> {
+                require(crew, p, "appearance");
+                AquaticCommand.need(args, 2, "/crew flag color <" + String.join("|", FlagDesigner.dyeNames()) + ">");
+                org.bukkit.DyeColor dye = FlagDesigner.parseDye(args[1]);
+                if (dye == null) {
+                    throw module.fail("flag-unknown-color", "color", args[1]);
+                }
+                double paid = charge(p, "flag");
+                crew.flag = FlagDesigner.recolor(crew.flag(), dye);
+                module.flagChanged(crew);
+                crew.broadcast(module.msg("flag-changed", "player", p.getName(), "cost", module.money(paid)));
+            }
+            case "preset" -> {
+                require(crew, p, "appearance");
+                AquaticCommand.need(args, 2, "/crew flag preset <name>  (see /crew flag presets)");
+                if (!flags.hasPreset(args[1])) {
+                    throw module.fail("flag-unknown-preset", "preset", args[1]);
+                }
+                double paid = charge(p, "flag");
+                crew.flag = flags.preset(args[1], crew.color);
+                module.flagChanged(crew);
+                crew.broadcast(module.msg("flag-changed", "player", p.getName(), "cost", module.money(paid)));
+            }
+            case "presets" -> p.sendMessage(module.msg("flag-presets", "presets", String.join(", ", flags.presetNames())));
+            case "get" -> {
+                double paid = charge(p, "flag-copy");
+                java.util.Map<Integer, ItemStack> left = p.getInventory().addItem(crew.flag());
+                left.values().forEach(i -> p.getWorld().dropItemNaturally(p.getLocation(), i));
+                p.sendMessage(module.msg("flag-copy", "cost", module.money(paid)));
+            }
+            case "reset" -> {
+                require(crew, p, "appearance");
+                crew.flag = null;
+                module.flagChanged(crew);
+                crew.broadcast(module.msg("flag-reset", "player", p.getName()));
+            }
+            default -> throw new CommandFail(module.rawMsg("flag-help"));
+        }
+    }
+
+    private void setFlagFromHand(Player p, CrewImpl crew) {
         require(crew, p, "appearance");
         ItemStack hand = p.getInventory().getItemInMainHand();
-        if (hand.getType().isAir() || !Tag.BANNERS.isTagged(hand.getType())) {
+        if (!FlagDesigner.isBanner(hand)) {
             throw module.fail("flag-hold-banner");
         }
+        double paid = charge(p, "flag");
         crew.flag = hand.asOne();
-        module.markDirty();
-        crew.broadcast(module.msg("flag-changed", "player", p.getName()));
+        module.flagChanged(crew);
+        crew.broadcast(module.msg("flag-changed", "player", p.getName(), "cost", module.money(paid)));
     }
 
     // ------------------------------------------------------------------ home & chat

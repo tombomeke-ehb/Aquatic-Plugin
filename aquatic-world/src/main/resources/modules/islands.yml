@@ -428,6 +428,10 @@ protection:
     # Open chests (e.g. shops) on neutral islands.
     allow-containers: false
 
+# Anyone may dig straight down to a buried treasure chest and open it, even on claimed or neutral
+# islands (only the blocks right above the chest, nothing around it). false = island protection applies.
+treasure-digging: true
+
 raiding:
   # When may enemies build/break/loot on an occupied island?
   #   always   = any non-allied crew

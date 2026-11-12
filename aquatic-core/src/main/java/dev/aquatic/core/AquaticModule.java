@@ -118,7 +118,17 @@ public abstract class AquaticModule {
         config = YamlConfiguration.loadConfiguration(file);
         try (InputStream in = plugin.getResource(resource)) {
             if (in != null) {
-                config.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8)));
+                YamlConfiguration defaults = YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8));
+                config.setDefaults(defaults);
+                // A top-level section added in a newer version (e.g. "flag:" in crews.yml) does not exist in a
+                // config file written by an older version. Bukkit's defaults do not cover whole missing
+                // sections well (getConfigurationSection returns an empty one), so copy them in memory.
+                // Keys the owner removed *inside* existing sections stay removed; the file is not rewritten.
+                for (String key : defaults.getKeys(false)) {
+                    if (!config.contains(key, true)) {
+                        config.set(key, defaults.get(key));
+                    }
+                }
             }
         } catch (IOException ignored) {
         }

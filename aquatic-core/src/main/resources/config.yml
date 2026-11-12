@@ -11,3 +11,5 @@ modules:
   items: true
   tournament: true
   events: true
+  # Welcome intro for new players + the /guide book.
+  guide: true

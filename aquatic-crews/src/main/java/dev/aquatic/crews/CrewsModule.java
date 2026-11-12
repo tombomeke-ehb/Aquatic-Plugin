@@ -56,6 +56,7 @@ public final class CrewsModule extends AquaticModule implements CrewService {
     private volatile boolean dirty;
     private Object papiHook;
     private CrewListener listener;
+    private final FlagDesigner flags = new FlagDesigner(this);
 
     // settings cached for the async chat renderer
     private volatile boolean chatPrefixEnabled;
@@ -420,6 +421,16 @@ public final class CrewsModule extends AquaticModule implements CrewService {
     }
 
     /** Formats money with the economy module when it is enabled, plain number otherwise. */
+    FlagDesigner flags() {
+        return flags;
+    }
+
+    /** Tells other modules (islands) that the crew's flag looks different now. */
+    void flagChanged(CrewImpl crew) {
+        markDirty();
+        Bukkit.getPluginManager().callEvent(new dev.aquatic.api.event.CrewFlagChangeEvent(crew));
+    }
+
     String money(double amount) {
         EconomyService eco = economy();
         return eco != null ? eco.format(amount) : Text.number(amount);

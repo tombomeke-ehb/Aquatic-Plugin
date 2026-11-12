@@ -1040,6 +1040,15 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         markDirty();
     }
 
+    /** True when "treasure-digging" is on and the block is a treasure chest or the shaft above it. */
+    boolean isTreasureDigSpot(Block block) {
+        if (!config().getBoolean("treasure-digging", true)) {
+            return false;
+        }
+        dev.aquatic.api.TreasureService treasure = service(dev.aquatic.api.TreasureService.class);
+        return treasure != null && treasure.isTreasureDigSpot(block.getLocation());
+    }
+
     boolean isFlagBlock(Block block) {
         IslandImpl is = at(block);
         return is != null && is.hasFlag && block.getX() == is.flagX && block.getZ() == is.flagZ
@@ -1224,6 +1233,43 @@ public final class IslandsModule extends AquaticModule implements IslandService,
                 String name = is.name;
                 setOwner(is, null);
                 Bukkit.broadcast(msg("island-abandoned", "island", name));
+            }
+        }
+    }
+
+    /** A crew redesigned its flag: swap the banner on every island it owns (same pole, same spot). */
+    @EventHandler
+    public void onCrewFlagChange(dev.aquatic.api.event.CrewFlagChangeEvent event) {
+        String crewId = event.crew().id();
+        for (IslandImpl is : islands.values()) {
+            if (crewId.equals(is.ownerCrewId) && is.hasFlag && is.bukkitWorld() != null
+                    && is.bukkitWorld().isChunkLoaded(is.flagX >> 4, is.flagZ >> 4)) {
+                placeFlag(is, is.flagX, is.flagY, is.flagZ);
+            } else if (crewId.equals(is.ownerCrewId) && is.hasFlag) {
+                pendingFlagRefresh.add(is.id); // chunk not loaded: update when someone comes near
+            }
+        }
+    }
+
+    /** Islands whose banner must be redrawn once their flag chunk loads. */
+    private final Set<String> pendingFlagRefresh = new HashSet<>();
+
+    @EventHandler
+    public void onChunkLoad(org.bukkit.event.world.ChunkLoadEvent event) {
+        if (pendingFlagRefresh.isEmpty()) {
+            return;
+        }
+        org.bukkit.Chunk chunk = event.getChunk();
+        for (var it = pendingFlagRefresh.iterator(); it.hasNext(); ) {
+            IslandImpl is = islands.get(it.next());
+            if (is == null || !is.hasFlag) {
+                it.remove();
+                continue;
+            }
+            if (is.flagX >> 4 == chunk.getX() && is.flagZ >> 4 == chunk.getZ() && chunk.getWorld().getName().equals(is.world)) {
+                it.remove();
+                int x = is.flagX, y = is.flagY, z = is.flagZ;
+                runLater(() -> placeFlag(is, x, y, z), 1L);
             }
         }
     }

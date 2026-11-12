@@ -53,6 +53,51 @@ costs:
   color: 250
   tag: 250
   sethome: 0
+  # Changing the flag design (/crew flag set|color|preset) and taking a copy (/crew flag get).
+  flag: 0
+  flag-copy: 0
+
+# -------------------------------------------------------------------------------------
+# Crew flags
+# The flag is planted on every island the crew claims (and is what enemies capture in a conquest).
+#   /crew flag set            use the banner in your hand (design any banner in a loom!)
+#   /crew flag color <dye>    change the base colour, keep the design
+#   /crew flag preset <name>  use one of the designs below
+#   /crew flag get / reset    a copy for yourself / back to the default flag
+# A preset: base colour + layers "pattern:colour". "crew" = the dye closest to the crew colour.
+# Patterns: skull, cross, straight_cross, border, curly_border, flower, creeper, globe, piglin, flow,
+#   guster, mojang, bricks, circle, rhombus, gradient, gradient_up, half_horizontal, half_vertical,
+#   stripe_top, stripe_bottom, stripe_left, stripe_right, stripe_center, stripe_middle, small_stripes,
+#   stripe_downleft, stripe_downright, triangle_top, triangle_bottom, triangles_top, triangles_bottom,
+#   diagonal_left, diagonal_right, square_top_left, square_top_right, square_bottom_left, square_bottom_right
+# Colours: white, orange, magenta, light_blue, yellow, lime, pink, gray, light_gray, cyan, purple,
+#   blue, brown, green, red, black (or crew)
+# -------------------------------------------------------------------------------------
+flag:
+  # Flag a crew flies until it designs its own (follows the crew colour).
+  default-preset: crew_colors
+  presets:
+    crew_colors:
+      base: crew
+      patterns: ["skull:white", "border:black"]
+    jolly_roger:
+      base: black
+      patterns: ["skull:white"]
+    crossbones:
+      base: black
+      patterns: ["cross:white", "skull:white", "border:black"]
+    blood_skull:
+      base: red
+      patterns: ["skull:black", "curly_border:black"]
+    sea_kraken:
+      base: crew
+      patterns: ["flow:white", "border:black"]
+    sun_pirates:
+      base: orange
+      patterns: ["circle:yellow", "flower:red", "border:black"]
+    navy:
+      base: white
+      patterns: ["stripe_top:blue", "stripe_bottom:blue", "globe:light_blue"]
 
 # Names shown for every rank.
 rank-names:
@@ -264,8 +309,18 @@ messages:
   color-blocked: "<red>That colour is reserved."
   color-changed: "<aqua>The crew colours are now <crew><aqua>. <dark_gray>(cost: <cost>)"
   tag-changed: "<aqua>The crew tag is now <tag><aqua>. <dark_gray>(cost: <cost>)"
-  flag-hold-banner: "<red>Hold a banner in yer main hand to make it the crew flag."
-  flag-changed: "<aqua><white><player></white> raised a new crew flag!"
+  flag-hold-banner: "<red>Hold a banner in yer main hand to make it the crew flag. <gray>(Design one in a loom, or use /crew flag preset)"
+  flag-changed: "<aqua><white><player></white> raised a new crew flag! <gray>It now flies on all yer islands."
+  flag-reset: "<aqua><white><player></white> restored the crew's default flag."
+  flag-info: "<aqua>Flag of <crew><aqua>: <design> <gray>(base colour <white><color></white>)"
+  flag-design-custom: "<white>own design"
+  flag-design-default: "<white>default flag in the crew colour"
+  flag-help: "<gray>/crew flag <white>set</white> (banner in hand) | <white>color <dye></white> | <white>preset <name></white> | <white>presets</white> | <white>get</white> | <white>reset</white>"
+  flag-presets: "<aqua>Flag designs: <white><presets></white> <gray>- use /crew flag preset <name>"
+  flag-unknown-preset: "<red>No flag design called <white><preset></white>. <gray>See /crew flag presets"
+  flag-unknown-color: "<red><white><color></white> is not a banner colour. <gray>Try red, black, white, blue, ..."
+  flag-copy: "<green>Ye got a copy of the crew flag."
+
 
   # home
   home-disabled: "<red>Crew homes are disabled."
