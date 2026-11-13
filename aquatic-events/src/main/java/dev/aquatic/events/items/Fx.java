@@ -301,4 +301,110 @@ final class Fx {
         flash(target.clone().add(0, 0.5, 0), color, 2.6f);
         burst(target, Particle.ELECTRIC_SPARK, 25, 0.6, 0.2);
     }
+
+    // ------------------------------------------------------------------ more effects
+
+    /** A column of light rising from the ground: spiralling dust, sparks and a flash at the top. */
+    void pillar(Location base, Color color, double height, int ticks) {
+        if (quality() <= 0 || base.getWorld() == null) {
+            return;
+        }
+        for (int i = 0; i < ticks; i++) {
+            int step = i;
+            module.runLater(() -> {
+                double y = height * step / Math.max(1, ticks - 1);
+                for (int s = 0; s < 3; s++) {
+                    double a = step * 0.7 + s * Math.PI * 2 / 3;
+                    double r = 0.6 - 0.35 * step / Math.max(1, ticks);
+                    glow(base.clone().add(Math.cos(a) * r, y, Math.sin(a) * r), color, 1.2f, 1, 0);
+                }
+                if (step % 3 == 0) {
+                    burst(base.clone().add(0, y, 0), Particle.END_ROD, 1, 0.1, 0.02);
+                }
+            }, step);
+        }
+        module.runLater(() -> flash(base.clone().add(0, height, 0), color, 1.4f), ticks);
+    }
+
+    /** Rings of light orbiting an entity for a while (auras, power-ups). */
+    void orbit(Entity entity, int ticks, Color color, int rings) {
+        if (quality() <= 0) {
+            return;
+        }
+        for (int i = 0; i < ticks; i += 2) {
+            int step = i;
+            module.runLater(() -> {
+                if (!entity.isValid()) {
+                    return;
+                }
+                Location base = entity.getLocation();
+                for (int k = 0; k < rings; k++) {
+                    double a = step * 0.35 + k * Math.PI * 2 / rings;
+                    double y = entity.getHeight() * (0.25 + 0.5 * (k % 2)) + 0.15 * Math.sin(step * 0.3 + k);
+                    dust(base.clone().add(Math.cos(a) * 0.9, y, Math.sin(a) * 0.9), color, 1.1f, 1, 0);
+                }
+            }, step);
+        }
+    }
+
+    /** A burst in every direction: a sphere of sparks flying out, a shockwave and a flash. */
+    void nova(Location center, Color color, double radius) {
+        if (quality() <= 0 || center.getWorld() == null) {
+            return;
+        }
+        int points = count(40);
+        for (int i = 0; i < points; i++) {
+            double u = Math.random() * 2 - 1, t = Math.random() * Math.PI * 2, r = Math.sqrt(1 - u * u);
+            Vector dir = new Vector(r * Math.cos(t), u, r * Math.sin(t));
+            Location at = center.clone().add(dir.clone().multiply(radius * (0.4 + Math.random() * 0.6)));
+            glow(at, color, 1.0f, 1, 0);
+        }
+        burst(center, Particle.FIREWORK, count(20), 0.2, radius * 0.12);
+        shockwave(center.clone().add(0, -0.4, 0), radius, 7, color);
+        flash(center, color, (float) Math.min(2.5, 0.6 + radius * 0.3));
+    }
+
+    /** Little sparks of light drifting upwards. */
+    void sparkles(Location at, Color color, int amount, double spread) {
+        if (quality() <= 0 || at.getWorld() == null) {
+            return;
+        }
+        for (int i = 0; i < count(amount); i++) {
+            Location p = at.clone().add((Math.random() - 0.5) * spread * 2, Math.random() * spread, (Math.random() - 0.5) * spread * 2);
+            glow(p, color, 0.8f, 1, 0);
+        }
+        burst(at, Particle.END_ROD, Math.max(1, count(amount / 4)), spread, 0.03);
+    }
+
+    /** Sound waves: rings that grow out from a point one after another (horns, bells, calls). */
+    void soundRings(Location center, Color color, int rings, double maxRadius) {
+        if (quality() <= 0) {
+            return;
+        }
+        for (int k = 0; k < rings; k++) {
+            int n = k;
+            module.runLater(() -> {
+                ring(center, maxRadius * (n + 1) / rings, color, 1.2f);
+                shockwave(center, maxRadius * (n + 1) / rings, 6, color);
+            }, n * 5L);
+        }
+    }
+
+    /** Chain links between two points (shackles). */
+    void chain(Location from, Location to) {
+        if (quality() <= 0 || from.getWorld() == null) {
+            return;
+        }
+        Vector v = to.toVector().subtract(from.toVector());
+        double len = v.length();
+        if (len < 0.1) {
+            return;
+        }
+        v.normalize();
+        for (double d = 0; d <= len; d += 0.25) {
+            Location at = from.clone().add(v.clone().multiply(d));
+            boolean link = ((int) (d * 4)) % 2 == 0;
+            dust(at, link ? Color.fromRGB(0x5B6470) : Color.fromRGB(0x9AA3AD), link ? 0.9f : 0.6f, 1, 0);
+        }
+    }
 }

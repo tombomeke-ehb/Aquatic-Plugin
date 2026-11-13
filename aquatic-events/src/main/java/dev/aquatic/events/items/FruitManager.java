@@ -458,6 +458,10 @@ public final class FruitManager implements Listener {
         p.sendMessage(module.msg("cleanse-done", "fruit", old == null ? net.kyori.adventure.text.Component.text(current)
                 : dev.aquatic.util.Text.mm(old.cfg.getString("name", current))));
         p.getWorld().spawnParticle(org.bukkit.Particle.SPLASH, p.getLocation().add(0, 1.2, 0), 40, 0.4, 0.5, 0.4, 0.1);
+        Fx fx = module.gear().abilities().fx();       // the power is washed out: a white burst and a fading glow
+        org.bukkit.Color foam = org.bukkit.Color.fromRGB(0xEAF7FF);
+        fx.nova(p.getLocation().add(0, 1, 0), foam, 2.5);
+        fx.spiral(p, 30, foam);
         p.playSound(p.getLocation(), org.bukkit.Sound.ENTITY_GENERIC_DRINK, 1f, 0.8f);
     }
 
@@ -506,6 +510,12 @@ public final class FruitManager implements Listener {
             Util.broadcast(module.msg("fruit-eaten-broadcast", "player", p.getName(), "fruit", def.displayName()));
         }
         p.getWorld().spawnParticle(org.bukkit.Particle.TOTEM_OF_UNDYING, p.getLocation().add(0, 1, 0), 60, 0.5, 0.8, 0.5, 0.2);
+        ConfigurationSection first = def.ability();
+        org.bukkit.Color fc = Fx.color(first == null ? null : first.getString("color"), org.bukkit.Color.fromRGB(0xB388FF));
+        Fx fx = module.gear().abilities().fx();
+        fx.pillar(p.getLocation(), fc, 4.5, 18);
+        fx.nova(p.getLocation().add(0, 1, 0), fc, 3.0);
+        fx.orbit(p, 60, fc, 4);
         Util.sound(p.getLocation(), "entity.elder_guardian.curse", 1f, 1.4f);
         p.addPotionEffect(new PotionEffect(PotionEffectType.NAUSEA, 100, 0, true, false, false));
     }
@@ -701,6 +711,11 @@ public final class FruitManager implements Listener {
             abilities.castRangeScale = 1;
         }
         if (ok) {
+            Fx fx = module.gear().abilities().fx();
+            org.bukkit.Color mc = Fx.color(ability.getString("color"), org.bukkit.Color.fromRGB(0xB388FF));
+            org.bukkit.Location hand = p.getEyeLocation().add(p.getEyeLocation().getDirection().multiply(0.8)).add(0, -0.3, 0);
+            fx.flash(hand, mc, 1.0f);
+            fx.sparkles(hand, mc, 8, 0.3);
             addMastery(p, masteryCfg().getLong("xp-per-use", 6));
             setCooldown(uuid, key, ability.getDouble("cooldown", 10) * cooldownScale(uuid));
             module.actionBar(p, "ability-used", "ability", name);

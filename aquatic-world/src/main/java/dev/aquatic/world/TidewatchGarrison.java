@@ -187,36 +187,39 @@ final class TidewatchGarrison implements Listener {
         return w.getHighestBlockYAt(is.x, is.z) + 1;
     }
 
-    /** Where the fort's strongbox is buried: in the keep, but never on (or right next to) a crew flag. */
+    /**
+     * Where the fort's strongbox is buried: in the open yard in front of the keep (every fort keeps it free and open
+     * to the sky), never under a roof and never on or next to a crew flag.
+     */
     private Location strongboxSpot(World w, IslandImpl is) {
-        int[][] tries = {{0, 0}, {3, 0}, {-3, 0}, {0, 3}, {0, -3}, {3, 3}, {-3, -3}, {3, -3}, {-3, 3}};
+        int floor = keepY(w, is);
+        int[][] tries = {{3, 8}, {-3, 8}, {0, 9}, {4, 10}, {-4, 10}, {2, 7}, {-2, 7}, {0, 11}};
         for (int[] t : tries) {
             int x = is.x + t[0], z = is.z + t[1];
             if (is.hasFlag && Math.abs(is.flagX - x) <= 2 && Math.abs(is.flagZ - z) <= 2) {
                 continue;
             }
-            return new Location(w, x, groundY(w, x, z), z);
-        }
-        return new Location(w, is.x + 4, groundY(w, is.x + 4, is.z), is.z);
-    }
-
-    /** The first open spot from the sea up (solid ground, two free blocks above, no fences or poles). */
-    private static int groundY(World w, int x, int z) {
-        for (int y = w.getSeaLevel(); y < w.getSeaLevel() + 40; y++) {
-            Material m = w.getBlockAt(x, y, z).getType();
-            if (m.isSolid() && !org.bukkit.Tag.FENCES.isTagged(m) && !org.bukkit.Tag.WALLS.isTagged(m)
-                    && w.getBlockAt(x, y + 1, z).isPassable() && w.getBlockAt(x, y + 2, z).isPassable()) {
-                return y + 1;
+            int sky = w.getHighestBlockYAt(x, z, org.bukkit.HeightMap.MOTION_BLOCKING_NO_LEAVES) + 1;
+            if (Math.abs(sky - floor) <= 1) {
+                return new Location(w, x, sky, z);       // open ground at the yard's level
             }
         }
-        return w.getHighestBlockYAt(x, z) + 1;
+        return new Location(w, is.x + 3, floor, is.z + 8);
     }
 
+    /** A spot on open courtyard ground (not on a roof, a wall or a tower) for a soldier to appear. */
     private Location courtyardSpot(World w, IslandImpl is) {
         ThreadLocalRandom r = ThreadLocalRandom.current();
-        double a = r.nextDouble() * Math.PI * 2, d = 6 + r.nextDouble() * 4;
-        int x = is.x + (int) Math.round(Math.cos(a) * d), z = is.z + (int) Math.round(Math.sin(a) * d);
-        return new Location(w, x + 0.5, w.getHighestBlockYAt(x, z) + 1, z + 0.5);
+        int floor = keepY(w, is);
+        for (int i = 0; i < 16; i++) {
+            double a = r.nextDouble() * Math.PI * 2, d = 6 + r.nextDouble() * 4;
+            int x = is.x + (int) Math.round(Math.cos(a) * d), z = is.z + (int) Math.round(Math.sin(a) * d);
+            int sky = w.getHighestBlockYAt(x, z, org.bukkit.HeightMap.MOTION_BLOCKING_NO_LEAVES) + 1;
+            if (Math.abs(sky - floor) <= 1) {
+                return new Location(w, x + 0.5, sky, z + 0.5);
+            }
+        }
+        return new Location(w, is.x + 0.5, floor, is.z + 8.5);
     }
 
     private String pickTemplate() {

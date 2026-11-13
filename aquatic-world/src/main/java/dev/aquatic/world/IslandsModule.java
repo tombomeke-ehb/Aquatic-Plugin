@@ -1111,6 +1111,14 @@ public final class IslandsModule extends AquaticModule implements IslandService,
             addMissing(file, defaults, "generation.island-type-weights.VILLAGE");
             addMissing(file, defaults, "island-names.VILLAGE");
         }
+        if (from < 9) {
+            // 2.18.0: new Tidewatch forts (three variants); the strongbox lies in the open yard
+            raise(file, "messages.tidewatch-strongbox", "<aqua>The fort's strongbox is buried in the keep. <gray>Dig it up!",
+                    defaults.getString("messages.tidewatch-strongbox"));
+            if (file.contains("types.TIDEWATCH.fort")) {
+                addMissing(file, defaults, "types.TIDEWATCH.fort.variant");
+            }
+        }
         if (from < 8) {
             // 2.16.3: every Tidewatch soldier gets a random 3D hat and face (only if the garrison was never edited)
             String base = "tidewatch.mobs.";

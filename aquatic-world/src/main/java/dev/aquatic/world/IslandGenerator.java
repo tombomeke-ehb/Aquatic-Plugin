@@ -527,7 +527,9 @@ final class IslandGenerator extends AreaJob {
             list.add(new Feature(0, 0, 10, this::buildThrone));
         }
         if (t.fort) {
-            list.add(new Feature(0, 0, 18, this::buildFort));
+            int variant = t.fortVariant >= 0 ? t.fortVariant : (int) Math.floorMod(seed, 3L);
+            list.add(new Feature(0, 0, 20, () -> placeBlueprint(Blueprint.fort(variant), 0, 0,
+                    inGrid(0, 0) ? top[index(0, 0)] : sea + 3, BlockFace.NORTH)));
         }
         if (t.volcano) {
             int craterR = (int) Math.ceil(t.craterSize * landR);
@@ -2647,119 +2649,4 @@ final class IslandGenerator extends AreaJob {
      * A Tidewatch fort on the plaza: square walls with crenellations and a walkway, a gate to the south,
      * four corner towers with banners, and a two-storey keep with a flag in the middle (the Warden Captain's).
      */
-    private void buildFort() {
-        int y = inGrid(0, 0) ? top[index(0, 0)] : sea + 3;
-        Random r = new Random(seed * 97 + 1);
-        int R = 12;
-        // clear the courtyard and give it a floor
-        for (int dx = -R - 2; dx <= R + 2; dx++) {
-            for (int dz = -R - 2; dz <= R + 2; dz++) {
-                for (int up = 1; up <= 14; up++) {
-                    set(cx + dx, y + up, cz + dz, Material.AIR);
-                }
-                set(cx + dx, y, cz + dz, r.nextDouble() < 0.3 ? Material.GRAVEL : Material.COBBLESTONE);
-            }
-        }
-        // walls
-        for (int i = -R; i <= R; i++) {
-            int[][] spots = {{i, -R}, {i, R}, {-R, i}, {R, i}};
-            for (int[] s : spots) {
-                for (int up = 1; up <= 5; up++) {
-                    set(cx + s[0], y + up, cz + s[1], wallBlock(r));
-                }
-                if ((i & 1) == 0) {
-                    set(cx + s[0], y + 6, cz + s[1], Material.STONE_BRICK_WALL);
-                }
-            }
-        }
-        // walkway along the inside of the walls
-        for (int i = -R + 1; i <= R - 1; i++) {
-            set(cx + i, y + 4, cz - R + 1, Material.SPRUCE_PLANKS);
-            set(cx + i, y + 4, cz + R - 1, Material.SPRUCE_PLANKS);
-            set(cx - R + 1, y + 4, cz + i, Material.SPRUCE_PLANKS);
-            set(cx + R - 1, y + 4, cz + i, Material.SPRUCE_PLANKS);
-        }
-        // gate (south) and ladders up to the walkway
-        for (int gx = -1; gx <= 1; gx++) {
-            for (int up = 1; up <= 3; up++) {
-                set(cx + gx, y + up, cz + R, Material.AIR);
-                set(cx + gx, y + up, cz + R - 1, Material.AIR);
-            }
-            set(cx + gx, y + 4, cz + R - 1, Material.SPRUCE_PLANKS);
-        }
-        for (int up = 1; up <= 3; up++) {
-            setData(cx - R + 1, y + up, cz - 3, stairs(Material.LADDER, BlockFace.EAST));
-            setData(cx + R - 1, y + up, cz + 3, stairs(Material.LADDER, BlockFace.WEST));
-        }
-        // corner towers
-        for (int[] c : new int[][]{{R, R}, {R, -R}, {-R, R}, {-R, -R}}) {
-            for (int ox = -2; ox <= 2; ox++) {
-                for (int oz = -2; oz <= 2; oz++) {
-                    boolean edge = Math.abs(ox) == 2 || Math.abs(oz) == 2;
-                    for (int up = 1; up <= 9; up++) {
-                        set(cx + c[0] + ox, y + up, cz + c[1] + oz, edge ? wallBlock(r) : (up == 4 || up == 9 ? Material.SPRUCE_PLANKS : Material.AIR));
-                    }
-                    if (edge && ((ox + oz) & 1) == 0) {
-                        set(cx + c[0] + ox, y + 10, cz + c[1] + oz, Material.STONE_BRICK_WALL);
-                    }
-                }
-            }
-            set(cx + c[0], y + 10, cz + c[1], Material.BLUE_BANNER);
-            set(cx + c[0], y + 8, cz + c[1], Material.LANTERN);
-        }
-        // the keep (9x9, two floors)
-        int K = 4;
-        for (int ox = -K; ox <= K; ox++) {
-            for (int oz = -K; oz <= K; oz++) {
-                boolean edge = Math.abs(ox) == K || Math.abs(oz) == K;
-                for (int up = 1; up <= 9; up++) {
-                    Material m;
-                    if (edge) {
-                        boolean window = (up == 2 || up == 6) && Math.abs(ox) != Math.abs(oz) && ((Math.abs(ox) == K ? oz : ox) & 1) == 1;
-                        m = window ? Material.GLASS_PANE : (up == 5 ? Material.POLISHED_ANDESITE : wallBlock(r));
-                    } else {
-                        m = up == 5 || up == 9 ? Material.SPRUCE_PLANKS : Material.AIR;
-                    }
-                    set(cx + ox, y + up, cz + oz, m);
-                }
-                set(cx + ox, y, cz + oz, Material.POLISHED_ANDESITE);
-                if (edge && ((ox + oz) & 1) == 0) {
-                    set(cx + ox, y + 10, cz + oz, Material.STONE_BRICK_WALL);
-                }
-            }
-        }
-        for (int up = 1; up <= 2; up++) {
-            set(cx, y + up, cz + K, Material.AIR); // keep door
-        }
-        for (int up = 1; up <= 5; up++) {
-            setData(cx - K + 1, y + up, cz + K - 1, stairs(Material.LADDER, BlockFace.EAST)); // to the upper floor
-        }
-        for (int up = 6; up <= 9; up++) {
-            setData(cx + K - 1, y + up, cz - K + 1, stairs(Material.LADDER, BlockFace.WEST)); // to the roof
-        }
-        set(cx, y + 4, cz, Material.LANTERN);
-        set(cx, y + 8, cz, Material.LANTERN);
-        set(cx + K - 1, y + 1, cz - K + 1, Material.BARREL);
-        set(cx - K + 1, y + 1, cz - K + 1, Material.BARREL);
-        set(cx + K - 1, y + 1, cz + K - 1, Material.CRAFTING_TABLE);
-        set(cx - K + 1, y + 6, cz - K + 1, Material.CARTOGRAPHY_TABLE);
-        // flag on the keep roof
-        for (int up = 10; up <= 14; up++) {
-            set(cx, y + up, cz, Material.SPRUCE_FENCE);
-        }
-        for (int fx = 1; fx <= 3; fx++) {
-            set(cx + fx, y + 14, cz, Material.BLUE_WOOL);
-            set(cx + fx, y + 13, cz, fx == 2 ? Material.WHITE_WOOL : Material.BLUE_WOOL);
-        }
-        // courtyard: training targets, hay, campfires, crates
-        for (int i = -6; i <= 6; i += 4) {
-            set(cx - R + 2, y + 1, cz + i, Material.TARGET);
-            set(cx + R - 2, y + 1, cz + i, Material.HAY_BLOCK);
-        }
-        set(cx - 7, y + 1, cz + 7, Material.CAMPFIRE);
-        set(cx + 7, y + 1, cz + 7, Material.CAMPFIRE);
-        set(cx + 7, y + 1, cz - 7, Material.BARREL);
-        set(cx + 8, y + 1, cz - 7, Material.BARREL);
-        set(cx + 7, y + 2, cz - 7, Material.BARREL);
-    }
 }

@@ -227,7 +227,9 @@ public final class GearListener implements Listener {
             abilities.fx().burst(at.clone().add(0, 0.5, 0), cloud, (int) (radius * 30), radius / 2, 0.02);
         } catch (IllegalArgumentException ignored) {
         }
-        abilities.fx().wave(at.clone().add(0, 0.2, 0), radius, 6, Fx.color(b.getString("color"), org.bukkit.Color.GRAY), null, false);
+        org.bukkit.Color bc = Fx.color(b.getString("color"), org.bukkit.Color.GRAY);
+        abilities.fx().wave(at.clone().add(0, 0.2, 0), radius, 6, bc, null, false);
+        abilities.fx().nova(at.clone().add(0, 0.8, 0), bc, radius * 0.8);
         Util.sound(at, b.getString("hit-sound", "entity.generic.explode"), 0.8f, 1.4f);
         int linger = Math.max(0, b.getInt("linger-seconds", 0));
         for (int i = 1; i <= linger; i++) {
@@ -275,10 +277,18 @@ public final class GearListener implements Listener {
             }
             health += set.getDouble("bonus-health", 0);
             if (abilities.fx().quality() > 0 && p.getTicksLived() % 40 < 20) {
-                abilities.fx().dust(p.getLocation().add(0, 0.2, 0), Fx.color(set.getString("color"), org.bukkit.Color.AQUA), 1.0f, 3, 0.4);
+                org.bukkit.Color sc = Fx.color(set.getString("color"), org.bukkit.Color.AQUA);
+                abilities.fx().dust(p.getLocation().add(0, 0.2, 0), sc, 1.0f, 3, 0.4);
+                if (p.getTicksLived() % 200 < 20) {
+                    abilities.fx().orbit(p, 20, sc, 3);                 // every 10 seconds: the set's aura
+                }
             }
         }
         dev.aquatic.util.Stats.health(p, "armor_set", health);
+        ItemDef head = module.defOf(p.getInventory().getHelmet());
+        if (head != null && head.id.equals("conqueror_crown") && abilities.fx().quality() > 0) {
+            abilities.fx().sparkles(p.getLocation().add(0, p.getHeight() + 0.25, 0), org.bukkit.Color.fromRGB(0xFFD24A), 3, 0.3);
+        }
     }
 
     public void tick() {
@@ -428,6 +438,11 @@ public final class GearListener implements Listener {
         }
         module.fruits().setCooldown(p.getUniqueId(), "cuff", def.cfg.getDouble("abyssal.cuff-cooldown", 30));
         module.fruits().seal(target, seconds);
+        if (event.getRightClicked() instanceof LivingEntity cuffed) {
+            abilities.fx().chain(event.getPlayer().getLocation().add(0, 1.0, 0), cuffed.getLocation().add(0, 1.0, 0));
+            abilities.fx().flash(cuffed.getLocation().add(0, 1.0, 0), org.bukkit.Color.fromRGB(0x2F8F86), 1.2f);
+            abilities.fx().orbit(cuffed, 30, org.bukkit.Color.fromRGB(0x2F8F86), 4);
+        }
         int ticks = (int) (seconds * 20);
         for (PotionEffect e : Util.parseEffects(def.cfg.getStringList("abyssal.cuff-effects"), ticks)) {
             target.addPotionEffect(e);
@@ -721,6 +736,16 @@ public final class GearListener implements Listener {
         }
         compassTarget.put(p.getUniqueId(), next.id());
         point(stack, next.center());
+        if (next.center() != null && next.center().getWorld() == p.getWorld()) {
+            // a short trail of light pointing the way
+            org.bukkit.util.Vector way = next.center().toVector().subtract(p.getLocation().toVector()).setY(0);
+            if (way.lengthSquared() > 1) {
+                way.normalize();
+                Location from = p.getLocation().add(0, 1.0, 0).add(way.clone().multiply(0.8));
+                abilities.fx().beam(from, from.clone().add(way.clone().multiply(3.5)), org.bukkit.Color.fromRGB(0x5FF3FF), 1.2f, 0.25);
+                abilities.fx().sparkles(from.clone().add(way.clone().multiply(3.5)), org.bukkit.Color.fromRGB(0x5FF3FF), 8, 0.3);
+            }
+        }
         Util.sound(p, "item.lodestone_compass.lock", 1f, 1.2f);
         showCompass(p, def, stack);
     }
@@ -782,7 +807,10 @@ public final class GearListener implements Listener {
                 "z", l.getBlockZ(), "world", l.getWorld().getName()));
         for (Player m : crew.onlineMembers()) {
             Util.sound(m, def.cfg.getString("conch.sound", "block.note_block.bell"), 1f, 1.5f);
+            abilities.fx().sparkles(m.getLocation().add(0, 2.1, 0), org.bukkit.Color.fromRGB(0xF6D7A7), 10, 0.4);
         }
+        abilities.fx().soundRings(p.getLocation().add(0, 0.2, 0), org.bukkit.Color.fromRGB(0xF6D7A7), 4, 7);
+        abilities.fx().pillar(p.getLocation(), org.bukkit.Color.fromRGB(0xF6D7A7), 3.5, 14);
         int glow = (int) (def.cfg.getDouble("conch.glow-seconds", 5) * 20);
         if (glow > 0) {
             p.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, glow, 0, true, false, false));
@@ -810,6 +838,12 @@ public final class GearListener implements Listener {
         String msg = def.cfg.getString("drink.message");
         if (msg != null && !msg.isEmpty()) {
             p.sendActionBar(Text.mm(msg));
+        }
+        org.bukkit.Color dc = Fx.color(def.cfg.getString("vfx-color", def.cfg.getString("color")), org.bukkit.Color.fromRGB(0xE84393));
+        abilities.fx().spiral(p, 30, dc);
+        abilities.fx().sparkles(p.getLocation().add(0, 1.2, 0), dc, 16, 0.5);
+        if (heal > 0) {
+            abilities.fx().burst(p.getLocation().add(0, 1.6, 0), org.bukkit.Particle.HEART, 3, 0.4, 0);
         }
     }
 

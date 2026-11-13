@@ -82,6 +82,8 @@ final class TypeSettings {
     boolean town;
     /** Tidewatch outpost: a fort on the plaza. */
     boolean fort;
+    /** Which Tidewatch fort: 0 star fort, 1 coastal battery, 2 stockade; -1 = picked by the island seed. */
+    int fortVariant = -1;
     int townHouses = 30;
     /** A village town: a well instead of the market, with a smithy, fishing huts, a tavern and farm fields. */
     boolean village;
@@ -213,6 +215,12 @@ final class TypeSettings {
         blocks(t.plazaBlocks, s.getStringList("plaza.blocks"), Material.STONE_BRICKS, log, ctx);
         t.throne = s.getBoolean("plaza.throne.enabled", true);
         t.fort = s.getBoolean("fort.enabled", false);
+        t.fortVariant = switch (s.getString("fort.variant", "random").toLowerCase(java.util.Locale.ROOT)) {
+            case "bastion", "star", "0" -> 0;
+            case "battery", "1" -> 1;
+            case "stockade", "2" -> 2;
+            default -> -1;
+        };
         t.throneBase = orDefault(block(s.getString("plaza.throne.base"), log, ctx), t.throneBase);
         t.throneAccent = orDefault(block(s.getString("plaza.throne.accent"), log, ctx), t.throneAccent);
         t.throneSeat = orDefault(block(s.getString("plaza.throne.seat"), log, ctx), t.throneSeat);

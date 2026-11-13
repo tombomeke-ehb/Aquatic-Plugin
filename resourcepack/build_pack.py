@@ -578,52 +578,138 @@ def buckler():
 
 # ---------------------------------------------------------------- armour icons
 
+def polish(img):
+    """A light pass for every item icon: a lit rim along the top-left edges and a shadow along the bottom-right."""
+    src = img.copy()
+    p, s = img.load(), src.load()
+    w, h = img.size
+    for y in range(h):
+        for x in range(w):
+            r, g, b, a = s[x, y]
+            if not a:
+                continue
+            def empty(dx, dy):
+                xx, yy = x + dx, y + dy
+                return not (0 <= xx < w and 0 <= yy < h) or s[xx, yy][3] == 0
+            if empty(-1, 0) or empty(0, -1) or empty(1, 0) or empty(0, 1):
+                continue                                  # the outline itself stays
+            if empty(-2, 0) or empty(0, -2):
+                p[x, y] = shade((r, g, b), 0.14) + (a,)
+            elif empty(2, 0) or empty(0, 2):
+                p[x, y] = shade((r, g, b), -0.14) + (a,)
+    return img
+
+
 def armor_icon(piece, base, trim, accent, style="plate"):
-    """Item icons for helmets, chestplates, leggings and boots (style "plate" or "cloth")."""
+    """Item icons for armour and clothing: style plate (armour), coat, cloth (trousers) or tricorn (hats)."""
     img = new()
     base, trim, accent = rgb(base), rgb(trim), rgb(accent)
+    dark = shade(trim, -0.35)
 
-    def inside(px, py):
-        if piece == "helmet":
-            if style == "tricorn":
-                return (4 <= px <= 28 and 13 <= py <= 18 and abs(px - 16) <= 12 - (py - 13) * 0.3) or \
-                       math.hypot(px - 16, (py - 13) * 1.3) <= 8 and py <= 14
-            return math.hypot(px - 16, (py - 14) * 1.05) <= 11 and py <= 24 and not (12 <= px <= 20 and 17 <= py <= 24)
-        if piece == "chestplate":
-            return (6 <= px <= 26 and 6 <= py <= 27 and not (12 <= px <= 20 and py <= 9)) or \
-                   (2 <= px <= 30 and 6 <= py <= 14 and not (8 <= px <= 24 and py > 9))
-        if piece == "leggings":
-            return (8 <= px <= 24 and 5 <= py <= 11) or (8 <= px <= 15 and 11 <= py <= 28) or (17 <= px <= 24 and 11 <= py <= 28)
-        return (5 <= px <= 14 and 12 <= py <= 26) or (5 <= px <= 18 and 22 <= py <= 27) or \
-               (18 <= px <= 27 and 12 <= py <= 26) or (18 <= px <= 31 and 22 <= py <= 27)
+    def shaded(c, x, y, top=4, bottom=28):
+        k = 0.16 - 0.3 * (y - top) / max(1, bottom - top) - 0.006 * (x - 16)
+        return shade(c, k + (_noise(x, y, 17) - 0.5) * 0.05)
 
-    for y in range(N):
-        for x in range(N):
-            px, py = x + 0.5, y + 0.5
-            if not inside(px, py):
-                continue
-            k = 0.3 if px < 13 else (-0.25 if px > 20 else 0.05)
-            col = shade(base, k)
-            edge = not all(inside(px + dx, py + dy) for dx, dy in ((1.5, 0), (-1.5, 0), (0, 1.5), (0, -1.5)))
-            if edge:
-                col = shade(trim, k * 0.6)
-            put(img, x, y, col)
-    if piece == "chestplate":
-        for (x, y) in ((15, 15), (16, 15), (15, 16), (16, 16), (15, 20), (16, 20), (15, 21), (16, 21)):
-            put(img, x, y, accent)  # emblem / buttons
-    if piece == "helmet" and style != "tricorn":
-        for x in range(10, 23):
-            put(img, x, 13, accent)  # visor line
     if piece == "helmet" and style == "tricorn":
-        for x in range(7, 26):
-            put(img, x, 15, accent)  # gold band
-    if piece == "leggings":
-        for x in range(8, 25):
-            put(img, x, 8, accent)  # belt
-    if piece == "boots":
-        for x in list(range(5, 15)) + list(range(18, 28)):
-            put(img, x, 14, accent)  # cuffs
-    return outline(img, rgb("#101418"))
+        for y in range(8, 24):
+            for x in range(3, 29):
+                brim = y >= 16 and abs(x - 16) <= 13 - (y - 16) * 1.2
+                crown = 8 <= y < 17 and abs(x - 16) <= 6 + (y - 8) * 0.25
+                if brim or crown:
+                    c = shaded(base, x, y, 8, 23)
+                    if brim and (y in (16, 17) or abs(x - 16) >= 12 - (y - 16) * 1.2):
+                        c = shade(trim, 0.1)                     # gold or white edging
+                    put(img, x, y, c)
+        for (x, y) in ((22, 13), (23, 13), (22, 14), (23, 14)):
+            put(img, x, y, accent)                               # cockade
+        put(img, 22, 13, shade(accent, 0.4))
+    elif piece == "helmet":
+        for y in range(5, 26):
+            for x in range(6, 26):
+                d = ((x - 16) / 10) ** 2 + ((y - 15) / 10.5) ** 2
+                if d <= 1 and not (y > 21 and 11 <= x <= 20):
+                    c = shaded(base, x, y, 5, 25)
+                    if abs(x - 16) <= 1 and y < 17:
+                        c = shade(accent, 0.15)                  # crest
+                    if y in (16, 17) and 8 <= x <= 23:
+                        c = rgb("#101317") if y == 17 else shade(trim, -0.1)   # visor slit
+                    if y >= 19 and (x < 11 or x > 20):
+                        c = shaded(trim, x, y, 5, 25)            # cheek guards
+                    put(img, x, y, c)
+        for (x, y) in ((9, 12), (22, 12)):
+            put(img, x, y, shade(trim, 0.4))
+    elif piece == "chestplate":
+        for y in range(5, 29):
+            for x in range(3, 29):
+                torso = 9 <= x <= 22 and 7 <= y <= 27
+                shoulders = 5 <= y <= 11 and abs(x - 15.5) <= 10.5 - max(0, 7 - y)
+                sleeve = (4 <= x <= 8 or 23 <= x <= 27) and 7 <= y <= 21 - (abs(x - 15.5) - 7) * 0.5
+                if not (torso or shoulders or sleeve):
+                    continue
+                c = shaded(base, x, y, 5, 28)
+                if style == "coat":
+                    if torso and abs(x - 15.5) < 0.6 + max(0, (y - 18) * 0) and y >= 22:
+                        c = shade(base, -0.4)                    # the split coat tails
+                    if torso and 7 <= y <= 15 and abs(x - 15.5) <= 7 - (y - 7) * 0.6 and abs(x - 15.5) >= 4 - (y - 7) * 0.45:
+                        c = shaded(trim, x, y)                   # lapels
+                    if 7 <= y <= 9 and 13 <= x <= 18:
+                        c = rgb("#ece8dc")                       # shirt collar
+                    if torso and x in (12, 19) and 12 <= y <= 21 and y % 3 == 0:
+                        c = shade(accent, 0.25)                  # two rows of buttons
+                    if torso and y == 20:
+                        c = shade(rgb("#3a2414"), 0.05)          # belt
+                    if sleeve and y >= 18:
+                        c = shaded(trim, x, y)                   # cuffs
+                    if y >= 26 and torso:
+                        c = shade(trim, -0.05)                   # hem
+                else:
+                    if shoulders and not torso:
+                        c = shaded(trim, x, y)                   # pauldrons
+                    if torso and abs(x - 15.5) < 1:
+                        c = shade(base, 0.25)                    # ridge
+                    if torso and y >= 18 and (y - 18) % 3 == 2:
+                        c = shade(base, -0.3)                    # belly plates
+                    if torso and 11 <= y <= 14 and 14 <= x <= 17:
+                        c = shade(accent, 0.2 if (x + y) % 2 else 0.4)   # emblem gem
+                    if sleeve and y >= 17:
+                        c = shaded(trim, x, y)                   # bracers
+                put(img, x, y, c)
+    elif piece == "leggings":
+        for y in range(5, 29):
+            for x in range(8, 24):
+                waist = 5 <= y <= 9
+                leg = y > 9 and (8 <= x <= 14 or 17 <= x <= 23)
+                if not (waist or leg):
+                    continue
+                c = shaded(base, x, y, 5, 28)
+                if waist:
+                    c = shade(rgb("#3a2414") if style != "plate" else trim, 0.05 if y == 6 else -0.05)
+                    if 14 <= x <= 17 and 6 <= y <= 8:
+                        c = shade(accent, 0.2)                   # buckle
+                if leg and x in (8, 23):
+                    c = shade(trim, -0.05)                       # side stripes
+                if leg and 17 <= y <= 19 and style == "plate":
+                    c = shaded(trim, x, y)                       # knee guards
+                if leg and style != "plate" and y > 12 and x in (11, 20) and y % 4 == 0:
+                    c = shade(base, -0.15)                       # creases
+                put(img, x, y, c)
+    else:  # boots
+        for side, x0 in ((0, 6), (1, 17)):
+            for y in range(9, 28):
+                for x in range(x0, x0 + 10):
+                    shaft = x0 <= x <= x0 + 5 and y <= 22
+                    foot = 21 <= y <= 27 and x0 <= x <= x0 + 8 - (1 if y == 21 else 0)
+                    if not (shaft or foot):
+                        continue
+                    c = shaded(base, x, y, 9, 27)
+                    if y <= 11:
+                        c = shaded(trim, x, y)                   # cuff
+                    if y >= 26:
+                        c = shade(dark, -0.1)                    # sole
+                    if foot and x >= x0 + 6 and y in (23, 24):
+                        c = shade(base, 0.3)                     # toe shine
+                    put(img, x, y, c)
+    return outline(img, shade(trim, -0.6) if style != "plate" else rgb("#101317"))
 
 
 def armor_layers(base, trim, accent, scale=2, legs=None, boots=None):
@@ -914,6 +1000,7 @@ def write_json(path, data):
 def item(name, image, handheld=False):
     os.makedirs(os.path.join(PACK, "assets", "aquatic", "textures", "item"), exist_ok=True)
     path = os.path.join(PACK, "assets", "aquatic", "textures", "item", name + ".png")
+    image = [polish(f) for f in image] if isinstance(image, list) else polish(image)
     if isinstance(image, list):  # an animation: frames stacked top to bottom
         strip = Image.new("RGBA", (image[0].width, image[0].height * len(image)), (0, 0, 0, 0))
         for i, frame in enumerate(image):
@@ -1874,19 +1961,19 @@ def main():
         item("tidewarden_" + piece, armor_icon(piece, "#2a6fb5", "#123a66", "#5ff3ff"))
     equipment("tidewarden", *plate_armor_layers("#2a6fb5", "#7d93a8", "#5ff3ff"))
     item("corsair_hat", armor_icon("helmet", "#2a1d16", "#120c09", "#e2b33c", style="tricorn"))
-    item("corsair_coat", armor_icon("chestplate", "#9b2c2c", "#3a1a12", "#e2b33c"))
-    item("corsair_breeches", armor_icon("leggings", "#c9a77a", "#5a4026", "#3a1a12"))
+    item("corsair_coat", armor_icon("chestplate", "#9b2c2c", "#3a1a12", "#e2b33c", style="coat"))
+    item("corsair_breeches", armor_icon("leggings", "#c9a77a", "#5a4026", "#3a1a12", style="cloth"))
     item("corsair_boots", armor_icon("boots", "#2a1d16", "#120c09", "#e2b33c"))
     equipment("corsair", *armor_layers("#9b2c2c", "#3a1a12", "#e2b33c"))
-    item("captains_coat", armor_icon("chestplate", "#2b2b33", "#c0392b", "#e2b33c"))
+    item("captains_coat", armor_icon("chestplate", "#2b2b33", "#c0392b", "#e2b33c", style="coat"))
     # Tidewatch uniforms (worn by the garrison)
     item("tidewatch_hat", armor_icon("helmet", "#1d3a6b", "#0d1f3d", "#e8e4d8", style="tricorn"))
-    item("tidewatch_coat", armor_icon("chestplate", "#1d3a6b", "#0d1f3d", "#e8e4d8"))
-    item("tidewatch_trousers", armor_icon("leggings", "#e8e4d8", "#9a968c", "#1d3a6b"))
+    item("tidewatch_coat", armor_icon("chestplate", "#1d3a6b", "#0d1f3d", "#e8e4d8", style="coat"))
+    item("tidewatch_trousers", armor_icon("leggings", "#e8e4d8", "#9a968c", "#1d3a6b", style="cloth"))
     item("tidewatch_boots", armor_icon("boots", "#1a1a1a", "#080808", "#e8e4d8"))
-    item("tidewatch_officer_coat", armor_icon("chestplate", "#14284d", "#0a1530", "#e2b33c"))
+    item("tidewatch_officer_coat", armor_icon("chestplate", "#14284d", "#0a1530", "#e2b33c", style="coat"))
     item("tidewatch_captain_hat", armor_icon("helmet", "#f2f2f2", "#b8a26a", "#d4a017", style="tricorn"))
-    item("tidewatch_captain_coat", armor_icon("chestplate", "#f2f2f2", "#b8a26a", "#d4a017"))
+    item("tidewatch_captain_coat", armor_icon("chestplate", "#f2f2f2", "#b8a26a", "#d4a017", style="coat"))
     equipment("tidewatch", *armor_layers("#1d3a6b", "#0d1f3d", "#e8e4d8", legs="#e8e4d8", boots="#1a1a1a"))
     equipment("tidewatch_officer", *armor_layers("#14284d", "#0a1530", "#e2b33c", legs="#e8e4d8", boots="#1a1a1a"))
     equipment("tidewatch_captain", *armor_layers("#f2f2f2", "#b8a26a", "#d4a017", legs="#e8e4d8", boots="#1a1a1a"))

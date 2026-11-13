@@ -1,5 +1,41 @@
 # Changelog
 
+## 2.18.0 (2026-11-13)
+
+### Added
+- **New Tidewatch forts, three variants** (picked per island, or set `types.TIDEWATCH.fort.variant` in `islands.yml`):
+  - **The star fort:** stone curtain walls with a wall walk and crenellations, four diamond bastions with cannons and braziers, a gatehouse with a raised portcullis, barracks, training dummies and supplies.
+  - **The coastal battery:** a low wall, a raised gun deck with five cannons in embrasures, a brick powder magazine, a tall watchtower with a signal fire, and barracks.
+  - **The stockade:** a pointed log palisade with a walk behind it, four roofed watchtowers on stilts, a timber blockhouse with a steep roof, tents and a camp.
+  - Every fort has a three-storey keep in the middle (captain's hall, bunks, a map room, a roof with the Tidewatch flag). The Warden Captain waits on its ground floor.
+- **New effects:**
+  - A pillar of light, an orbit aura, a nova burst, rising sparkles, sound-wave rings and chains.
+  - **Eating a fruit:** a pillar of light, a nova and an aura in the fruit's colour.
+  - **Every fruit move:** a flash and sparks at the hand.
+  - **Drinks:** a swirl in the drink's colour and sparkles, plus hearts when they heal.
+  - **Bombs:** a nova and a flash on top of their cloud.
+  - **The Echo Conch:** sound-wave rings, a pillar, and a light above every crewmate who hears it.
+  - **The Tide Compass:** a short trail of light pointing to the island.
+  - **The Seafoam Milkshake:** a white burst and a fading glow.
+  - **Abyssal Shackles:** chains to the cuffed player and an aura around them.
+  - **Armour sets:** an orbit aura every 10 seconds.
+  - **The Conqueror's crown:** golden sparks above the head.
+
+### Changed
+- **Better textures:** every armour and clothing icon is redrawn.
+  - Coats have lapels, double rows of buttons, a belt, cuffs and split tails.
+  - Plate has pauldrons, a ridge, belly plates and a gem; the helmet has a visor and cheek guards.
+  - Boots and hats are shaped.
+  - Every item icon also gets a lighting pass: a lit top-left edge and a shaded bottom-right edge.
+- **Tidewatch soldiers** only appear on open courtyard ground (never on roofs, walls or towers).
+
+### Fixed
+- **The fort's strongbox** is buried in the open yard in front of the keep. It no longer ends up under a roof, sticking out of a floor, or near a crew flag.
+
+### Your server
+- Configs upgrade automatically. Existing outposts keep their old fort; new ones (or `/island admin regen <island>`) get the new forts.
+- The resource pack has changed; the plugin sends it by itself.
+
 ## 2.17.0 (2026-11-13)
 
 ### Added

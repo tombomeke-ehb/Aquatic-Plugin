@@ -18,7 +18,7 @@
 
 # How often (seconds) changed data is written to plugins/AquaticSMP/data/islands/ (also saved on shutdown).
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 8
+config-version: 9
 
 autosave-seconds: 120
 
@@ -434,6 +434,9 @@ types:
         enabled: false
     fort:
       enabled: true
+      # Which fort: bastion (a star fort), battery (a coastal gun battery), stockade (a wooden palisade camp),
+      # or random (picked per island, so every outpost can look different).
+      variant: random
   VILLAGE:
     display-name: "<gradient:#f7c873:#c98b3b>Village</gradient>"
     rarity: uncommon
@@ -1134,7 +1137,7 @@ messages:
   tidewatch-soldier-reward: "<yellow>+<amount> <gray>(Tidewatch soldier)"
   tidewatch-liberated-you: "<gold><bold>Liberated!</bold> <gray>You drove the Tidewatch off <white><island></white>: <yellow>+<amount></yellow>. <gray>Claim it within <white><hours>h</white> before they return."
   tidewatch-liberated: "<gold><player> <gray>defeated the Warden Captain and liberated <white><island></white> from the Tidewatch!"
-  tidewatch-strongbox: "<aqua>The fort's strongbox is buried in the keep. <gray>Dig it up!"
+  tidewatch-strongbox: "<aqua>The fort's strongbox is buried in the yard in front of the keep. <gray>Dig it up!"
   tidewatch-someone: "A band of pirates"
   info-tidewatch-held: "<blue>Held by the Tidewatch. <gray>Defeat the Warden Captain in the keep to liberate it."
   info-tidewatch-free: "<green>Liberated <gray>(claimable for <white><time></white> before the Tidewatch returns)"
