@@ -3,7 +3,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 5
+config-version: 6
 #  Custom pirate items: Abyss Fruits, Abyssal Iron, legendary swords, guns,
 #  cannons, the Tide Compass, Echo Conch, rum and the Conqueror of the Sea's crown.
 #
@@ -1097,6 +1097,210 @@ items:
       ingredients:
         S: SUGAR_CANE
         B: GLASS_BOTTLE
+
+  tidecaller:
+    type: fruit
+    material: APPLE
+    name: "<gradient:#2e86de:#a9dcff><bold>Tidecaller Fruit</bold></gradient>"
+    lore:
+      - "<gray>Cold and heavy, like a drop of the deep sea."
+      - "<dark_gray>Elemental"
+      - ""
+      - "<aqua>You command the tides themselves."
+      - "<gray>Moves: <white>Riptide, Whirlpool, Geyser"
+      - ""
+      - "<dark_aqua>A fragment of the drowned Abyss."
+      - "<red>The sea wants it back: eat it and you will never swim again."
+    item-model: "aquatic:tidecaller"
+    custom-model-data: 0
+    glint: true
+    max-stack: 1
+    always-edible: true
+    fruit:
+      description: "Tide body: hurl a crashing wave, drag enemies into a whirlpool or blast them up with a geyser."
+      passives:
+        - conduit_power:1
+      ability:
+        name: "<aqua>Riptide"
+        type: wave
+        cooldown: 10
+        range: 14
+        width: 2.0
+        damage: 6
+        knockback: 1.6
+        effects: ["slowness:1"]
+        effect-seconds: 3
+        particle: SPLASH
+        color: "#2e86de"
+        sound: entity.player.splash.high_speed
+      extra-moves:
+        - {name: "<aqua>Whirlpool", type: pull, cooldown: 14, radius: 7, damage: 3, pull-strength: 1.5, particle: BUBBLE, color: "#1b4f72"}
+        - {name: "<aqua>Geyser", type: nova, cooldown: 18, radius: 5, damage: 7, knockback: 1.8, windup-ticks: 12, particle: SPLASH, color: "#5dade2"}
+
+  venomfang:
+    type: fruit
+    material: APPLE
+    name: "<gradient:#7dcf3a:#2f5d1a><bold>Venomfang Fruit</bold></gradient>"
+    lore:
+      - "<gray>Scaled skin and a faint, bitter smell."
+      - "<dark_gray>Beast"
+      - ""
+      - "<green>You gain the speed and venom of a sea serpent."
+      - "<gray>Moves: <white>Fang Strike, Venom Spray, Coil"
+      - ""
+      - "<dark_aqua>A fragment of the drowned Abyss."
+      - "<red>The sea wants it back: eat it and you will never swim again."
+    item-model: "aquatic:venomfang"
+    custom-model-data: 0
+    glint: true
+    max-stack: 1
+    always-edible: true
+    fruit:
+      description: "Serpent body: fast and venomous. Lunge with a poisoned bite, spray venom or coil around an enemy."
+      passives:
+        - speed:1
+      ability:
+        name: "<green>Fang Strike"
+        type: dash
+        cooldown: 8
+        power: 2.4
+        damage: 6
+        dash-ticks: 7
+        effects: ["poison:2"]
+        effect-seconds: 5
+        color: "#7dcf3a"
+      extra-moves:
+        - {name: "<green>Venom Spray", type: beam, cooldown: 11, range: 10, damage: 4, pierce: 3, effects: ["poison:2", "slowness:1"], effect-seconds: 4, particle: HAPPY_VILLAGER, color: "#7dcf3a"}
+        - {name: "<dark_green>Coil", type: pull, cooldown: 15, radius: 5, damage: 3, pull-strength: 1.2, effects: ["slowness:3"], effect-seconds: 3, particle: HAPPY_VILLAGER, color: "#2f5d1a"}
+
+  dunemaw:
+    type: fruit
+    material: APPLE
+    name: "<gradient:#e2c275:#9c7a3c><bold>Dunemaw Fruit</bold></gradient>"
+    lore:
+      - "<gray>Dry and gritty. Sand trickles out when you squeeze it."
+      - "<dark_gray>Elemental"
+      - ""
+      - "<yellow>Your body crumbles into a sandstorm."
+      - "<gray>Moves: <white>Sand Lash, Dust Veil, Quicksand"
+      - ""
+      - "<dark_aqua>A fragment of the drowned Abyss."
+      - "<red>The sea wants it back: eat it and you will never swim again."
+    item-model: "aquatic:dunemaw"
+    custom-model-data: 0
+    glint: true
+    max-stack: 1
+    always-edible: true
+    fruit:
+      description: "Sand body: whip enemies with sand, vanish in a dust cloud or swallow them in quicksand."
+      passives:
+        - haste:1
+      ability:
+        name: "<yellow>Sand Lash"
+        type: beam
+        cooldown: 9
+        range: 14
+        damage: 6
+        pierce: 3
+        particle: WHITE_ASH
+        color: "#e2c275"
+      extra-moves:
+        - {name: "<yellow>Dust Veil", type: dash, cooldown: 12, power: 1.8, damage: 2, dash-ticks: 6, self-effects: ["invisibility:1"], duration: 3, color: "#d9c08a"}
+        - {name: "<gold>Quicksand", type: pull, cooldown: 15, radius: 6, damage: 2, pull-strength: 1.0, effects: ["slowness:4"], effect-seconds: 3, particle: WHITE_ASH, color: "#9c7a3c"}
+
+  luminara:
+    type: fruit
+    material: APPLE
+    name: "<gradient:#fff6b0:#ffb703><bold>Luminara Fruit</bold></gradient>"
+    lore:
+      - "<gray>It glows softly in the dark."
+      - "<dark_gray>Elemental"
+      - ""
+      - "<yellow>Your body turns to living light."
+      - "<gray>Moves: <white>Prism Beam, Flashpoint, Lightstep"
+      - ""
+      - "<dark_aqua>A fragment of the drowned Abyss."
+      - "<red>The sea wants it back: eat it and you will never swim again."
+    item-model: "aquatic:luminara"
+    custom-model-data: 0
+    glint: true
+    max-stack: 1
+    always-edible: true
+    fruit:
+      description: "Light body: see in the dark. Fire a piercing beam, blind everyone around you or flash across the field."
+      passives:
+        - night_vision:1
+      ability:
+        name: "<yellow>Prism Beam"
+        type: beam
+        cooldown: 9
+        range: 18
+        damage: 7
+        pierce: 4
+        windup-ticks: 6
+        particle: END_ROD
+        color: "#fff6b0"
+      extra-moves:
+        - {name: "<gold>Flashpoint", type: nova, cooldown: 16, radius: 5, damage: 4, knockback: 1.0, effects: ["blindness:1"], effect-seconds: 3, particle: END_ROD, color: "#fffbe0"}
+        - {name: "<yellow>Lightstep", type: dash, cooldown: 6, power: 2.8, damage: 3, dash-ticks: 5, color: "#fff6b0"}
+
+  # ---- Tidewatch uniforms: worn by the Tidewatch garrison (not for sale, they don't drop)
+  tidewatch_hat:
+    type: plain
+    material: LEATHER_HELMET
+    color: "#1d3a6b"
+    name: "<blue>Tidewatch Bicorne"
+    item-model: "aquatic:tidewatch_hat"
+    equipment-model: "aquatic:tidewatch"
+    custom-model-data: 0
+  tidewatch_coat:
+    type: plain
+    material: LEATHER_CHESTPLATE
+    color: "#1d3a6b"
+    name: "<blue>Tidewatch Coat"
+    item-model: "aquatic:tidewatch_coat"
+    equipment-model: "aquatic:tidewatch"
+    custom-model-data: 0
+  tidewatch_trousers:
+    type: plain
+    material: LEATHER_LEGGINGS
+    color: "#e8e4d8"
+    name: "<blue>Tidewatch Trousers"
+    item-model: "aquatic:tidewatch_trousers"
+    equipment-model: "aquatic:tidewatch"
+    custom-model-data: 0
+  tidewatch_boots:
+    type: plain
+    material: LEATHER_BOOTS
+    color: "#1a1a1a"
+    name: "<blue>Tidewatch Boots"
+    item-model: "aquatic:tidewatch_boots"
+    equipment-model: "aquatic:tidewatch"
+    custom-model-data: 0
+  tidewatch_officer_coat:
+    type: plain
+    material: LEATHER_CHESTPLATE
+    color: "#14284d"
+    name: "<dark_blue>Tidewatch Officer's Coat"
+    item-model: "aquatic:tidewatch_officer_coat"
+    equipment-model: "aquatic:tidewatch_officer"
+    custom-model-data: 0
+  tidewatch_captain_hat:
+    type: plain
+    material: LEATHER_HELMET
+    color: "#f2f2f2"
+    name: "<dark_aqua>Warden Captain's Bicorne"
+    item-model: "aquatic:tidewatch_captain_hat"
+    equipment-model: "aquatic:tidewatch_captain"
+    custom-model-data: 0
+  tidewatch_captain_coat:
+    type: plain
+    material: LEATHER_CHESTPLATE
+    color: "#f2f2f2"
+    name: "<dark_aqua>Warden Captain's Coat"
+    item-model: "aquatic:tidewatch_captain_coat"
+    equipment-model: "aquatic:tidewatch_captain"
+    custom-model-data: 0
 
   # Drinking it washes your Abyss Fruit power away, so you can eat a different fruit. Your mastery of
   # the old fruit is kept (eat it again later and you continue where you left off).

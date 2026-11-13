@@ -1,5 +1,30 @@
 # Changelog
 
+## 2.9.0 (2026-11-13)
+
+### Added
+- **Four new Abyss Fruits** (with textures; they also appear in treasure):
+  - **Tidecaller:** Riptide (a crashing wave), Whirlpool (pulls enemies in) and Geyser (a blast upward).
+  - **Venomfang:** Fang Strike (a poisonous lunge), Venom Spray and Coil (slows). Makes you faster.
+  - **Dunemaw:** Sand Lash, Dust Veil (dash and turn invisible) and Quicksand.
+  - **Luminara:** Prism Beam (piercing), Flashpoint (blinds everyone around you) and Lightstep. Gives night vision.
+- **Tidewatch uniforms:** the garrison wears their own uniforms, which get their own look with the resource pack. Without the pack they show as dyed navy leather.
+  - **Soldiers:** a navy bicorne and coat, white trousers and black boots.
+  - **Lieutenants:** a gold-trimmed officer's coat.
+  - **The Warden Captain:** a white and gold uniform.
+  - The uniforms don't drop and aren't for sale.
+- **Officers use fruit powers:**
+  - **Tidewatch Lieutenants** use Rimefrost or Galeborn.
+  - **The Warden Captain** gets one of four at random: Emberheart fireballs, a Thunderveil lightning strike, a Rimefrost freezing nova or a Galeborn gust. Captains hit 40% harder.
+  - Their power shows in their name, and every attack comes with a one-second warning (particles and a sound) so you can dodge.
+
+### Changed
+- **Lieutenants and the Warden Captain are now uniformed soldiers** (zombie-type) instead of vindicators, so the uniform shows. They don't burn in daylight and don't turn into drowned.
+
+### Your server
+- The new items are added to `items.yml` automatically.
+- Update the resource pack link and SHA-1 in `server.properties` (see the release notes).
+
 ## 2.8.0 (2026-11-13)
 
 ### Added

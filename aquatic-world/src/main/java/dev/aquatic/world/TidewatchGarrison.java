@@ -53,7 +53,10 @@ import java.util.concurrent.ThreadLocalRandom;
 final class TidewatchGarrison implements Listener {
 
     private final IslandsModule m;
-    private final NamespacedKey islandKey, captainKey;
+    private final NamespacedKey islandKey, captainKey, powerKey;
+    /** Garrison members with a fruit power, and when they may use it next (ms). */
+    private final Set<UUID> officers = new HashSet<>();
+    private final Map<UUID, Long> powerReady = new HashMap<>();
     /** island id -> liberated until (ms) */
     private final Map<String, Long> liberatedUntil = new HashMap<>();
     private final Map<String, Set<UUID>> soldiers = new HashMap<>();
@@ -65,6 +68,7 @@ final class TidewatchGarrison implements Listener {
         this.m = module;
         this.islandKey = new NamespacedKey(module.plugin(), "tidewatch_island");
         this.captainKey = new NamespacedKey(module.plugin(), "tidewatch_captain");
+        this.powerKey = new NamespacedKey(module.plugin(), "tidewatch_power");
     }
 
     private ConfigurationSection cfg() {
@@ -258,12 +262,25 @@ final class TidewatchGarrison implements Listener {
         le.getPersistentDataContainer().set(islandKey, PersistentDataType.STRING, is.id);
         le.setPersistent(false);
         le.setRemoveWhenFarAway(false);
+        le.setCanPickupItems(false);
+        if (le instanceof org.bukkit.entity.Zombie zombie) {
+            zombie.setShouldBurnInDay(false);
+            zombie.setConversionTime(-1);
+        }
+        // officers with an Abyss Fruit power (picked at random from the template's list)
+        List<String> powers = mob.getStringList("powers");
+        String power = powers.isEmpty() ? null : powers.get(ThreadLocalRandom.current().nextInt(powers.size())).toLowerCase(Locale.ROOT);
         if (le instanceof org.bukkit.entity.Ageable ageable) {
             ageable.setAdult();
         }
         if (mob.contains("name")) {
-            le.customName(Text.mm(mob.getString("name")));
+            String suffix = power == null ? "" : " " + cfg().getString("power-names." + power, "");
+            le.customName(Text.mm(mob.getString("name") + suffix));
             le.setCustomNameVisible(true);
+        }
+        if (power != null) {
+            le.getPersistentDataContainer().set(powerKey, PersistentDataType.STRING, power);
+            officers.add(le.getUniqueId());
         }
         AttributeInstance hp = le.getAttribute(Attribute.MAX_HEALTH);
         if (hp != null) {
@@ -308,12 +325,127 @@ final class TidewatchGarrison implements Listener {
         return le;
     }
 
-    private static ItemStack item(String spec) {
+    /** "MATERIAL" or "item:<custom id>" (a custom item, e.g. a Tidewatch uniform piece). */
+    private ItemStack item(String spec) {
         if (spec == null) {
             return null;
         }
-        Material m = Material.matchMaterial(spec);
-        return m == null ? null : new ItemStack(m);
+        if (spec.toLowerCase(Locale.ROOT).startsWith("item:")) {
+            dev.aquatic.api.ItemService items = m.service(dev.aquatic.api.ItemService.class);
+            ItemStack custom = items == null ? null : items.createItem(spec.substring(5), 1);
+            if (custom != null) {
+                return custom;
+            }
+            String fallback = cfg().getString("uniform-fallback." + spec.substring(5));
+            spec = fallback != null ? fallback : "LEATHER_CHESTPLATE";
+        }
+        Material mat = Material.matchMaterial(spec);
+        return mat == null ? null : new ItemStack(mat);
+    }
+
+    // ------------------------------------------------------------------ officer powers
+
+    /** Every second: officers with a fruit power use it on their target (after a short, visible warning). */
+    void tickPowers() {
+        long now = System.currentTimeMillis();
+        long cooldown = Math.max(3, cfg().getLong("power-cooldown-seconds", 9)) * 1000L;
+        officers.removeIf(id -> {
+            Entity e = Bukkit.getEntity(id);
+            if (!(e instanceof Mob mob) || !mob.isValid()) {
+                powerReady.remove(id);
+                return true;
+            }
+            LivingEntity target = mob.getTarget();
+            if (target == null || !target.isValid() || target.getWorld() != mob.getWorld()
+                    || target.getLocation().distanceSquared(mob.getLocation()) > 18 * 18) {
+                return false;
+            }
+            if (now < powerReady.getOrDefault(id, now + 2000L)) {
+                powerReady.putIfAbsent(id, now + 2000L);
+                return false;
+            }
+            powerReady.put(id, now + cooldown);
+            String power = mob.getPersistentDataContainer().get(powerKey, PersistentDataType.STRING);
+            telegraph(mob, target, power);
+            m.runLater(() -> {
+                if (mob.isValid() && target.isValid() && !mob.isDead()) {
+                    usePower(mob, target, power);
+                }
+            }, 20L);
+            return false;
+        });
+    }
+
+    private double powerDamage(Mob mob) {
+        double base = cfg().getDouble("power-damage", 6);
+        return mob.getPersistentDataContainer().has(captainKey, PersistentDataType.BYTE) ? base * 1.4 : base;
+    }
+
+    /** A warning a second before the power hits, so players can dodge. */
+    private void telegraph(Mob mob, LivingEntity target, String power) {
+        Location at = "thunder".equals(power) ? target.getLocation() : mob.getLocation();
+        Particle p = switch (power == null ? "" : power) {
+            case "ember" -> Particle.FLAME;
+            case "frost" -> Particle.SNOWFLAKE;
+            case "thunder" -> Particle.ELECTRIC_SPARK;
+            default -> Particle.CLOUD;
+        };
+        for (int i = 0; i < 24; i++) {
+            double a = Math.PI * 2 * i / 24;
+            at.getWorld().spawnParticle(p, at.clone().add(Math.cos(a) * 2, 0.2, Math.sin(a) * 2), 1, 0, 0, 0, 0);
+        }
+        mob.getWorld().playSound(mob.getLocation(), Sound.ENTITY_EVOKER_PREPARE_ATTACK, 1f, 1.2f);
+    }
+
+    private void usePower(Mob mob, LivingEntity target, String power) {
+        double dmg = powerDamage(mob);
+        World w = mob.getWorld();
+        switch (power == null ? "" : power) {
+            case "ember" -> { // Emberheart: a burst of fireballs
+                for (int i = 0; i < 3; i++) {
+                    org.bukkit.util.Vector dir = target.getEyeLocation().toVector().subtract(mob.getEyeLocation().toVector()).normalize()
+                            .add(new org.bukkit.util.Vector((i - 1) * 0.12, 0, (i - 1) * 0.12));
+                    org.bukkit.entity.SmallFireball ball = mob.launchProjectile(org.bukkit.entity.SmallFireball.class, dir.multiply(1.2));
+                    ball.setIsIncendiary(false);
+                }
+                w.playSound(mob.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 1f, 0.9f);
+            }
+            case "frost" -> { // Rimefrost: a freezing nova
+                w.spawnParticle(Particle.SNOWFLAKE, mob.getLocation().add(0, 1, 0), 120, 2.5, 0.6, 2.5, 0.05);
+                w.playSound(mob.getLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 0.6f);
+                for (Player p : w.getPlayers()) {
+                    if (p.getLocation().distanceSquared(mob.getLocation()) <= 25 && p.getGameMode() == GameMode.SURVIVAL) {
+                        p.damage(dmg, mob);
+                        p.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 60, 2));
+                        p.setFreezeTicks(Math.max(p.getFreezeTicks(), 140));
+                    }
+                }
+            }
+            case "thunder" -> { // Thunderveil: lightning where the warning was
+                Location at = target.getLocation();
+                w.strikeLightningEffect(at);
+                for (Player p : w.getPlayers()) {
+                    if (p.getLocation().distanceSquared(at) <= 6.25 && p.getGameMode() == GameMode.SURVIVAL) {
+                        p.damage(dmg * 1.2, mob);
+                    }
+                }
+            }
+            default -> { // Galeborn: a gust that throws everyone back
+                w.spawnParticle(Particle.CLOUD, mob.getLocation().add(0, 1, 0), 80, 2, 0.5, 2, 0.15);
+                w.playSound(mob.getLocation(), Sound.ENTITY_BREEZE_WIND_BURST, 1f, 1f);
+                for (Player p : w.getPlayers()) {
+                    double d2 = p.getLocation().distanceSquared(mob.getLocation());
+                    if (d2 <= 36 && p.getGameMode() == GameMode.SURVIVAL) {
+                        org.bukkit.util.Vector push = p.getLocation().toVector().subtract(mob.getLocation().toVector()).setY(0);
+                        if (push.lengthSquared() < 0.01) {
+                            push = new org.bukkit.util.Vector(1, 0, 0);
+                        }
+                        p.setVelocity(push.normalize().multiply(1.6).setY(0.6));
+                        p.damage(dmg * 0.5, mob);
+                    }
+                }
+            }
+        }
     }
 
     // ------------------------------------------------------------------ events

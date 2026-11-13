@@ -626,14 +626,17 @@ def armor_icon(piece, base, trim, accent, style="plate"):
     return outline(img, rgb("#101418"))
 
 
-def armor_layers(base, trim, accent, scale=2):
+def armor_layers(base, trim, accent, scale=2, legs=None, boots=None):
     """Worn armour textures (humanoid + humanoid_leggings layers) for a set, at 2x resolution."""
     W, H = 64 * scale, 32 * scale
     layer1 = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     layer2 = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     base, trim, accent = rgb(base), rgb(trim), rgb(accent)
+    legs_col = rgb(legs) if legs else base
+    boots_col = rgb(boots) if boots else base
 
-    def box(img, u, v, w, h, d, band=None):
+    def box(img, u, v, w, h, d, band=None, body=None):
+        body_col = body if body is not None else base
         """Paints the faces of a model box laid out like vanilla armour (u, v = top-left of its UV area)."""
         faces = [(u + d, v, w, d, 0.3), (u + d + w, v, w, d, -0.3),                 # top, bottom
                  (u, v + d, d, h, -0.1), (u + d, v + d, w, h, 0.12),                 # right, front
@@ -642,7 +645,7 @@ def armor_layers(base, trim, accent, scale=2):
             for yy in range(fy * scale, (fy + fh) * scale):
                 for xx in range(fx * scale, (fx + fw) * scale):
                     rel_y = (yy - fy * scale) / max(1, fh * scale - 1)
-                    col = shade(base, k + 0.15 * (0.5 - rel_y))
+                    col = shade(body_col, k + 0.15 * (0.5 - rel_y))
                     if xx in (fx * scale, (fx + fw) * scale - 1) or yy in (fy * scale, (fy + fh) * scale - 1):
                         col = shade(trim, k)
                     if band and band[0] <= rel_y <= band[1]:
@@ -652,9 +655,9 @@ def armor_layers(base, trim, accent, scale=2):
     box(layer1, 0, 0, 8, 8, 8, band=(0.55, 0.65))       # helmet
     box(layer1, 16, 16, 8, 12, 4, band=(0.75, 0.82))    # chest
     box(layer1, 40, 16, 4, 12, 4, band=(0.0, 0.08))     # arms
-    box(layer1, 0, 16, 4, 12, 4, band=(0.62, 0.68))     # boots
-    box(layer2, 16, 16, 8, 12, 4, band=(0.62, 0.7))     # leggings: waist with a belt
-    box(layer2, 0, 16, 4, 12, 4, band=(0.9, 1.0))       # leggings: legs
+    box(layer1, 0, 16, 4, 12, 4, band=(0.62, 0.68), body=boots_col)     # boots
+    box(layer2, 16, 16, 8, 12, 4, band=(0.62, 0.7), body=legs_col)      # leggings: waist with a belt
+    box(layer2, 0, 16, 4, 12, 4, band=(0.9, 1.0), body=legs_col)        # leggings: legs
     # an emblem on the chest front
     for yy in range(23 * scale, 26 * scale):
         for xx in range(23 * scale, 25 * scale):
@@ -784,6 +787,10 @@ FRUITS = {
     "behemoth": fruit("#b8743a", "#5a3418"),
     "galeborn": fruit("#c9f3f7", "#3fb8c9", outline_col="#123a40"),
     "stoneskin": fruit("#8e9ba3", "#5c6b73", outline_col="#1f262a"),
+    "tidecaller": fruit("#2e86de", "#a9dcff", outline_col="#0b2a4a"),
+    "venomfang": fruit("#7dcf3a", "#2f5d1a", leaf="#2f5d1a", outline_col="#13260a"),
+    "dunemaw": fruit("#e2c275", "#9c7a3c", outline_col="#3d2b10"),
+    "luminara": fruit("#fff6b0", "#ffb703", outline_col="#5a4a10"),
     "springcoil": fruit("#e86fb0", "#7a1f6e"),
     "emberheart": fruit("#ff7a1a", "#c4100c"),
     "rimefrost": fruit("#a7e6ff", "#ffffff", leaf="#bfe9ff", outline_col="#123247"),
@@ -835,6 +842,17 @@ def main():
     item("corsair_boots", armor_icon("boots", "#2a1d16", "#120c09", "#e2b33c"))
     equipment("corsair", *armor_layers("#9b2c2c", "#3a1a12", "#e2b33c"))
     item("captains_coat", armor_icon("chestplate", "#2b2b33", "#c0392b", "#e2b33c"))
+    # Tidewatch uniforms (worn by the garrison)
+    item("tidewatch_hat", armor_icon("helmet", "#1d3a6b", "#0d1f3d", "#e8e4d8", style="tricorn"))
+    item("tidewatch_coat", armor_icon("chestplate", "#1d3a6b", "#0d1f3d", "#e8e4d8"))
+    item("tidewatch_trousers", armor_icon("leggings", "#e8e4d8", "#9a968c", "#1d3a6b"))
+    item("tidewatch_boots", armor_icon("boots", "#1a1a1a", "#080808", "#e8e4d8"))
+    item("tidewatch_officer_coat", armor_icon("chestplate", "#14284d", "#0a1530", "#e2b33c"))
+    item("tidewatch_captain_hat", armor_icon("helmet", "#f2f2f2", "#b8a26a", "#d4a017", style="tricorn"))
+    item("tidewatch_captain_coat", armor_icon("chestplate", "#f2f2f2", "#b8a26a", "#d4a017"))
+    equipment("tidewatch", *armor_layers("#1d3a6b", "#0d1f3d", "#e8e4d8", legs="#e8e4d8", boots="#1a1a1a"))
+    equipment("tidewatch_officer", *armor_layers("#14284d", "#0a1530", "#e2b33c", legs="#e8e4d8", boots="#1a1a1a"))
+    equipment("tidewatch_captain", *armor_layers("#f2f2f2", "#b8a26a", "#d4a017", legs="#e8e4d8", boots="#1a1a1a"))
     equipment("captains_coat", armor_layers("#2b2b33", "#c0392b", "#e2b33c")[0])
     for name, image in FRUITS.items():
         item(name, image)

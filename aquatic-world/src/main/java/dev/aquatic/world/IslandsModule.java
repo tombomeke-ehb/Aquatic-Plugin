@@ -140,6 +140,7 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         garrison.load();
         registerListener(garrison);
         runTimer(garrison::tick, 60L, 60L);
+        runTimer(garrison::tickPowers, 20L, 20L);
         runTimer(() -> upgrades.tickHarbor(presence), 40L, 40L);
         conquest = new ConquestManager(this);
         registerCommand(new IslandCommands(this).build());

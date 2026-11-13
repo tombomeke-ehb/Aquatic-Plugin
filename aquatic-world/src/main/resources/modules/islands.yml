@@ -746,31 +746,57 @@ tidewatch:
   strongbox-tier: rare
   # Which soldiers spawn (template:weight).
   soldiers: ["recruit:5", "rifleman:3", "lieutenant:1"]
+  # Officers (templates with "powers") use an Abyss Fruit power on their target every power-cooldown-seconds,
+  # after a one-second warning (particles and a sound) so players can dodge. Captains hit 40% harder.
+  # Powers: ember (fireballs), frost (freezing nova), thunder (lightning at the target), gale (gust).
+  power-cooldown-seconds: 9
+  power-damage: 6
+  power-names:
+    ember: "<gold>(Emberheart)"
+    frost: "<aqua>(Rimefrost)"
+    thunder: "<yellow>(Thunderveil)"
+    gale: "<white>(Galeborn)"
+  # Equipment can be a MATERIAL or "item:<custom item>" (the Tidewatch uniforms from items.yml, which get
+  # their own look with the resource pack). If the items module is off, these materials are used instead.
+  uniform-fallback:
+    tidewatch_hat: LEATHER_HELMET
+    tidewatch_coat: LEATHER_CHESTPLATE
+    tidewatch_trousers: LEATHER_LEGGINGS
+    tidewatch_boots: LEATHER_BOOTS
+    tidewatch_officer_coat: CHAINMAIL_CHESTPLATE
+    tidewatch_captain_hat: GOLDEN_HELMET
+    tidewatch_captain_coat: GOLDEN_CHESTPLATE
   mobs:
     recruit:
       type: ZOMBIE
       name: "<blue>Tidewatch Recruit"
       health-multiplier: 1.5
       damage-multiplier: 1.2
-      equipment: {helmet: LEATHER_HELMET, chestplate: LEATHER_CHESTPLATE, mainhand: IRON_SWORD}
+      equipment: {helmet: "item:tidewatch_hat", chestplate: "item:tidewatch_coat", leggings: "item:tidewatch_trousers",
+                  boots: "item:tidewatch_boots", mainhand: IRON_SWORD}
     rifleman:
       type: SKELETON
       name: "<blue>Tidewatch Rifleman"
       health-multiplier: 1.5
-      equipment: {helmet: CHAINMAIL_HELMET, mainhand: BOW}
+      equipment: {helmet: "item:tidewatch_hat", chestplate: "item:tidewatch_coat", leggings: "item:tidewatch_trousers",
+                  boots: "item:tidewatch_boots", mainhand: BOW}
     lieutenant:
-      type: VINDICATOR
+      type: ZOMBIE
       name: "<dark_blue>Tidewatch Lieutenant"
-      health-multiplier: 2.0
-      damage-multiplier: 1.2
-      equipment: {helmet: IRON_HELMET, mainhand: IRON_AXE}
+      health-multiplier: 2.2
+      damage-multiplier: 1.3
+      powers: [frost, gale]
+      equipment: {helmet: "item:tidewatch_hat", chestplate: "item:tidewatch_officer_coat", leggings: "item:tidewatch_trousers",
+                  boots: "item:tidewatch_boots", mainhand: IRON_AXE}
     captain:
-      type: VINDICATOR
-      name: "<dark_aqua><bold>Warden Captain"
-      health: 160
+      type: ZOMBIE
+      name: "<dark_aqua><bold>Warden Captain</bold>"
+      health: 180
       damage-multiplier: 1.5
       effects: ["resistance:1"]
-      equipment: {helmet: DIAMOND_HELMET, chestplate: IRON_CHESTPLATE, mainhand: DIAMOND_AXE}
+      powers: [ember, frost, thunder, gale]
+      equipment: {helmet: "item:tidewatch_captain_hat", chestplate: "item:tidewatch_captain_coat", leggings: "item:tidewatch_trousers",
+                  boots: "item:tidewatch_boots", mainhand: DIAMOND_AXE}
 
 raiding:
   # When may enemies build/break/loot on an occupied island?

@@ -578,6 +578,20 @@ public final class ItemsModule extends AquaticModule implements ItemService {
                 file.set("items.tide_compass.item-model", null);
             }
         }
+        if (from < 6) {
+            // 2.9.0: four new fruits and the Tidewatch uniforms
+            addMissing(file, defaults, "items.tidecaller");
+            addMissing(file, defaults, "items.venomfang");
+            addMissing(file, defaults, "items.dunemaw");
+            addMissing(file, defaults, "items.luminara");
+            addMissing(file, defaults, "items.tidewatch_hat");
+            addMissing(file, defaults, "items.tidewatch_coat");
+            addMissing(file, defaults, "items.tidewatch_trousers");
+            addMissing(file, defaults, "items.tidewatch_boots");
+            addMissing(file, defaults, "items.tidewatch_officer_coat");
+            addMissing(file, defaults, "items.tidewatch_captain_hat");
+            addMissing(file, defaults, "items.tidewatch_captain_coat");
+        }
         if (from < 5) {
             // 2.8.0: textures for (almost) every custom item, 3D guns, worn armour looks
             addMissing(file, defaults, "items.ghostglass.item-model");

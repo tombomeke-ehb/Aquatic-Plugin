@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "aquatic:tidewatch_captain"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "aquatic:tidewatch_captain"
+      }
+    ]
+  }
+}
