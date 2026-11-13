@@ -58,6 +58,8 @@ public final class HubModule extends AquaticModule implements Listener {
         final String id;
         final boolean npc;
         final ConfigurationSection cfg;
+        /** Founders: the Minecraft name whose head sits on the pedestal (null for NPCs and signs). */
+        String head;
 
         Spot(String id, boolean npc, ConfigurationSection cfg) {
             this.id = id;
@@ -103,6 +105,17 @@ public final class HubModule extends AquaticModule implements Listener {
                 ConfigurationSection c = displays.getConfigurationSection(id);
                 if (c != null && c.getBoolean("enabled", true)) {
                     spots.add(new Spot("text:" + id, false, c));
+                }
+            }
+        }
+        ConfigurationSection founders = config().getConfigurationSection("founders");
+        if (founders != null && founders.getBoolean("enabled", true)) {
+            for (String id : founders.getKeys(false)) {
+                ConfigurationSection c = founders.getConfigurationSection(id);
+                if (c != null && c.getBoolean("enabled", true)) {
+                    Spot s = new Spot("founder:" + id, false, c);
+                    s.head = c.getString("player", id);
+                    spots.add(s);
                 }
             }
         }
@@ -225,6 +238,16 @@ public final class HubModule extends AquaticModule implements Listener {
         if (!w.isChunkLoaded(x >> 4, z >> 4)) {
             return null;
         }
+        if (s.head != null) {
+            Block top = w.getHighestBlockAt(x, z);
+            Block headBlock = isHead(top) ? top : top.getRelative(0, 1, 0);
+            Location hl = headBlock.getLocation().add(0.5, s.cfg.getDouble("height", 0.7), 0.5);
+            Vector to = capital.center().toVector().setY(hl.getY()).subtract(hl.toVector());
+            if (to.lengthSquared() > 0.01) {
+                hl.setDirection(to);
+            }
+            return hl;
+        }
         Location l = new Location(w, x + 0.5, standY(w, x, z), z + 0.5);
         if (!s.npc) {
             l.add(0, s.cfg.getDouble("height", 2.5), 0);
@@ -290,9 +313,77 @@ public final class HubModule extends AquaticModule implements Listener {
         } else if (e.getLocation().distanceSquared(l) > 0.5) {
             e.teleport(l);
         }
+        if (s.head != null && tickCount % 8 == 0) {
+            placeHead(s, l);
+        }
         if (e instanceof TextDisplay d && tickCount % 20 == 0) {
             d.text(textOf(s));
         }
+    }
+
+    // ------------------------------------------------------------------ the founders' heads
+
+    /** Resolved skins by player name (looked up once, off the main thread). */
+    private final Map<String, com.destroystokyo.paper.profile.PlayerProfile> profiles = new HashMap<>();
+    private final java.util.Set<String> resolving = new java.util.HashSet<>();
+
+    private static boolean isHead(Block b) {
+        return b.getType() == Material.PLAYER_HEAD || b.getType() == Material.PLAYER_WALL_HEAD;
+    }
+
+    /**
+     * Keeps the founder's head on the block under its name sign: a player head facing the way the sign
+     * faces (towards the throne, or where the admin looked when placing it), with the founder's skin.
+     */
+    private void placeHead(Spot s, Location sign) {
+        Block b = sign.getBlock();
+        if (!b.getType().isAir() && !isHead(b)) {
+            return; // something else is in the way; never break blocks
+        }
+        String name = s.head;
+        com.destroystokyo.paper.profile.PlayerProfile profile = profiles.get(name.toLowerCase(Locale.ROOT));
+        if (profile == null && resolving.add(name.toLowerCase(Locale.ROOT))) {
+            com.destroystokyo.paper.profile.PlayerProfile p = Bukkit.createProfile(name);
+            Bukkit.getScheduler().runTaskAsynchronously(plugin(), () -> {
+                try {
+                    p.complete(true);
+                } catch (Exception ignored) {
+                    // offline or unknown name: the head shows the default skin with the name
+                }
+                Bukkit.getScheduler().runTask(plugin(), () -> profiles.put(name.toLowerCase(Locale.ROOT), p));
+            });
+        }
+        org.bukkit.block.BlockFace face = faceOf(sign.getYaw());
+        boolean fresh = b.getType() != Material.PLAYER_HEAD;
+        if (fresh) {
+            b.setType(Material.PLAYER_HEAD, false);
+        }
+        if (b.getBlockData() instanceof org.bukkit.block.data.Rotatable r && r.getRotation() != face) {
+            r.setRotation(face);
+            b.setBlockData(r, false);
+        }
+        if (profile != null && b.getState() instanceof org.bukkit.block.Skull skull) {
+            com.destroystokyo.paper.profile.PlayerProfile now = skull.getPlayerProfile();
+            boolean same = now != null && name.equalsIgnoreCase(now.getName())
+                    && (now.hasTextures() || !profile.hasTextures());
+            if (!same) {
+                skull.setPlayerProfile(profile);
+                skull.update(true, false);
+            }
+        }
+    }
+
+    /** The 16-way block face for a yaw (where a sign looks). */
+    private static org.bukkit.block.BlockFace faceOf(float yaw) {
+        org.bukkit.block.BlockFace[] faces = {
+                org.bukkit.block.BlockFace.SOUTH, org.bukkit.block.BlockFace.SOUTH_SOUTH_WEST, org.bukkit.block.BlockFace.SOUTH_WEST,
+                org.bukkit.block.BlockFace.WEST_SOUTH_WEST, org.bukkit.block.BlockFace.WEST, org.bukkit.block.BlockFace.WEST_NORTH_WEST,
+                org.bukkit.block.BlockFace.NORTH_WEST, org.bukkit.block.BlockFace.NORTH_NORTH_WEST, org.bukkit.block.BlockFace.NORTH,
+                org.bukkit.block.BlockFace.NORTH_NORTH_EAST, org.bukkit.block.BlockFace.NORTH_EAST, org.bukkit.block.BlockFace.EAST_NORTH_EAST,
+                org.bukkit.block.BlockFace.EAST, org.bukkit.block.BlockFace.EAST_SOUTH_EAST, org.bukkit.block.BlockFace.SOUTH_EAST,
+                org.bukkit.block.BlockFace.SOUTH_SOUTH_EAST};
+        int i = Math.floorMod(Math.round(yaw / 22.5f), 16);
+        return faces[i];
     }
 
     private static boolean playersNear(Location l, double radius) {
@@ -367,6 +458,13 @@ public final class HubModule extends AquaticModule implements Listener {
             }
             if (top.isEmpty()) {
                 lines.add(s.cfg.getString("empty", "<gray>No times yet."));
+            }
+        }
+        if (s.head != null) {
+            lines.add(s.cfg.getString("name", s.head));
+            String role = s.cfg.getString("role", "");
+            if (!role.isEmpty()) {
+                lines.add(role);
             }
         }
         lines.addAll(s.cfg.getStringList("lines-below"));
@@ -604,7 +702,11 @@ public final class HubModule extends AquaticModule implements Listener {
             AquaticCommand.need(a, 1, "/hubadmin place <id>");
             Spot spot = find(a[0]);
             Location l = p.getLocation().clone();
-            if (!spot.npc) {
+            if (spot.head != null) {
+                Location at = l.getBlock().getLocation().add(0.5, spot.cfg.getDouble("height", 0.7), 0.5);
+                at.setYaw(l.getYaw());
+                l = at;
+            } else if (!spot.npc) {
                 l.add(0, 1.5, 0);
             }
             placed.put(spot.id, l);
@@ -669,6 +771,18 @@ public final class HubModule extends AquaticModule implements Listener {
 
     @Override
     protected void migrateConfig(YamlConfiguration file, YamlConfiguration defaults, int from) {
+        if (from < 7) {
+            // 2.19.0: the founders' shrine (heads on pedestals), a /discord sign under the welcome sign, a relics hint
+            addMissing(file, defaults, "founders");
+            addMissing(file, defaults, "displays.discord");
+            addMissing(file, defaults, "displays.relics");
+            raise(file, "displays.welcome.height", 2.4, 3.0);
+            raise(file, "displays.founders.offset", List.of(27, 0), List.of(28, 0));
+            raise(file, "displays.founders.height", 1.4, 4.6);
+            raise(file, "displays.founders.text", List.of("<gold><bold>Founders of Aquatic SMP</bold>",
+                    "<white>Owner & idea: <yellow>(your names here)", "<white>Developed by <aqua>tombomeke",
+                    "<gray>Thank you to everyone who helped build this sea!"), defaults.getStringList("displays.founders.text"));
+        }
         if (from < 2) {
             // 2.6.0: the Blacksmith opens the smithy (which links to the tools shop)
             raise(file, "npcs.blacksmith.actions", List.of("cmd:shop tools"), List.of("cmd:smithy"));

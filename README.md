@@ -140,7 +140,7 @@ See COMMANDS.md (Schematics) for the details.
 | `guide` | `guide.yml` | Welcome intro, starter kit with a treasure map, tips for new players, the `/guide` book, `/discord` |
 | `fruits` | (settings in `items.yml`) | Abyss fruit powers as a separate switch: turn it off and fruits stop working without touching the other items. Needs `items` |
 | `smithy` | `smithy.yml` | Upgrade weapons, armour, tools and bows +1..+5 for Doubloons and materials (`/smithy`, or the Blacksmith at spawn) |
-| `hub` | `hub.yml` | The spawn town: shopkeeper villagers in the market stalls, crew registrar, live bounty board, founders' monument, welcome sign, timed parkour tower; also the quest villagers on village islands |
+| `hub` | `hub.yml` | The spawn town: shopkeeper villagers in the market stalls, crew registrar, live bounty board, founders' shrine with the founders' heads, welcome and Discord signs, timed parkour tower; also the quest villagers on village islands |
 | `crates` | `crates.yml` | Crates opened with keys (a spinning reel of prizes); any block can be a crate |
 | `gambling` | `gambling.yml` | The gambling den at spawn: dice, a wheel of fortune and coin flips, Doubloons only, with limits |
 | `quests` | `quests.yml` | Village quests: villagers on neutral village islands give quests (fish, hunt, bring materials) for Doubloons, XP and items |

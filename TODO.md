@@ -20,7 +20,7 @@ What changed in each version is in [CHANGELOG.md](CHANGELOG.md). Current version
 - Terrain: mountains, real caves and ores on every island, ore veins, coral reefs and kelp, lakes, shipwrecks, and volcano craters with lava streams.
 - The capital is the spawn town (`hub` module):
   - Shopkeeper villagers in market stalls, the crew registrar and a live bounty board.
-  - The founders' monument, a fountain, plaza decoration and a timed parkour tower.
+  - The founders' shrine (heads, names, roles), a fountain, plaza decoration and a timed parkour tower.
   - Harbour roads, houses, piers and a lighthouse.
 - **Tidewatch outposts:** forts with a garrison in uniform (illagers with their own textures) and a Warden Captain.
   - Liberate one to claim it.

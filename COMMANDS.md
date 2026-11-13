@@ -197,7 +197,7 @@ Killing a pirate with a bounty pays you the full amount. Crewmates and allies of
 
 ## Spawn town hub (`hub`)
 
-The capital's plaza has eight market stalls with shopkeeper villagers (right-click to open that shop), a Crew Registrar, a live **WANTED** bounty board, the founders' monument (edit the names in `hub.yml`), a welcome sign and a parkour tower.
+The capital's plaza has eight market stalls with shopkeeper villagers (right-click to open that shop), a Crew Registrar, a live **WANTED** bounty board, the founders' shrine (a head on every pedestal; edit the founders in `hub.yml`), a welcome sign with a `/discord` sign under it and a parkour tower.
 
 | Command | What it does | Permission |
 | --- | --- | --- |

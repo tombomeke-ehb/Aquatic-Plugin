@@ -16,7 +16,7 @@
 #    "cmd:<command>"  the player runs the command (without /)
 #    "msg:<text>"     a MiniMessage line (clickable with <click:run_command:'/...'>)
 # =====================================================================================
-config-version: 6
+config-version: 7
 
 npcs:
   blacksmith:
@@ -100,12 +100,20 @@ npcs:
 displays:
   welcome:
     offset: [0, 16]
-    height: 2.4
+    height: 3.0
     type: text
     text:
       - "<gradient:#1fa2ff:#12d8fa><bold>AQUATIC SMP</bold></gradient>"
       - "<white>Sail. Claim. Conquer."
       - "<gray>Shops in the stalls · <white>/guide</white> for help"
+  # Right under the welcome sign.
+  discord:
+    offset: [0, 16]
+    height: 2.2
+    type: text
+    text:
+      - "<#5865f2><bold>Join our Discord!</bold>"
+      - "<white>Type <#8ea1ff>/discord</#8ea1ff> for the invite"
   bounty-board:
     offset: [-26, 0]
     height: 2.6
@@ -114,15 +122,26 @@ displays:
     header: ["<red><bold>☠ WANTED ☠</bold>", "<gray>Dead or alive"]
     line: "<white><rank>. <yellow><player></yellow> <dark_gray>-</dark_gray> <red><bounty>"
     empty: "<gray>No bounties yet. Be the first!"
+  # Above the founders' shrine, in front of the obelisk.
   founders:
-    offset: [27, 0]
-    height: 1.4
+    offset: [28, 0]
+    height: 4.6
     type: text
     text:
       - "<gold><bold>Founders of Aquatic SMP</bold>"
-      - "<white>Owner & idea: <yellow>(your names here)"
-      - "<white>Developed by <aqua>tombomeke"
+      - "<white>Owner & idea: <aqua>MegaAquatic"
+      - "<white>Developed by <aqua>tombomeke</aqua> & <aqua>Moekun"
       - "<gray>Thank you to everyone who helped build this sea!"
+  # At the foot of the shrine's steps: where the legendary weapons come from.
+  relics:
+    offset: [22, 0]
+    height: 2.6
+    type: text
+    text:
+      - "<gradient:#f6d365:#fda085><bold>⚔ Legendary Relics ⚔</bold></gradient>"
+      - "<white>Raid <aqua>Tidewatch forts</aqua>, dig up <yellow>buried treasure</yellow>"
+      - "<white>and crack open <gold>crates</gold> to find legendary weapons."
+      - "<gray>The rarest ones only drop from MEGA legendary treasure."
   parkour:
     offset: [0, -25]
     height: 2.2
@@ -131,6 +150,39 @@ displays:
     header: ["<green><bold>Parkour Tower</bold>", "<gray>Step on the gold plate to start"]
     line: "<white><rank>. <yellow><player></yellow> <gray><time>"
     empty: "<gray>No times yet!"
+
+
+# The founders' shrine on the capital: a player head on every pedestal with a name and role above it.
+# player = the Minecraft username whose skin the head shows (looked up once when the head appears).
+# The offsets match the generated shrine (the owner in the middle). Built your own shrine? Stand on top of
+# a pedestal, look the way the head should face and use /hubadmin place founder:<id>.
+founders:
+  enabled: true
+  moekun:
+    player: Moekun          # TODO: the real username of Moekun
+    name: "<#ff9ff3><bold>Moekun"
+    role: "<gray>Developer"
+    offset: [27, -6]
+  tombomeke:
+    player: tombomeke
+    name: "<#7ed6df><bold>Tombomeke"
+    role: "<gray>Left Hand Man"
+    offset: [27, -3]
+  megaaquatic:
+    player: MegaAquatic
+    name: "<gradient:#1fa2ff:#12d8fa><bold>MegaAquatic</bold></gradient>"
+    role: "<gold>The Owner"
+    offset: [27, 0]
+  devvv:
+    player: Devvv_
+    name: "<#badc58><bold>Devvv_"
+    role: "<gray>Right Hand Man"
+    offset: [27, 3]
+  crimson:
+    player: Crimson         # TODO: the real username of Crimson
+    name: "<#eb4d4b><bold>Crimson"
+    role: "<gray>Builder"
+    offset: [27, 6]
 
 parkour:
   enabled: true

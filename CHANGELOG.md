@@ -1,5 +1,24 @@
 # Changelog
 
+## 2.19.0 (2026-11-13)
+
+### Added
+- **The founders' shrine at spawn.** It replaces the old monument and is generated on new capitals, facing the throne. It has:
+  - a raised marble platform with steps and a sea-blue runway;
+  - five pedestals (gold for the founders, sea lantern and diamond for the owner in the middle);
+  - a white obelisk behind them with a ring of blue flames and a gold cap;
+  - corner pillars with lanterns, candles and a flowering hedge.
+- **Founders' heads:** each pedestal has the founder's player head (with their skin) and their name and role floating above it.
+  - Edit them under `founders` in `hub.yml` (`player`, `name`, `role`, `offset`).
+  - On a hand-built spawn, preview it with `/island admin schematic preview builtin:founders_shrine`, then use `/island admin schematic paste` (or build your own). Then stand on each pedestal and use `/hubadmin place founder:<id>`.
+- **`/discord` sign:** a floating sign under the welcome / `/guide` sign.
+- **Legendary Relics sign:** at the foot of the shrine; it tells players where legendary weapons come from.
+
+### Changed
+- **Founders' sign:** it now names the owner (MegaAquatic) and both developers, and hangs above the shrine.
+- **Welcome sign:** it moved up a little to make room for the Discord sign.
+- **Existing servers:** `hub.yml` updates itself (config-version 7). Already generated capitals keep their old monument until you paste the shrine or regenerate.
+
 ## 2.18.1 (2026-11-13)
 
 ### Added

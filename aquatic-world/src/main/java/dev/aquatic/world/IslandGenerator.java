@@ -848,7 +848,11 @@ final class IslandGenerator extends AreaJob {
             if (kindAt(-27, 0) == PLAZA) {
                 list.add(new Feature(-27, 0, 6, () -> buildBountyBoard(-27, 0)));
             }
-            if (kindAt(27, 0) == PLAZA) {
+            if (kindAt(27, 0) == PLAZA && fancyR >= 34 && kindAt(32, 0) == PLAZA) {
+                // the founders' shrine faces the throne; hub.yml puts the founders' heads on its pedestals
+                list.add(new Feature(27, 0, 9, () -> placeBlueprint(Blueprint.of("founders_shrine"), 27, 0,
+                        top[index(27, 0)], BlockFace.WEST)));
+            } else if (kindAt(27, 0) == PLAZA) {
                 list.add(new Feature(27, 0, 6, () -> buildMonument(27, 0)));
             }
         }
@@ -1805,8 +1809,8 @@ final class IslandGenerator extends AreaJob {
         if (dx * dx + dz * dz < 13 * 13) {
             return true; // throne, ring and planters
         }
-        int[][] spots = den ? new int[][]{{0, -18, 6}, {0, -31, 9}, {-27, 0, 5}, {27, 0, 5}, {DEN_X, DEN_Z, 9}}
-                : new int[][]{{0, -18, 6}, {0, -31, 9}, {-27, 0, 5}, {27, 0, 5}};
+        int[][] spots = den ? new int[][]{{0, -18, 6}, {0, -31, 9}, {-27, 0, 5}, {27, 0, 9}, {DEN_X, DEN_Z, 9}}
+                : new int[][]{{0, -18, 6}, {0, -31, 9}, {-27, 0, 5}, {27, 0, 9}};
         for (int[] s : spots) {
             if ((dx - s[0]) * (dx - s[0]) + (dz - s[1]) * (dz - s[1]) < s[2] * s[2]) {
                 return true;

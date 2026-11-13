@@ -275,6 +275,7 @@ final class Blueprint {
             case "storehouse" -> storehouse();
             case "lighthouse" -> lighthouse();
             case "gambling_den" -> gamblingDen();
+            case "founders_shrine" -> foundersShrine();
             default -> null;
         };
     }
@@ -648,6 +649,109 @@ final class Blueprint {
      * white striped tent on a dark oak floor, a dealer's counter, a dice table with stools, and three crate
      * pedestals at the back (make them crates with /crate set sailor | captain | kraken).
      */
+    /**
+     * The founders' shrine (15 x 9): a raised marble platform with steps at the front, five pedestals in a row
+     * (the owner's in the middle is taller, with a diamond top), a white obelisk with a gold cap behind them,
+     * corner pillars with lanterns, a flowering hedge along the back, candles and a sea-blue runway.
+     * The hub module puts a founder's head on every pedestal (hub.yml "founders"). Local: x -7..7, z 0..8;
+     * the pedestals stand on z = 4 at x = -6, -3, 0, 3, 6 (x = +6 is the viewer's left).
+     */
+    private static Blueprint foundersShrine() {
+        Blueprint b = new Blueprint();
+        BlockData hedge = Bukkit.createBlockData("minecraft:flowering_azalea_leaves[persistent=true]");
+        BlockData hedge2 = Bukkit.createBlockData("minecraft:azalea_leaves[persistent=true]");
+        BlockData candles = Bukkit.createBlockData("minecraft:white_candle[candles=3,lit=true]");
+        for (int x = -7; x <= 7; x++) {
+            for (int z = 0; z <= 8; z++) {
+                b.set(x, 0, z, Material.POLISHED_ANDESITE);                          // the footing
+            }
+        }
+        // the platform: a quartz rim, a stone floor, a prismarine runway to the owner's pedestal
+        for (int x = -7; x <= 7; x++) {
+            for (int z = 1; z <= 8; z++) {
+                boolean rim = Math.abs(x) == 7 || z == 1 || z == 8;
+                Material m;
+                if (rim) {
+                    m = (Math.abs(x) == 7 && (z == 1 || z == 8)) ? Material.CHISELED_QUARTZ_BLOCK : Material.QUARTZ_BRICKS;
+                } else if (Math.abs(x) <= 1 && z <= 3) {
+                    m = Math.abs(x) == 1 ? Material.DARK_PRISMARINE : Material.PRISMARINE_BRICKS;
+                } else if ((Math.abs(x) == 4 || Math.abs(x) == 1) && z == 6) {
+                    m = Material.SEA_LANTERN;                                       // lights in the floor
+                } else {
+                    m = (x + z) % 2 == 0 ? Material.POLISHED_DIORITE : Material.SMOOTH_STONE;
+                }
+                b.set(x, 1, z, m);
+            }
+        }
+        for (int x = -5; x <= 5; x++) {
+            b.set(x, 1, 0, facing(Material.QUARTZ_STAIRS, BlockFace.SOUTH));         // the steps up
+        }
+        for (int x : new int[]{-7, -6, 6, 7}) {
+            b.set(x, 1, 0, Material.QUARTZ_BRICKS);
+        }
+        b.set(-6, 2, 0, Material.POTTED_BLUE_ORCHID);
+        b.set(6, 2, 0, Material.POTTED_BLUE_ORCHID);
+        b.set(0, 2, 1, Material.LIGHT_BLUE_CARPET);
+        b.set(0, 2, 2, Material.LIGHT_BLUE_CARPET);
+        b.set(0, 2, 3, Material.LIGHT_BLUE_CARPET);
+        // the pedestals: quartz and gold for the founders, quartz, sea lantern and diamond for the owner
+        for (int x : new int[]{-6, -3, 3, 6}) {
+            b.set(x, 2, 4, Material.CHISELED_QUARTZ_BLOCK);
+            b.set(x, 3, 4, Material.GOLD_BLOCK);
+            b.set(x, 2, 3, slab(Material.SMOOTH_QUARTZ_SLAB, false));                // a step in front
+        }
+        b.set(0, 2, 4, Material.CHISELED_QUARTZ_BLOCK);
+        b.set(0, 3, 4, Material.SEA_LANTERN);
+        b.set(0, 4, 4, Material.DIAMOND_BLOCK);
+        b.set(-1, 2, 4, facing(Material.QUARTZ_STAIRS, BlockFace.EAST));
+        b.set(1, 2, 4, facing(Material.QUARTZ_STAIRS, BlockFace.WEST));
+        for (int x : new int[]{-5, -4, -2, 2, 4, 5}) {
+            if (Math.abs(x) == 2 || Math.abs(x) == 5) {
+                b.set(x, 2, 5, candles);
+            }
+        }
+        // the obelisk behind the owner
+        for (int x = -1; x <= 1; x++) {
+            for (int z = 6; z <= 8; z++) {
+                b.set(x, 2, z, Material.QUARTZ_BRICKS);
+                if (x != 0 || z != 7) {
+                    b.set(x, 3, z, slab(Material.SMOOTH_QUARTZ_SLAB, false));
+                }
+            }
+        }
+        for (int y = 3; y <= 11; y++) {
+            b.set(0, y, 7, y == 7 ? Material.CHISELED_QUARTZ_BLOCK : Material.QUARTZ_PILLAR);
+        }
+        b.set(0, 12, 7, Material.GOLD_BLOCK);
+        b.set(0, 13, 7, Material.LIGHTNING_ROD);
+        for (BlockFace f : new BlockFace[]{BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST}) {
+            b.set(f.getModX(), 7, 7 + f.getModZ(), facing(Material.SOUL_WALL_TORCH, f));   // a ring of blue flames
+        }
+        // corner pillars with lanterns, a low rail along the sides, a hedge along the back
+        for (int x : new int[]{-7, 7}) {
+            for (int z : new int[]{1, 8}) {
+                for (int y = 2; y <= 4; y++) {
+                    b.set(x, y, z, Material.QUARTZ_PILLAR);
+                }
+                b.set(x, 5, z, Material.LANTERN);
+            }
+            for (int z = 2; z <= 7; z++) {
+                b.set(x, 2, z, slab(Material.SMOOTH_QUARTZ_SLAB, false));
+            }
+        }
+        for (int x = -6; x <= 6; x++) {
+            if (Math.abs(x) <= 1) {
+                continue;
+            }
+            b.set(x, 2, 8, (x & 1) == 0 ? hedge : hedge2);
+            if (Math.abs(x) >= 3 && Math.abs(x) <= 5) {
+                b.set(x, 3, 8, x % 2 == 0 ? hedge2 : hedge);
+            }
+        }
+        b.supportAll(Material.STONE_BRICKS);
+        return b.clearInside();
+    }
+
     private static Blueprint gamblingDen() {
         Blueprint b = new Blueprint();
         for (int x = -5; x <= 5; x++) {

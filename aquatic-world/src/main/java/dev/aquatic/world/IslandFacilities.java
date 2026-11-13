@@ -57,7 +57,7 @@ final class IslandFacilities implements Listener {
     /** The facilities with a built-in design; more can be added in islands.yml with a "schematic". */
     static final List<String> BUILT_IN = List.of("watchtower", "forge", "farm", "dock", "storehouse", "lighthouse");
     /** Built-in designs admins can paste: "builtin:<name>". */
-    static final List<String> BUILT_IN_PASTE = List.of("gambling_den", "watchtower", "forge", "farm", "dock", "storehouse", "lighthouse");
+    static final List<String> BUILT_IN_PASTE = List.of("gambling_den", "founders_shrine", "watchtower", "forge", "farm", "dock", "storehouse", "lighthouse");
 
     /** A built facility: its anchor (ground level), rotation and footprint. */
     record Placed(String type, int ax, int ay, int az, int rot, int minX, int minZ, int maxX, int maxZ) {
