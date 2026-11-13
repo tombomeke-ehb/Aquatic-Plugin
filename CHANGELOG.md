@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.9.1 (2026-11-13)
+
+### Changed
+- **Better effects for fruits and weapons.**
+- **Animated 3D effects (with the resource pack):** glowing effect models that grow and sweep for a few ticks, in the colour of each move.
+  - **Slashes:** a crescent that sweeps forward.
+  - **Shockwaves** (Gale Burst, Geyser, Tidal Slam, ...): a ring that expands over the ground.
+  - **Impacts and lightning:** a bright star-burst flash.
+- **Better particles (with or without the pack):**
+  - Energy dust fades from a bright shade to the move's colour.
+  - Beams have a glowing core with two strands spiralling around it.
+  - Shockwaves kick up debris from the ground they hit.
+  - Lightning has side branches and sparks where it lands.
+- **Settings:** `effects.animated` in `items.yml` turns the 3D effects off. `effects.quality` still scales all particles.
+- **Your server:** update the resource pack link and SHA-1 in `server.properties` (see the release notes).
+
 ## 2.9.0 (2026-11-13)
 
 ### Added

@@ -550,6 +550,7 @@ public final class Abilities {
                 return true;
             }
             case "slash" -> {
+                fx.slash(eye, dir, range, colorOf(a, type));
                 Set<UUID> hit = new HashSet<>();
                 Location point = eye.clone();
                 Vector step = dir.clone().normalize();

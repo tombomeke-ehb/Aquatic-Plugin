@@ -780,6 +780,71 @@ def equipment(name, layer_image, leggings_image=None):
     write_json(os.path.join(PACK, "assets", "aquatic", "equipment", name + ".json"), {"layers": layers})
 
 
+# ---------------------------------------------------------------- effect textures (animated 3D effects)
+# White with soft transparent edges; the game tints them in the colour of the move (custom_model_data tint).
+
+def vfx_slash():
+    S = 64
+    img = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    cx, cy = 32.0, 46.0
+    for y in range(S):
+        for x in range(S):
+            dx, dy = x + 0.5 - cx, y + 0.5 - cy
+            r = math.hypot(dx, dy)
+            ang = math.degrees(math.atan2(dx, -dy))  # 0 = straight up
+            if abs(ang) > 80 or not 14 <= r <= 30:
+                continue
+            edge = max(0.0, 1 - abs(r - 27) / 4.0)          # bright outer edge
+            body = max(0.0, 1 - abs(r - 21) / 8.0) * 0.55     # softer inside
+            ends = max(0.0, 1 - (abs(ang) / 80) ** 3)          # fades out at the tips
+            a = min(1.0, (edge + body) * ends)
+            if a > 0.03:
+                img.putpixel((x, y), (255, 255, 255, int(a * 255)))
+    return img
+
+
+def vfx_ring():
+    S = 64
+    img = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    for y in range(S):
+        for x in range(S):
+            r = math.hypot(x + 0.5 - 32, y + 0.5 - 32)
+            a = math.exp(-((r - 28.5) / 2.2) ** 2) + 0.25 * math.exp(-((r - 24) / 3.5) ** 2)
+            if r <= 31.5 and a > 0.03:
+                img.putpixel((x, y), (255, 255, 255, int(min(1.0, a) * 255)))
+    return img
+
+
+def vfx_flash():
+    S = 32
+    img = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    for y in range(S):
+        for x in range(S):
+            dx, dy = x + 0.5 - 16, y + 0.5 - 16
+            r = math.hypot(dx, dy)
+            core = max(0.0, 1 - r / 7.0)
+            ang = math.atan2(dy, dx)
+            rays = max(0.0, math.cos(ang * 4)) ** 8 * max(0.0, 1 - r / 15.5)  # an eight-pointed star
+            a = min(1.0, core * 1.2 + rays)
+            if a > 0.03:
+                img.putpixel((x, y), (255, 255, 255, int(a * 255)))
+    return img
+
+
+def vfx_item(name, image):
+    """An effect model whose colour is set by the plugin (tint from the item's custom model data)."""
+    os.makedirs(os.path.join(PACK, "assets", "aquatic", "textures", "item"), exist_ok=True)
+    image.save(os.path.join(PACK, "assets", "aquatic", "textures", "item", name + ".png"))
+    write_json(os.path.join(PACK, "assets", "aquatic", "models", "item", name + ".json"), {
+        "parent": "minecraft:item/generated",
+        "textures": {"layer0": "aquatic:item/" + name},
+    })
+    write_json(os.path.join(PACK, "assets", "aquatic", "items", name + ".json"), {
+        "model": {"type": "minecraft:model", "model": "aquatic:item/" + name,
+                  "tints": [{"type": "minecraft:custom_model_data", "index": 0, "default": 16777215}]},
+    })
+
+
 FRUITS = {
     "ghostglass": fruit("#e8eef2", "#9aa7ad", outline_col="#3a444a"),
     "riftshift": fruit("#ff9aa8", "#ff4f6d"),
@@ -807,6 +872,9 @@ def main():
     equipment("conqueror_crown", crown_worn())
     item("storm_saber", storm_saber(), handheld=True)
     item("abyssal_baton", abyssal_baton(), handheld=True)
+    vfx_item("vfx_slash", vfx_slash())
+    vfx_item("vfx_ring", vfx_ring())
+    vfx_item("vfx_flash", vfx_flash())
     flintlock_3d()
     hand_cannon_3d()
     # swords and weapons

@@ -28,6 +28,8 @@ config-version: 6
 # Every ability can also get its own colour with  color: "#ff6a00"  in its section.
 effects:
   quality: 1.0
+  # Animated 3D effects (glowing slashes, shockwave rings, impact flashes). Needs resource-pack.enabled.
+  animated: true
 
 # How hard abilities hit. All "damage" numbers in this file are multiplied by these.
 abilities:
