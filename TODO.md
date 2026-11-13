@@ -181,6 +181,18 @@ What changed in each version is in [CHANGELOG.md](CHANGELOG.md). Current version
 - [ ] Player shops and trading posts on neutral islands.
 - [ ] Sell island upgrades, buildings and ship blueprints in the market.
 
+## Crates and gambling
+- [ ] **Crates:** crate blocks at spawn opened with keys, with an animated opening (a spinning row of prizes) and weighted loot tiers (common to legendary), set in a config file.
+  - Keys from votes, quests, events, level rewards, treasure and the tournament (and maybe a store, if the owner wants that).
+  - A preview menu that shows every possible prize and its chance.
+  - Prizes: Doubloons, custom items, rare fruits, cosmetics and island facility vouchers.
+  - Broadcast big wins.
+- [ ] **A gambling den at spawn** (a tavern building), using Doubloons only:
+  - Dice against the house, a coin flip between two players, and a wheel of fortune.
+  - Maybe a pirate card game later.
+- [ ] **Limits so it stays fair:** a max bet and a daily limit per player, a cooldown, and a log of big wins and losses for staff.
+  - Check how gambling for real money (a store selling keys) fits Minecraft's rules before we add it.
+
 ## Villages and quests
 - [x] Neutral village islands (smithy, fishing huts, tavern, farms) with quest givers (done in 2.12.0).
 - [ ] Quest chains (one quest unlocks the next) and a reputation per village.
