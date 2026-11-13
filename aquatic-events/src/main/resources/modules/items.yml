@@ -1,7 +1,10 @@
 # =====================================================================================
 #  AquaticSMP - Items module (modules/items.yml)
 # =====================================================================================
-#  Custom pirate items: Abyss Fruits, Abyssal Iron, legendary swords (Meito), guns,
+
+# Do not edit: used to upgrade this file when the plugin updates.
+config-version: 1
+#  Custom pirate items: Abyss Fruits, Abyssal Iron, legendary swords, guns,
 #  cannons, the Tide Compass, Echo Conch, rum and the Conqueror of the Sea's crown.
 #
 #  Commands
@@ -1068,6 +1071,33 @@ items:
         S: SUGAR_CANE
         B: GLASS_BOTTLE
 
+  # Drinking it washes your Abyss Fruit power away, so you can eat a different fruit. Your mastery of
+  # the old fruit is kept (eat it again later and you continue where you left off).
+  seafoam_milkshake:
+    type: cleanse
+    material: POTION
+    name: "<white><bold>Seafoam Milkshake</bold>"
+    lore:
+      - "<gray>Thick, cold and tasting faintly of the sea."
+      - ""
+      - "<aqua>Washes away your Abyss Fruit power."
+      - "<gray>You can eat a new fruit afterwards."
+    custom-model-data: 0
+    color: "#F3EEE2"
+    flags: [HIDE_ADDITIONAL_TOOLTIP]
+    recipe:
+      enabled: true
+      amount: 1
+      shape:
+        - " S "
+        - "PMP"
+        - " G "
+      ingredients:
+        S: SUGAR
+        P: PRISMARINE_CRYSTALS
+        M: MILK_BUCKET
+        G: GOLDEN_APPLE
+
   coral_trident:
     type: plain
     material: TRIDENT
@@ -1337,6 +1367,8 @@ recipes:
   unlock-in-recipe-book: true
 
 messages:
+  cleanse-done: "<aqua>The milkshake washes the power of the <white><fruit></white> away. <gray>You can eat a new fruit now."
+  cleanse-nothing: "<gray>You have no fruit power to wash away."
   recipes-title: "<dark_aqua><bold>Custom Recipes</bold> <dark_gray>(<page>/<pages>)"
   recipes-recipe-title: "<dark_aqua><bold>Recipe"
   recipes-click: "<yellow>Click to see the recipe"

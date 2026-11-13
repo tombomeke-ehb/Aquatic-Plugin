@@ -1081,6 +1081,10 @@ public final class IslandsModule extends AquaticModule implements IslandService,
             // 2.6.1: large islands a bit smaller
             raise(file, "generation.island-sizes.large.min", 275, 225);
             raise(file, "generation.island-sizes.large.max", 450, 375);
+        }
+        if (from < 4) {
+            // 2.7.0: a livelier capital town
+            raise(file, "types.CAPITAL.town.houses", 16, 30);
             String o = "generation.terrain.ore-veins.";
             raise(file, o + "per-1000-land", 4, 10);
             raise(file, o + "ores", List.of("COAL_ORE:6", "IRON_ORE:5", "COPPER_ORE:4", "GOLD_ORE:1.5", "REDSTONE_ORE:1.5",

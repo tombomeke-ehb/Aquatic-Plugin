@@ -508,4 +508,13 @@ public final class ItemsModule extends AquaticModule implements ItemService {
     public Component prefixless(String key, Object... placeholders) {
         return rawMsg(key, placeholders);
     }
+
+    @Override
+    protected void migrateConfig(org.bukkit.configuration.file.YamlConfiguration file,
+                                 org.bukkit.configuration.file.YamlConfiguration defaults, int from) {
+        if (from < 1) {
+            // 2.7.0: the Seafoam Milkshake (removes your fruit power)
+            addMissing(file, defaults, "items.seafoam_milkshake");
+        }
+    }
 }

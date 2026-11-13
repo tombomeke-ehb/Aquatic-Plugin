@@ -18,7 +18,7 @@
 
 # How often (seconds) changed data is written to plugins/AquaticSMP/data/islands/ (also saved on shutdown).
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 3
+config-version: 4
 
 autosave-seconds: 120
 
@@ -438,7 +438,8 @@ types:
     # A harbour town around the plaza: paved roads to the coast with lamps, houses, piers, a lighthouse.
     town:
       enabled: true
-      houses: 16
+      # Buildings along the roads (cottages, houses, two-storey houses, a tavern and a warehouse).
+      houses: 30
       road: [STONE_BRICKS:5, POLISHED_ANDESITE:2, CRACKED_STONE_BRICKS:1]
     # Capitals are safe zones by default (no PvP, no building, no conquest).
     status: NEUTRAL

@@ -16,7 +16,7 @@
 title: "<dark_aqua><bold>Harbor Market"
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 2
+config-version: 3
 
 categories:
   tools:
@@ -92,6 +92,7 @@ categories:
       - {item: "item:frost_bomb", amount: 2, buy: 260, sell: 0}
       - {item: "item:fire_bomb", amount: 2, buy: 260, sell: 0}
       - {item: "item:marauders_buckler", amount: 1, buy: 1800, sell: 0}
+      - {item: "item:seafoam_milkshake", amount: 1, buy: 3000, sell: 0}
   trade:
     name: "<yellow><bold>Trade Goods"
     icon: EMERALD

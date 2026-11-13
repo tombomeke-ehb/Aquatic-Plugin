@@ -1,5 +1,35 @@
 # Changelog
 
+## 2.7.0 (2026-11-13)
+
+### Added
+- **Seafoam Milkshake:** drinking it washes your Abyss Fruit power away, so you can eat a different fruit.
+  - Your mastery of the old fruit is kept, if you ever eat it again.
+  - Buy it in the Pirate Armory (3,000 Doubloons) or craft it: milk bucket, sugar, 2 prismarine crystals and a golden apple. The recipe is in `/recipes`.
+- **A fountain at spawn**, north of the throne: a round stone basin with glowing prismarine, and water pouring from the top.
+
+### Changed
+- **A livelier capital:**
+  - **More buildings:** 30 instead of 16, in a second row behind the first along every road.
+  - **Three sizes:** small cottages, houses, and big two-storey houses.
+  - **A tavern:** a bar with barrels and a brewing stand, tables with chairs, and a lamp by the door.
+  - **A warehouse:** stacks of barrels and hay, and a wide doorway.
+- **Plaza decoration:**
+  - benches facing the throne
+  - a ring of lamp posts
+  - red and white banner poles at every road entrance
+  - flowering azalea hedges along the edge
+  - crate piles with flowers
+- **Better market stalls:**
+  - log posts and a striped awning with a raised middle and a scalloped front edge
+  - a counter with goods and a lantern hanging over the shopkeeper
+  - a back shelf with goods for the trade (anvil and grindstone, melons and hay, books and a lectern, …)
+  - crates on the side and flower barrels out front
+
+### Updating
+- Replace the jar and restart. The milkshake is added to your items and shop automatically.
+- The new spawn look only appears on a capital generated or regenerated with this version: `/island admin regen <capital>` (this replaces what's on it).
+
 ## 2.6.1 (2026-11-13)
 
 ### Fixed

@@ -438,6 +438,29 @@ public final class FruitManager implements Listener {
 
     // ------------------------------------------------------------------ eating
 
+    /** The Seafoam Milkshake (type "cleanse"): removes the player's fruit power (mastery is kept). */
+    @EventHandler(ignoreCancelled = true)
+    public void onCleanse(PlayerItemConsumeEvent event) {
+        ItemDef def = module.defOf(event.getItem());
+        if (def == null || !"cleanse".equals(def.type)) {
+            return;
+        }
+        Player p = event.getPlayer();
+        String current = fruitOf.get(p.getUniqueId());
+        if (current == null) {
+            event.setCancelled(true);
+            module.actionBar(p, "cleanse-nothing");
+            return;
+        }
+        ItemDef old = module.def(current);
+        setFruit(p.getUniqueId(), null);
+        selectedMove.remove(p.getUniqueId());
+        p.sendMessage(module.msg("cleanse-done", "fruit", old == null ? net.kyori.adventure.text.Component.text(current)
+                : dev.aquatic.util.Text.mm(old.cfg.getString("name", current))));
+        p.getWorld().spawnParticle(org.bukkit.Particle.SPLASH, p.getLocation().add(0, 1.2, 0), 40, 0.4, 0.5, 0.4, 0.1);
+        p.playSound(p.getLocation(), org.bukkit.Sound.ENTITY_GENERIC_DRINK, 1f, 0.8f);
+    }
+
     @EventHandler(ignoreCancelled = true)
     public void onConsume(PlayerItemConsumeEvent event) {
         ItemDef def = module.defOf(event.getItem());

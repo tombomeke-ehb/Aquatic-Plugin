@@ -845,6 +845,12 @@ final class IslandGenerator extends AreaJob {
                 list.add(new Feature(27, 0, 6, () -> buildMonument(27, 0)));
             }
         }
+        if (plazaR >= 24 && kindAt(0, -18) == PLAZA) {
+            list.add(new Feature(0, -18, 6, () -> buildFountain(0, -18)));
+        }
+        if (plazaR >= 24) {
+            planPlazaDecor(new Random(seed * 113 + 9), list, plazaR);
+        }
         if (plazaR >= 38 && kindAt(0, -31) == PLAZA) {
             list.add(new Feature(0, -31, 8, () -> buildParkour(0, -31)));
         }
@@ -884,11 +890,11 @@ final class IslandGenerator extends AreaJob {
                 list.add(new Feature(mid[0], mid[1], 12, () -> paveRoad(seg, d)));
             }
             // houses on both sides (only on land, not on the beach), every ~12 blocks
-            for (int off = plazaR + 5; off < landEnd - 6; off += 12) {
+            for (int off = plazaR + 5; off < landEnd - 6; off += 10) {
                 for (int side = -1; side <= 1; side += 2) {
-                    int hx = d[0] * off + (d[1] != 0 ? side * 7 : 0);
-                    int hz = d[1] * off + (d[0] != 0 ? side * 7 : 0);
-                    houseSpots.add(new int[]{hx, hz, d[0], d[1], side});
+                    for (int row = 0; row <= 1; row++) {
+                        houseSpots.add(new int[]{off, side, d[0], d[1], row}); // sized and placed below
+                    }
                 }
             }
             // pier where the boardwalk meets the sea, lighthouse at the first one
@@ -905,31 +911,57 @@ final class IslandGenerator extends AreaJob {
             }
         }
         java.util.Collections.shuffle(houseSpots, r);
-        int built = 0;
+        int built = 0, taverns = 0, warehouses = 0;
         for (int[] h : houseSpots) {
             if (built >= t.townHouses) {
                 break;
             }
-            int w = 2 + r.nextInt(2), l = 2 + r.nextInt(2); // half sizes: 5x5 .. 7x7
-            if (!footprintFree(h[0], h[1], w, l)) {
-                continue;
+            // size: small cottages, normal houses and big buildings (some are a tavern or a warehouse)
+            double roll = r.nextDouble();
+            int along, across, building = 0;
+            if (roll < 0.3) {
+                along = 2;
+                across = 2;
+            } else if (roll < 0.75) {
+                along = 2 + r.nextInt(2);
+                across = 2 + r.nextInt(2);
+            } else {
+                along = 3 + r.nextInt(2);
+                across = 3 + r.nextInt(2);
+                building = taverns < 2 && r.nextBoolean() ? 1 : warehouses < 2 && r.nextBoolean() ? 2 : 0;
             }
+            int[] spot = place(h, along, across);
+            if (!footprintFree(spot[0], spot[1], spot[2], spot[3])) {
+                along = 2;
+                across = 2;
+                building = 0;
+                spot = place(h, along, across);
+                if (!footprintFree(spot[0], spot[1], spot[2], spot[3])) {
+                    continue;
+                }
+            }
+            int hx = spot[0], hz = spot[1], w = spot[2], l = spot[3];
             for (int ox = -w - 1; ox <= w + 1; ox++) {
                 for (int oz = -l - 1; oz <= l + 1; oz++) {
-                    kind[index(h[0] + ox, h[1] + oz)] = BUILT;
+                    kind[index(hx + ox, hz + oz)] = BUILT;
                 }
             }
             long houseSeed = r.nextLong();
             int doorDx, doorDz; // the door faces the road
             if (h[2] != 0) {
                 doorDx = 0;
-                doorDz = -h[4];
+                doorDz = -h[1];
             } else {
-                doorDx = -h[4];
+                doorDx = -h[1];
                 doorDz = 0;
             }
-            int hx = h[0], hz = h[1];
-            list.add(new Feature(hx, hz, 7, () -> buildHouse(hx, hz, w, l, doorDx, doorDz, new Random(houseSeed))));
+            if (building == 1) {
+                taverns++;
+            } else if (building == 2) {
+                warehouses++;
+            }
+            int kindOfBuilding = building;
+            list.add(new Feature(hx, hz, 8, () -> buildHouse(hx, hz, w, l, doorDx, doorDz, kindOfBuilding, new Random(houseSeed))));
             built++;
         }
         // palms along the beach
@@ -958,6 +990,18 @@ final class IslandGenerator extends AreaJob {
                 }
             }
         }
+    }
+
+    /**
+     * Centre and half sizes {x, z, w, l} of a building beside a road: spot = {offset along the road, side,
+     * road dx, road dz, row}. Row 0 stands right next to the road, row 1 behind it with a walkway between.
+     */
+    private static int[] place(int[] spot, int along, int across) {
+        int perp = spot[4] == 0 ? 3 + across : 15 + across;
+        if (spot[2] != 0) { // road along x: buildings beside it in z
+            return new int[]{spot[2] * spot[0], spot[1] * perp, along, across};
+        }
+        return new int[]{spot[1] * perp, spot[3] * spot[0], across, along};
     }
 
     private boolean footprintFree(int cxr, int czr, int w, int l) {
@@ -1073,17 +1117,18 @@ final class IslandGenerator extends AreaJob {
     private static final Material[] BEDS = {Material.RED_BED, Material.BLUE_BED, Material.GREEN_BED, Material.YELLOW_BED, Material.CYAN_BED};
 
     /** A timber-framed house with a gabled roof, chimney, windows and a small interior (some have two floors). */
-    private void buildHouse(int hx, int hz, int w, int l, int doorDx, int doorDz, Random r) {
+    private void buildHouse(int hx, int hz, int w, int l, int doorDx, int doorDz, int building, Random r) {
         int base = Integer.MIN_VALUE;
         for (int ox = -w; ox <= w; ox++) {
             for (int oz = -l; oz <= l; oz++) {
                 base = Math.max(base, top[index(hx + ox, hz + oz)]);
             }
         }
-        Material[] st = HOUSE_STYLES[r.nextInt(HOUSE_STYLES.length)];
+        Material[] st = building == 2 ? HOUSE_STYLES[1] : HOUSE_STYLES[r.nextInt(HOUSE_STYLES.length)];
         Material wall = st[0], frame = st[1], roofStair = st[2], roofBlock = st[3], found = st[4], floor = st[5];
-        boolean twoStory = r.nextInt(3) == 0;
-        int wallH = twoStory ? 7 : 4;
+        // small cottages stay low; bigger houses often get a second floor; the tavern always does
+        boolean twoStory = building == 1 || (building == 0 && w + l >= 5 && r.nextInt(5) < 2);
+        int wallH = twoStory ? 7 : building == 2 ? 5 : 4;
         int x0 = cx + hx, z0 = cz + hz;
         for (int ox = -w; ox <= w; ox++) {
             for (int oz = -l; oz <= l; oz++) {
@@ -1172,6 +1217,14 @@ final class IslandGenerator extends AreaJob {
         world.getBlockAt(dx, base + 1, dz).setBlockData(lower, false);
         world.getBlockAt(dx, base + 2, dz).setBlockData(upper, false);
         set(dx + doorDx, base + 3, dz + doorDz, Material.LANTERN);
+        if (building == 1) {
+            furnishTavern(x0, z0, base, w, l, doorDx, doorDz, used, r);
+            return;
+        }
+        if (building == 2) {
+            furnishWarehouse(x0, z0, base, w, l, doorDx, doorDz, used);
+            return;
+        }
         // interior: a bed, a crafting table with a lantern, a barrel
         int[][] corners = {{w - 1, l - 1}, {w - 1, -(l - 1)}, {-(w - 1), l - 1}, {-(w - 1), -(l - 1)}};
         boolean bed = false, table = false, barrel = false;
@@ -1211,6 +1264,82 @@ final class IslandGenerator extends AreaJob {
         }
     }
 
+    /** Tavern: a bar along the back wall with barrels, tables with chairs, lanterns, a sign by the door. */
+    private void furnishTavern(int x0, int z0, int base, int w, int l, int doorDx, int doorDz, java.util.Set<Long> used, Random r) {
+        // back wall = opposite the door
+        int bx = -doorDx, bz = -doorDz;
+        int lateralX = bz != 0 ? 1 : 0, lateralZ = bx != 0 ? 1 : 0;
+        int depth = bx != 0 ? w : l, width = bx != 0 ? l : w;
+        for (int i = -(width - 1); i <= width - 1; i++) {
+            int x = x0 + bx * (depth - 1) + lateralX * i, z = z0 + bz * (depth - 1) + lateralZ * i;
+            if (used.contains(key(x - x0, z - z0))) {
+                continue;
+            }
+            set(x, base + 1, z, Material.BARREL); // behind the bar
+            int cx2 = x - bx, cz2 = z - bz;
+            if (!used.contains(key(cx2 - x0, cz2 - z0))) {
+                set(cx2, base + 1, cz2, Material.SPRUCE_PLANKS); // the bar
+                set(cx2, base + 2, cz2, i == 0 ? Material.BREWING_STAND : (i & 1) == 0 ? Material.LANTERN : Material.AIR);
+            }
+        }
+        // two tables with chairs in the front half
+        for (int t = -1; t <= 1; t += 2) {
+            int tx = x0 + lateralX * t * Math.max(1, width - 2) + doorDx, tz = z0 + lateralZ * t * Math.max(1, width - 2) + doorDz;
+            if (used.contains(key(tx - x0, tz - z0))) {
+                continue;
+            }
+            set(tx, base + 1, tz, Material.SPRUCE_FENCE);
+            set(tx, base + 2, tz, Material.OAK_PRESSURE_PLATE);
+            for (int[] c : new int[][]{{lateralX, lateralZ}, {-lateralX, -lateralZ}}) {
+                int sx = tx + c[0], sz = tz + c[1];
+                if (!used.contains(key(sx - x0, sz - z0)) && world.getBlockAt(sx, base + 1, sz).isEmpty()) {
+                    setData(sx, base + 1, sz, stairs(Material.SPRUCE_STAIRS, face(-c[0], -c[1])));
+                }
+            }
+        }
+        set(x0, base + wallH(base, x0, z0) , z0, Material.LANTERN);
+        // a lantern on a post outside the door
+        int ox = x0 + doorDx * (doorDx != 0 ? w + 1 : l + 1) + (doorDz != 0 ? 2 : 0), oz = z0 + doorDz * (doorDz != 0 ? l + 1 : w + 1) + (doorDx != 0 ? 2 : 0);
+        set(ox, base + 1, oz, Material.SPRUCE_FENCE);
+        set(ox, base + 2, oz, Material.SPRUCE_FENCE);
+        set(ox, base + 3, oz, Material.LANTERN);
+    }
+
+    /** Height of the first floor's ceiling at a spot (first solid block above the floor), for a hanging light. */
+    private int wallH(int base, int x, int z) {
+        for (int up = 2; up <= 8; up++) {
+            if (world.getBlockAt(x, base + up, z).getType().isSolid()) {
+                return up - 1;
+            }
+        }
+        return 3;
+    }
+
+    /** Warehouse: stacks of barrels and hay, a crafting table, a wide doorway. */
+    private void furnishWarehouse(int x0, int z0, int base, int w, int l, int doorDx, int doorDz, java.util.Set<Long> used) {
+        for (int ox = -(w - 1); ox <= w - 1; ox++) {
+            for (int oz = -(l - 1); oz <= l - 1; oz++) {
+                boolean aisle = doorDx != 0 ? oz == 0 : ox == 0;
+                if (aisle || used.contains(key(ox, oz)) || ((ox + oz) & 1) != 0) {
+                    continue;
+                }
+                set(x0 + ox, base + 1, z0 + oz, (ox * 7 + oz * 3 & 3) == 0 ? Material.HAY_BLOCK : Material.BARREL);
+                if (((ox * 5 + oz) & 3) == 1) {
+                    set(x0 + ox, base + 2, z0 + oz, Material.BARREL);
+                }
+            }
+        }
+        // widen the doorway to three blocks (no door)
+        int dx = x0 + doorDx * w, dz = z0 + doorDz * l;
+        for (int s = -1; s <= 1; s++) {
+            int x = dx + (doorDz != 0 ? s : 0), z = dz + (doorDx != 0 ? s : 0);
+            for (int up = 1; up <= 3; up++) {
+                set(x, base + up, z, Material.AIR);
+            }
+        }
+        set(x0, base + 4, z0, Material.LANTERN);
+    }
+
     private static long key(int a, int b) {
         return ((long) a << 32) ^ (b & 0xffffffffL);
     }
@@ -1235,6 +1364,181 @@ final class IslandGenerator extends AreaJob {
                 }
             }
         }
+    }
+
+    // ------------------------------------------------------------------ plaza decoration
+
+    /** True where plaza decoration must not go: the throne, stalls, fountain, parkour, signs and the paths. */
+    private boolean plazaReserved(int dx, int dz) {
+        if (Math.abs(dx) <= 2 || Math.abs(dz) <= 2) {
+            return true; // the four paths from the throne to the roads
+        }
+        if (dx * dx + dz * dz < 13 * 13) {
+            return true; // throne, ring and planters
+        }
+        int[][] spots = {{0, -18, 6}, {0, -31, 9}, {-27, 0, 5}, {27, 0, 5}};
+        for (int[] s : spots) {
+            if ((dx - s[0]) * (dx - s[0]) + (dz - s[1]) * (dz - s[1]) < s[2] * s[2]) {
+                return true;
+            }
+        }
+        for (int k = 0; k < 8; k++) {
+            double a = Math.toRadians(22.5 + 45 * k);
+            int sx = (int) Math.round(Math.cos(a) * 18), sz = (int) Math.round(Math.sin(a) * 18);
+            if ((dx - sx) * (dx - sx) + (dz - sz) * (dz - sz) < 25) {
+                return true;
+            }
+        }
+        return kindAt(dx, dz) != PLAZA;
+    }
+
+    /** True when a whole square around dx/dz is free plaza. */
+    private boolean plazaFree(int dx, int dz, int half) {
+        for (int ox = -half; ox <= half; ox++) {
+            for (int oz = -half; oz <= half; oz++) {
+                if (plazaReserved(dx + ox, dz + oz)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /** Benches, extra lamp posts, banner poles at the road entrances, hedges along the edge and crate piles. */
+    private void planPlazaDecor(Random r, List<Feature> list, int plazaR) {
+        // benches facing the throne
+        for (int k = 0; k < 4; k++) {
+            double a = Math.toRadians(45 + 90 * k);
+            int bx = (int) Math.round(Math.cos(a) * 24), bz = (int) Math.round(Math.sin(a) * 24);
+            if (bx * bx + bz * bz < (plazaR - 3) * (plazaR - 3) && plazaFree(bx, bz, 2)) {
+                list.add(new Feature(bx, bz, 3, () -> buildBench(bx, bz)));
+            }
+        }
+        // a ring of lamp posts
+        for (int k = 0; k < 16; k++) {
+            double a = Math.toRadians(11.25 + 22.5 * k);
+            int lx = (int) Math.round(Math.cos(a) * 21), lz = (int) Math.round(Math.sin(a) * 21);
+            if (plazaFree(lx, lz, 1)) {
+                list.add(new Feature(lx, lz, 1, () -> lamp(lx, lz)));
+            }
+        }
+        // banner poles on both sides of each road entrance
+        for (int[] d : DIRS) {
+            for (int side = -1; side <= 1; side += 2) {
+                int along = plazaR - 3;
+                int px = d[0] * along + (d[1] != 0 ? side * 3 : 0), pz = d[1] * along + (d[0] != 0 ? side * 3 : 0);
+                if (kindAt(px, pz) == PLAZA) {
+                    Material banner = side < 0 ? Material.RED_BANNER : Material.WHITE_BANNER;
+                    list.add(new Feature(px, pz, 1, () -> bannerPole(px, pz, banner)));
+                }
+            }
+        }
+        // flowering hedges along the plaza edge
+        for (int k = 0; k < 72; k++) {
+            double a = Math.toRadians(k * 5);
+            int hx = (int) Math.round(Math.cos(a) * (plazaR - 2)), hz = (int) Math.round(Math.sin(a) * (plazaR - 2));
+            if (!plazaReserved(hx, hz) && Math.abs(hx) > 4 && Math.abs(hz) > 4) {
+                boolean tall = r.nextInt(3) == 0;
+                list.add(new Feature(hx, hz, 1, () -> hedge(hx, hz, tall)));
+            }
+        }
+        // crate piles and flower pots
+        for (int i = 0; i < 14; i++) {
+            double a = r.nextDouble() * Math.PI * 2, d = 20 + r.nextDouble() * Math.max(1, plazaR - 26);
+            int px = (int) Math.round(Math.cos(a) * d), pz = (int) Math.round(Math.sin(a) * d);
+            if (plazaFree(px, pz, 1)) {
+                long seedI = r.nextLong();
+                list.add(new Feature(px, pz, 2, () -> cratePile(px, pz, new Random(seedI))));
+            }
+        }
+    }
+
+    private void buildBench(int bx, int bz) {
+        int y = top[index(bx, bz)];
+        // the seat backs face away from the throne, so people sit looking at it
+        boolean alongX = Math.abs(bx) < Math.abs(bz);
+        BlockFace back = alongX ? (bz > 0 ? BlockFace.SOUTH : BlockFace.NORTH) : (bx > 0 ? BlockFace.EAST : BlockFace.WEST);
+        for (int s = -1; s <= 1; s++) {
+            int x = cx + bx + (alongX ? s : 0), z = cz + bz + (alongX ? 0 : s);
+            setData(x, y + 1, z, stairs(Material.SPRUCE_STAIRS, back));
+        }
+        for (int s : new int[]{-2, 2}) {
+            int x = cx + bx + (alongX ? s : 0), z = cz + bz + (alongX ? 0 : s);
+            BlockData leaves = Bukkit.createBlockData(Material.AZALEA_LEAVES);
+            if (leaves instanceof Leaves l) {
+                l.setPersistent(true);
+            }
+            setData(x, y + 1, z, leaves);
+        }
+    }
+
+    private void bannerPole(int px, int pz, Material banner) {
+        int y = top[index(px, pz)];
+        set(cx + px, y + 1, cz + pz, Material.STONE_BRICK_WALL);
+        set(cx + px, y + 2, cz + pz, Material.SPRUCE_FENCE);
+        set(cx + px, y + 3, cz + pz, Material.SPRUCE_FENCE);
+        set(cx + px, y + 4, cz + pz, banner);
+    }
+
+    private void hedge(int hx, int hz, boolean tall) {
+        int y = top[index(hx, hz)];
+        BlockData leaves = Bukkit.createBlockData(tall ? Material.FLOWERING_AZALEA_LEAVES : Material.AZALEA_LEAVES);
+        if (leaves instanceof Leaves l) {
+            l.setPersistent(true);
+        }
+        set(cx + hx, y, cz + hz, Material.GRASS_BLOCK);
+        setData(cx + hx, y + 1, cz + hz, leaves);
+        if (tall) {
+            setData(cx + hx, y + 2, cz + hz, leaves);
+        }
+    }
+
+    private void cratePile(int px, int pz, Random r) {
+        int y = top[index(px, pz)];
+        Material[] crates = {Material.BARREL, Material.BARREL, Material.HAY_BLOCK, Material.CHEST};
+        set(cx + px, y + 1, cz + pz, crates[r.nextInt(crates.length)]);
+        if (r.nextBoolean()) {
+            set(cx + px, y + 2, cz + pz, Material.BARREL);
+        }
+        int ox = r.nextBoolean() ? 1 : -1;
+        set(cx + px + ox, y + 1, cz + pz, crates[r.nextInt(crates.length)]);
+        set(cx + px + ox, y + 2, cz + pz, FLOWERS[r.nextInt(FLOWERS.length)]);
+        if (r.nextBoolean()) {
+            set(cx + px, y + 1, cz + pz + 1, Material.COMPOSTER);
+        }
+    }
+
+    /** A fountain: a round stone basin with water, a prismarine centrepiece pouring water from the top. */
+    private void buildFountain(int fx, int fz) {
+        int y = top[index(fx, fz)];
+        int x = cx + fx, z = cz + fz;
+        for (int ox = -4; ox <= 4; ox++) {
+            for (int oz = -4; oz <= 4; oz++) {
+                double d = Math.sqrt(ox * ox + oz * oz);
+                if (d > 4.2) {
+                    continue;
+                }
+                if (d > 3.3) {
+                    set(x + ox, y, z + oz, Material.POLISHED_DIORITE); // a light ring around it
+                } else if (d > 2.4) {
+                    set(x + ox, y, z + oz, Material.STONE_BRICKS);
+                    set(x + ox, y + 1, z + oz, Material.SMOOTH_STONE_SLAB); // the rim
+                } else {
+                    set(x + ox, y - 1, z + oz, Material.STONE_BRICKS);
+                    set(x + ox, y, z + oz, (ox + oz & 1) == 0 ? Material.SEA_LANTERN : Material.PRISMARINE_BRICKS);
+                    set(x + ox, y + 1, z + oz, Material.WATER);
+                }
+            }
+        }
+        for (int up = 1; up <= 3; up++) {
+            set(x, y + up, z, up == 3 ? Material.CHISELED_STONE_BRICKS : Material.PRISMARINE_BRICKS);
+        }
+        set(x, y + 4, z, Material.PRISMARINE_BRICK_SLAB);
+        for (int[] c : new int[][]{{3, 3}, {3, -3}, {-3, 3}, {-3, -3}}) {
+            set(x + c[0], y + 1, z + c[1], Material.LANTERN);
+        }
+        // the water on top flows down into the basin (placed with physics so it actually runs)
+        world.getBlockAt(x, y + 5, z).setType(Material.WATER, true);
     }
 
     /** A raised flower bed with a small tree. */
@@ -1268,7 +1572,24 @@ final class IslandGenerator extends AreaJob {
     private static final Material[] STALL_GOODS = {Material.ANVIL, Material.MELON, Material.CARTOGRAPHY_TABLE,
             Material.GOLD_BLOCK, Material.CRAFTING_TABLE, Material.TNT, Material.LECTERN, Material.STONECUTTER};
 
-    /** A market stall (5x5 with a striped awning) facing the throne; a shopkeeper stands in the middle. */
+    /** Goods on the back shelf of each stall (three blocks) and on its side, matching the trade. */
+    private static final Material[][] STALL_SHELF = {
+            {Material.ANVIL, Material.GRINDSTONE, Material.BLAST_FURNACE, Material.SMITHING_TABLE},
+            {Material.MELON, Material.HAY_BLOCK, Material.PUMPKIN, Material.SMOKER},
+            {Material.CARTOGRAPHY_TABLE, Material.BARREL, Material.LOOM, Material.CHAIN},
+            {Material.GOLD_BLOCK, Material.CHEST, Material.EMERALD_BLOCK, Material.BARREL},
+            {Material.OAK_LOG, Material.CRAFTING_TABLE, Material.STRIPPED_OAK_LOG, Material.FLETCHING_TABLE},
+            {Material.TNT, Material.TARGET, Material.TNT, Material.DISPENSER},
+            {Material.BOOKSHELF, Material.LECTERN, Material.BOOKSHELF, Material.CARTOGRAPHY_TABLE},
+            {Material.STONECUTTER, Material.CHISELED_STONE_BRICKS, Material.STONE_BRICKS, Material.POLISHED_ANDESITE}};
+    private static final Material[] FLOWERS = {Material.POTTED_RED_TULIP, Material.POTTED_POPPY, Material.POTTED_CORNFLOWER,
+            Material.POTTED_OXEYE_DAISY, Material.POTTED_ALLIUM, Material.POTTED_FERN};
+
+    /**
+     * A market stall facing the throne: log posts, a striped awning with a scalloped front edge and a raised
+     * middle, a counter with goods, a lantern over the shopkeeper (who stands in the middle), shelves and crates
+     * with goods matching the trade, and barrels with flowers out front.
+     */
     private void buildStall(int sx, int sz, int stall) {
         int y = top[index(sx, sz)];
         int fx, fz;
@@ -1281,31 +1602,72 @@ final class IslandGenerator extends AreaJob {
         }
         int lx = -fz, lz = fx;
         Material[] awning = AWNINGS[stall % AWNINGS.length];
+        Material[] shelf = STALL_SHELF[stall % STALL_SHELF.length];
+        java.util.function.BiFunction<Integer, Integer, int[]> at = (a, b) -> new int[]{cx + sx + fx * a + lx * b, cz + sz + fz * a + lz * b};
         for (int a = -3; a <= 3; a++) {
             for (int b = -3; b <= 3; b++) {
-                int x = cx + sx + fx * a + lx * b, z = cz + sz + fz * a + lz * b;
+                int[] p = at.apply(a, b);
                 if (Math.abs(a) <= 2 && Math.abs(b) <= 2) {
-                    set(x, y, z, Material.SPRUCE_PLANKS);
+                    set(p[0], y, p[1], Math.abs(a) == 2 || Math.abs(b) == 2 ? Material.STRIPPED_SPRUCE_WOOD : Material.SPRUCE_PLANKS);
                     for (int up = 1; up <= 3; up++) {
-                        set(x, y + up, z, Material.AIR);
+                        set(p[0], y + up, p[1], Material.AIR);
                     }
                 }
-                set(x, y + 4, z, Math.floorMod(b, 2) == 0 ? awning[0] : awning[1]);
+                set(p[0], y + 4, p[1], Math.floorMod(b, 2) == 0 ? awning[0] : awning[1]);
             }
-        }
-        for (int a : new int[]{-2, 2}) {
-            for (int b : new int[]{-2, 2}) {
-                for (int up = 1; up <= 3; up++) {
-                    set(cx + sx + fx * a + lx * b, y + up, cz + sz + fz * a + lz * b, Material.SPRUCE_FENCE);
+            // raised middle of the awning
+            if (Math.abs(a) <= 2) {
+                for (int b = -1; b <= 1; b++) {
+                    int[] p = at.apply(a, b);
+                    set(p[0], y + 5, p[1], Math.floorMod(b, 2) == 0 ? awning[0] : awning[1]);
                 }
             }
         }
-        for (int b = -1; b <= 1; b++) {
-            set(cx + sx + fx * 2 + lx * b, y + 1, cz + sz + fz * 2 + lz * b, Material.SPRUCE_PLANKS); // counter
-            set(cx + sx - fx * 2 + lx * b, y + 1, cz + sz - fz * 2 + lz * b, Material.BARREL); // stock
+        // scalloped front edge of the awning
+        for (int b = -3; b <= 3; b += 2) {
+            int[] p = at.apply(3, b);
+            set(p[0], y + 3, p[1], awning[0]);
         }
-        set(cx + sx + fx * 2 - lx, y + 2, cz + sz + fz * 2 - lz, Material.LANTERN);
-        set(cx + sx + fx * 2 + lx, y + 2, cz + sz + fz * 2 + lz, STALL_GOODS[stall % STALL_GOODS.length]);
+        // posts
+        for (int a : new int[]{-2, 2}) {
+            for (int b : new int[]{-2, 2}) {
+                int[] p = at.apply(a, b);
+                for (int up = 1; up <= 3; up++) {
+                    set(p[0], y + up, p[1], Material.STRIPPED_SPRUCE_LOG);
+                }
+            }
+        }
+        // counter at the front: planks with slabs on top, goods and a lantern on it
+        for (int b = -1; b <= 1; b++) {
+            int[] p = at.apply(2, b);
+            set(p[0], y + 1, p[1], Material.SPRUCE_PLANKS);
+        }
+        int[] c1 = at.apply(2, -1), c2 = at.apply(2, 1);
+        set(c1[0], y + 2, c1[1], Material.LANTERN);
+        set(c2[0], y + 2, c2[1], STALL_GOODS[stall % STALL_GOODS.length]);
+        // back shelf with three goods on barrels, crates on the sides
+        for (int b = -1; b <= 1; b++) {
+            int[] p = at.apply(-2, b);
+            set(p[0], y + 1, p[1], Material.BARREL);
+            set(p[0], y + 2, p[1], shelf[b + 1]);
+        }
+        int[] side1 = at.apply(0, -2), side2 = at.apply(0, 2);
+        set(side1[0], y + 1, side1[1], shelf[3]);
+        set(side2[0], y + 1, side2[1], Material.BARREL);
+        set(side2[0], y + 2, side2[1], FLOWERS[stall % FLOWERS.length]);
+        // a lantern hanging over the shopkeeper
+        int[] mid = at.apply(0, 0);
+        BlockData hanging = Bukkit.createBlockData(Material.LANTERN);
+        if (hanging instanceof org.bukkit.block.data.type.Lantern lantern) {
+            lantern.setHanging(true);
+        }
+        setData(mid[0], y + 3, mid[1], hanging);
+        // barrels with flowers on the front corners
+        for (int b : new int[]{-3, 3}) {
+            int[] p = at.apply(3, b);
+            set(p[0], y + 1, p[1], Material.BARREL);
+            set(p[0], y + 2, p[1], FLOWERS[(stall + b + 3) % FLOWERS.length]);
+        }
     }
 
     /** The bounty board (the hub module shows the most wanted pirates in front of it). Faces +x. */

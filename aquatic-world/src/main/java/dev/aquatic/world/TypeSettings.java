@@ -82,7 +82,7 @@ final class TypeSettings {
     boolean town;
     /** Tidewatch outpost: a fort on the plaza. */
     boolean fort;
-    int townHouses = 16;
+    int townHouses = 30;
     final WeightedList<Material> roadBlocks = new WeightedList<>();
     Material throneBase = Material.POLISHED_ANDESITE;
     Material throneAccent = Material.GOLD_BLOCK;
@@ -151,7 +151,7 @@ final class TypeSettings {
         t.seagrass = Math.max(0, s.getDouble("sea-life.seagrass", frozen ? 0.05 : 0.25));
         t.kelp = Math.max(0, s.getDouble("sea-life.kelp", warm ? 0.01 : frozen ? 0 : 0.05));
         t.town = s.getBoolean("town.enabled", t.type == IslandType.CAPITAL);
-        t.townHouses = Math.max(0, s.getInt("town.houses", 16));
+        t.townHouses = Math.max(0, s.getInt("town.houses", 30));
         blocks(t.roadBlocks, s.getStringList("town.road"), Material.STONE_BRICKS, log, ctx + ".town.road");
         t.mountainScale = Math.max(0, s.getDouble("mountains", t.type == IslandType.CAPITAL ? 0.4 : 1.0));
         t.beachHeight = Math.max(0, s.getInt("beach-height", 2));
