@@ -303,6 +303,19 @@ aquatic-dist/    shades everything into the final jar
 2. Add a `modules/<id>.yml` resource.
 3. Register the class in the `MODULES` list in `AquaticPlugin`.
 
+## Contributing and reporting issues
+
+Use the repository forms when opening an issue:
+
+- **Bug report:** include the AquaticSMP version, Paper/Minecraft version, reproduction steps, sanitized logs, and relevant plugins.
+- **Feature request:** explain the problem or use case first, then describe the proposed behavior and configuration.
+- **Support question:** describe the goal, commands or settings tried, and the server context.
+
+To contribute code or documentation, create a branch, make a focused change, and open a pull request. The pull request template asks for a summary, validation commands, configuration or permission updates, and relevant screenshots or logs. Pull requests are checked automatically with the resource-pack build and `mvn verify`.
+
+Never include server IPs, access tokens, credentials, player data, or unredacted private logs in an issue or pull request. For security-sensitive problems, do not post exploit details publicly; contact the repository owner privately first.
+
+
 ---
 
 AquaticSMP is developed by **[tombomeke](https://github.com/tombomeke)**. In-game, `/aquatic about` shows the credits.

@@ -1,0 +1,32 @@
+name: Feature request
+description: Suggest an improvement or new feature for AquaticSMP.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What problem would this feature solve, and who would use it?
+      placeholder: Describe the gameplay or administration problem.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior you would like to see.
+      placeholder: Explain the commands, configuration, or gameplay behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What workarounds or alternative designs have you tried?
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context
+      description: Add examples, screenshots, mockups, or related issues if useful.
