@@ -1,5 +1,48 @@
 # Changelog
 
+## 2.6.0 (2026-11-13)
+
+### Added
+- **Smithy** (`/smithy`, or the Blacksmith villager at spawn):
+  - Upgrade the item in your hand from +1 to +5:
+    - weapons hit harder
+    - armour protects more
+    - pickaxes, shovels and hoes mine faster
+    - bows shoot harder (crossbows load faster)
+  - Each level costs Doubloons and materials (iron → gold → diamonds → netherite), with a success chance from 100% down to 30%.
+  - A failed attempt costs the materials but never breaks the item.
+  - The item gets a "+N" after its name and a "★ Smithed +N" line.
+  - Its normal stats are kept.
+- **Crew menu:** `/crew` on its own opens a menu.
+  - It shows the crew's info, members with their rank and online status, the bank, crew home, island home, diplomacy, crew chat, invites and leaving.
+  - Officers can promote, demote or kick members from the menu.
+  - Without a crew, it has buttons to found a crew, browse crews and accept invites.
+  - `/crew help` still lists the commands.
+- **Level rewards:**
+  - Every 5 levels gives Doubloons, items and a **title**: Deckhand, Sailor, Bosun, Navigator, Corsair, Sea Wolf, Reaver, Stormcaller, Dread Corsair, Legend of the Sea.
+  - Each reward is given once. Players already past a level get it on their next login.
+  - `/level rewards` lists them. The title shows in `/level` and next to your level on the sidebar.
+- **Island upgrades:**
+  - **Vault:** crew storage on the island with `/island vault` or the manage menu (9, 27 or 54 slots). Conquerors take what's inside!
+  - **Granary:** crewmates slowly get their hunger back on the island.
+- **Tidewatch outposts:** a new island type (TIDEWATCH, rare).
+  - **The fort:** walls with a walkway, four towers with banners, and a two-storey keep with a flag.
+  - **The garrison:** while players are on the island, Tidewatch Recruits, Riflemen and Lieutenants keep coming. It grows with the number of players.
+  - **The Warden Captain** guards the keep. Kill him to **liberate** the island:
+    - every attacker on the island gets 1,500 Doubloons and 400 XP
+    - the fort's strongbox is buried in the keep (a rare treasure)
+    - crews can claim the island for 12 hours
+  - Unclaimed forts get a new garrison afterwards. While the Tidewatch holds the island, it can't be claimed.
+  - `/island info` shows whether the Tidewatch holds the island.
+  - Everything is in `islands.yml` under `tidewatch`.
+
+### Updating
+- Replace the jar and restart. Configs upgrade automatically, with backups kept:
+  - the new upgrades, the Tidewatch island type and its names are added
+  - the Blacksmith opens the smithy
+  - the sidebar shows your title
+- Generate Tidewatch islands with `/island admin spawnrandom tidewatch <count>`. They also appear among random islands.
+
 ## 2.5.1 (2026-11-13)
 
 ### Added

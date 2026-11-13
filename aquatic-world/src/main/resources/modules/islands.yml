@@ -18,7 +18,7 @@
 
 # How often (seconds) changed data is written to plugins/AquaticSMP/data/islands/ (also saved on shutdown).
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 1
+config-version: 2
 
 autosave-seconds: 120
 
@@ -117,6 +117,7 @@ generation:
     TROPICAL: 2
     VOLCANIC: 1
     ANCIENT: 1
+    TIDEWATCH: 1.5
     CAPITAL: 0
 
 # What /island delete <island> restore and /island regen turn the area back into.
@@ -398,6 +399,40 @@ types:
       blocks: [MOSSY_STONE_BRICKS:3, CRACKED_STONE_BRICKS:2, STONE_BRICKS:2, MOSSY_COBBLESTONE:1, CHISELED_STONE_BRICKS:0.3]
       pillars: true
       pillar-cap: CHISELED_STONE_BRICKS
+  TIDEWATCH:
+    display-name: "<blue>Tidewatch Outpost</blue>"
+    rarity: rare
+    # A fort of the Tidewatch (the Harbor Crown's navy) with a garrison: defeat the Warden Captain in
+    # the keep to liberate the island before a crew can claim it. See "tidewatch" below.
+    status: UNCLAIMED
+    biome: plains
+    max-height: 8
+    beach-height: 2
+    roughness: 0.7
+    coast-variation: 0.15
+    surface: [GRASS_BLOCK:6, COARSE_DIRT:1]
+    subsurface: [DIRT]
+    core: [STONE:5, ANDESITE:1]
+    beach: [SAND:2, GRAVEL:1]
+    underwater: [SAND:2, GRAVEL:2]
+    ores:
+      chance: 0.016
+      blocks: [COAL_ORE:3, IRON_ORE:3, COPPER_ORE:1]
+    trees:
+      density: 0.25
+      types: [TREE:3, BIRCH:1]
+      palms-on-beach: false
+    decorations:
+      SHORT_GRASS: 0.15
+    plaza:
+      enabled: true
+      size: 0.32
+      height: 3
+      blocks: [COBBLESTONE:2, GRAVEL:1]
+      throne:
+        enabled: false
+    fort:
+      enabled: true
   CAPITAL:
     display-name: "<gold>Capital</gold>"
     # A harbour town around the plaza: paved roads to the coast with lamps, houses, piers, a lighthouse.
@@ -443,6 +478,10 @@ types:
 # "<first> <second>", picked at random per island type, never used twice.
 # Add or remove words freely. "fixed" names are used first (one each) if you want hand-picked ones.
 island-names:
+  TIDEWATCH:
+    fixed: []
+    first: [Warden's, Ironwall, Bastion, Bluecoat, Seawall, Crown's, Anchorwatch, Gallows, Stormgate, Lantern, Cannon, Saltgate]
+    second: [Hold, Keep, Fort, Outpost, Redoubt, Watch, Garrison, Battery, Stronghold, Post]
   TROPICAL:
     fixed: []
     first: [Saltwhisper, Brightwater, Palmreach, Sunmere, Coralline, Tidesong, Goldsand, Breezeway, Lumen, Marigold, Seaglass, Driftwood, Azure, Honeytide, Shellmoor]
@@ -663,6 +702,74 @@ upgrades:
         - "<gray>Stronger per level."
       per-level: 1
       costs: [3000, 9000]
+    vault:
+      display-name: "<light_purple><bold>Vault"
+      icon: ENDER_CHEST
+      description:
+        - "<gray>Storage for the whole crew on this island"
+        - "<gray>(/island vault). 9, 27 or 54 slots."
+        - "<red>Conquerors take what's inside!"
+      per-level: 1
+      # Slots per level.
+      sizes: [9, 27, 54]
+      # Only open it while standing on the island.
+      on-island-only: true
+      costs: [3000, 8000, 16000]
+    granary:
+      display-name: "<yellow><bold>Granary"
+      icon: HAY_BLOCK
+      description:
+        - "<gray>Crewmates slowly get their hunger"
+        - "<gray>back while on the island."
+      per-level: 1
+      costs: [2000, 6000]
+
+# -------------------------------------------------------------------------------------
+# Tidewatch outposts (island type TIDEWATCH): a garrison defends the fort while players are on the
+# island. Kill the Warden Captain in the keep to liberate the island: every attacker on the island
+# gets captain-reward Doubloons and captain-xp, the fort's strongbox appears as a buried treasure, and
+# for liberated-hours a crew can claim the island. Unclaimed forts get a new garrison after that.
+# -------------------------------------------------------------------------------------
+tidewatch:
+  enabled: true
+  base-soldiers: 4
+  # Extra soldiers per extra player on the island, up to max-soldiers.
+  per-player: 2
+  max-soldiers: 12
+  # Seconds between reinforcement waves.
+  reinforce-seconds: 25
+  liberated-hours: 12
+  soldier-reward: 35
+  captain-reward: 1500
+  captain-xp: 400
+  strongbox-tier: rare
+  # Which soldiers spawn (template:weight).
+  soldiers: ["recruit:5", "rifleman:3", "lieutenant:1"]
+  mobs:
+    recruit:
+      type: ZOMBIE
+      name: "<blue>Tidewatch Recruit"
+      health-multiplier: 1.5
+      damage-multiplier: 1.2
+      equipment: {helmet: LEATHER_HELMET, chestplate: LEATHER_CHESTPLATE, mainhand: IRON_SWORD}
+    rifleman:
+      type: SKELETON
+      name: "<blue>Tidewatch Rifleman"
+      health-multiplier: 1.5
+      equipment: {helmet: CHAINMAIL_HELMET, mainhand: BOW}
+    lieutenant:
+      type: VINDICATOR
+      name: "<dark_blue>Tidewatch Lieutenant"
+      health-multiplier: 2.0
+      damage-multiplier: 1.2
+      equipment: {helmet: IRON_HELMET, mainhand: IRON_AXE}
+    captain:
+      type: VINDICATOR
+      name: "<dark_aqua><bold>Warden Captain"
+      health: 160
+      damage-multiplier: 1.5
+      effects: ["resistance:1"]
+      equipment: {helmet: DIAMOND_HELMET, chestplate: IRON_CHESTPLATE, mainhand: DIAMOND_AXE}
 
 raiding:
   # When may enemies build/break/loot on an occupied island?
@@ -751,6 +858,15 @@ bluemap:
 #  Messages
 # =====================================================================================
 messages:
+  claim-tidewatch: "<red>The Tidewatch still holds <white><island></white>. <gray>Defeat the Warden Captain in the keep first."
+  tidewatch-alarm: "<blue><bold>Alarm!</bold> <gray>The Tidewatch garrison of <white><island></white> spotted you. Their Warden Captain waits in the keep."
+  tidewatch-soldier-reward: "<yellow>+<amount> <gray>(Tidewatch soldier)"
+  tidewatch-liberated-you: "<gold><bold>Liberated!</bold> <gray>You drove the Tidewatch off <white><island></white>: <yellow>+<amount></yellow>. <gray>Claim it within <white><hours>h</white> before they return."
+  tidewatch-liberated: "<gold><player> <gray>defeated the Warden Captain and liberated <white><island></white> from the Tidewatch!"
+  tidewatch-strongbox: "<aqua>The fort's strongbox is buried in the keep. <gray>Dig it up!"
+  tidewatch-someone: "A band of pirates"
+  info-tidewatch-held: "<blue>Held by the Tidewatch. <gray>Defeat the Warden Captain in the keep to liberate it."
+  info-tidewatch-free: "<green>Liberated <gray>(claimable for <white><time></white> before the Tidewatch returns)"
   deny-flag: "<red>A crew flag can't be broken. <gray>Take the island by conquest: stand at the flag with your crew."
   flag-none: "<red><island> has no flag."
   flag-removed: "<green>The flag of <white><island></white> was removed. <gray>(the owners can plant it again with /island flag)"
@@ -788,6 +904,12 @@ messages:
   manage-cost: "<gray>Next level: <yellow><cost></yellow> <dark_gray>(crew bank)"
   manage-maxed: "<green>Fully upgraded!"
   manage-click: "<yellow>Click to upgrade"
+  manage-vault: "<light_purple><bold>Crew vault"
+  manage-vault-open: "<yellow>Click to open <gray>(<slots> slots)"
+  manage-vault-locked: "<gray>Buy the Vault upgrade to store items here"
+  vault-title: "<dark_purple>Vault of <island>"
+  vault-locked: "<red><island> has no vault yet. <gray>Buy the Vault upgrade in /island manage."
+  vault-not-here: "<red>You have to be on <white><island></white> to open its vault."
   manage-not-yours: "<red><island> doesn't belong to your crew."
   upgrades-disabled: "<red>Island upgrades are turned off on this server."
   upgrade-unknown: "<red>Unknown upgrade <white><type></white>. <gray>Upgrades: <white><types>"

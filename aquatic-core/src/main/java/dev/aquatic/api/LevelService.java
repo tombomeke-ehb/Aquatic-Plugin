@@ -19,4 +19,9 @@ public interface LevelService {
 
     /** Gives XP (e.g. for an event reward); handles level-ups. */
     void addXp(UUID player, long amount, String reason);
+
+    /** The title of the highest level reward a player reached (MiniMessage), or null. */
+    default String title(UUID player) {
+        return null;
+    }
 }

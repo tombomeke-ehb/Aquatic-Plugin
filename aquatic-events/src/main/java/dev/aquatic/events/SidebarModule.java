@@ -223,6 +223,8 @@ public final class SidebarModule extends AquaticModule implements Listener {
         int filled = (int) Math.round(progress * 10);
         ph.put("xp_bar", Text.mm("<aqua>" + "▮".repeat(filled) + "<dark_gray>" + "▯".repeat(10 - filled)));
         ph.put("xp_percent", String.valueOf(Math.round(progress * 100)));
+        String levelTitle = levels == null ? null : levels.title(id);
+        ph.put("level_title", levelTitle == null ? Component.empty() : Text.mm(levelTitle));
         String title = bounties == null ? null : bounties.tierTitle(id);
         ph.put("bounty_title", title == null ? Component.empty() : Text.mm(title));
         dev.aquatic.api.CombatService combat = service(dev.aquatic.api.CombatService.class);
@@ -344,5 +346,19 @@ public final class SidebarModule extends AquaticModule implements Listener {
             save();
         }).defaultCompleter((s, a) -> AquaticCommand.filter(List.of("on", "off"), a.length == 0 ? "" : a[0]));
         registerCommand(cmd);
+    }
+
+    @Override
+    protected void migrateConfig(YamlConfiguration file, YamlConfiguration defaults, int from) {
+        if (from < 1) {
+            // 2.6.0: level titles next to the level
+            List<String> layout = new ArrayList<>(file.getStringList("layout"));
+            String old = "<white><bold><player></bold> <gray>Lv <aqua><level>";
+            int i = layout.indexOf(old);
+            if (i >= 0) {
+                layout.set(i, old + " <level_title>");
+                file.set("layout", layout);
+            }
+        }
     }
 }

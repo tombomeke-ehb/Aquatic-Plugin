@@ -79,7 +79,7 @@ This file is the roadmap. Tick off items as they're finished and add new ideas u
 
 ### Gear
 - [x] Swords, bombs, buckler, and the Tidewarden and Corsair armour sets with recipes.
-- [ ] Upgrade gear at a smithy on the capital (+1, +2, +3) with Abyssal Iron and Doubloons.
+- [x] Smithy: upgrade weapons, armour, tools and bows +1..+5 (done in 2.6.0).
 - [ ] Accessories (ring and amulet slots, through the off hand or a menu) with small passive buffs.
 - [ ] A grappling or boarding hook for boarding ships and getting up cliffs.
 - [ ] More armour sets: a Tidewatch set (from Tidewatch enemies), an Abyssal set (late game).
@@ -89,7 +89,8 @@ This file is the roadmap. Tick off items as they're finished and add new ideas u
 ## World and islands
 - [x] Rarity, Forest, mountains, caves, ore veins, reefs, lakes, shipwrecks, the capital town, and lava streams.
 - [ ] **Rarer islands have better rewards:** more and better treasure, rare ores, and more income.
-- [ ] **Structures from schematics:** Tidewatch outposts with mini-bosses, pirate camps, temples on desert islands, and Runestones with lore and clues on ancient islands.
+- [x] Tidewatch outposts: fort islands with a garrison and a Warden Captain (done in 2.6.0).
+- [ ] **Structures from schematics:** pirate camps, temples on desert islands, and Runestones with lore and clues on ancient islands.
 - [ ] Sea caves you can sail into, waterfalls, and rivers.
 - [ ] Special islands: a floating sky island, a ghost island that only appears at night, and a giant tree island.
 - [ ] **Sea zones:** the Shallows → the Open Sea → the Abyssal Reach. Farther from spawn means harder and richer, shown on the sidebar and on maps.
@@ -99,7 +100,8 @@ This file is the roadmap. Tick off items as they're finished and add new ideas u
 - [x] 6 upgrades, the `/island manage` menu, build access, and losing a level on conquest.
 - [x] Unbreakable flags (only conquest or `/island admin removeflag`), crew-only `/tpa` (done in 2.2.0).
 - [ ] **Placeable buildings:** buy a dock, market, watchtower or vault as a schematic and place it on your island with a preview outline. The building gives its bonus.
-- [ ] More upgrades: Granary (food), Shipyard (ships), Vault (crew storage that can't be raided).
+- [x] Vault and Granary upgrades (done in 2.6.0).
+- [ ] Shipyard upgrade (ships).
 - [ ] Permissions per rank (build, chests, doors, redstone) in the manage menu.
 - [ ] Island statistics: income history, visitors, times attacked.
 
@@ -115,7 +117,8 @@ This file is the roadmap. Tick off items as they're finished and add new ideas u
 
 ## Progression
 - [x] Pirate levels, fruit mastery, and bounty power.
-- [ ] Level rewards: titles, cosmetics, and access to places (for example the Abyssal Reach only from level 20).
+- [x] Level rewards with Doubloons, items and titles (done in 2.6.0).
+- [ ] Cosmetics, and access to places (for example the Abyssal Reach only from level 20).
 - [ ] Seasons: `/aquatic season new` resets bounties, levels and/or islands, keeping the Hall of Kings.
 - [ ] Achievements ("Discover 25 islands", "Win a war") with rewards.
 
@@ -124,7 +127,7 @@ This file is the roadmap. Tick off items as they're finished and add new ideas u
 - [x] `/spawn` with warmup; chat with level badge, @mentions and `[item]`; economy commands win over EssentialsX (done in 2.1.0).
 - [x] Expanded sidebar: XP bar, bounty title, crew online, island rarity, combat tag (done in 2.3.0).
 - [ ] Tidewill energy on the sidebar.
-- [ ] A menu for `/crew` (members, ranks, bank, diplomacy) instead of only commands.
+- [x] A menu for `/crew` (done in 2.6.0).
 - [ ] An admin config menu (`/aquatic config`) to change the main settings in-game.
 - [ ] Edit loot in-game: hold an item and run `/treasure loot add <tier> [weight]`.
 

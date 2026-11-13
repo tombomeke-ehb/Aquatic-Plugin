@@ -64,6 +64,8 @@ Amounts accept `k`, `m` and `b`, e.g. `/pay Zoro 2.5k`.
 
 ## Crews (`crews`)
 
+**`/crew` on its own opens the crew menu.** It shows your crew's info and members. Officers can promote (left-click), demote (right-click) or kick (shift + right-click) members there. There are buttons for the bank (deposit or withdraw 100, or 1,000 with shift), crew home, island home, diplomacy, crew chat, inviting and leaving. Without a crew, it shows buttons to found a crew, browse crews and accept invites. `/crew help` lists every command.
+
 `/crew` (alias `/c`)
 
 **Membership**
@@ -217,7 +219,8 @@ The capital's plaza has eight market stalls with shopkeeper villagers (right-cli
 | `/island unclaim [confirm]` | Abandon the island you stand on | `aquatic.islands.claim` |
 | `/island flag` | Move or re-place your crew flag to where you stand | `aquatic.islands.flag` |
 | `/island manage [island]` | Your island's stats and upgrade menu | `aquatic.islands.manage` |
-| `/island upgrade <treasury\|fortress\|watchtower\|harbor\|barracks\|wellspring>` | Buy the next upgrade level for the island you stand on (Captain/First Mate, paid from the crew bank) | `aquatic.islands.manage` |
+| `/island upgrade <treasury\|fortress\|watchtower\|harbor\|barracks\|wellspring\|vault\|granary>` | Buy the next upgrade level for the island you stand on (Captain/First Mate, paid from the crew bank) | `aquatic.islands.manage` |
+| `/island vault [island]` | Open your crew's vault on that island (Vault upgrade: 9/27/54 slots, conquerors take what's inside) | `aquatic.islands.manage` |
 
 **Admin commands** (`aquatic.islands.admin`)
 
@@ -362,6 +365,8 @@ Staff with `aquatic.combat.bypass` never get tagged. Everything is in `combat.ym
 
 ## Pirate levels (`levels`)
 
+**Level rewards:** every 5 levels gives Doubloons, items and a title (Deckhand … Legend of the Sea). Each reward is given once; players who were already past a level get it on their next login. `/level rewards` lists them all, and the title shows in `/level` and on the sidebar.
+
 | Command | What it does | Permission |
 | --- | --- | --- |
 | `/level [player]` | Your (or someone's) level, XP and bonuses (aliases `/lvl`, `/levels`) | Everyone |
@@ -372,6 +377,27 @@ Staff with `aquatic.combat.bypass` never get tagged. Everything is in `combat.ym
 XP comes from PvP kills, monsters, treasure, discovering islands and claiming bounties. Every level gives a little extra damage, and every 5 levels an extra heart.
 
 ---
+
+## Smithy (`smithy`)
+
+| Command | What it does | Permission |
+| --- | --- | --- |
+| `/smithy` (aliases `/forge`, `/blacksmith`) | Upgrade the item in your hand (+1 … +5). Costs Doubloons and materials and has a success chance per level; a failed attempt costs the materials but never breaks the item. The Blacksmith villager at spawn opens it too | Everyone |
+
+What the upgrades do:
+- Weapons get more attack damage.
+- Armour gets more armour and toughness.
+- Pickaxes, shovels and hoes get extra Efficiency.
+- Bows get extra Power, and crossbows get extra Quick Charge.
+
+## Tidewatch outposts
+
+TIDEWATCH islands (`/island admin spawn tidewatch <radius>`, or random spawns) have a fort with a garrison.
+
+- **The garrison:** while players are on the island, soldiers keep coming, and the Warden Captain guards the keep.
+- **Liberating:** kill the captain to liberate the island. Every attacker on the island gets 1,500 Doubloons and XP, and the fort's strongbox is buried in the keep.
+- **Claiming:** a crew can claim the island for 12 hours afterwards. Unclaimed forts get a new garrison after that.
+- **Settings:** everything is under `tidewatch` in `islands.yml`.
 
 ## Harbor Market (`shop`, needs `economy`)
 

@@ -32,6 +32,7 @@ public final class AquaticPlugin extends JavaPlugin {
             {"guide", "dev.aquatic.events.GuideModule"},
             {"sidebar", "dev.aquatic.events.SidebarModule"},
             {"shop", "dev.aquatic.events.ShopModule"},
+            {"smithy", "dev.aquatic.events.SmithyModule"},
             {"hub", "dev.aquatic.events.HubModule"},
     };
 

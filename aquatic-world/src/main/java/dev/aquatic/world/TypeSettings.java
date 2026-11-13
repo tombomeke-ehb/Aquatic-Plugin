@@ -80,6 +80,8 @@ final class TypeSettings {
     boolean throne;
     /** Capital town: roads, houses, piers and a lighthouse around the plaza. */
     boolean town;
+    /** Tidewatch outpost: a fort on the plaza. */
+    boolean fort;
     int townHouses = 16;
     final WeightedList<Material> roadBlocks = new WeightedList<>();
     Material throneBase = Material.POLISHED_ANDESITE;
@@ -130,7 +132,7 @@ final class TypeSettings {
         t.rarity = s.getString("rarity", switch (t.type) {
             case PLAINS, FOREST -> "common";
             case JUNGLE, SNOWY, DESERT -> "uncommon";
-            case TROPICAL -> "rare";
+            case TROPICAL, TIDEWATCH -> "rare";
             case VOLCANIC, ANCIENT -> "epic";
             case CAPITAL -> "legendary";
         }).toLowerCase(java.util.Locale.ROOT);
@@ -203,6 +205,7 @@ final class TypeSettings {
         t.plazaHeight = Math.max(1, s.getInt("plaza.height", 4));
         blocks(t.plazaBlocks, s.getStringList("plaza.blocks"), Material.STONE_BRICKS, log, ctx);
         t.throne = s.getBoolean("plaza.throne.enabled", true);
+        t.fort = s.getBoolean("fort.enabled", false);
         t.throneBase = orDefault(block(s.getString("plaza.throne.base"), log, ctx), t.throneBase);
         t.throneAccent = orDefault(block(s.getString("plaza.throne.accent"), log, ctx), t.throneAccent);
         t.throneSeat = orDefault(block(s.getString("plaza.throne.seat"), log, ctx), t.throneSeat);

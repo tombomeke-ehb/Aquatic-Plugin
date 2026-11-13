@@ -78,11 +78,18 @@ final class IslandCommands {
         }).usage("[island]").description("Your island's stats and upgrades (menu)").playerOnly()
                 .playerPermission("aquatic.islands.manage")
                 .completer((s, a) -> a.length == 1 ? islandNames(a[0]) : List.of());
+        cmd.sub("vault", (s, a) -> {
+            Player p = AquaticCommand.player(s);
+            IslandImpl is = a.length > 0 ? island(String.join(" ", a)) : standingOn(p);
+            m.upgrades().openVault(p, is);
+        }).usage("[island]").description("Open your crew's vault on this island (Vault upgrade)").playerOnly()
+                .playerPermission("aquatic.islands.manage")
+                .completer((s, a) -> a.length == 1 ? islandNames(a[0]) : List.of());
         cmd.sub("upgrade", (s, a) -> {
             AquaticCommand.need(a, 1, "/island upgrade <" + String.join("|", IslandUpgrades.TYPES) + ">");
             Player p = AquaticCommand.player(s);
             m.upgrades().upgrade(p, standingOn(p), a[0]);
-        }).usage("<treasury|fortress|watchtower|harbor|barracks|wellspring>").description("Buy the next level of an upgrade for the island you stand on")
+        }).usage("<treasury|fortress|watchtower|harbor|barracks|wellspring|vault|granary>").description("Buy the next level of an upgrade for the island you stand on")
                 .playerOnly().playerPermission("aquatic.islands.manage")
                 .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(IslandUpgrades.TYPES, a[0]) : List.of());
 
@@ -273,6 +280,10 @@ final class IslandCommands {
         sender.sendMessage(m.rawMsg("info-header", "island", is.name));
         sender.sendMessage(m.rawMsg("info-type", "type", m.typeName(is.type), "id", is.id));
         sender.sendMessage(m.rawMsg("info-rarity", "rarity", m.rarityName(is.type)));
+        if (is.type == dev.aquatic.api.IslandType.TIDEWATCH && is.status != IslandStatus.OCCUPIED && m.garrison() != null) {
+            sender.sendMessage(m.garrison().holds(is) ? m.rawMsg("info-tidewatch-held")
+                    : m.rawMsg("info-tidewatch-free", "time", Text.duration(m.garrison().liberatedSecondsLeft(is))));
+        }
         sender.sendMessage(m.rawMsg("info-owner", "owner", m.ownerLine(is)));
         sender.sendMessage(m.rawMsg("info-location", "x", is.x, "z", is.z, "radius", is.radius, "world", is.world));
         if (is.id.equals(m.spawnIslandId())) {
@@ -469,6 +480,9 @@ final class IslandCommands {
         IslandImpl is = standingOn(p);
         if (is.status == IslandStatus.NEUTRAL) {
             throw new CommandFail(m.rawMsg("claim-neutral", "island", is.name));
+        }
+        if (m.garrison() != null && m.garrison().holds(is)) {
+            throw new CommandFail(m.rawMsg("claim-tidewatch", "island", is.name));
         }
         if (is.status == IslandStatus.OCCUPIED) {
             throw new CommandFail(m.rawMsg("claim-occupied", "island", is.name, "crew", m.crewDisplay(is.ownerCrewId)));

@@ -12,14 +12,14 @@
 #    "cmd:<command>"  the player runs the command (without /)
 #    "msg:<text>"     a MiniMessage line (clickable with <click:run_command:'/...'>)
 # =====================================================================================
-config-version: 1
+config-version: 2
 
 npcs:
   blacksmith:
-    name: "<gold><bold>Blacksmith</bold> <gray>(tools & weapons)"
+    name: "<gold><bold>Blacksmith</bold> <gray>(smithy & tools)"
     profession: weaponsmith
     offset: [17, 7]
-    actions: ["cmd:shop tools"]
+    actions: ["cmd:smithy"]
   provisioner:
     name: "<green><bold>Provisioner</bold> <gray>(food & drinks)"
     profession: farmer

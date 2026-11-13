@@ -618,4 +618,14 @@ public final class HubModule extends AquaticModule implements Listener {
         }
         return m;
     }
+
+    @Override
+    protected void migrateConfig(YamlConfiguration file, YamlConfiguration defaults, int from) {
+        if (from < 2) {
+            // 2.6.0: the Blacksmith opens the smithy (which links to the tools shop)
+            raise(file, "npcs.blacksmith.actions", List.of("cmd:shop tools"), List.of("cmd:smithy"));
+            raise(file, "npcs.blacksmith.name", "<gold><bold>Blacksmith</bold> <gray>(tools & weapons)",
+                    "<gold><bold>Blacksmith</bold> <gray>(smithy & tools)");
+        }
+    }
 }

@@ -51,7 +51,30 @@ xp:
     ender_dragon: 1500
     wither: 1000
 
+# Rewards for reaching a level, handed out once (players who were already past a level get it on
+# their next login). Per level: doubloons, items ("item:<custom id>:<amount>" or "MATERIAL:<amount>"),
+# commands (run by the console, {player} = name) and a title (shown in /level and on the sidebar).
+rewards:
+  enabled: true
+  levels:
+    5: {doubloons: 500, items: ["GOLDEN_APPLE:2", "item:rum:2"], title: "<gray>Deckhand"}
+    10: {doubloons: 1500, items: ["DIAMOND:2", "item:healing_tonic:1"], title: "<white>Sailor"}
+    15: {doubloons: 2500, items: ["DIAMOND:4", "EXPERIENCE_BOTTLE:16"], title: "<aqua>Bosun"}
+    20: {doubloons: 4000, items: ["item:tide_compass:1", "ENDER_PEARL:8"], title: "<green>Navigator"}
+    25: {doubloons: 6000, items: ["item:corsair_hat:1", "GOLDEN_APPLE:4"], title: "<yellow>Corsair"}
+    30: {doubloons: 9000, items: ["NETHERITE_SCRAP:2", "item:gale_grog:2"], title: "<gold>Sea Wolf"}
+    35: {doubloons: 12000, items: ["NETHERITE_SCRAP:3", "ENCHANTED_GOLDEN_APPLE:1"], title: "<red>Reaver"}
+    40: {doubloons: 16000, items: ["item:tide_rapier:1", "NETHERITE_INGOT:1"], title: "<light_purple>Stormcaller"}
+    45: {doubloons: 22000, items: ["NETHERITE_INGOT:2", "ENCHANTED_GOLDEN_APPLE:2"], title: "<dark_purple>Dread Corsair"}
+    50: {doubloons: 35000, items: ["item:captains_coat:1", "NETHERITE_INGOT:3"], title: "<gradient:#ffcc00:#ff6a00><bold>Legend of the Sea</bold></gradient>"}
+
 messages:
+  reward: "<gold>Level <level> reward: <white><rewards>"
+  reward-title: "<gold>New title: <title>"
+  info-title: "<gray>Title: <title>"
+  rewards-header: "<gold><bold>Level rewards"
+  rewards-line-got: "<green>✔ <white>Level <level></white> <gray>- <rewards> <title>"
+  rewards-line-open: "<dark_gray>✘ <gray>Level <level> - <rewards> <title>"
   xp-gain: "<aqua>+<amount> XP <dark_gray><reason>"
   reason-pvp: "(pirate defeated)"
   reason-treasure: "(treasure)"

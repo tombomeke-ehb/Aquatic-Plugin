@@ -93,6 +93,7 @@ public final class IslandsModule extends AquaticModule implements IslandService,
     private int jobTicks;
     private String spawnIslandId;
     private IslandUpgrades upgrades;
+    private TidewatchGarrison garrison;
     /** Exact spawn point set with /island admin setspawn ("world;x;y;z;yaw;pitch"), or null. */
     private String spawnPoint;
     private boolean dirty;
@@ -135,6 +136,10 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         registerListener(new IslandProtectionListener(this));
         upgrades = new IslandUpgrades(this);
         registerListener(upgrades);
+        garrison = new TidewatchGarrison(this);
+        garrison.load();
+        registerListener(garrison);
+        runTimer(garrison::tick, 60L, 60L);
         runTimer(() -> upgrades.tickHarbor(presence), 40L, 40L);
         conquest = new ConquestManager(this);
         registerCommand(new IslandCommands(this).build());
@@ -170,6 +175,9 @@ public final class IslandsModule extends AquaticModule implements IslandService,
 
     @Override
     protected void onDisable() {
+        if (garrison != null) {
+            garrison.shutdown();
+        }
         cancelSpawnRuns();
         hideAllJobBars();
         lastPresenceKey.clear();
@@ -1061,6 +1069,13 @@ public final class IslandsModule extends AquaticModule implements IslandService,
             raise(file, c + "size", 1.0, 1.4);
             raise(file, c + "depth", 14, 40);
             addMissing(file, defaults, c + "caverns");
+        }
+        if (from < 2) {
+            // 2.6.0: Tidewatch outposts, vault and granary upgrades
+            addMissing(file, defaults, "generation.island-type-weights.TIDEWATCH");
+            addMissing(file, defaults, "island-names.TIDEWATCH");
+            addMissing(file, defaults, "upgrades.types.vault");
+            addMissing(file, defaults, "upgrades.types.granary");
             String o = "generation.terrain.ore-veins.";
             raise(file, o + "per-1000-land", 4, 10);
             raise(file, o + "ores", List.of("COAL_ORE:6", "IRON_ORE:5", "COPPER_ORE:4", "GOLD_ORE:1.5", "REDSTONE_ORE:1.5",
@@ -1575,6 +1590,15 @@ public final class IslandsModule extends AquaticModule implements IslandService,
     // ------------------------------------------------------------------ ownership changes
 
     /** Hands the island to a crew after a successful conquest (state only; events are fired by the caller). */
+    TidewatchGarrison garrison() {
+        return garrison;
+    }
+
+    /** All islands (live objects, for features in this package). */
+    java.util.Collection<IslandImpl> islandImpls() {
+        return new ArrayList<>(islands.values());
+    }
+
     IslandUpgrades upgrades() {
         return upgrades;
     }

@@ -44,6 +44,8 @@ import java.util.regex.PatternSyntaxException;
 public final class CrewsModule extends AquaticModule implements CrewService {
 
     final Map<String, CrewImpl> crews = new ConcurrentHashMap<>();
+    /** The /crew chest menu. */
+    CrewMenu menu;
     final Map<UUID, CrewImpl> byPlayer = new ConcurrentHashMap<>();
     /** invitee -> (crew id -> expiry millis) */
     final Map<UUID, Map<String, Long>> invites = new HashMap<>();
@@ -100,6 +102,8 @@ public final class CrewsModule extends AquaticModule implements CrewService {
         registerService(CrewService.class, this);
         listener = new CrewListener(this);
         registerListener(listener);
+        menu = new CrewMenu(this);
+        registerListener(menu);
         CrewTeleport teleport = new CrewTeleport(this);
         registerListener(teleport);
         for (AquaticCommand command : teleport.commands()) {

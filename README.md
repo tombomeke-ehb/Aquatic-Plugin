@@ -111,6 +111,7 @@ Settings most servers change first:
 | `sidebar` | `sidebar.yml` | Stats sidebar: Doubloons, bounty, crew, island, fruit power, events (`/sidebar` to hide) |
 | `guide` | `guide.yml` | Welcome intro, starter kit with a treasure map, tips for new players, the `/guide` book, `/discord` |
 | `fruits` | (settings in `items.yml`) | Abyss fruit powers as a separate switch: turn it off and fruits stop working without touching the other items. Needs `items` |
+| `smithy` | `smithy.yml` | Upgrade weapons, armour, tools and bows +1..+5 for Doubloons and materials (`/smithy`, or the Blacksmith at spawn) |
 | `hub` | `hub.yml` | The spawn town: shopkeeper villagers in the market stalls, crew registrar, live bounty board, founders' monument, welcome sign, timed parkour tower |
 
 Modules talk to each other only through shared services, so turning one off just disables the features that need it. For example, without `crews`, islands can still be generated and discovered but not claimed.

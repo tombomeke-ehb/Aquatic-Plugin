@@ -33,6 +33,8 @@ final class IslandImpl implements Island {
 
     /** true = only Captain, First Mate, Navigator and Quartermaster may build/break/open (not plain members). */
     boolean officersOnly;
+    /** Vault upgrade: the crew's storage on this island (54 slots; the level decides how many are usable). */
+    final org.bukkit.inventory.ItemStack[] vault = new org.bukkit.inventory.ItemStack[54];
 
     int upgrade(String type) {
         return upgrades.getOrDefault(type, 0);
@@ -146,6 +148,12 @@ final class IslandImpl implements Island {
                 s.set("upgrades." + e.getKey(), e.getValue());
             }
         }
+        s.set("vault", null);
+        for (int i = 0; i < vault.length; i++) {
+            if (vault[i] != null && !vault[i].getType().isAir()) {
+                s.set("vault." + i, java.util.Base64.getEncoder().encodeToString(vault[i].serializeAsBytes()));
+            }
+        }
     }
 
     static IslandImpl load(String id, ConfigurationSection s) {
@@ -175,6 +183,18 @@ final class IslandImpl implements Island {
         if (up != null) {
             for (String key : up.getKeys(false)) {
                 is.upgrades.put(key, Math.max(0, up.getInt(key)));
+            }
+        }
+        ConfigurationSection v = s.getConfigurationSection("vault");
+        if (v != null) {
+            for (String key : v.getKeys(false)) {
+                try {
+                    int slot = Integer.parseInt(key);
+                    if (slot >= 0 && slot < is.vault.length) {
+                        is.vault[slot] = org.bukkit.inventory.ItemStack.deserializeBytes(java.util.Base64.getDecoder().decode(v.getString(key, "")));
+                    }
+                } catch (RuntimeException ignored) {
+                }
             }
         }
         return is;

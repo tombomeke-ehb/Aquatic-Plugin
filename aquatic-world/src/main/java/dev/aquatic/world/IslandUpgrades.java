@@ -44,7 +44,7 @@ import java.util.UUID;
  */
 final class IslandUpgrades implements Listener {
 
-    static final List<String> TYPES = List.of("treasury", "fortress", "watchtower", "harbor", "barracks", "wellspring");
+    static final List<String> TYPES = List.of("treasury", "fortress", "watchtower", "harbor", "barracks", "wellspring", "vault", "granary");
 
     private final IslandsModule m;
     /** "player:island" -> last watchtower alert (ms), so a crew is not spammed. */
@@ -183,13 +183,18 @@ final class IslandUpgrades implements Listener {
             IslandImpl is = m.islandImpl(e.getValue());
             int level = is == null ? 0 : is.upgrade("harbor");
             int well = is == null ? 0 : is.upgrade("wellspring");
-            if (is == null || (level <= 0 && well <= 0) || is.ownerCrewId == null) {
+            int granary = is == null ? 0 : is.upgrade("granary");
+            if (is == null || (level <= 0 && well <= 0 && granary <= 0) || is.ownerCrewId == null) {
                 continue;
             }
             Player p = Bukkit.getPlayer(e.getKey());
             Crew crew = p == null ? null : crews.crewOf(p.getUniqueId());
             if (crew == null || !crew.id().equals(is.ownerCrewId)) {
                 continue;
+            }
+            if (granary > 0 && p.getFoodLevel() < 20) {
+                // Granary: crewmates slowly get their hunger back on their own island
+                p.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, granary, 0, true, false, false));
             }
             if (well > 0) {
                 // Wellspring: crewmates heal on their own island
@@ -235,8 +240,8 @@ final class IslandUpgrades implements Listener {
     // ------------------------------------------------------------------ menu
 
     private static final int SLOT_INFO = 4;
-    private static final int[] SLOT_UPGRADES = {19, 21, 23, 25, 29, 33};
-    private static final int SLOT_ACCESS = 31;
+    private static final int[] SLOT_UPGRADES = {19, 21, 23, 25, 28, 30, 32, 34};
+    private static final int SLOT_ACCESS = 39, SLOT_VAULT = 41;
 
     private static final class Menu implements InventoryHolder {
         final String islandId;
@@ -299,6 +304,9 @@ final class IslandUpgrades implements Listener {
             it.setAmount(Math.max(1, Math.min(64, level)));
             inv.setItem(SLOT_UPGRADES[i], it);
         }
+        int vaultLevel = is.upgrade("vault");
+        inv.setItem(SLOT_VAULT, item(vaultLevel > 0 ? Material.ENDER_CHEST : Material.CHEST, m.rawMsg("manage-vault"),
+                List.of(m.rawMsg(vaultLevel > 0 ? "manage-vault-open" : "manage-vault-locked", "slots", vaultSize(is)))));
         inv.setItem(SLOT_ACCESS, item(is.officersOnly ? Material.IRON_DOOR : Material.OAK_DOOR,
                 m.rawMsg(is.officersOnly ? "manage-access-officers" : "manage-access-all"),
                 List.of(m.rawMsg("manage-access-hint"), m.rawMsg("manage-access-click"))));
@@ -334,6 +342,14 @@ final class IslandUpgrades implements Listener {
             p.closeInventory();
             return;
         }
+        if (event.getSlot() == SLOT_VAULT) {
+            try {
+                openVault(p, is);
+            } catch (CommandFail fail) {
+                p.sendMessage(m.plugin().prefix().append(fail.component()));
+            }
+            return;
+        }
         if (event.getSlot() == SLOT_ACCESS) {
             try {
                 Crew crew = ownCrew(p, is);
@@ -367,6 +383,77 @@ final class IslandUpgrades implements Listener {
     public void onDrag(InventoryDragEvent event) {
         if (event.getInventory().getHolder() instanceof Menu) {
             event.setCancelled(true);
+        }
+    }
+
+    // ------------------------------------------------------------------ vault
+
+    /** One shared inventory per island while someone has it open, so two crewmates can't duplicate items. */
+    private final Map<String, Inventory> openVaults = new HashMap<>();
+
+    private static final class VaultHolder implements InventoryHolder {
+        final String islandId;
+        Inventory inventory;
+
+        VaultHolder(String islandId) {
+            this.islandId = islandId;
+        }
+
+        @Override
+        public Inventory getInventory() {
+            return inventory;
+        }
+    }
+
+    /** Usable vault slots for the island's vault level ("upgrades.types.vault.sizes"). */
+    int vaultSize(IslandImpl is) {
+        int level = is.upgrade("vault");
+        List<Integer> sizes = m.config().getIntegerList("upgrades.types.vault.sizes");
+        if (level <= 0 || sizes.isEmpty()) {
+            return 0;
+        }
+        int size = sizes.get(Math.min(sizes.size(), level) - 1);
+        return Math.max(9, Math.min(54, size / 9 * 9));
+    }
+
+    void openVault(Player p, IslandImpl is) {
+        Crew crew = ownCrew(p, is);
+        int size = vaultSize(is);
+        if (size <= 0) {
+            throw new CommandFail(m.rawMsg("vault-locked", "island", is.name));
+        }
+        if (m.config().getBoolean("upgrades.types.vault.on-island-only", true) && !is.contains(p.getLocation())
+                && !p.hasPermission("aquatic.islands.admin")) {
+            throw new CommandFail(m.rawMsg("vault-not-here", "island", is.name));
+        }
+        Inventory inv = openVaults.get(is.id);
+        if (inv == null || inv.getSize() != size) {
+            VaultHolder holder = new VaultHolder(is.id);
+            inv = Bukkit.createInventory(holder, size, m.rawMsg("vault-title", "island", is.name, "crew", crew.displayName()));
+            holder.inventory = inv;
+            for (int i = 0; i < size; i++) {
+                inv.setItem(i, is.vault[i]);
+            }
+            openVaults.put(is.id, inv);
+        }
+        p.openInventory(inv);
+    }
+
+    @EventHandler
+    public void onVaultClose(org.bukkit.event.inventory.InventoryCloseEvent event) {
+        if (!(event.getInventory().getHolder() instanceof VaultHolder holder)) {
+            return;
+        }
+        IslandImpl is = m.islandImpl(holder.islandId);
+        Inventory inv = event.getInventory();
+        if (is != null) {
+            for (int i = 0; i < inv.getSize(); i++) {
+                is.vault[i] = inv.getItem(i);
+            }
+            m.markDirty();
+        }
+        if (inv.getViewers().size() <= 1) {
+            openVaults.remove(holder.islandId);
         }
     }
 

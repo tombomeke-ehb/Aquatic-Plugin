@@ -41,6 +41,8 @@ public final class LevelsModule extends AquaticModule implements LevelService, L
     private static final String SOURCE = "level";
 
     private final Map<UUID, Long> xp = new HashMap<>();
+    /** player -> highest level whose reward was handed out */
+    private final Map<UUID, Integer> rewarded = new HashMap<>();
     /** victim -> killer -> last time (ms), so farming the same player gives nothing. */
     private final Map<String, Long> lastKill = new HashMap<>();
     private boolean dirty;
@@ -57,6 +59,14 @@ public final class LevelsModule extends AquaticModule implements LevelService, L
         for (String key : data.getKeys(false)) {
             try {
                 xp.put(UUID.fromString(key), data.getLong(key));
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        rewarded.clear();
+        YamlConfiguration rw = loadData("rewards");
+        for (String key : rw.getKeys(false)) {
+            try {
+                rewarded.put(UUID.fromString(key), rw.getInt(key));
             } catch (IllegalArgumentException ignored) {
             }
         }
@@ -86,6 +96,9 @@ public final class LevelsModule extends AquaticModule implements LevelService, L
         YamlConfiguration data = new YamlConfiguration();
         xp.forEach((u, v) -> data.set(u.toString(), v));
         saveData("levels", data);
+        YamlConfiguration rw = new YamlConfiguration();
+        rewarded.forEach((u, v) -> rw.set(u.toString(), v));
+        saveData("rewards", rw);
     }
 
     // ------------------------------------------------------------------ levels
@@ -164,6 +177,7 @@ public final class LevelsModule extends AquaticModule implements LevelService, L
         p.getWorld().spawnParticle(Particle.TOTEM_OF_UNDYING, p.getLocation().add(0, 1, 0), 40, 0.5, 0.8, 0.5, 0.3);
         p.playSound(p.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.8f, 1.2f);
         applyPerks(p);
+        grantRewards(p);
         if (level % Math.max(1, config().getInt("announce-every", 10)) == 0) {
             Bukkit.broadcast(msg("levelup-broadcast", "player", p.getName(), "level", level));
         }
@@ -189,6 +203,111 @@ public final class LevelsModule extends AquaticModule implements LevelService, L
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         applyPerks(event.getPlayer());
+        Player p = event.getPlayer();
+        runLater(() -> {
+            if (p.isOnline()) {
+                grantRewards(p); // rewards earned before this feature existed, or missed
+            }
+        }, 60L);
+    }
+
+    // ------------------------------------------------------------------ level rewards
+
+    /** Reward levels from the config, lowest first. */
+    private List<Integer> rewardLevels() {
+        List<Integer> out = new ArrayList<>();
+        org.bukkit.configuration.ConfigurationSection sec = config().getConfigurationSection("rewards.levels");
+        if (sec != null && config().getBoolean("rewards.enabled", true)) {
+            for (String k : sec.getKeys(false)) {
+                try {
+                    out.add(Integer.parseInt(k));
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        out.sort(Integer::compareTo);
+        return out;
+    }
+
+    /** Hands out every reward between the last rewarded level and the current level (once each). */
+    void grantRewards(Player p) {
+        UUID id = p.getUniqueId();
+        int level = level(id);
+        int done = rewarded.getOrDefault(id, 0);
+        if (level <= done) {
+            return;
+        }
+        for (int l : rewardLevels()) {
+            if (l > done && l <= level) {
+                giveReward(p, l);
+            }
+        }
+        rewarded.put(id, level);
+        dirty = true;
+    }
+
+    private void giveReward(Player p, int level) {
+        org.bukkit.configuration.ConfigurationSection r = config().getConfigurationSection("rewards.levels." + level);
+        if (r == null) {
+            return;
+        }
+        double money = r.getDouble("doubloons", 0);
+        dev.aquatic.api.EconomyService eco = service(dev.aquatic.api.EconomyService.class);
+        if (money > 0 && eco != null) {
+            eco.deposit(p.getUniqueId(), money);
+        }
+        List<String> got = new ArrayList<>();
+        if (money > 0) {
+            got.add(eco != null ? eco.format(money) : Text.number(money) + " Doubloons");
+        }
+        for (String spec : r.getStringList("items")) {
+            org.bukkit.inventory.ItemStack item = parseItem(spec);
+            if (item == null) {
+                logger().warning("[levels] Unknown reward item '" + spec + "' at level " + level);
+                continue;
+            }
+            got.add(item.getAmount() + "x " + Text.plain(item.getItemMeta() != null && item.getItemMeta().hasDisplayName()
+                    ? item.getItemMeta().displayName() : net.kyori.adventure.text.Component.translatable(item.getType().translationKey())));
+            for (org.bukkit.inventory.ItemStack left : p.getInventory().addItem(item).values()) {
+                p.getWorld().dropItemNaturally(p.getLocation(), left);
+            }
+        }
+        for (String cmd : r.getStringList("commands")) {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", p.getName()));
+        }
+        send(p, "reward", "level", level, "rewards", got.isEmpty() ? "-" : String.join(", ", got));
+        String title = r.getString("title");
+        if (title != null) {
+            p.sendMessage(rawMsg("reward-title", "title", Text.mm(title)));
+        }
+    }
+
+    /** "item:<custom id>[:amount]" or "MATERIAL[:amount]". */
+    private org.bukkit.inventory.ItemStack parseItem(String spec) {
+        String[] p = spec.trim().split(":");
+        try {
+            if (p[0].equalsIgnoreCase("item") && p.length > 1) {
+                dev.aquatic.api.ItemService items = service(dev.aquatic.api.ItemService.class);
+                return items == null ? null : items.createItem(p[1], p.length > 2 ? Integer.parseInt(p[2]) : 1);
+            }
+            org.bukkit.Material m = org.bukkit.Material.matchMaterial(p[0]);
+            return m == null || !m.isItem() ? null : new org.bukkit.inventory.ItemStack(m, p.length > 1 ? Integer.parseInt(p[1]) : 1);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public String title(UUID player) {
+        int level = level(player);
+        String best = null;
+        for (int l : rewardLevels()) {
+            String t = config().getString("rewards.levels." + l + ".title");
+            if (l <= level && t != null) {
+                best = t;
+            }
+        }
+        return best;
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -253,6 +372,28 @@ public final class LevelsModule extends AquaticModule implements LevelService, L
                 show(s, p.getUniqueId(), p.getName());
             }
         }).defaultCompleter((s, a) -> a.length <= 1 ? AquaticCommand.playerNames(a.length == 0 ? "" : a[0]) : List.of());
+        cmd.sub("rewards", (s, a) -> {
+            Player p = AquaticCommand.player(s);
+            int level = level(p.getUniqueId());
+            s.sendMessage(msg("rewards-header"));
+            for (int l : rewardLevels()) {
+                org.bukkit.configuration.ConfigurationSection r = config().getConfigurationSection("rewards.levels." + l);
+                List<String> parts = new ArrayList<>();
+                if (r.getDouble("doubloons", 0) > 0) {
+                    parts.add(Text.number(r.getDouble("doubloons")) + " Doubloons");
+                }
+                for (String spec : r.getStringList("items")) {
+                    org.bukkit.inventory.ItemStack item = parseItem(spec);
+                    if (item != null) {
+                        parts.add(item.getAmount() + "x " + Text.plain(item.getItemMeta() != null && item.getItemMeta().hasDisplayName()
+                                ? item.getItemMeta().displayName() : net.kyori.adventure.text.Component.translatable(item.getType().translationKey())));
+                    }
+                }
+                String title = r.getString("title");
+                s.sendMessage(rawMsg(l <= level ? "rewards-line-got" : "rewards-line-open", "level", l,
+                        "rewards", String.join(", ", parts), "title", title == null ? net.kyori.adventure.text.Component.empty() : Text.mm(title)));
+            }
+        }).description("What each level gives you").playerOnly();
         cmd.sub("top", (s, a) -> {
             List<Map.Entry<UUID, Long>> list = new ArrayList<>(xp.entrySet());
             list.sort(Map.Entry.<UUID, Long>comparingByValue().reversed());
@@ -290,6 +431,10 @@ public final class LevelsModule extends AquaticModule implements LevelService, L
         to.sendMessage(rawMsg(level >= maxLevel() ? "info-max" : "info-next", "xp", Text.number(xp(id)), "next", Text.number(next)));
         to.sendMessage(rawMsg("info-perks", "damage", Text.number(Math.round(damageBonus(level) * 1000) / 10.0),
                 "hearts", Text.number(healthBonus(level) / 2.0)));
+        String title = title(id);
+        if (title != null) {
+            to.sendMessage(rawMsg("info-title", "title", Text.mm(title)));
+        }
     }
 
     /** Unused entity import guard. */

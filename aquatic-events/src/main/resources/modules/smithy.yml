@@ -1,0 +1,58 @@
+# =====================================================================================
+#  AquaticSMP - Smithy
+#  Upgrade the item in your hand with /smithy (or at the Blacksmith at spawn): +1 .. +5.
+#  Weapons (swords, axes, tridents, maces) hit harder, armour protects more, pickaxes/shovels/
+#  hoes mine faster, bows shoot harder (crossbows load faster).
+#  Every level costs Doubloons and materials and has a success chance. A failed attempt uses
+#  the cost but never breaks or downgrades the item.
+# =====================================================================================
+
+# Per level: Doubloons, materials ("all" for every kind, or per kind: weapon, armor, tool, bow)
+# and the success chance in percent. The list length is the max level.
+levels:
+  - {doubloons: 500, chance: 100, materials: {all: ["IRON_INGOT:8"]}}
+  - {doubloons: 1500, chance: 85, materials: {all: ["GOLD_INGOT:8", "IRON_INGOT:8"]}}
+  - {doubloons: 4000, chance: 65, materials: {all: ["DIAMOND:4"]}}
+  - {doubloons: 9000, chance: 45, materials: {all: ["DIAMOND:8", "EMERALD:8"]}}
+  - {doubloons: 20000, chance: 30, materials: {all: ["NETHERITE_SCRAP:2", "DIAMOND:4"]}}
+
+# Bonus per level (they add up: +3 = three times this).
+effects:
+  # Attack damage (1 = half a heart).
+  weapon-damage: 1.0
+  # Armour points and armour toughness per level.
+  armor: 1.0
+  armor-toughness: 0.5
+  # Extra Efficiency levels (beyond V).
+  tool-efficiency: 1
+  # Extra Power levels on bows (Quick Charge on crossbows).
+  bow-power: 1
+
+name-suffix: " <gold>+<level>"
+lore-line: "<gold>★ Smithed +<level>"
+# The button to the shop in the smithy menu.
+shop-command: "shop tools"
+
+messages:
+  title: "<dark_gray><bold>Smithy"
+  no-item: "<red>Hold a weapon, armour piece, tool or bow in your main hand."
+  no-item-lore: "<gray>Close this, take the item in your hand and open /smithy again."
+  upgrade-button: "<gold><bold>Upgrade"
+  current-level: "<gray>Level: <white><level></white>/<max>"
+  maxed: "<green>This item is fully upgraded."
+  effect-weapon: "<gray>Next level: <red>+<value> attack damage</red> in total"
+  effect-armor: "<gray>Next level: <aqua>+<value> armour</aqua> in total"
+  effect-tool: "<gray>Next level: <yellow>+<value> Efficiency</yellow> in total"
+  effect-bow: "<gray>Next level: <yellow>+<value> Power</yellow> in total"
+  cost-header: "<white>Cost:"
+  cost-line-ok: "<green> ✔ <amount>"
+  cost-line-missing: "<red> ✘ <amount>"
+  chance: "<gray>Success chance: <yellow><chance>%"
+  fail-note: "<dark_gray>On failure the cost is lost, the item is safe."
+  click: "<yellow>Click to upgrade"
+  missing: "<red>You need <white><what></white>."
+  success: "<green>Upgraded to <gold>+<level></gold>!"
+  failed: "<red>The forge cooled too soon... <gray>Upgrading to +<level> failed (your item is safe)."
+  broadcast-max: "<gold><player></gold> <gray>forged a <white>+5</white> <item><gray>!"
+  shop-button: "<white><bold>Buy tools & weapons"
+  shop-button-lore: "<gray>Opens the Blacksmith's shop"

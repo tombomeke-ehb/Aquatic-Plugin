@@ -25,3 +25,5 @@ modules:
   shop: true
   # The spawn town hub: shopkeeper villagers, crew registrar, bounty board, founders' monument, parkour.
   hub: true
+  # The smithy: upgrade weapons, armour, tools and bows (+1 .. +5) with /smithy or at the Blacksmith.
+  smithy: true

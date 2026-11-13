@@ -135,6 +135,10 @@ final class CrewCommands {
     List<AquaticCommand> build() {
         Players.ensurePermission("aquatic.crews.chat", PermissionDefault.TRUE);
         AquaticCommand cmd = new AquaticCommand("crew", "Pirate crew commands", "c");
+        // /crew alone opens the menu; /crew help still lists the commands
+        cmd.defaultExecutor((s, a) -> module.menu.open(AquaticCommand.player(s)));
+        cmd.sub("menu", (s, a) -> module.menu.open(AquaticCommand.player(s)))
+                .description("Open the crew menu (members, bank, home, diplomacy)").playerOnly();
 
         cmd.sub("create", (s, a) -> create(AquaticCommand.player(s), a))
                 .usage("<name> [tag]").description("Found a new pirate crew").playerOnly()
