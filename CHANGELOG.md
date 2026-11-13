@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.7.5 (2026-11-13)
+
+### Changed
+- **Every texture redrawn at higher quality:** 32x32 instead of 16x16, with real shading (light from the top-left), shine and clean outlines.
+  - **Crown of the Conqueror:** five spikes with gold balls on top, a rounded band with rivets, a cut ruby and two sapphires. The crown you see on your head is sharper too.
+  - **Stormcaller Saber:** a shaded steel-blue blade with a jagged lightning bolt along it, a gold crossguard and a wrapped grip with a gem pommel.
+  - **Abyssal Iron Baton:** now a heavy club (no longer a recoloured sword) with iron bands and glowing runes.
+  - **Flintlock:** a polished barrel, wood all along under it, a curved grip with grain, and a brass trigger guard and butt cap.
+  - **Fruits:** round shaded fruits with a bold abyss swirl, a curved stem and a veined leaf.
+- **Your server:** update the resource pack link and SHA-1 in `server.properties` (see the release notes).
+
 ## 2.7.4 (2026-11-13)
 
 ### Fixed
