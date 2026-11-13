@@ -669,6 +669,8 @@ flag:
 # Protection
 # -------------------------------------------------------------------------------------
 protection:
+  # Monsters never spawn on the capital (spawn eggs and commands still work).
+  capital-no-monsters: true
   # May anyone build on unclaimed islands?
   unclaimed-build: true
   unclaimed-explosions: true

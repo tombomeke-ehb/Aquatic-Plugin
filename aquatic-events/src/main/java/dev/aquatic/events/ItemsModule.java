@@ -595,6 +595,16 @@ public final class ItemsModule extends AquaticModule implements ItemService {
     @Override
     protected void migrateConfig(org.bukkit.configuration.file.YamlConfiguration file,
                                  org.bukkit.configuration.file.YamlConfiguration defaults, int from) {
+        if (from < 11) {
+            // 2.23.0: fruit mastery takes much longer; the Tidecaller is light blue
+            raise(file, "fruits.mastery.xp-per-use", 6, 5);
+            raise(file, "fruits.mastery.xp-per-hit", 3, 2);
+            raise(file, "fruits.mastery.curve-base", 60, 120);
+            raise(file, "fruits.mastery.curve-exponent", 1.5, 1.8);
+            raise(file, "items.tidecaller.name", "<gradient:#2e86de:#a9dcff><bold>Tidecaller Fruit</bold></gradient>",
+                    defaults.getString("items.tidecaller.name"));
+            raise(file, "items.tidecaller.ability.color", "#2e86de", "#7fd4ff");
+        }
         if (from < 1) {
             // 2.7.0: the Seafoam Milkshake (removes your fruit power)
             addMissing(file, defaults, "items.seafoam_milkshake");

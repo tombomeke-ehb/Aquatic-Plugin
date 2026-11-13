@@ -99,6 +99,8 @@ final class LootTier {
     final List<Entry> jackpot = new ArrayList<>();
     private double jackpotWeight;
     List<String> jackpotLore = List.of();
+    /** Entries that are always in the chest ("guaranteed" in the config). */
+    final List<Entry> guaranteed = new ArrayList<>();
 
     private LootTier(String id) {
         this.id = id;
@@ -137,6 +139,12 @@ final class LootTier {
             if (e != null) {
                 t.loot.add(e);
                 t.totalWeight += e.weight;
+            }
+        }
+        for (Map<?, ?> raw : s.getMapList("guaranteed")) {
+            Entry e = parseEntry(raw, log, ctx + ".guaranteed");
+            if (e != null) {
+                t.guaranteed.add(e);
             }
         }
         t.uniqueRolls = s.getBoolean("unique-rolls", true);
@@ -253,6 +261,9 @@ final class LootTier {
         double money = doubloons.roll(r);
         int count = rolls.roll(r);
         java.util.Set<Entry> used = new java.util.HashSet<>();
+        for (Entry e : guaranteed) {                 // always in the chest, on top of the rolls
+            money += add(e, r, items, out, maps);
+        }
         for (int i = 0; i < count; i++) {
             Entry e = pick(r);
             for (int retry = 0; uniqueRolls && e != null && e.doubloons == null && used.contains(e) && retry < 12; retry++) {

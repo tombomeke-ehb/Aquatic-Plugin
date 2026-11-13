@@ -350,6 +350,23 @@ public final class SidebarModule extends AquaticModule implements Listener {
 
     @Override
     protected void migrateConfig(YamlConfiguration file, YamlConfiguration defaults, int from) {
+        if (from < 3) {
+            // 2.23.0: the rank of your bounty stands above your name
+            List<String> lines = new ArrayList<>(file.getStringList("layout"));
+            lines.remove("?bounty:<dark_gray>» <bounty_title>");
+            int who = -1;
+            boolean has = false;
+            for (int i = 0; i < lines.size(); i++) {
+                has |= lines.get(i).contains("<bounty_title>");
+                if (who < 0 && lines.get(i).contains("<player>")) {
+                    who = i;
+                }
+            }
+            if (!has && who >= 0) {
+                lines.add(who, "?bounty:<bounty_title>");
+            }
+            file.set("layout", lines);
+        }
         if (from < 2) {
             // 2.17.0: the level sits next to the XP bar (a narrower sidebar)
             List<String> layout = new ArrayList<>(file.getStringList("layout"));

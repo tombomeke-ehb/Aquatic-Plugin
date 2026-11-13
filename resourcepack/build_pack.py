@@ -26,6 +26,7 @@ from PIL import Image
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import pixelart  # noqa: E402
+import forge  # noqa: E402
 PACK = os.path.join(HERE, "pack")
 DIST = os.path.join(HERE, "dist")
 N = 32  # item texture size
@@ -1457,7 +1458,7 @@ CRATE_BLOCKS = {  # vanilla block -> (tier, wood, dark wood, metal, dark metal, 
     "nether_gold_ore": ("captain", "#6a4326", "#341f0e", "#f2c230", "#8a5c0e", "#c0392b", "#ffc4b8"),
     "shroomlight": ("kraken", "#3d2b57", "#1d1330", "#3fd8c4", "#16665c", "#c47cff", "#f5e6ff"),
 }
-CHEST_PX = 64  # texture size of the chest parts (16 model units -> 4 pixels each)
+CHEST_PX = 32  # texture size of the chest parts (16 model units -> 2 pixels each, like the item icons)
 
 
 def _noise(x, y, seed):
@@ -1467,71 +1468,15 @@ def _noise(x, y, seed):
 
 
 def chest_wood(wood, dark, seed, vertical=False):
-    """Weathered planks: 8 px wide boards with grain, darker seams, knots and nail heads."""
-    img = Image.new("RGBA", (CHEST_PX, CHEST_PX))
-    px = img.load()
-    for y in range(CHEST_PX):
-        for x in range(CHEST_PX):
-            a, b = (x, y) if vertical else (y, x)       # a: across the boards, b: along them
-            board = a // 8
-            grain = math.sin(b * 0.35 + board * 2.1 + math.sin(b * 0.09 + board) * 2.0)
-            k = 0.07 * grain + 0.06 * (_noise(b // 2, board, seed) - 0.5) + 0.04 * (_noise(x, y, seed + 1) - 0.5)
-            c = shade(wood, k)
-            if a % 8 == 7:
-                c = shade(dark, -0.05)                   # seam
-            elif a % 8 == 0:
-                c = shade(wood, 0.12)                    # lit edge of the board
-            knot = (b + board * 13) % 37
-            if knot in (11, 12) and a % 8 in (3, 4):
-                c = shade(dark, 0.1)                     # a knot
-            if b % 32 in (2, 29) and a % 8 == 3:
-                c = rgb("#2a2a2a")                       # nail heads
-            px[x, y] = c + (255,)
-    return img
+    return forge.planks(wood, dark, seed, vertical, CHEST_PX)
 
 
 def chest_metal(metal, dark, seed, rivets=True):
-    """Worn metal: brushed, darker edges, rivets every few pixels."""
-    img = Image.new("RGBA", (CHEST_PX, CHEST_PX))
-    px = img.load()
-    for y in range(CHEST_PX):
-        for x in range(CHEST_PX):
-            k = 0.08 * math.sin(y * 0.8 + x * 0.05) + 0.07 * (_noise(x // 2, y, seed) - 0.5)
-            c = shade(metal, k)
-            edge = min(x, y, CHEST_PX - 1 - x, CHEST_PX - 1 - y)
-            if edge < 3:
-                c = mix(c, dark, 0.65 - edge * 0.15)
-            if rivets and (x % 16 in (7, 8)) and (y % 16 in (7, 8)):
-                c = shade(metal, 0.45) if (x % 16 == 7 and y % 16 == 7) else dark
-            px[x, y] = c + (255,)
-    return img
+    return forge.plate(metal, dark, seed, rivets, CHEST_PX)
 
 
 def chest_lock(metal, dark, gem, glow, frame):
-    """The lock plate: a shield-shaped plate with a gem and a keyhole; the gem pulses (one frame of 8)."""
-    img = Image.new("RGBA", (CHEST_PX, CHEST_PX))
-    px = img.load()
-    pulse = 0.5 + 0.5 * math.sin(frame / 8 * 2 * math.pi)
-    for y in range(CHEST_PX):
-        for x in range(CHEST_PX):
-            dx, dy = x - 31.5, y - 26
-            edge = min(x, CHEST_PX - 1 - x, y, CHEST_PX - 1 - y)
-            c = shade(metal, 0.1 * math.sin(y * 0.5) - (0.35 if edge < 4 else 0))
-            if edge < 2:
-                c = dark
-            d = math.hypot(dx, dy)
-            if d < 15:
-                c = mix(gem, glow, max(0.0, 0.85 - d / 15) * (0.5 + 0.5 * pulse))
-                if d > 13:
-                    c = shade(metal, 0.35)               # bezel
-            if abs(dx) < 2.5 and 34 <= y <= 50:
-                c = rgb("#120c08")                       # keyhole slot
-            if math.hypot(dx, y - 34) < 4:
-                c = rgb("#120c08")
-            if (x in (8, 55)) and (y in (8, 55)):
-                c = shade(metal, 0.5)                    # corner screws
-            px[x, y] = c + (255,)
-    return img
+    return forge.lock(metal, dark, gem, glow, frame, CHEST_PX)
 
 
 def crate_blocks():
@@ -2066,7 +2011,7 @@ FRUITS = {
     "behemoth": fruit_anim("#b8743a", "#5a3418", theme="dust"),
     "galeborn": fruit_anim("#c9f3f7", "#3fb8c9", outline_col="#123a40", theme="wind"),
     "stoneskin": fruit_anim("#8e9ba3", "#5c6b73", outline_col="#1f262a", theme="pebble"),
-    "tidecaller": fruit_anim("#2e86de", "#a9dcff", outline_col="#0b2a4a", theme="water"),
+    "tidecaller": fruit_anim("#8fd8ff", "#f2fbff", outline_col="#1d4f6e", theme="water"),
     "venomfang": fruit_anim("#7dcf3a", "#2f5d1a", leaf="#2f5d1a", outline_col="#13260a", theme="venom"),
     "dunemaw": fruit_anim("#e2c275", "#9c7a3c", outline_col="#3d2b10", theme="sand"),
     "luminara": fruit_anim("#fff6b0", "#ffb703", outline_col="#5a4a10", theme="light"),
@@ -2096,13 +2041,23 @@ def main():
     illager_hd("#1d3a6b", "#e8e4d8", "#e8e4d8", "#16294a", seed=5).save(os.path.join(ill, "pillager.png"))
     hand_cannon_3d()
     # weapons, tools and keys: hand-drawn (pixelart.py), with a band of light that sweeps along them
+    models = os.path.join(PACK, "assets", "aquatic", "models", "item")
+    for name in forge.WEAPONS:                                  # drawn at 32x32, 3D in the hand
+        img, grid, depth = forge.make(name)
+        item(name, shimmer(img, strength=0.45), True, drawn=True)
+        write_json(os.path.join(models, name + ".json"), forge.model("aquatic:item/" + name, grid, depth))
     for name, (rows, palette, edits, extra) in pixelart.WEAPONS.items():
+        if name in forge.WEAPONS:
+            continue
         img = pixelart.icon(rows, palette, edits, **extra)
+        grid = pixelart.shade.grid
         glow = tuple(palette[k] for k in ("p", "P", "x") if k in palette)
         if name == "abyssal_shackles":
             item(name, img, drawn=True)
         else:
             item(name, shimmer(img, glow=glow, strength=0.5), True, drawn=True)
+            write_json(os.path.join(models, name + ".json"), forge.model("aquatic:item/" + name, grid,
+                                                                         {"a": 1.6, "b": 1.6, "c": 1.6, "d": 1.6}))
     crate_blocks()
     # bombs and shot
     item("smoke_bomb", bomb("#6f757b", "#3b3f43", "#ffe680", smoke_mark))

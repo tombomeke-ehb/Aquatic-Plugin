@@ -16,7 +16,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 5
+config-version: 6
 
 autosave-seconds: 120
 
@@ -311,9 +311,8 @@ tiers:
   legendary:
     display-name: "<gradient:#ffcc00:#ff6a00><bold>Legendary</bold></gradient>"
     chest: CHEST
-    # MEGA: a chest stuffed to the brim, a fortune in Doubloons, always a jackpot, fireworks and a light beam.
-    rolls: 14-18
-    doubloons: 15000-25000
+    rolls: 8-10
+    doubloons: 5000-9000
     depth: 4
     marker: true
     weight: 0.5
@@ -322,60 +321,96 @@ tiers:
     vanish: empty
     particles: WAX_ON
     beam: true
-    celebrate: true
     unique-rolls: true
+    # Always in the chest, on top of the rolls: exactly one Abyss Fruit (there is none in the loot below).
+    guaranteed:
+      - {custom-item: fruit_random}
     loot:
       - {item: "key:captain:2", weight: 5}
-      - {item: "key:kraken:1", weight: 4}
-      - {material: NETHERITE_SCRAP, amount: 4-8, weight: 5}
-      - {material: NETHERITE_INGOT, amount: 2-4, weight: 3}
+      - {item: "key:kraken:1", weight: 3}
+      - {material: NETHERITE_SCRAP, amount: 1-2, weight: 3}
+      - {material: DIAMOND_BLOCK, amount: 1-2, weight: 4}
+      - {material: ENCHANTED_GOLDEN_APPLE, amount: 1, weight: 2}
+      - {material: HEART_OF_THE_SEA, amount: 1, weight: 2}
+      - {material: ENCHANTED_BOOK, weight: 4, random-enchant-level: 25-30}
+      - {custom-item: musket, weight: 1.5}
+      - {custom-item: harpoon, weight: 1.5}
+      - {custom-item: deepcore_pickaxe, weight: 1}
+      - {custom-item: coral_scimitar, weight: 1.2}
+      - {custom-item: storm_saber, weight: 1.5}
+      - {custom-item: abyss_cutlass, weight: 1.5}
+      - {custom-item: coral_trident, weight: 1.2}
+      - {custom-item: captains_coat, weight: 1}
+      - {custom-item: tidewarden_helmet, weight: 0.8}
+      - {custom-item: tidewarden_boots, weight: 0.8}
+      - {custom-item: healing_tonic, amount: 2-3, weight: 1.5}
+      - {custom-item: fire_bomb, amount: 3-5, weight: 1.5}
+      - {doubloons: 2000-4000, weight: 4}
+    jackpot:
+      chance: 0.3
+      rolls: 1
+      lore: ["", "<gold>★ Jackpot!"]
+      loot:
+        - {custom-item: krakens_maul, weight: 1}
+        - {custom-item: abyssal_anchor, weight: 1}
+        - {custom-item: tidewarden_chestplate, weight: 1}
+        - {item: "key:kraken:2", weight: 2}
+        - {doubloons: 5000-8000, weight: 3}
+
+  # MEGA Legendary: a grade of its own, far rarer than legendary. A chest stuffed to the brim, a fortune in
+  # Doubloons, fireworks and a light beam - and the only place the signature weapons come from.
+  mega:
+    display-name: "<gradient:#ff3cac:#784ba0:#2b86c5><bold>MEGA Legendary</bold></gradient>"
+    chest: CHEST
+    rolls: 14-18
+    doubloons: 15000-25000
+    depth: 5
+    marker: true
+    weight: 0.08
+    broadcast: true
+    reputation: 60
+    vanish: empty
+    particles: WAX_ON
+    beam: true
+    celebrate: true
+    unique-rolls: true
+    # Always in the chest: one Abyss Fruit and one signature weapon (see the jackpot list).
+    guaranteed:
+      - {custom-item: fruit_random}
+    loot:
+      - {item: "key:captain:3", weight: 5}
+      - {item: "key:kraken:2", weight: 4}
+      - {material: NETHERITE_INGOT, amount: 1-2, weight: 3}
+      - {material: DIAMOND_BLOCK, amount: 2-4, weight: 4}
+      - {material: ENCHANTED_GOLDEN_APPLE, amount: 1-2, weight: 3}
+      - {material: ENCHANTED_BOOK, weight: 4, random-enchant-level: 30}
       - {custom-item: musket, weight: 1.5}
       - {custom-item: harpoon, weight: 1.5}
       - {custom-item: deepcore_pickaxe, weight: 1.2}
       - {custom-item: abyssal_anchor, weight: 1}
       - {custom-item: coral_scimitar, weight: 1.2}
-      - {material: ANCIENT_DEBRIS, amount: 2-4, weight: 3}
-      - {material: DIAMOND_BLOCK, amount: 2-4, weight: 4}
-      - {material: HEART_OF_THE_SEA, amount: 1-2, weight: 3}
-      - {material: ENCHANTED_GOLDEN_APPLE, amount: 1-2, weight: 2}
-      - {material: TRIDENT, weight: 1.5, enchants: [RIPTIDE:3, UNBREAKING:3, MENDING:1], name: "<gold>Wavebreaker", lore: ["<gray>Rides the waves like they owe it Doubloons."]}
-      - {material: NETHERITE_SWORD, weight: 1, enchants: [SHARPNESS:4-5, LOOTING:2-3, UNBREAKING:3], name: "<red>Captain's Last Word", lore: ["<gray>The last thing many sailors heard."]}
-      - {material: NETHERITE_CHESTPLATE, weight: 0.8, enchants: [PROTECTION:4, UNBREAKING:3], name: "<gold>Dreadnought Plate", lore: ["<gray>Forged from a sunken warship's hull."]}
-      - {material: ENCHANTED_BOOK, weight: 2, enchants: [MENDING:1]}
-      - {material: ENCHANTED_BOOK, weight: 2, random-enchant-level: 30, treasure-enchants: true}
-      - {material: NAME_TAG, weight: 0.8, name: "<gold>Captain's Name Plate", lore: ["<gray>Every ship deserves a proper name."]}
-      - {material: MUSIC_DISC_OTHERSIDE, weight: 0.8}
-      - {material: MUSIC_DISC_RELIC, weight: 0.8}
       - {custom-item: storm_saber, weight: 1.5}
       - {custom-item: abyss_cutlass, weight: 1.5}
       - {custom-item: krakens_maul, weight: 1.2}
       - {custom-item: coral_trident, weight: 1.2}
       - {custom-item: captains_coat, weight: 1.2}
-      - {custom-item: tidecleaver, weight: 0.6}
-      - {custom-item: nightbloom, weight: 0.6}
-      - {custom-item: leviathans_fang, weight: 0.5}
       - {custom-item: tidewarden_helmet, weight: 1}
       - {custom-item: tidewarden_chestplate, weight: 0.8}
       - {custom-item: tidewarden_leggings, weight: 0.8}
       - {custom-item: tidewarden_boots, weight: 1}
       - {custom-item: healing_tonic, amount: 2-3, weight: 1.5}
       - {custom-item: fire_bomb, amount: 3-5, weight: 1.5}
-      - {custom-item: fruit_random, weight: 4}
       - {doubloons: 5000-10000, weight: 4}
     jackpot:
-      # Always: 2-3 extra standout items on top of the rest.
+      # Always: one of the signature weapons. They drop nowhere else; put the developers' own weapons in this
+      # list (hold one and use /treasure loot add, or add "custom-item: <id>" lines).
       chance: 1.0
-      rolls: 2-3
-      lore: ["", "<gold>★ MEGA find!"]
+      rolls: 1
+      lore: ["", "<light_purple>★ MEGA find!"]
       loot:
-        - {material: NETHERITE_INGOT, amount: 4-6, weight: 2}
-        - {custom-item: fruit_random, weight: 3}
         - {custom-item: leviathans_fang, weight: 1}
-        - {custom-item: captains_coat, weight: 1}
-        - {material: ENCHANTED_GOLDEN_APPLE, amount: 4-6, weight: 1.5}
-        - {item: "key:kraken:3", weight: 2}
-        - {material: DIAMOND_BLOCK, amount: 8-16, weight: 1.5}
-        - {doubloons: 10000-20000, weight: 3}
+        - {custom-item: nightbloom, weight: 1}
+        - {custom-item: tidecleaver, weight: 1}
 
 placement:
   # Search radius around the requested spot for dry, solid ground.
@@ -425,6 +460,7 @@ shop-maps:
     standard: [common, uncommon, rare]
     epic: [epic]
     legendary: [legendary]
+    mega: [mega]
 
 natural:
   enabled: true
@@ -442,6 +478,7 @@ natural:
     rare: 5
     epic: 2
     legendary: 0.4
+    mega: 0.04
 
 # Treasure maps dropping from sea creatures / fishing. Each drop buries a fresh treasure.
 map-drops:
@@ -460,6 +497,7 @@ map-drops:
     rare: 5
     epic: 2
     legendary: 0.5
+    mega: 0.05
 
 # -------------------------------------------------------------------------------------
 # Treasure maps

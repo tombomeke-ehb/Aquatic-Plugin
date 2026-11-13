@@ -1,5 +1,27 @@
 # Changelog
 
+## 2.23.0 (2026-11-14)
+
+### Added
+- **MEGA Legendary treasure is a grade of its own** (`tiers.mega` in `treasure.yml`), far rarer than legendary.
+  - It always holds one Abyss Fruit and one signature weapon, on top of a full chest, a fortune in Doubloons, fireworks and a light beam.
+  - The signature weapons drop nowhere else. The list (`tiers.mega.jackpot.loot`) starts with Leviathan's Fang, Nightbloom and Tidecleaver; put the developers' own weapons there.
+- **3D weapons.** Every sword, the maul, the harpoon, the baton, the pickaxe, the anchor and the keys are real 3D models in the hand: a thick guard and pommel, a thin blade, gems that stand out.
+- **New weapon art**, drawn at full 32x32: serrated teeth on Leviathan's Fang, a glowing core down several blades, horned guards, a cup guard on the rapier, coral growths on the scimitar, a spiked head with a glowing eye on the Kraken's Maul, barbs on the harpoon, crystals on the pickaxe.
+
+### Changed
+- **Legendary treasure** always holds exactly one Abyss Fruit (never more), and is smaller than before: the huge chest moved to MEGA Legendary.
+- **Fruit mastery is much slower.** Each level costs 120 x level^1.8 XP (was 60 x level^1.5): level 10 takes about 7,600 XP for that level, level 20 about 26,000. Using a move gives 5 XP (was 6), a hit 2 (was 3).
+- **Tidecaller Fruit** is light blue (icon, name and first move).
+- **Crate chests** have new textures: clean planks with joints and nails, banded metal with rivets, a bevelled lock with a round gem.
+- **Sidebar:** the rank of your bounty stands above your name.
+
+### Fixed
+- **Guns in the off hand** fired like a crossbow. They now fire as guns from either hand, and their arrow can never be shot.
+- **Monsters no longer spawn on the capital** (`protection.capital-no-monsters` in `islands.yml`; spawn eggs and commands still work).
+- **Founders' heads** faced backwards; they are turned round. Usernames: `devv_`, `tombomekeMS`, `crimsonEvaz`.
+- **Parkour board:** it updates the moment someone finishes (and every 2 seconds), and records are saved at once.
+
 ## 2.22.0 (2026-11-13)
 
 ### Fixed

@@ -316,8 +316,8 @@ public final class HubModule extends AquaticModule implements Listener {
         if (s.head != null && tickCount % 8 == 0) {
             placeHead(s, l);
         }
-        if (e instanceof TextDisplay d && tickCount % 20 == 0) {
-            d.text(textOf(s));
+        if (e instanceof TextDisplay d) {
+            d.text(textOf(s));                         // every pass (2 seconds): boards are always current
         }
     }
 
@@ -353,7 +353,7 @@ public final class HubModule extends AquaticModule implements Listener {
                 Bukkit.getScheduler().runTask(plugin(), () -> profiles.put(name.toLowerCase(Locale.ROOT), p));
             });
         }
-        org.bukkit.block.BlockFace face = faceOf(sign.getYaw());
+        org.bukkit.block.BlockFace face = faceOf(sign.getYaw() + 180f);   // a skull's rotation is where its back points
         boolean fresh = b.getType() != Material.PLAYER_HEAD;
         if (fresh) {
             b.setType(Material.PLAYER_HEAD, false);
@@ -624,6 +624,17 @@ public final class HubModule extends AquaticModule implements Listener {
             best.put(p.getUniqueId(), ms);
         }
         send(p, record ? "parkour-finish-best" : "parkour-finish", "time", time(ms), "best", time(record ? ms : prev));
+        saveState();                                   // records survive a crash
+        for (Spot s : spots) {                         // and the boards show the run at once
+            if (s.npc || !"parkour".equalsIgnoreCase(s.cfg.getString("type"))) {
+                continue;
+            }
+            for (Map.Entry<String, UUID> live : this.live.entrySet()) {
+                if (live.getKey().startsWith(s.id + "@") && Bukkit.getEntity(live.getValue()) instanceof TextDisplay d) {
+                    d.text(textOf(s));
+                }
+            }
+        }
         double reward = config().getDouble("parkour.reward", 250);
         long cooldown = Math.max(0, config().getLong("parkour.reward-cooldown-hours", 20)) * 3600_000L;
         EconomyService eco = service(EconomyService.class);
@@ -771,6 +782,13 @@ public final class HubModule extends AquaticModule implements Listener {
 
     @Override
     protected void migrateConfig(YamlConfiguration file, YamlConfiguration defaults, int from) {
+        if (from < 8) {
+            // 2.23.0: the founders' real usernames
+            raise(file, "founders.devvv.player", "Devvv_", "devv_");
+            raise(file, "founders.devvv.name", "<#badc58><bold>Devvv_", "<#badc58><bold>Devv_");
+            raise(file, "founders.tombomeke.player", "tombomeke", "tombomekeMS");
+            raise(file, "founders.crimson.player", "Crimson", "crimsonEvaz");
+        }
         if (from < 7) {
             // 2.19.0: the founders' shrine (heads on pedestals), a /discord sign under the welcome sign, a relics hint
             addMissing(file, defaults, "founders");

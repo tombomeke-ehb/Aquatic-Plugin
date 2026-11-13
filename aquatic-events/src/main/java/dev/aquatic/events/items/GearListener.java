@@ -555,6 +555,48 @@ public final class GearListener implements Listener {
     // ------------------------------------------------------------------ right-click items
 
     @EventHandler(priority = EventPriority.HIGH)
+    public void onOffhandGun(PlayerInteractEvent event) {
+        if (event.getHand() != EquipmentSlot.OFF_HAND
+                || (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK)) {
+            return;
+        }
+        Player p = event.getPlayer();
+        ItemDef def = module.defOf(p.getInventory().getItemInOffHand());
+        if (def == null || !(def.type.equals("gun") || def.type.equals("cannon"))) {
+            return;
+        }
+        event.setCancelled(true);                      // never the crossbow's own shot
+        event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
+        ItemDef main = module.defOf(p.getInventory().getItemInMainHand());
+        if (main != null && !main.type.equals("plain")) {
+            return;                                    // the main hand's own item goes first
+        }
+        long now = System.currentTimeMillis();
+        Long last = lastUse.get(p.getUniqueId());
+        if (last != null && now - last < 150) {
+            return;
+        }
+        lastUse.put(p.getUniqueId(), now);
+        fire(p, def);
+    }
+
+    /** A gun is a loaded crossbow to the game: its arrow is never shot. */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onGunAsBow(org.bukkit.event.entity.EntityShootBowEvent event) {
+        ItemDef def = module.defOf(event.getBow());
+        if (def != null && def.type.equals("gun")) {
+            event.setCancelled(true);
+            event.setConsumeItem(false);
+            if (event.getEntity() instanceof Player p) {
+                module.runLater(() -> {
+                    module.upgradeIds(p.getInventory());   // loads it again if the game emptied it
+                    p.updateInventory();
+                }, 1L);
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
     public void onUse(PlayerInteractEvent event) {
         if (event.getHand() != EquipmentSlot.HAND
                 || (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK)) {

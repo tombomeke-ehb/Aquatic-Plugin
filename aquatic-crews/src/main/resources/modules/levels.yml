@@ -32,6 +32,7 @@ xp:
     rare: 70
     epic: 120
     legendary: 250
+    mega: 600
     default: 40
   # Monsters from spawners give only a part of the XP.
   spawner-multiplier: 0.2

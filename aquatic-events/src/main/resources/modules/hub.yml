@@ -16,7 +16,7 @@
 #    "cmd:<command>"  the player runs the command (without /)
 #    "msg:<text>"     a MiniMessage line (clickable with <click:run_command:'/...'>)
 # =====================================================================================
-config-version: 7
+config-version: 8
 
 npcs:
   blacksmith:
@@ -164,7 +164,7 @@ founders:
     role: "<gray>Developer"
     offset: [27, -6]
   tombomeke:
-    player: tombomeke
+    player: tombomekeMS
     name: "<#7ed6df><bold>Tombomeke"
     role: "<gray>Left Hand Man"
     offset: [27, -3]
@@ -174,12 +174,12 @@ founders:
     role: "<gold>The Owner"
     offset: [27, 0]
   devvv:
-    player: Devvv_
-    name: "<#badc58><bold>Devvv_"
+    player: devv_
+    name: "<#badc58><bold>Devv_"
     role: "<gray>Right Hand Man"
     offset: [27, 3]
   crimson:
-    player: Crimson         # TODO: the real username of Crimson
+    player: crimsonEvaz
     name: "<#eb4d4b><bold>Crimson"
     role: "<gray>Builder"
     offset: [27, 6]

@@ -97,6 +97,12 @@ def icon(rows, palette, edits=(), tip=None, inlay=None, details=()):
             for yy in range(d[1], d[3] + 1):
                 for xx in range(d[0], d[2] + 1):
                     key[yy][xx] = d[4]
+    return shade(key, palette, tip, inlay)
+
+
+def shade(key, palette, tip=None, inlay=None):
+    """Lights a 32x32 grid of part keys (see icon()); the grid stays available as shade.grid for 3D models."""
+    shade.grid = key
     col = {k: _rgb(v) for k, v in palette.items()}
     tipc = _rgb(tip) if tip else None
 

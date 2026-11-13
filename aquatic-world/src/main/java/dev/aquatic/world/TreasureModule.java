@@ -1392,6 +1392,15 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
     @Override
     protected void migrateConfig(org.bukkit.configuration.file.YamlConfiguration file,
                                  org.bukkit.configuration.file.YamlConfiguration defaults, int from) {
+        if (from < 6) {
+            // 2.23.0: MEGA Legendary is a tier of its own; legendary holds exactly one fruit
+            if ("14-18".equals(file.getString("tiers.legendary.rolls")) && file.getBoolean("tiers.legendary.celebrate")) {
+                file.set("tiers.legendary", defaults.get("tiers.legendary"));
+            }
+            addMissing(file, defaults, "tiers.mega");
+            addMissing(file, defaults, "natural.tier-weights.mega");
+            addMissing(file, defaults, "map-drops.tier-weights.mega");
+        }
         if (from < 5) {
             // 2.16.0: MEGA legendary treasure (only if the legendary tier was never edited)
             String p = "tiers.legendary.";

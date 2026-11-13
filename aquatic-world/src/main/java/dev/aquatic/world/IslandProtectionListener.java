@@ -65,6 +65,25 @@ final class IslandProtectionListener implements Listener {
         return true;
     }
 
+    /** Monsters never spawn on the capital (the spawn town), whatever the light level. Spawn eggs and commands still work. */
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    public void onSpawn(org.bukkit.event.entity.CreatureSpawnEvent event) {
+        if (!(event.getEntity() instanceof org.bukkit.entity.Enemy) || !module.config().getBoolean("protection.capital-no-monsters", true)) {
+            return;
+        }
+        switch (event.getSpawnReason()) {
+            case CUSTOM, COMMAND, SPAWNER_EGG, DISPENSE_EGG, DEFAULT -> {
+                return;
+            }
+            default -> {
+            }
+        }
+        IslandImpl is = module.at(event.getLocation().getBlock());
+        if (is != null && is.type == dev.aquatic.api.IslandType.CAPITAL) {
+            event.setCancelled(true);
+        }
+    }
+
     // ------------------------------------------------------------------ blocks
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
