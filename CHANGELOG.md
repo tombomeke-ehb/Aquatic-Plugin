@@ -1,5 +1,45 @@
 # Changelog
 
+## 2.3.1 (2026-11-13)
+
+### Fixed
+- **Sidebar coordinates (and other lines) froze** on some clients, and through ViaVersion. A line whose text changes is now removed and re-added, which every client shows.
+- **Safer saving:** data files are written to a temporary file first and then swapped in, so a crash during a save can no longer leave a half-written file.
+- Fruit mastery XP now autosaves reliably once a minute.
+
+### Changed
+- **The last One Piece names are gone.** Item ids, item types, raid mobs and config keys have new names:
+
+  | Old | New |
+  | --- | --- |
+  | `gomu_gomu` | `springcoil` |
+  | `mera_mera` | `emberheart` |
+  | `hie_hie` | `rimefrost` |
+  | `goro_goro` | `thunderveil` |
+  | `suke_suke` | `ghostglass` |
+  | `ope_ope` | `riftshift` |
+  | `yami_yami` | `hollowvoid` |
+  | `ushi_ushi_bison` | `behemoth` |
+  | `sea_prism_blade` | `abyssal_baton` |
+  | `seastone_cuffs` | `abyssal_shackles` |
+  | `wado_ichimonji` | `tidecleaver` |
+  | `shusui` | `nightbloom` |
+  | `yoru` | `leviathans_fang` |
+  | `den_den_mushi` | `echo_conch` |
+  | `log_pose` | `tide_compass` |
+  | `pirate_king_crown` | `conqueror_crown` |
+  | `devil_fruit_random` | `fruit_random` |
+
+  - Item types: `seastone` → `abyssal`, `logpose` → `compass`, `denden` → `conch`.
+  - Raid mobs: `marine*` → `tidewatch_*`, `vice_admiral` → `warden_captain`, `admiral` → `high_warden`.
+  - Commands: `/devilfruit` → `/abyssfruit`.
+  - API: `PirateKingCrownedEvent` → `ConquerorCrownedEvent`.
+- **Automatic migration, nothing to do:**
+  - Old config files are rewritten on start, with a `<file>.pre-2.3.1.bak` backup.
+  - Items players already own get their new id when they join or open a chest.
+  - Eaten fruits and fruit mastery carry over.
+  - Tested by upgrading a 2.3.0 server that already had these items and fruits.
+
 ## 2.3.0 (2026-11-12)
 
 ### Changed

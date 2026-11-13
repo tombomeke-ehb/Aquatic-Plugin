@@ -4,7 +4,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Set;
 
-/** Custom pirate items (devil fruits, weapons, tools). Provided by the "items" module. */
+/** Custom pirate items (abyss fruits, weapons, tools). Provided by the "items" module. */
 public interface ItemService {
 
     Set<String> itemIds();

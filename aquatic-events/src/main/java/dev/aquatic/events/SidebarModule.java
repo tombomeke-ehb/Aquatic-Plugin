@@ -45,6 +45,8 @@ public final class SidebarModule extends AquaticModule implements Listener {
     private static final int MAX_LINES = 15;
 
     private final Map<UUID, Scoreboard> boards = new HashMap<>();
+    /** The lines last sent to each player, to only touch the lines that changed. */
+    private final Map<UUID, List<Component>> shown = new HashMap<>();
     private final Set<UUID> hidden = new HashSet<>();
 
     @Override
@@ -77,6 +79,7 @@ public final class SidebarModule extends AquaticModule implements Listener {
             }
         }
         boards.clear();
+        shown.clear();
         save();
     }
 
@@ -98,10 +101,12 @@ public final class SidebarModule extends AquaticModule implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         boards.remove(event.getPlayer().getUniqueId());
+        shown.remove(event.getPlayer().getUniqueId());
     }
 
     private void remove(Player p) {
         Scoreboard board = boards.remove(p.getUniqueId());
+        shown.remove(p.getUniqueId());
         if (board != null && p.getScoreboard() == board) {
             p.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
         }
@@ -146,16 +151,29 @@ public final class SidebarModule extends AquaticModule implements Listener {
         }
         obj.displayName(Text.mm(config().getString("title", "Aquatic SMP")));
         List<Component> lines = render(p);
+        List<Component> before = shown.computeIfAbsent(p.getUniqueId(), k -> new ArrayList<>());
         for (int i = 0; i < MAX_LINES; i++) {
             String entry = "line" + i;
+            boolean set = obj.getScore(entry).isScoreSet();
             if (i < lines.size()) {
+                Component line = lines.get(i);
+                if (set && i < before.size() && line.equals(before.get(i))) {
+                    continue;
+                }
+                // Some clients (and ViaVersion for other client versions) ignore a changed line text on an existing
+                // score, which froze lines like the coordinates. Removing and re-adding the line always shows.
+                if (set) {
+                    board.resetScores(entry);
+                }
                 Score score = obj.getScore(entry);
+                score.customName(line);
                 score.setScore(MAX_LINES - i);
-                score.customName(lines.get(i));
-            } else if (obj.getScore(entry).isScoreSet()) {
+            } else if (set) {
                 board.resetScores(entry);
             }
         }
+        before.clear();
+        before.addAll(lines);
     }
 
     // ------------------------------------------------------------------ content
@@ -177,7 +195,7 @@ public final class SidebarModule extends AquaticModule implements Listener {
         double bounty = bounties == null ? 0 : bounties.bountyOf(id);
         String fruit = fruitName(id);
         SeaEvent event = runningEvent();
-        String conqueror = tournament == null ? null : tournament.pirateKingName();
+        String conqueror = tournament == null ? null : tournament.conquerorName();
 
         dev.aquatic.api.LevelService levels = service(dev.aquatic.api.LevelService.class);
         Map<String, Object> ph = new HashMap<>();

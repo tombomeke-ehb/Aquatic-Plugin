@@ -50,7 +50,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
-/** Behaviour of non-fruit items: swords, sea prism stone, guns, cannons, log pose, den den mushi, drinks. */
+/** Behaviour of non-fruit items: swords, Abyssal Iron, guns, cannons, tide compass, echo conch, drinks. */
 public final class GearListener implements Listener {
 
     private record Tracked(UUID shooter, String kind, ConfigurationSection cfg, long expires) {
@@ -59,8 +59,8 @@ public final class GearListener implements Listener {
     private final ItemsModule module;
     private final Abilities abilities;
     private final Map<UUID, Tracked> projectiles = new HashMap<>();
-    /** Log pose: player -> selected island id. */
-    private final Map<UUID, String> logPoseTarget = new HashMap<>();
+    /** Tide compass: player -> selected island id. */
+    private final Map<UUID, String> compassTarget = new HashMap<>();
     private final Map<UUID, Long> lastUse = new HashMap<>();
 
     public GearListener(ItemsModule module) {
@@ -162,7 +162,7 @@ public final class GearListener implements Listener {
         projectiles.put(projectile.getUniqueId(), new Tracked(shooter.getUniqueId(), kind, cfg, System.currentTimeMillis() + 15_000));
     }
 
-    /** Light periodic task: log pose action bar and projectile bookkeeping. */
+    /** Light periodic task: tide compass action bar and projectile bookkeeping. */
     /**
      * Armour sets: items with "set: <id>" in items.yml. Wearing "armor-sets.<id>.pieces" of them gives
      * the set bonus (effects + extra health) as long as they are worn.
@@ -212,10 +212,10 @@ public final class GearListener implements Listener {
         for (Player p : Bukkit.getOnlinePlayers()) {
             ItemDef main = module.defOf(p.getInventory().getItemInMainHand());
             ItemDef off = module.defOf(p.getInventory().getItemInOffHand());
-            if (main != null && main.type.equals("logpose")) {
-                showLogPose(p, main, p.getInventory().getItemInMainHand());
-            } else if (off != null && off.type.equals("logpose")) {
-                showLogPose(p, off, p.getInventory().getItemInOffHand());
+            if (main != null && main.type.equals("compass")) {
+                showCompass(p, main, p.getInventory().getItemInMainHand());
+            } else if (off != null && off.type.equals("compass")) {
+                showCompass(p, off, p.getInventory().getItemInOffHand());
             }
         }
     }
@@ -251,7 +251,7 @@ public final class GearListener implements Listener {
         }
     }
 
-    // ------------------------------------------------------------------ melee: swords & sea prism stone
+    // ------------------------------------------------------------------ melee: swords & Abyssal Iron
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onHit(EntityDamageByEntityEvent event) {
@@ -263,11 +263,11 @@ public final class GearListener implements Listener {
         if (def == null) {
             return;
         }
-        if (def.type.equals("seastone") && victim instanceof Player target && module.fruits().fruitOf(target.getUniqueId()) != null) {
-            double seconds = def.cfg.getDouble("seastone.hit-seconds", 6);
-            module.fruits().seastone(target, seconds);
-            module.actionBar(target, "seastoned", "seconds", Text.number(seconds));
-            module.actionBar(p, "seastone-hit", "player", target.getName(), "seconds", Text.number(seconds));
+        if (def.type.equals("abyssal") && victim instanceof Player target && module.fruits().fruitOf(target.getUniqueId()) != null) {
+            double seconds = def.cfg.getDouble("abyssal.hit-seconds", 6);
+            module.fruits().seal(target, seconds);
+            module.actionBar(target, "sealed", "seconds", Text.number(seconds));
+            module.actionBar(p, "abyssal-hit", "player", target.getName(), "seconds", Text.number(seconds));
             Util.sound(target.getLocation(), "block.beacon.deactivate", 1f, 1.6f);
         }
         ConfigurationSection onHit = def.cfg.getConfigurationSection("on-hit");
@@ -310,7 +310,7 @@ public final class GearListener implements Listener {
         }
     }
 
-    /** Sea prism handcuffs: right-click a devil fruit user to lock their power away. */
+    /** Abyssal Iron shackles: right-click a abyss fruit user to lock their power away. */
     @EventHandler(ignoreCancelled = true)
     public void onCuff(PlayerInteractEntityEvent event) {
         if (event.getHand() != EquipmentSlot.HAND || !(event.getRightClicked() instanceof Player target)) {
@@ -319,10 +319,10 @@ public final class GearListener implements Listener {
         Player p = event.getPlayer();
         ItemStack hand = p.getInventory().getItemInMainHand();
         ItemDef def = module.defOf(hand);
-        if (def == null || !def.type.equals("seastone")) {
+        if (def == null || !def.type.equals("abyssal")) {
             return;
         }
-        double seconds = def.cfg.getDouble("seastone.cuff-seconds", 0);
+        double seconds = def.cfg.getDouble("abyssal.cuff-seconds", 0);
         if (seconds <= 0) {
             return;
         }
@@ -334,16 +334,16 @@ public final class GearListener implements Listener {
             module.actionBar(p, "item-cooldown", "item", def.displayName(), "seconds", module.fruits().cooldownLeft(p.getUniqueId(), "cuff"));
             return;
         }
-        module.fruits().setCooldown(p.getUniqueId(), "cuff", def.cfg.getDouble("seastone.cuff-cooldown", 30));
-        module.fruits().seastone(target, seconds);
+        module.fruits().setCooldown(p.getUniqueId(), "cuff", def.cfg.getDouble("abyssal.cuff-cooldown", 30));
+        module.fruits().seal(target, seconds);
         int ticks = (int) (seconds * 20);
-        for (PotionEffect e : Util.parseEffects(def.cfg.getStringList("seastone.cuff-effects"), ticks)) {
+        for (PotionEffect e : Util.parseEffects(def.cfg.getStringList("abyssal.cuff-effects"), ticks)) {
             target.addPotionEffect(e);
         }
         module.send(target, "cuffed", "player", p.getName(), "seconds", Text.number(seconds));
         module.send(p, "cuffed-other", "player", target.getName(), "seconds", Text.number(seconds));
         Util.sound(target.getLocation(), "block.chain.place", 1f, 0.8f);
-        if (def.cfg.getBoolean("seastone.consume-cuffs", true) && p.getGameMode() != GameMode.CREATIVE) {
+        if (def.cfg.getBoolean("abyssal.consume-cuffs", true) && p.getGameMode() != GameMode.CREATIVE) {
             hand.setAmount(hand.getAmount() - 1);
         }
     }
@@ -408,21 +408,21 @@ public final class GearListener implements Listener {
                 lastUse.put(p.getUniqueId(), now);
                 fire(p, def);
             }
-            case "logpose" -> {
+            case "compass" -> {
                 event.setCancelled(true);
                 if (last != null && now - last < 250) {
                     return;
                 }
                 lastUse.put(p.getUniqueId(), now);
-                cycleLogPose(p, def, hand, p.isSneaking());
+                cycleCompass(p, def, hand, p.isSneaking());
             }
-            case "denden" -> {
+            case "conch" -> {
                 event.setCancelled(true);
                 if (last != null && now - last < 250) {
                     return;
                 }
                 lastUse.put(p.getUniqueId(), now);
-                denDen(p, def);
+                conchCall(p, def);
             }
             default -> {
             }
@@ -575,7 +575,7 @@ public final class GearListener implements Listener {
         }
     }
 
-    // ------------------------------------------------------------------ log pose
+    // ------------------------------------------------------------------ tide compass
 
     private List<Island> sortedIslands(Player p, IslandService islands) {
         List<Island> list = new ArrayList<>();
@@ -589,20 +589,20 @@ public final class GearListener implements Listener {
         return list;
     }
 
-    private void cycleLogPose(Player p, ItemDef def, ItemStack stack, boolean nearest) {
+    private void cycleCompass(Player p, ItemDef def, ItemStack stack, boolean nearest) {
         IslandService islands = module.service(IslandService.class);
         if (islands == null) {
-            module.actionBar(p, "logpose-unavailable");
+            module.actionBar(p, "compass-unavailable");
             return;
         }
         List<Island> list = sortedIslands(p, islands);
         if (list.isEmpty()) {
-            module.actionBar(p, "logpose-no-islands");
+            module.actionBar(p, "compass-no-islands");
             return;
         }
         Island here = islands.islandAt(p.getLocation());
         Island next;
-        String current = logPoseTarget.get(p.getUniqueId());
+        String current = compassTarget.get(p.getUniqueId());
         int idx = -1;
         for (int i = 0; i < list.size(); i++) {
             if (list.get(i).id().equals(current)) {
@@ -617,10 +617,10 @@ public final class GearListener implements Listener {
         } else {
             next = list.get((idx + 1) % list.size());
         }
-        logPoseTarget.put(p.getUniqueId(), next.id());
+        compassTarget.put(p.getUniqueId(), next.id());
         point(stack, next.center());
         Util.sound(p, "item.lodestone_compass.lock", 1f, 1.2f);
-        showLogPose(p, def, stack);
+        showCompass(p, def, stack);
     }
 
     private void point(ItemStack stack, Location target) {
@@ -631,41 +631,41 @@ public final class GearListener implements Listener {
         }
     }
 
-    private void showLogPose(Player p, ItemDef def, ItemStack stack) {
+    private void showCompass(Player p, ItemDef def, ItemStack stack) {
         IslandService islands = module.service(IslandService.class);
         if (islands == null) {
-            module.actionBar(p, "logpose-unavailable");
+            module.actionBar(p, "compass-unavailable");
             return;
         }
-        String id = logPoseTarget.get(p.getUniqueId());
+        String id = compassTarget.get(p.getUniqueId());
         Island target = id == null ? null : islands.islandById(id);
         if (target == null || target.center() == null || target.center().getWorld() == null
                 || !target.center().getWorld().equals(p.getWorld())) {
             List<Island> list = sortedIslands(p, islands);
             if (list.isEmpty()) {
-                module.actionBar(p, "logpose-no-islands");
+                module.actionBar(p, "compass-no-islands");
                 return;
             }
             target = list.get(0);
-            logPoseTarget.put(p.getUniqueId(), target.id());
+            compassTarget.put(p.getUniqueId(), target.id());
             point(stack, target.center());
         }
         Island here = islands.islandAt(p.getLocation());
         if (here != null && here.id().equals(target.id())) {
-            module.actionBar(p, "logpose-arrived", "island", target.name());
+            module.actionBar(p, "compass-arrived", "island", target.name());
             return;
         }
-        module.actionBar(p, "logpose-bar", "island", target.name(), "type", target.type().name().toLowerCase(Locale.ROOT),
+        module.actionBar(p, "compass-bar", "island", target.name(), "type", target.type().name().toLowerCase(Locale.ROOT),
                 "distance", (long) Util.flatDistance(target.center(), p.getLocation()));
     }
 
-    // ------------------------------------------------------------------ den den mushi
+    // ------------------------------------------------------------------ echo conch
 
-    private void denDen(Player p, ItemDef def) {
+    private void conchCall(Player p, ItemDef def) {
         CrewService crews = module.service(CrewService.class);
         Crew crew = crews == null ? null : crews.crewOf(p.getUniqueId());
         if (crew == null) {
-            module.actionBar(p, "denden-no-crew");
+            module.actionBar(p, "conch-no-crew");
             return;
         }
         String key = "item:" + def.id;
@@ -674,14 +674,14 @@ public final class GearListener implements Listener {
             module.actionBar(p, "item-cooldown", "item", def.displayName(), "seconds", left);
             return;
         }
-        module.fruits().setCooldown(p.getUniqueId(), key, def.cfg.getDouble("denden.cooldown", 30));
+        module.fruits().setCooldown(p.getUniqueId(), key, def.cfg.getDouble("conch.cooldown", 30));
         Location l = p.getLocation();
-        crew.broadcast(module.msg("denden-call", "player", p.getName(), "x", l.getBlockX(), "y", l.getBlockY(),
+        crew.broadcast(module.msg("conch-call", "player", p.getName(), "x", l.getBlockX(), "y", l.getBlockY(),
                 "z", l.getBlockZ(), "world", l.getWorld().getName()));
         for (Player m : crew.onlineMembers()) {
-            Util.sound(m, def.cfg.getString("denden.sound", "block.note_block.bell"), 1f, 1.5f);
+            Util.sound(m, def.cfg.getString("conch.sound", "block.note_block.bell"), 1f, 1.5f);
         }
-        int glow = (int) (def.cfg.getDouble("denden.glow-seconds", 5) * 20);
+        int glow = (int) (def.cfg.getDouble("conch.glow-seconds", 5) * 20);
         if (glow > 0) {
             p.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, glow, 0, true, false, false));
         }
@@ -732,7 +732,19 @@ public final class GearListener implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         lastUse.remove(event.getPlayer().getUniqueId());
-        logPoseTarget.remove(event.getPlayer().getUniqueId());
+        compassTarget.remove(event.getPlayer().getUniqueId());
         abilities.endInvisibility(event.getPlayer());
+    }
+
+    /** Items from before 2.3.1 carry old ids: rewrite them when a player joins or opens a container. */
+    @EventHandler
+    public void onJoinUpgrade(org.bukkit.event.player.PlayerJoinEvent event) {
+        module.upgradeIds(event.getPlayer().getInventory());
+        module.upgradeIds(event.getPlayer().getEnderChest());
+    }
+
+    @EventHandler
+    public void onOpenUpgrade(org.bukkit.event.inventory.InventoryOpenEvent event) {
+        module.upgradeIds(event.getInventory());
     }
 }

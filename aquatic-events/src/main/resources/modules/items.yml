@@ -12,7 +12,7 @@
 #    /fruit                                   (aquatic.items.fruit, everyone by default)
 #
 #  Other modules (treasure loot tables, events, the tournament) reference items by their id
-#  below, e.g. "item:gomu_gomu" in a reward list.
+#  below, e.g. "item:springcoil" in a reward list.
 #
 #  Reload with /aquatic reload items
 # =====================================================================================
@@ -109,7 +109,7 @@ fruits:
 #  Item definitions
 # -------------------------------------------------------------------------------------
 #  Every item has:
-#    type:              fruit | sword | seastone | gun | cannon | logpose | denden | drink | plain
+#    type:              fruit | sword | abyssal | gun | cannon | compass | conch | drink | plain
 #    material:          vanilla material
 #    name / lore:       MiniMessage text
 #    custom-model-data: optional number for resource packs / Oraxen skins (0 = none)
@@ -144,7 +144,7 @@ items:
   #  fruit.passives:   permanent effects (effect:level)
   #  fruit.immunities: damage causes that are ignored (Bukkit DamageCause names: FALL, FIRE, LAVA, ...)
   #  fruit.frost-walker-radius: freeze water you walk over (0 = off, max 5)
-  gomu_gomu:
+  springcoil:
     type: fruit
     material: APPLE
     name: "<gradient:#c44dff:#ff6ec7><bold>Springcoil Fruit</bold></gradient>"
@@ -184,7 +184,7 @@ items:
         - {name: "<light_purple>Springstep", type: dash, cooldown: 6, power: 2.2, damage: 4, dash-ticks: 8, color: "#c44dff"}
         - {name: "<light_purple>Coil Storm", type: wave, cooldown: 14, range: 9, width: 1.8, damage: 3, knockback: 0.4, windup-ticks: 10, particle: CRIT, color: "#ff6ec7"}
 
-  mera_mera:
+  emberheart:
     type: fruit
     material: APPLE
     name: "<gradient:#ff4b1f:#ff9068><bold>Emberheart Fruit</bold></gradient>"
@@ -225,7 +225,7 @@ items:
         - {name: "<gold>Ember Wave", type: wave, cooldown: 12, range: 12, width: 1.8, damage: 5, fire-ticks: 80, knockback: 0.5, particle: FLAME, color: "#ff6a00"}
         - {name: "<red>Pyre Burst", type: nova, cooldown: 20, radius: 5, damage: 7, fire-ticks: 100, knockback: 1.2, windup-ticks: 15, particle: FLAME, color: "#ff3b00"}
 
-  hie_hie:
+  rimefrost:
     type: fruit
     material: APPLE
     name: "<gradient:#a1c4fd:#c2e9fb><bold>Rimefrost Fruit</bold></gradient>"
@@ -265,7 +265,7 @@ items:
         - {name: "<aqua>Glacier Path", type: wave, cooldown: 12, range: 14, width: 1.6, damage: 4, freeze-ticks: 140, effects: ["slowness:2"], effect-seconds: 4, path-block: FROSTED_ICE, particle: SNOWFLAKE, color: "#9be7ff"}
         - {name: "<aqua>Ice Lance", type: beam, cooldown: 10, range: 22, damage: 6, pierce: 2, effects: ["slowness:3"], effect-seconds: 3, windup-ticks: 8, particle: SNOWFLAKE, color: "#c2e9fb"}
 
-  goro_goro:
+  thunderveil:
     type: fruit
     material: APPLE
     name: "<gradient:#f7ff00:#db36a4><bold>Thunderveil Fruit</bold></gradient>"
@@ -301,7 +301,7 @@ items:
         - {name: "<yellow>Chain Storm", type: chain, cooldown: 14, range: 20, damage: 6, jumps: 4, jump-range: 7, falloff: 0.8, color: "#fff35c"}
         - {name: "<yellow>Stormstep", type: dash, cooldown: 6, power: 2.6, damage: 3, dash-ticks: 6, color: "#fff35c"}
 
-  suke_suke:
+  ghostglass:
     type: fruit
     material: APPLE
     name: "<gradient:#e0e0e0:#7f8c8d><bold>Ghostglass Fruit</bold></gradient>"
@@ -332,7 +332,7 @@ items:
       extra-moves:
         - {name: "<white>Phantom Step", type: dash, cooldown: 8, power: 2.0, damage: 2, dash-ticks: 6, self-effects: ["invisibility:1"], duration: 2, color: "#d9d9d9"}
 
-  ope_ope:
+  riftshift:
     type: fruit
     material: APPLE
     name: "<gradient:#ff9a9e:#fad0c4><bold>Riftshift Fruit</bold></gradient>"
@@ -362,7 +362,7 @@ items:
       extra-moves:
         - {name: "<light_purple>Rift Blade", type: beam, cooldown: 10, range: 18, damage: 6, pierce: 3, particle: PORTAL, color: "#7b5cff"}
 
-  yami_yami:
+  hollowvoid:
     type: fruit
     material: APPLE
     name: "<gradient:#232526:#6a3093><bold>Hollowvoid Fruit</bold></gradient>"
@@ -398,7 +398,7 @@ items:
       extra-moves:
         - {name: "<dark_purple>Void Lance", type: beam, cooldown: 12, range: 20, damage: 5, pierce: 4, effects: ["blindness:1"], effect-seconds: 3, windup-ticks: 10, particle: SQUID_INK, color: "#3b0a57"}
 
-  ushi_ushi_bison:
+  behemoth:
     type: fruit
     material: APPLE
     name: "<gradient:#8e5a2b:#d1913c><bold>Behemoth Fruit</bold></gradient>"
@@ -433,9 +433,9 @@ items:
         sound: entity.ravager.roar
 
   # ================================ SEA PRISM STONE ================================
-  #  seastone.hit-seconds:  hitting an abyss fruit user disables their power for this long
-  #  seastone.cuff-seconds: right-clicking a player with the item cuffs them (0 = cannot cuff)
-  #  seastone.cuff-cooldown, cuff-effects, consume-cuffs (single use)
+  #  abyssal.hit-seconds:  hitting an abyss fruit user disables their power for this long
+  #  abyssal.cuff-seconds: right-clicking a player with the item cuffs them (0 = cannot cuff)
+  #  abyssal.cuff-cooldown, cuff-effects, consume-cuffs (single use)
       extra-moves:
         - {name: "<gold>Stampede", type: dash, cooldown: 10, power: 2.4, damage: 7, dash-ticks: 10, self-effects: ["resistance:1"], duration: 2, color: "#8e5a2b"}
   galeborn:
@@ -516,8 +516,8 @@ items:
       extra-moves:
         - {name: "<gray>Boulder Fist", type: punch, cooldown: 9, range: 6, damage: 9, knockback: 2.2, particle: CRIT, color: "#5c6b73", sound: entity.iron_golem.attack}
 
-  sea_prism_blade:
-    type: seastone
+  abyssal_baton:
+    type: abyssal
     material: IRON_SWORD
     name: "<gradient:#43cea2:#185a9d><bold>Abyssal Iron Baton</bold></gradient>"
     lore:
@@ -527,7 +527,7 @@ items:
       - "<aqua>Hitting an Abyss Fruit user silences"
       - "<aqua>their power for <white>6s</white>."
     custom-model-data: 0
-    seastone:
+    abyssal:
       hit-seconds: 6
       cuff-seconds: 0
     recipe:
@@ -541,8 +541,8 @@ items:
         P: PRISMARINE_CRYSTALS
         S: STICK
 
-  seastone_cuffs:
-    type: seastone
+  abyssal_shackles:
+    type: abyssal
     material: CHAIN
     name: "<gradient:#43cea2:#185a9d><bold>Abyssal Iron Shackles</bold></gradient>"
     lore:
@@ -553,7 +553,7 @@ items:
       - "<dark_gray>Single use."
     custom-model-data: 0
     max-stack: 16
-    seastone:
+    abyssal:
       hit-seconds: 3
       cuff-seconds: 20
       cuff-cooldown: 30
@@ -577,7 +577,7 @@ items:
   #  on-hit:  effects on a normal (fully charged) melee hit: chance (0-1), cooldown, extra-damage,
   #           effects, self-effects, effect-seconds, fire-ticks, lifesteal (fraction), lightning, sound
   #  ability: right-click ability (trigger: right-click | sneak-right-click), see ability types above
-  wado_ichimonji:
+  tidecleaver:
     type: sword
     material: IRON_SWORD
     name: "<gradient:#ffffff:#bdc3c7><bold>Tidecleaver</bold></gradient>"
@@ -611,7 +611,7 @@ items:
       damage: 8
       particle: SWEEP_ATTACK
 
-  shusui:
+  nightbloom:
     type: sword
     material: NETHERITE_SWORD
     name: "<gradient:#3a1c71:#d76d77><bold>Nightbloom</bold></gradient>"
@@ -643,7 +643,7 @@ items:
         - wither:1
       particle: CRIT
 
-  yoru:
+  leviathans_fang:
     type: sword
     material: NETHERITE_SWORD
     name: "<gradient:#000000:#c0392b><bold>Leviathan's Fang</bold></gradient>"
@@ -1001,8 +1001,8 @@ items:
         G: GUNPOWDER
 
   # ================================ NAVIGATION & TOOLS ================================
-  log_pose:
-    type: logpose
+  tide_compass:
+    type: compass
     material: COMPASS
     name: "<gradient:#2193b0:#6dd5ed><bold>Tide Compass</bold></gradient>"
     lore:
@@ -1023,8 +1023,8 @@ items:
         G: GLASS_PANE
         C: COMPASS
 
-  den_den_mushi:
-    type: denden
+  echo_conch:
+    type: conch
     material: TURTLE_SCUTE
     name: "<gradient:#f6d365:#fda085><bold>Echo Conch</bold></gradient>"
     lore:
@@ -1033,7 +1033,7 @@ items:
       - "<gray>Right-click: <white>call your crew to your position"
     custom-model-data: 0
     max-stack: 1
-    denden:
+    conch:
       cooldown: 30
       glow-seconds: 5
       sound: block.note_block.bell
@@ -1294,7 +1294,7 @@ items:
       shape: ["L L", "G G"]
       ingredients: {L: LEATHER, G: GOLD_INGOT}
 
-  pirate_king_crown:
+  conqueror_crown:
     type: plain
     material: GOLDEN_HELMET
     name: "<gradient:#f7971e:#ffd200><bold>Crown of the Conqueror</bold></gradient>"
@@ -1363,19 +1363,19 @@ messages:
   ability-used: "<ability><gray>!"
   ability-cooldown: "<ability> <red>is on cooldown: <white><seconds>s"
   ability-no-target: "<ability><gray>: no target in sight."
-  ability-seastone: "<dark_aqua>Abyssal Iron blocks your power!"
+  ability-abyssal: "<dark_aqua>Abyssal Iron blocks your power!"
   ability-sea: "<blue>You cannot use your power in the sea!"
   invisibility-off: "<gray>You are visible again."
-  seastoned: "<dark_aqua>Abyssal Iron! Your power is sealed for <white><seconds>s"
-  seastone-hit: "<dark_aqua>Sealed <white><player></white>'s power for <white><seconds>s"
+  sealed: "<dark_aqua>Abyssal Iron! Your power is sealed for <white><seconds>s"
+  abyssal-hit: "<dark_aqua>Sealed <white><player></white>'s power for <white><seconds>s"
   cuffed: "<dark_aqua><player> cuffed you with Abyssal Iron! <gray>(<seconds>s)"
   cuffed-other: "<dark_aqua>You cuffed <white><player></white>. <gray>(<seconds>s)"
   item-cooldown: "<item> <red>is reloading: <white><seconds>s"
   no-ammo: "<red>Out of ammo! <gray>Needs <white><amount>x <ammo>"
   headshot: "<red><bold>Headshot!"
-  logpose-bar: "<aqua>Tide Compass <dark_gray>»</dark_gray> <white><island></white> <gray>(<type>) <yellow><distance>m"
-  logpose-arrived: "<aqua>Tide Compass <dark_gray>»</dark_gray> <green>You are on <white><island></white>"
-  logpose-no-islands: "<gray>The needle spins aimlessly... no islands in this world."
-  logpose-unavailable: "<gray>The needle does not move. (Islands are disabled)"
-  denden-no-crew: "<red>Nobody answers... you are not in a crew."
-  denden-call: "<gold>Purupuru! <white><player></white> <gray>calls the crew to <white><x>, <y>, <z></white> <dark_gray>(<world>)"
+  compass-bar: "<aqua>Tide Compass <dark_gray>»</dark_gray> <white><island></white> <gray>(<type>) <yellow><distance>m"
+  compass-arrived: "<aqua>Tide Compass <dark_gray>»</dark_gray> <green>You are on <white><island></white>"
+  compass-no-islands: "<gray>The needle spins aimlessly... no islands in this world."
+  compass-unavailable: "<gray>The needle does not move. (Islands are disabled)"
+  conch-no-crew: "<red>Nobody answers... you are not in a crew."
+  conch-call: "<gold>Purupuru! <white><player></white> <gray>calls the crew to <white><x>, <y>, <z></white> <dark_gray>(<world>)"

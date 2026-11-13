@@ -209,7 +209,7 @@ events:
     # Mob templates. type = entity type; health-multiplier OR health; damage-/speed-multiplier;
     # equipment items (MATERIAL or item:<id>); effects (effect:level); boss: true = shown on the boss bar.
     mobs:
-      marine:
+      tidewatch_recruit:
         type: ZOMBIE
         name: "<blue>Tidewatch Recruit"
         health-multiplier: 1.5
@@ -218,14 +218,14 @@ events:
           helmet: LEATHER_HELMET
           chestplate: LEATHER_CHESTPLATE
           mainhand: IRON_SWORD
-      marine_rifleman:
+      tidewatch_rifleman:
         type: SKELETON
         name: "<blue>Tidewatch Rifleman"
         health-multiplier: 1.5
         equipment:
           helmet: CHAINMAIL_HELMET
           mainhand: BOW
-      marine_officer:
+      tidewatch_lieutenant:
         type: VINDICATOR
         name: "<dark_blue>Tidewatch Lieutenant"
         health-multiplier: 2.0
@@ -233,7 +233,7 @@ events:
         equipment:
           helmet: IRON_HELMET
           mainhand: IRON_AXE
-      vice_admiral:
+      warden_captain:
         type: PIGLIN_BRUTE
         name: "<dark_aqua>Warden Captain"
         health-multiplier: 2.5
@@ -241,7 +241,7 @@ events:
         equipment:
           helmet: DIAMOND_HELMET
           mainhand: DIAMOND_AXE
-      admiral:
+      high_warden:
         type: WITHER_SKELETON
         name: "<gold><bold>High Warden Vex"
         boss: true
@@ -255,10 +255,10 @@ events:
           mainhand: NETHERITE_SWORD
     # Waves, in order: list of "template:count". Put the boss in the last wave.
     waves:
-      - ["marine:6", "marine_rifleman:2"]
-      - ["marine:6", "marine_rifleman:4", "marine_officer:1"]
-      - ["marine:4", "marine_officer:3", "vice_admiral:1"]
-      - ["admiral:1", "marine_officer:2", "marine_rifleman:3"]
+      - ["tidewatch_recruit:6", "tidewatch_rifleman:2"]
+      - ["tidewatch_recruit:6", "tidewatch_rifleman:4", "tidewatch_lieutenant:1"]
+      - ["tidewatch_recruit:4", "tidewatch_lieutenant:3", "warden_captain:1"]
+      - ["high_warden:1", "tidewatch_lieutenant:2", "tidewatch_rifleman:3"]
     rewards:
       # Doubloons split between all damage dealers by their share of the total damage.
       pool-doubloons: 20000
@@ -266,7 +266,7 @@ events:
       mvp:
         doubloons: 2000
         reputation: 50
-        items: ["item:shusui"]
+        items: ["item:nightbloom"]
       # Everyone who dealt damage (on top of their share).
       participant:
         items: ["item:rum:2"]

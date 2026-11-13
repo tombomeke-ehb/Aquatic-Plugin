@@ -115,6 +115,7 @@ public abstract class AquaticModule {
         if (!file.exists() && plugin.getResource(resource) != null) {
             plugin.saveResource(resource, false);
         }
+        LegacyNames.migrateFile(file, logger());
         config = YamlConfiguration.loadConfiguration(file);
         try (InputStream in = plugin.getResource(resource)) {
             if (in != null) {
@@ -155,8 +156,17 @@ public abstract class AquaticModule {
     }
 
     public final void saveData(String name, YamlConfiguration data) {
+        // write to a temp file first and then swap it in, so a crash mid-save never leaves a half-written file
+        File target = new File(dataFolder(), name + ".yml");
+        File temp = new File(dataFolder(), name + ".yml.tmp");
         try {
-            data.save(new File(dataFolder(), name + ".yml"));
+            data.save(temp);
+            try {
+                java.nio.file.Files.move(temp.toPath(), target.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+                        java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+            } catch (java.nio.file.AtomicMoveNotSupportedException e) {
+                java.nio.file.Files.move(temp.toPath(), target.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
         } catch (IOException e) {
             logger().log(Level.SEVERE, "Could not save " + name + ".yml of module " + id(), e);
         }

@@ -39,14 +39,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-/** Devil fruit powers: who ate what, passives, the active ability, sea weakness and sea prism stone. */
+/** Abyss fruit powers: who ate what, passives, the active ability, sea weakness and Abyssal Iron. */
 public final class FruitManager implements Listener {
 
     private final ItemsModule module;
     private final Map<UUID, String> fruitOf = new HashMap<>();
     /** "uuid|key" -> time (ms) at which the cooldown ends. Shared with item abilities. */
     private final Map<String, Long> cooldowns = new HashMap<>();
-    private final Map<UUID, Long> seastoned = new HashMap<>();
+    private final Map<UUID, Long> sealed = new HashMap<>();
     private final Map<UUID, Long> lastTrigger = new HashMap<>();
     /** Selected move per player (index into ItemDef.moves()). */
     private final Map<UUID, Integer> selectedMove = new HashMap<>();
@@ -93,6 +93,7 @@ public final class FruitManager implements Listener {
     /** Mastery XP per player per fruit: "uuid|fruit" -> xp. */
     private final Map<String, Long> mastery = new HashMap<>();
     private boolean masteryDirty;
+    private long lastSave = System.currentTimeMillis();
     private java.util.Set<ConfigurationSection> fruitMoves;
 
     // ------------------------------------------------------------------ mastery
@@ -215,7 +216,7 @@ public final class FruitManager implements Listener {
         }
         for (String key : players.getKeys(false)) {
             try {
-                fruitOf.put(UUID.fromString(key), players.getString(key));
+                fruitOf.put(UUID.fromString(key), dev.aquatic.core.LegacyNames.id(players.getString(key)));
             } catch (IllegalArgumentException ignored) {
             }
         }
@@ -230,7 +231,7 @@ public final class FruitManager implements Listener {
                 ConfigurationSection per = m.getConfigurationSection(player);
                 if (per != null) {
                     for (String fruit : per.getKeys(false)) {
-                        mastery.put(player + "|" + fruit, per.getLong(fruit));
+                        mastery.merge(player + "|" + dev.aquatic.core.LegacyNames.id(fruit), per.getLong(fruit), Long::sum);
                     }
                 }
             }
@@ -245,6 +246,7 @@ public final class FruitManager implements Listener {
             data.set("mastery." + parts[0] + "." + parts[1], xp);
         });
         masteryDirty = false;
+        lastSave = System.currentTimeMillis();
         module.saveData("fruits", data);
     }
 
@@ -289,15 +291,15 @@ public final class FruitManager implements Listener {
         }
     }
 
-    public boolean isSeastoned(UUID player) {
-        Long until = seastoned.get(player);
+    public boolean isSealed(UUID player) {
+        Long until = sealed.get(player);
         return until != null && until > System.currentTimeMillis();
     }
 
-    /** Sea prism stone: disables the player's fruit for a while. */
-    public void seastone(Player target, double seconds) {
+    /** Abyssal Iron: disables the player's fruit for a while. */
+    public void seal(Player target, double seconds) {
         long until = System.currentTimeMillis() + (long) (seconds * 1000);
-        seastoned.merge(target.getUniqueId(), until, Math::max);
+        sealed.merge(target.getUniqueId(), until, Math::max);
         module.gear().abilities().endInvisibility(target);
     }
 
@@ -318,9 +320,9 @@ public final class FruitManager implements Listener {
     public void tick(long interval) {
         long now = System.currentTimeMillis();
         cooldowns.values().removeIf(until -> until < now);
-        seastoned.values().removeIf(until -> until < now);
-        if (masteryDirty && now % 60000 < 1500) {
-            save(); // mastery XP, about once a minute
+        sealed.values().removeIf(until -> until < now);
+        if (masteryDirty && now - lastSave >= 60_000) {
+            save(); // mastery XP, once a minute
         }
         if (fruitOf.isEmpty()) {
             return;
@@ -348,7 +350,7 @@ public final class FruitManager implements Listener {
             } else {
                 inSea.remove(uuid);
             }
-            boolean suppressed = isSeastoned(uuid) || (wet && sea != null && sea.getBoolean("disable-passives", true));
+            boolean suppressed = isSealed(uuid) || (wet && sea != null && sea.getBoolean("disable-passives", true));
             if (!suppressed) {
                 for (PotionEffect e : passives(def, ticks)) {
                     p.addPotionEffect(e);
@@ -480,7 +482,7 @@ public final class FruitManager implements Listener {
             return;
         }
         List<String> immunities = def.cfg.getStringList("fruit.immunities");
-        if (immunities.isEmpty() || isSeastoned(p.getUniqueId()) || inSea.contains(p.getUniqueId())) {
+        if (immunities.isEmpty() || isSealed(p.getUniqueId()) || inSea.contains(p.getUniqueId())) {
             return;
         }
         String cause = event.getCause().name();
@@ -516,7 +518,7 @@ public final class FruitManager implements Listener {
         }
         ItemDef def = module.def(id);
         int radius = def == null ? 0 : Math.min(5, def.cfg.getInt("fruit.frost-walker-radius", 0));
-        if (radius <= 0 || p.isFlying() || p.isInsideVehicle() || p.isInWater() || isSeastoned(p.getUniqueId())
+        if (radius <= 0 || p.isFlying() || p.isInsideVehicle() || p.isInWater() || isSealed(p.getUniqueId())
                 || p.getGameMode() == GameMode.SPECTATOR) {
             return;
         }
@@ -598,8 +600,8 @@ public final class FruitManager implements Listener {
             return;
         }
         Object name = Text.mm(ability.getString("name", "Ability"));
-        if (isSeastoned(uuid)) {
-            module.actionBar(p, "ability-seastone");
+        if (isSealed(uuid)) {
+            module.actionBar(p, "ability-abyssal");
             return;
         }
         if (seaWeak(p) && module.config().getBoolean("fruits.sea-weakness.disable-abilities", true)) {

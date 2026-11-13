@@ -9,14 +9,14 @@ import org.bukkit.inventory.ItemStack;
 public final class ItemDef {
 
     public final String id;
-    /** fruit | sword | seastone | gun | cannon | logpose | denden | drink | plain */
+    /** fruit | sword | abyssal | gun | cannon | compass | conch | drink | plain */
     public final String type;
     public final ConfigurationSection cfg;
     private final ItemStack template;
 
     public ItemDef(String id, String type, ConfigurationSection cfg, ItemStack template) {
         this.id = id;
-        this.type = type;
+        this.type = dev.aquatic.core.LegacyNames.type(type);
         this.cfg = cfg;
         this.template = template;
     }

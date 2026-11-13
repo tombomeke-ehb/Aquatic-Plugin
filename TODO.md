@@ -49,7 +49,7 @@ This file is the roadmap. Tick off items as they're finished and add new ideas u
 1. [ ] **Test 2.0.0 in-game and balance it.** Fruit damage ×1.5 plus mastery, bounty power and levels all stack. Measure the time-to-kill in practice and adjust `abilities.fruit-damage-multiplier`, the mastery values and `power-perks`.
 2. [ ] **Tidewill** (our version of the inner-power idea): Ironwill, Seasight and Stormcrown. Details below.
 3. [ ] **Elemental passive:** Elemental fruit users phase through normal hits. Only Ironwill or Abyssal Iron gets through. This makes Tidewill matter.
-4. [ ] **Rename the internal ids, with a migration:** `gomu_gomu` → `springcoil`, `log_pose` → `tide_compass`, `pirate_king_crown` → `conqueror_crown`, ... An alias table converts existing items and fruit data automatically.
+4. [ ] **Rename the internal ids, with a migration:** `springcoil` → `springcoil`, `tide_compass` → `tide_compass`, `conqueror_crown` → `conqueror_crown`, ... An alias table converts existing items and fruit data automatically.
 5. [ ] **Config versions:** improved messages and loot should also reach existing servers automatically, without a manual `resetconfig`.
 
 ---

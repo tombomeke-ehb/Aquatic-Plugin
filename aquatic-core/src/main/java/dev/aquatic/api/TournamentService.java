@@ -6,12 +6,12 @@ import java.util.UUID;
 public interface TournamentService {
 
     /** @return the reigning Pirate King, or null when the throne is empty. */
-    UUID pirateKing();
+    UUID conqueror();
 
     /** Last known name of the Pirate King, or null. */
-    String pirateKingName();
+    String conquerorName();
 
-    boolean isPirateKing(UUID player);
+    boolean isConqueror(UUID player);
 
     /** True while the player is fighting in a tournament match (deaths and logouts are handled by the tournament). */
     default boolean isInMatch(UUID player) {

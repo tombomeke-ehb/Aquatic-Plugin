@@ -92,7 +92,7 @@ public final class CrewsModule extends AquaticModule implements CrewService {
 
         chatPrefixEnabled = config().getBoolean("chat.prefix-enabled", true);
         chatPrefixFormat = config().getString("chat.prefix-format", "<dark_gray>[<tag><dark_gray>] ");
-        kingPrefix = config().getString("chat.pirate-king-prefix", "");
+        kingPrefix = config().getString("chat.conqueror-prefix", "");
         tabEnabled = config().getBoolean("tablist.enabled", true);
         tabFormat = config().getString("tablist.format", "<dark_gray>[<tag><dark_gray>] <white><player>");
 
@@ -862,7 +862,7 @@ public final class CrewsModule extends AquaticModule implements CrewService {
                         "rank", crew == null ? Component.empty() : Text.mm(rankIcon(crew.rankOf(id)) + " " + rankName(crew.rankOf(id))),
                         "reputation", crew == null ? "-" : String.valueOf(crew.reputation()),
                         "bounty", bountyText,
-                        "title", tournament != null && tournament.isPirateKing(id) ? rawMsg("card-sovereign") : Component.empty());
+                        "title", tournament != null && tournament.isConqueror(id) ? rawMsg("card-sovereign") : Component.empty());
                 playerCards.put(id, card);
             }
             dev.aquatic.api.LevelService levels = service(dev.aquatic.api.LevelService.class);
@@ -905,7 +905,7 @@ public final class CrewsModule extends AquaticModule implements CrewService {
         String crown = kingPrefix;
         if (crown != null && !crown.isEmpty()) {
             TournamentService tournament = service(TournamentService.class);
-            if (tournament != null && tournament.isPirateKing(player)) {
+            if (tournament != null && tournament.isConqueror(player)) {
                 prefix = Text.mm(crown);
             }
         }

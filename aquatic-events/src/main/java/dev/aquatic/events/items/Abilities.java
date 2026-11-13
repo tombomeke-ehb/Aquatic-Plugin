@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * The ability engine used by devil fruits and legendary swords. Every ability is a config section with
+ * The ability engine used by abyss fruits and legendary swords. Every ability is a config section with
  * a "type" and numbers; see the header of modules/items.yml for the list of types and their options.
  */
 public final class Abilities {

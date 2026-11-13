@@ -69,8 +69,8 @@ categories:
       - {item: COMPASS, amount: 1, buy: 90, sell: 10}
       - {item: SPYGLASS, amount: 1, buy: 150, sell: 15}
       - {item: MAP, amount: 1, buy: 40, sell: 0}
-      - {item: "item:log_pose", amount: 1, buy: 900, sell: 0}
-      - {item: "item:den_den_mushi", amount: 1, buy: 600, sell: 0}
+      - {item: "item:tide_compass", amount: 1, buy: 900, sell: 0}
+      - {item: "item:echo_conch", amount: 1, buy: 600, sell: 0}
   pirate:
     name: "<red><bold>Pirate Armory"
     icon: GUNPOWDER

@@ -59,12 +59,12 @@ public final class KingsChallenge extends SeaEvent {
         }
         radius = Math.max(2, cfg.getDouble("radius", 6));
         TournamentService tournament = module.service(TournamentService.class);
-        UUID king = tournament == null ? null : tournament.pirateKing();
+        UUID king = tournament == null ? null : tournament.conqueror();
         if (king == null && cfg.getBoolean("require-king", false)) {
             throw fail("kings-no-king");
         }
         if (king != null) {
-            kingName = tournament.pirateKingName();
+            kingName = tournament.conquerorName();
             Crew kc = crews().crewOf(king);
             kingCrewId = kc == null ? null : kc.id();
             announce("kings-start", "king", kingName == null ? "?" : kingName, "x", hill.getBlockX(), "y", hill.getBlockY(),

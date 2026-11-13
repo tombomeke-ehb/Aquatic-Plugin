@@ -42,7 +42,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 
-/** Custom pirate items: devil fruits, sea prism stone, legendary swords, guns, log pose, rum, the crown. */
+/** Custom pirate items: abyss fruits, Abyssal Iron, legendary swords, guns, tide compass, rum, the crown. */
 public final class ItemsModule extends AquaticModule implements ItemService {
 
     private final Map<String, ItemDef> defs = new LinkedHashMap<>();
@@ -284,8 +284,8 @@ public final class ItemsModule extends AquaticModule implements ItemService {
         return Collections.unmodifiableSet(ids);
     }
 
-    /** Pseudo item id: createItem returns a random devil fruit (used by treasure loot and event rewards). */
-    public static final String RANDOM_FRUIT = "devil_fruit_random";
+    /** Pseudo item id: createItem returns a random abyss fruit (used by treasure loot and event rewards). */
+    public static final String RANDOM_FRUIT = "fruit_random";
 
     @Override
     public ItemStack createItem(String id, int amount) {
@@ -303,7 +303,27 @@ public final class ItemsModule extends AquaticModule implements ItemService {
         if (stack == null || stack.getType().isAir() || !stack.hasItemMeta()) {
             return null;
         }
-        return stack.getItemMeta().getPersistentDataContainer().get(idKey, PersistentDataType.STRING);
+        // items made before 2.3.1 can carry an old id (e.g. "gomu_gomu"); they map to the new one
+        return dev.aquatic.core.LegacyNames.id(stack.getItemMeta().getPersistentDataContainer().get(idKey, PersistentDataType.STRING));
+    }
+
+    /** Rewrites old item ids (from before 2.3.1) stored on the stacks to the new ids. */
+    public void upgradeIds(org.bukkit.inventory.Inventory inventory) {
+        if (inventory == null) {
+            return;
+        }
+        for (ItemStack stack : inventory.getContents()) {
+            if (stack == null || stack.getType().isAir() || !stack.hasItemMeta()) {
+                continue;
+            }
+            org.bukkit.inventory.meta.ItemMeta meta = stack.getItemMeta();
+            String raw = meta.getPersistentDataContainer().get(idKey, PersistentDataType.STRING);
+            String now = dev.aquatic.core.LegacyNames.id(raw);
+            if (raw != null && !raw.equals(now)) {
+                meta.getPersistentDataContainer().set(idKey, PersistentDataType.STRING, now);
+                stack.setItemMeta(meta);
+            }
+        }
     }
 
     /** @return the definition of the stack's custom item, or null. */
@@ -412,7 +432,7 @@ public final class ItemsModule extends AquaticModule implements ItemService {
                 });
         registerCommand(cmd);
 
-        AquaticCommand fruit = new AquaticCommand("fruit", "Shows your abyss fruit power", "devilfruit");
+        AquaticCommand fruit = new AquaticCommand("fruit", "Shows your abyss fruit power", "abyssfruit");
         fruit.sub("info", (sender, args) -> {
             Player p = AquaticCommand.player(sender);
             fruitInfo(sender, p.getUniqueId(), p.getName());

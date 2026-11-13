@@ -105,7 +105,7 @@ starter-kit:
     - "COOKED_COD:16"
     - "STONE_SHOVEL"
     - "STONE_SWORD"
-    - "item:log_pose"
+    - "item:tide_compass"
   # Extra Doubloons on top of economy.yml's start-balance (0 = none).
   doubloons: 0
   # Also bury a real treasure on a random island and give a treasure map to it: the best way to
@@ -171,7 +171,7 @@ book:
     fruits:
       - "<dark_aqua><bold>5. Abyss Fruits</bold>\n\n<black>Rare fruits found in treasure. Eating one gives a power, but only one per pirate.\n\nUse it: <bold>sneak + F</bold>\n\nWater takes your power away while you swim!\n\n<dark_gray>/fruit"
       - "<dark_aqua><bold>Pirate gear</bold>\n\n<black>Look out for legendary swords, flintlocks, cannons, Abyssal Iron weapons (they cancel fruit powers) and the Tide Compass, which points to the nearest island."
-    pirate-king:
+    conqueror:
       - "<dark_aqua><bold>6. Conqueror of the Sea</bold>\n\n<black>Crews compete in the tournament:\n\nRegistration\nQualifiers\nBracket fights\nGrand finale\n\nThe winning captain is crowned <gold><bold>Conqueror of the Sea</bold></gold><black>!\n\n<dark_gray>/tournament info\n/hallofkings"
 
 messages:

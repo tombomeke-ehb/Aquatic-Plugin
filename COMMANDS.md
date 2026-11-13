@@ -269,13 +269,13 @@ Right-click a treasure map to get a "warmer / colder" hint.
 Aliases: `/aquaticitem`, `/pirateitem`.
 
 Default item ids:
-- **Abyss Fruits:** `gomu_gomu`, `mera_mera`, `hie_hie`, `goro_goro`, `suke_suke`, `ope_ope`, `yami_yami`, `ushi_ushi_bison`, `galeborn`, `stoneskin`
-- **Weapons:** `sea_prism_blade`, `seastone_cuffs`, `wado_ichimonji`, `shusui`, `yoru`, `storm_saber`, `tide_rapier`, `abyss_cutlass`, `krakens_maul`, `flintlock`, `hand_cannon`, `cannonball`
+- **Abyss Fruits:** `springcoil`, `emberheart`, `rimefrost`, `thunderveil`, `ghostglass`, `riftshift`, `hollowvoid`, `behemoth`, `galeborn`, `stoneskin`
+- **Weapons:** `abyssal_baton`, `abyssal_shackles`, `tidecleaver`, `nightbloom`, `leviathans_fang`, `storm_saber`, `tide_rapier`, `abyss_cutlass`, `krakens_maul`, `flintlock`, `hand_cannon`, `cannonball`
 - **Throwables (right-click):** `smoke_bomb`, `frost_bomb`, `fire_bomb`
-- **Tools and other:** `log_pose`, `den_den_mushi`, `rum`, `healing_tonic`, `gale_grog`, `pirate_king_crown`
+- **Tools and other:** `tide_compass`, `echo_conch`, `rum`, `healing_tonic`, `gale_grog`, `conqueror_crown`
 - **Gear:** `coral_trident`, `captains_coat`, `marauders_buckler`
 - **Armour sets (craftable):** `tidewarden_helmet`, `tidewarden_chestplate`, `tidewarden_leggings`, `tidewarden_boots`, `corsair_hat`, `corsair_coat`, `corsair_breeches`, `corsair_boots`
-- **Special:** `devil_fruit_random` gives a random Abyss Fruit
+- **Special:** `fruit_random` gives a random Abyss Fruit
 
 **Using an Abyss Fruit power:** sneak + **F** (swap hands), or sneak + right-click while looking at a block. Fruits have 2–3 moves: **sneak + scroll** (empty hand) switches between them. You cannot use powers while in water.
 
@@ -385,7 +385,7 @@ New players get a short intro on their first join: titles and chat tips about cr
 | Command | What it does | Permission |
 | --- | --- | --- |
 | `/guide` | Open the pirate's guide book (aliases `/tutorial`, `/pirateguide`) | Everyone |
-| `/guide <chapter>` | Open one chapter: `welcome`, `crews`, `islands`, `treasure`, `bounties`, `fruits`, `pirate-king` | Everyone |
+| `/guide <chapter>` | Open one chapter: `welcome`, `crews`, `islands`, `treasure`, `bounties`, `fruits`, `conqueror` | Everyone |
 | `/guide chapters` | List the chapters | Everyone |
 | `/guide intro` | Watch the intro again | Player: `aquatic.guide.use` |
 | `/guide skip` | Stop the intro | Everyone |

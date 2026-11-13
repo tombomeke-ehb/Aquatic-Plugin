@@ -39,7 +39,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
-/** Server-wide PvE raid: waves of buffed Marines, an Admiral boss in the last wave, rewards by damage dealt. */
+/** Server-wide PvE raid: waves of buffed Tidewatch soldiers, a High Warden boss in the last wave, rewards by damage dealt. */
 public final class GrandRaid extends SeaEvent {
 
     private Location center;

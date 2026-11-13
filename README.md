@@ -203,7 +203,7 @@ Players use `/seaevent info` and `/seaevent join`. Rewards, durations and minimu
 | Bounty | `/bounty admin add|remove|clear <player> [amount]` |
 | Items | `/aitem give <player> <id> [amount]`, `/aitem list`, `/aitem fruit set <player> <fruit|none>`, `/aitem fruit info [player]` |
 
-`devil_fruit_random` is a special item id that gives a random Abyss Fruit. Treasure loot and event rewards can use it too.
+`fruit_random` is a special item id that gives a random Abyss Fruit. Treasure loot and event rewards can use it too.
 
 ## Player commands
 

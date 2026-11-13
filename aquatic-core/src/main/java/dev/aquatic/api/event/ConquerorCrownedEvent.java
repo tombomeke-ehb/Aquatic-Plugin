@@ -6,14 +6,14 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
 /** Fired when a new Pirate King is crowned (crew may be null). */
-public class PirateKingCrownedEvent extends Event {
+public class ConquerorCrownedEvent extends Event {
 
     private static final HandlerList HANDLERS = new HandlerList();
     private final UUID king;
     private final String kingName;
     private final Crew crew;
 
-    public PirateKingCrownedEvent(UUID king, String kingName, Crew crew) {
+    public ConquerorCrownedEvent(UUID king, String kingName, Crew crew) {
         this.king = king;
         this.kingName = kingName;
         this.crew = crew;

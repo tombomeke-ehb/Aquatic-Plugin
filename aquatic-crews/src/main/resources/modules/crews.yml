@@ -227,7 +227,7 @@ chat:
   # Typing this in a message shows the item in your hand (hover it for the details). "" = off.
   item-tag: "[item]"
   # Extra prefix for the reigning Conqueror of the Sea (needs the tournament module). Empty = none.
-  pirate-king-prefix: "<gold>👑 </gold>"
+  conqueror-prefix: "<gold>👑 </gold>"
   # Crew chat (/cc <message> or /crew chat toggle). Tags: <crew> <tag> <rank> <player> <message>
   crew-format: "<dark_aqua>[<tag><dark_aqua>] <gray><rank> <white><player><dark_gray>: <aqua><message>"
   # Also print crew chat in the console.

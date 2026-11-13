@@ -10,7 +10,7 @@ import dev.aquatic.api.event.CrewDisbandEvent;
 import dev.aquatic.api.event.CrewLeaveEvent;
 import dev.aquatic.api.event.IslandClaimEvent;
 import dev.aquatic.api.event.IslandConquerEvent;
-import dev.aquatic.api.event.PirateKingCrownedEvent;
+import dev.aquatic.api.event.ConquerorCrownedEvent;
 import dev.aquatic.api.event.TreasureFoundEvent;
 import dev.aquatic.command.AquaticCommand;
 import dev.aquatic.command.CommandFail;
@@ -264,17 +264,17 @@ public final class TournamentModule extends AquaticModule implements TournamentS
     // ------------------------------------------------------------------ TournamentService
 
     @Override
-    public UUID pirateKing() {
+    public UUID conqueror() {
         return king;
     }
 
     @Override
-    public String pirateKingName() {
+    public String conquerorName() {
         return kingName;
     }
 
     @Override
-    public boolean isPirateKing(UUID player) {
+    public boolean isConqueror(UUID player) {
         return king != null && king.equals(player);
     }
 
@@ -698,7 +698,7 @@ public final class TournamentModule extends AquaticModule implements TournamentS
         OfflinePlayer op = Bukkit.getOfflinePlayer(captain);
         String name = op.getName() == null ? captain.toString() : op.getName();
         setKing(captain, name);
-        Bukkit.getPluginManager().callEvent(new PirateKingCrownedEvent(captain, name, crew));
+        Bukkit.getPluginManager().callEvent(new ConquerorCrownedEvent(captain, name, crew));
 
         Title title = Title.title(rawMsg("crowned-title", "player", name),
                 rawMsg("crowned-subtitle", "crew", crew.displayName(), "season", season),
@@ -783,7 +783,7 @@ public final class TournamentModule extends AquaticModule implements TournamentS
         if (items == null) {
             return false;
         }
-        var crown = items.createItem(config().getString("coronation.crown-item", "pirate_king_crown"), 1);
+        var crown = items.createItem(config().getString("coronation.crown-item", "conqueror_crown"), 1);
         if (crown == null) {
             return false;
         }
@@ -959,7 +959,7 @@ public final class TournamentModule extends AquaticModule implements TournamentS
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player p = event.getPlayer();
-        if (isPirateKing(p.getUniqueId())) {
+        if (isConqueror(p.getUniqueId())) {
             if (!p.getName().equals(kingName)) {
                 kingName = p.getName();
                 saveHall();
@@ -1553,7 +1553,7 @@ public final class TournamentModule extends AquaticModule implements TournamentS
             setKing(op.getUniqueId(), name);
             CrewService crews = service(CrewService.class);
             Crew crew = crews == null ? null : crews.crewOf(op.getUniqueId());
-            Bukkit.getPluginManager().callEvent(new PirateKingCrownedEvent(op.getUniqueId(), name, crew));
+            Bukkit.getPluginManager().callEvent(new ConquerorCrownedEvent(op.getUniqueId(), name, crew));
             send(s, "king-set", "player", name);
             announce("king-appointed", "player", name);
         }).usage("setking <player|none>").description("Set or clear the Conqueror of the Sea").permission(admin)

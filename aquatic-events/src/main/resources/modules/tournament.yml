@@ -144,7 +144,7 @@ finale:
 coronation:
   # Give the crown item (from the items module) to the new king. Skipped when the items module is off.
   give-crown: true
-  crown-item: pirate_king_crown
+  crown-item: conqueror_crown
   # Fireworks launched around the king.
   fireworks: 10
   prize:
@@ -158,7 +158,7 @@ coronation:
     reputation: 500
     # Console commands. Placeholders: {player} {uuid} {crew} {season}
     commands: []
-    #  - "lp user {player} parent add pirateking"
+    #  - "lp user {player} parent add conqueror"
 
 king-perks:
   # The Conqueror of the Sea glows.
