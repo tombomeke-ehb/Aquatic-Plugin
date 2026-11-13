@@ -2,17 +2,47 @@
 
 **Developed by [tombomeke](https://github.com/tombomeke).**
 
+[![Build](https://github.com/tombomeke-ehb/Aquatic-Plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/tombomeke-ehb/Aquatic-Plugin/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/tombomeke-ehb/Aquatic-Plugin?sort=semver)](https://github.com/tombomeke-ehb/Aquatic-Plugin/releases)
+
 One plugin jar for the Aquatic SMP pirate server (Paper 1.21.4+, Java 21): crews, Doubloons, bounties, procedurally generated islands with claiming and conquest, buried treasure with treasure maps, Abyss Fruits and pirate gear, the Conqueror of the Sea tournament and seven server events.
 
 Everything is split into **modules** that can be switched on and off at runtime. Each module has its own config file with every number, toggle and message in it.
 
 ## Build
 
+### Requirements
+
+- Java 21
+- Python 3 (only needed when rebuilding the resource pack)
+- Maven 3.9+ (or use the included `build.sh` helper)
+
 ```bash
+# Rebuild the resource pack and bake its SHA-1 into the plugin
+python resourcepack/build_pack.py dev
+
+# Build and verify all modules
+mvn verify
+
+# Or build with the helper script
 ./build.sh
 ```
 
-Output: `aquatic-dist/target/AquaticSMP-1.0.0.jar`. The script uses `mvn` from PATH, or IntelliJ's bundled Maven as a fallback. Java 21 is required.
+Output: `aquatic-dist/target/AquaticSMP-2.13.0.jar`. The helper uses `mvn` from PATH, or IntelliJ's bundled Maven as a fallback.
+
+Pull requests and pushes to `main` run the same resource-pack and Maven verification build in GitHub Actions. Pushing a tag such as `v2.13.0` creates a GitHub release containing the plugin JAR and resource pack.
+
+### Development workflow
+
+```bash
+# Compile, run tests if present, and package
+mvn verify
+
+# Build only the final shaded plugin
+mvn -pl aquatic-dist -am package
+```
+
+The final shaded JAR is produced by `aquatic-dist`; the other Maven modules are library modules that are bundled into it.
 
 ## Install
 
