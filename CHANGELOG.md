@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.16.1 (2026-11-13)
+
+### Changed
+- **The crates are now 3D treasure chests** (resource pack):
+  - A wooden body with plank seams, grain, knots and nails.
+  - A rounded lid, two metal bands over the lid and body, metal corner guards, a rim, little feet, and a lock plate with a gem keyhole on the front and the back. The gem slowly pulses.
+  - Higher-resolution textures (64x64) in each crate's colours: the Sailor's Crate in spruce and iron with a cyan gem, the Captain's Crate in dark oak and gold with a ruby, and the Kraken's Hoard in deep purple wood with glowing teal metal and a violet gem.
+  - They look right as a held item and in the inventory too.
+
+### Your server
+- Only the resource pack changed. Swap the jar; the plugin sends the new pack by itself.
+
 ## 2.16.0 (2026-11-13)
 
 ### Added

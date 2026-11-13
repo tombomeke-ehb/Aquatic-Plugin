@@ -1033,79 +1033,169 @@ def crate_key(metal, dark, gem, glow):
     return outline(img, rgb("#1a1208"))
 
 
-# ---------------------------------------------------------------- crate blocks (nether blocks retextured: the Nether is off)
+# ---------------------------------------------------------------- crate blocks: 3D treasure chests on nether blocks (the Nether is off)
 
-CRATE_BLOCKS = {  # vanilla block -> crate look; these blocks can't be found without the Nether
-    "nether_quartz_ore": ("sailor", "#8a6a43", "#5a4128", "#aeb8bf", "#5f6a72", "#3fb8c9", "#bff6ff"),
-    "nether_gold_ore": ("captain", "#5a3a22", "#38220f", "#f2c230", "#9c6b12", "#c0392b", "#ffb3a6"),
-    "shroomlight": ("kraken", "#3a2a52", "#21162f", "#43e0c8", "#1c6b61", "#c47cff", "#f0d9ff"),
+CRATE_BLOCKS = {  # vanilla block -> (tier, wood, dark wood, metal, dark metal, gem, gem glow)
+    "nether_quartz_ore": ("sailor", "#8a6a43", "#4f3a22", "#c3ccd2", "#5f6a72", "#2fb3c9", "#c8fbff"),
+    "nether_gold_ore": ("captain", "#6a4326", "#341f0e", "#f2c230", "#8a5c0e", "#c0392b", "#ffc4b8"),
+    "shroomlight": ("kraken", "#3d2b57", "#1d1330", "#3fd8c4", "#16665c", "#c47cff", "#f5e6ff"),
 }
+CHEST_PX = 64  # texture size of the chest parts (16 model units -> 4 pixels each)
 
 
-def crate_textures(wood, wood_d, band, band_d, gem, glow):
-    """32x32 textures for a crate: side (planks with metal bands and rivets), top, corner post and the lock."""
-    wood, wood_d, band, band_d, gem, glow = (rgb(c) for c in (wood, wood_d, band, band_d, gem, glow))
-    side, top, post, lock = new(), new(), new(), new()
-    for y in range(N):
-        for x in range(N):
-            plank = y // 6
-            grain = shade(wood, 0.12 if (x * 7 + plank * 13) % 11 < 2 else (-0.08 if (x + plank * 5) % 9 == 0 else 0))
-            c = wood_d if y % 6 == 5 else grain                     # gaps between planks
-            if 5 <= y <= 8 or 23 <= y <= 26:                       # two metal bands
-                c = band_d if y in (5, 8, 23, 26) else band
-                if x % 8 == 3 and y in (6, 7, 24, 25):
-                    c = shade(band, 0.45)                          # rivets
-            put(side, x, y, c)
-            # top: planks the other way, a metal rim and a cross of bands
-            g2 = shade(wood, 0.1 if (y * 7 + (x // 6) * 13) % 11 < 2 else 0)
-            t = wood_d if x % 6 == 5 else g2
-            if x < 2 or y < 2 or x > 29 or y > 29:
-                t = band_d if (x in (0, 31) or y in (0, 31)) else band
-            elif 14 <= x <= 17 or 14 <= y <= 17:
-                t = band if not (14 <= x <= 17 and 14 <= y <= 17) else gem
-                if 15 <= x <= 16 and 15 <= y <= 16:
-                    t = glow
-            put(top, x, y, t)
-            # corner post: a metal-capped beam
-            p = shade(band, 0.25 if x < 10 else (-0.2 if x > 22 else 0))
-            if y < 3 or y > 28 or (y % 10 == 6):
-                p = band_d
-            if x % 16 == 8 and y % 10 == 2:
-                p = shade(band, 0.5)
-            put(post, x, y, p)
-            # lock plate with a gem keyhole
-            d = math.hypot(x - 15.5, y - 13.5)
-            lc = band if not (x < 2 or y < 2 or x > 29 or y > 29) else band_d
-            if d < 7:
-                lc = gem if d > 3.2 else glow
-            if 14 <= x <= 17 and 17 <= y <= 24:
-                lc = band_d                                          # the keyhole slot
-            put(lock, x, y, lc)
-    return side, top, post, lock
+def _noise(x, y, seed):
+    h = (x * 73856093) ^ (y * 19349663) ^ (seed * 83492791)
+    h ^= h >> 13
+    return ((h * 0x5bd1e995) & 0xffff) / 65535.0
+
+
+def chest_wood(wood, dark, seed, vertical=False):
+    """Weathered planks: 8 px wide boards with grain, darker seams, knots and nail heads."""
+    img = Image.new("RGBA", (CHEST_PX, CHEST_PX))
+    px = img.load()
+    for y in range(CHEST_PX):
+        for x in range(CHEST_PX):
+            a, b = (x, y) if vertical else (y, x)       # a: across the boards, b: along them
+            board = a // 8
+            grain = math.sin(b * 0.35 + board * 2.1 + math.sin(b * 0.09 + board) * 2.0)
+            k = 0.07 * grain + 0.06 * (_noise(b // 2, board, seed) - 0.5) + 0.04 * (_noise(x, y, seed + 1) - 0.5)
+            c = shade(wood, k)
+            if a % 8 == 7:
+                c = shade(dark, -0.05)                   # seam
+            elif a % 8 == 0:
+                c = shade(wood, 0.12)                    # lit edge of the board
+            knot = (b + board * 13) % 37
+            if knot in (11, 12) and a % 8 in (3, 4):
+                c = shade(dark, 0.1)                     # a knot
+            if b % 32 in (2, 29) and a % 8 == 3:
+                c = rgb("#2a2a2a")                       # nail heads
+            px[x, y] = c + (255,)
+    return img
+
+
+def chest_metal(metal, dark, seed, rivets=True):
+    """Worn metal: brushed, darker edges, rivets every few pixels."""
+    img = Image.new("RGBA", (CHEST_PX, CHEST_PX))
+    px = img.load()
+    for y in range(CHEST_PX):
+        for x in range(CHEST_PX):
+            k = 0.08 * math.sin(y * 0.8 + x * 0.05) + 0.07 * (_noise(x // 2, y, seed) - 0.5)
+            c = shade(metal, k)
+            edge = min(x, y, CHEST_PX - 1 - x, CHEST_PX - 1 - y)
+            if edge < 3:
+                c = mix(c, dark, 0.65 - edge * 0.15)
+            if rivets and (x % 16 in (7, 8)) and (y % 16 in (7, 8)):
+                c = shade(metal, 0.45) if (x % 16 == 7 and y % 16 == 7) else dark
+            px[x, y] = c + (255,)
+    return img
+
+
+def chest_lock(metal, dark, gem, glow, frame):
+    """The lock plate: a shield-shaped plate with a gem and a keyhole; the gem pulses (one frame of 8)."""
+    img = Image.new("RGBA", (CHEST_PX, CHEST_PX))
+    px = img.load()
+    pulse = 0.5 + 0.5 * math.sin(frame / 8 * 2 * math.pi)
+    for y in range(CHEST_PX):
+        for x in range(CHEST_PX):
+            dx, dy = x - 31.5, y - 26
+            edge = min(x, CHEST_PX - 1 - x, y, CHEST_PX - 1 - y)
+            c = shade(metal, 0.1 * math.sin(y * 0.5) - (0.35 if edge < 4 else 0))
+            if edge < 2:
+                c = dark
+            d = math.hypot(dx, dy)
+            if d < 15:
+                c = mix(gem, glow, max(0.0, 0.85 - d / 15) * (0.5 + 0.5 * pulse))
+                if d > 13:
+                    c = shade(metal, 0.35)               # bezel
+            if abs(dx) < 2.5 and 34 <= y <= 50:
+                c = rgb("#120c08")                       # keyhole slot
+            if math.hypot(dx, y - 34) < 4:
+                c = rgb("#120c08")
+            if (x in (8, 55)) and (y in (8, 55)):
+                c = shade(metal, 0.5)                    # corner screws
+            px[x, y] = c + (255,)
+    return img
 
 
 def crate_blocks():
+    """Each crate block becomes a treasure chest: body, a rounded three-step lid, metal bands over it all,
+    corner guards, feet and a pulsing lock on the front and the back."""
     tex = os.path.join(PACK, "assets", "aquatic", "textures", "block")
     os.makedirs(tex, exist_ok=True)
-    for block, (tier, *cols) in CRATE_BLOCKS.items():
-        names = ("side", "top", "post", "lock")
-        for name, img in zip(names, crate_textures(*cols)):
-            img.save(os.path.join(tex, "crate_%s_%s.png" % (tier, name)))
-        t = lambda n: "aquatic:block/crate_%s_%s" % (tier, n)
-        faces = lambda key, sides=("north", "south", "east", "west", "up", "down"): {f: {"texture": "#" + key} for f in sides}
-        elements = [
-            {"from": [1, 0, 1], "to": [15, 13, 15], "faces": dict(faces("side", ("north", "south", "east", "west")), **faces("top", ("up", "down")))},
-            {"from": [0.5, 13, 0.5], "to": [15.5, 16, 15.5], "faces": dict(faces("post", ("north", "south", "east", "west")), **faces("top", ("up", "down")))},
-        ]
-        for x0 in (0, 13):
-            for z0 in (0, 13):
-                elements.append({"from": [x0, 0, z0], "to": [x0 + 3, 13, z0 + 3], "faces": faces("post")})
-        for z0, z1 in ((15, 16), (0, 1)):  # a lock on the front and the back
-            elements.append({"from": [5.5, 6, z0], "to": [10.5, 12, z1], "faces": faces("lock")})
+    for block, (tier, wood, dark, metal, metal_d, gem, glow) in CRATE_BLOCKS.items():
+        wood, dark, metal, metal_d, gem, glow = (rgb(c) for c in (wood, dark, metal, metal_d, gem, glow))
+        seed = len(tier) * 7
+        parts = {
+            "wood": chest_wood(wood, dark, seed),
+            "lid": chest_wood(shade(wood, 0.06), dark, seed + 3, vertical=True),
+            "inner": chest_wood(shade(dark, -0.1), shade(dark, -0.3), seed + 5),
+            "metal": chest_metal(metal, metal_d, seed),
+            "trim": chest_metal(shade(metal, -0.15), metal_d, seed + 2, rivets=False),
+        }
+        for name, img in parts.items():
+            img.save(os.path.join(tex, "chest_%s_%s.png" % (tier, name)))
+        frames = [chest_lock(metal, metal_d, gem, glow, f) for f in range(8)]
+        strip = Image.new("RGBA", (CHEST_PX, CHEST_PX * 8))
+        for i, f in enumerate(frames):
+            strip.paste(f, (0, i * CHEST_PX))
+        lock_path = os.path.join(tex, "chest_%s_lock.png" % tier)
+        strip.save(lock_path)
+        write_json(lock_path + ".mcmeta", {"animation": {"frametime": 3, "interpolate": True}})
+        for old in ("side", "top", "post"):                # the 2.16.0 box crate textures
+            p = os.path.join(tex, "crate_%s_%s.png" % (tier, old))
+            if os.path.exists(p):
+                os.remove(p)
+        p = os.path.join(tex, "crate_%s_lock.png" % tier)
+        if os.path.exists(p):
+            os.remove(p)
+
+        def box(frm, to, tex_key, faces=("north", "south", "east", "west", "up", "down"), uv=None, cull=False):
+            f = {}
+            for side in faces:
+                spec = {"texture": "#" + tex_key}
+                if uv:
+                    spec["uv"] = uv
+                f[side] = spec
+            return {"from": frm, "to": to, "faces": f}
+
+        el = []
+        el.append(box([1, 1, 1.5], [15, 10, 14.5], "wood"))                        # body
+        el[-1]["faces"]["up"]["texture"] = "#inner"
+        el[-1]["faces"]["down"]["texture"] = "#inner"
+        for x0 in (1, 13.5):                                                        # feet
+            for z0 in (1.5, 13):
+                el.append(box([x0, 0, z0], [x0 + 1.5, 1, z0 + 1.5], "trim"))
+        el.append(box([0.75, 1, 1.25], [15.25, 2, 14.75], "trim"))                  # bottom rim
+        el.append(box([0.75, 9.5, 1.25], [15.25, 10.5, 14.75], "trim"))             # top rim of the body
+        el.append(box([1, 10.5, 1.5], [15, 13, 14.5], "lid"))                       # lid, three steps for a rounded top
+        el.append(box([1, 13, 2.5], [15, 14.5, 13.5], "lid"))
+        el.append(box([1, 14.5, 4.5], [15, 15.5, 11.5], "lid"))
+        for x0 in (2.5, 11.5):                                                      # two metal bands over lid and body
+            x1 = x0 + 2
+            el.append(box([x0, 1, 1.25], [x1, 10.5, 14.75], "metal"))
+            el.append(box([x0, 10.5, 1.25], [x1, 13.25, 14.75], "metal"))
+            el.append(box([x0, 13, 2.25], [x1, 14.75, 13.75], "metal"))
+            el.append(box([x0, 14.5, 4.25], [x1, 15.75, 11.75], "metal"))
+        for x0 in (0.6, 13.9):                                                      # corner guards
+            for z0 in (1.1, 13.4):
+                el.append(box([x0, 1, z0], [x0 + 1.5, 10.5, z0 + 1.5], "trim"))
+        el.append(box([6, 6.5, 0.6], [10, 12, 1.5], "lock", uv=[0, 0, 16, 16]))     # locks, front and back
+        el.append(box([6, 6.5, 14.5], [10, 12, 15.4], "lock", uv=[0, 0, 16, 16]))
+        t = lambda n: "aquatic:block/chest_%s_%s" % (tier, n)
         write_json(os.path.join(PACK, "assets", "minecraft", "models", "block", block + ".json"), {
             "parent": "minecraft:block/block",
-            "textures": {"particle": t("side"), "side": t("side"), "top": t("top"), "post": t("post"), "lock": t("lock")},
-            "elements": elements,
+            "ambientocclusion": False,
+            "textures": {"particle": t("wood"), "wood": t("wood"), "lid": t("lid"), "inner": t("inner"),
+                         "metal": t("metal"), "trim": t("trim"), "lock": t("lock")},
+            "elements": el,
+            "display": {
+                "gui": {"rotation": [30, 225, 0], "translation": [0, 0, 0], "scale": [0.625, 0.625, 0.625]},
+                "ground": {"rotation": [0, 0, 0], "translation": [0, 3, 0], "scale": [0.25, 0.25, 0.25]},
+                "fixed": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [0.5, 0.5, 0.5]},
+                "thirdperson_righthand": {"rotation": [75, 45, 0], "translation": [0, 2.5, 0], "scale": [0.375, 0.375, 0.375]},
+                "firstperson_righthand": {"rotation": [0, 45, 0], "translation": [0, 0, 0], "scale": [0.4, 0.4, 0.4]},
+                "firstperson_lefthand": {"rotation": [0, 225, 0], "translation": [0, 0, 0], "scale": [0.4, 0.4, 0.4]},
+            },
         })
 
 
