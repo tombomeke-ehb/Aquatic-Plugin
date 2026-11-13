@@ -94,6 +94,7 @@ public final class GearListener implements Listener {
             Location at = ent.getLocation();
             switch (e.getValue().kind()) {
                 case "blast" -> {
+                    abilities.fx().glow(at, Abilities.colorOf(e.getValue().cfg(), "blast"), 1.3f, 2, 0.08);
                     abilities.fx().burst(at, org.bukkit.Particle.FLAME, 4, 0.12, 0.01);
                     abilities.fx().burst(at, org.bukkit.Particle.SMOKE, 2, 0.1, 0.01);
                 }
@@ -108,6 +109,93 @@ public final class GearListener implements Listener {
                 }
                 default -> abilities.fx().dust(at, org.bukkit.Color.fromRGB(0x777777), 0.8f, 1, 0.02);
             }
+        }
+        thrown.entrySet().removeIf(e -> {
+            Entity ent = Bukkit.getEntity(e.getKey());
+            if (ent == null || !ent.isValid() || ent.isOnGround()) {
+                return ent == null || !ent.isValid();
+            }
+            abilities.fx().glow(ent.getLocation(), e.getValue(), 1.2f, 2, 0.06);
+            abilities.fx().burst(ent.getLocation(), org.bukkit.Particle.BUBBLE, 2, 0.08, 0.01);
+            return false;
+        });
+    }
+
+    /** Custom tridents in flight, with the colour of their trail. */
+    private final Map<UUID, org.bukkit.Color> thrown = new HashMap<>();
+
+    @EventHandler(ignoreCancelled = true)
+    public void onThrow(org.bukkit.event.entity.ProjectileLaunchEvent event) {
+        if (!(event.getEntity() instanceof org.bukkit.entity.Trident t) || !(t.getShooter() instanceof Player p)) {
+            return;
+        }
+        ItemDef def = module.defOf(t.getItemStack());
+        if (def == null) {
+            return;
+        }
+        org.bukkit.Color c = weaponColor(def);
+        thrown.put(t.getUniqueId(), c);
+        abilities.fx().crescent(p.getEyeLocation(), p.getEyeLocation().getDirection(), 2.0, c);
+        abilities.fx().flash(p.getEyeLocation().add(p.getEyeLocation().getDirection()), c, 0.9f);
+    }
+
+    /** A custom trident lands: a splash of water and light. */
+    private void tridentHit(ProjectileHitEvent event) {
+        org.bukkit.Color c = thrown.get(event.getEntity().getUniqueId());
+        if (c == null) {
+            return;
+        }
+        Location at = event.getEntity().getLocation();
+        abilities.fx().nova(at, c, 1.8);
+        abilities.fx().burst(at, org.bukkit.Particle.SPLASH, 30, 0.6, 0.2);
+        abilities.fx().burst(at, org.bukkit.Particle.BUBBLE_POP, 12, 0.5, 0.05);
+    }
+
+    /** True for hand-held tools and weapons that are not "sword" items (trident, pickaxe ...). */
+    private static boolean wieldable(ItemStack item) {
+        if (item == null) {
+            return false;
+        }
+        String n = item.getType().name();
+        return n.endsWith("_SWORD") || n.endsWith("_AXE") || n.endsWith("_PICKAXE") || n.endsWith("_SHOVEL")
+                || n.endsWith("_HOE") || n.equals("TRIDENT") || n.equals("MACE");
+    }
+
+    /** A custom shield (the Marauder's Buckler) stops a hit: a flash, a ring of sparks and a clang. */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBlock(EntityDamageByEntityEvent event) {
+        if (!(event.getEntity() instanceof Player p) || !p.isBlocking()) {
+            return;
+        }
+        ItemStack shield = p.getInventory().getItemInMainHand().getType() == Material.SHIELD
+                ? p.getInventory().getItemInMainHand() : p.getInventory().getItemInOffHand();
+        ItemDef def = module.defOf(shield);
+        if (def == null) {
+            return;
+        }
+        org.bukkit.Color c = weaponColor(def);
+        Vector dir = p.getEyeLocation().getDirection();
+        Location front = p.getLocation().add(0, 1.1, 0).add(dir.clone().setY(0).normalize().multiply(0.7));
+        abilities.fx().flash(front, c, 1.3f);
+        abilities.fx().sparkles(front, c, 10, 0.4);
+        abilities.fx().burst(front, org.bukkit.Particle.ELECTRIC_SPARK, 12, 0.3, 0.2);
+        abilities.fx().shockwave(p.getLocation().add(0, 0.1, 0), 1.5, 5, c);
+    }
+
+    /** Mining with a custom tool: sparks and light where the block breaks. */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onMine(org.bukkit.event.block.BlockBreakEvent event) {
+        ItemDef def = module.defOf(event.getPlayer().getInventory().getItemInMainHand());
+        if (def == null || abilities.fx().quality() <= 0) {
+            return;
+        }
+        Location at = event.getBlock().getLocation().add(0.5, 0.5, 0.5);
+        org.bukkit.Color c = weaponColor(def);
+        abilities.fx().flash(at, c, 0.8f);
+        abilities.fx().sparkles(at, c, 8, 0.45);
+        abilities.fx().burst(at, org.bukkit.Particle.ELECTRIC_SPARK, 6, 0.3, 0.12);
+        if (event.getBlock().getType().name().endsWith("_ORE")) {
+            abilities.fx().nova(at, c, 1.2);                      // ore: a bigger burst
         }
     }
 
@@ -368,7 +456,8 @@ public final class GearListener implements Listener {
             module.actionBar(p, "abyssal-hit", "player", target.getName(), "seconds", Text.number(seconds));
             Util.sound(target.getLocation(), "block.beacon.deactivate", 1f, 1.6f);
         }
-        if (p.getAttackCooldown() >= 0.9f && (def.type.equals("sword") || def.type.equals("abyssal"))) {
+        if (p.getAttackCooldown() >= 0.9f && (def.type.equals("sword") || def.type.equals("abyssal")
+                || wieldable(p.getInventory().getItemInMainHand()))) {
             swingFx(p, victim, def, false);
         }
         ConfigurationSection onHit = def.cfg.getConfigurationSection("on-hit");
@@ -637,6 +726,7 @@ public final class GearListener implements Listener {
     @EventHandler
     public void onProjectileHit(ProjectileHitEvent event) {
         Projectile proj = event.getEntity();
+        tridentHit(event);
         Tracked t = projectiles.remove(proj.getUniqueId());
         if (t == null) {
             return;
@@ -686,6 +776,8 @@ public final class GearListener implements Listener {
                     Util.sound(at, "entity.generic.explode", 2f, 0.9f);
                 }
                 abilities.area(shooter, at, c.getDouble("radius", 4), c.getDouble("damage", 10), c);
+                abilities.fx().nova(at.clone().add(0, 0.5, 0), org.bukkit.Color.fromRGB(0xFF8A3D), c.getDouble("radius", 4));
+                abilities.fx().shockwave(at.clone().add(0, 0.2, 0), c.getDouble("radius", 4) + 1, 8, org.bukkit.Color.fromRGB(0xB0B0B0));
             }
             default -> {
             }

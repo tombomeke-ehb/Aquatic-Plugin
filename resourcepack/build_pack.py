@@ -709,47 +709,191 @@ def armor_icon(piece, base, trim, accent, style="plate"):
                     if foot and x >= x0 + 6 and y in (23, 24):
                         c = shade(base, 0.3)                     # toe shine
                     put(img, x, y, c)
-    return outline(img, shade(trim, -0.6) if style != "plate" else rgb("#101317"))
+    return outline(img, shade(base, -0.62) if style != "plate" else shade(base, -0.7))
 
 
-def armor_layers(base, trim, accent, scale=2, legs=None, boots=None):
-    """Worn armour textures (humanoid + humanoid_leggings layers) for a set, at 2x resolution."""
-    W, H = 64 * scale, 32 * scale
-    layer1 = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    layer2 = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+def armor_layers(base, trim, accent, scale=4, legs=None, boots=None, hat=None):
+    """Worn clothing (humanoid + humanoid_leggings layers) at 4x: wool coats with a twill weave and soft folds,
+    facings and cuffs, brass buttons, a leather belt, a felt hat with a ribbon band and braid, linen breeches
+    and leather boots with a turned-down cuff. Edges are worn and slightly darker, nothing is outlined."""
+    S = 4
+    W, H = 64 * S, 32 * S
+    l1 = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    l2 = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     base, trim, accent = rgb(base), rgb(trim), rgb(accent)
     legs_col = rgb(legs) if legs else base
-    boots_col = rgb(boots) if boots else base
+    boots_col = rgb(boots) if boots else rgb("#2a1d14")
+    hat_col = rgb(hat) if hat else base
+    leather = rgb("#3b2617")
+    linen = rgb("#d6cfbd")
+    LIGHT = {"top": 0.1, "bottom": -0.3, "front": 0.03, "right": -0.07, "left": -0.07, "back": -0.13}
 
-    def box(img, u, v, w, h, d, band=None, body=None):
-        body_col = body if body is not None else base
-        """Paints the faces of a model box laid out like vanilla armour (u, v = top-left of its UV area)."""
-        faces = [(u + d, v, w, d, 0.3), (u + d + w, v, w, d, -0.3),                 # top, bottom
-                 (u, v + d, d, h, -0.1), (u + d, v + d, w, h, 0.12),                 # right, front
-                 (u + d + w, v + d, d, h, -0.1), (u + d + w + d, v + d, w, h, -0.2)]  # left, back
-        for (fx, fy, fw, fh, k) in faces:
-            for yy in range(fy * scale, (fy + fh) * scale):
-                for xx in range(fx * scale, (fx + fw) * scale):
-                    rel_y = (yy - fy * scale) / max(1, fh * scale - 1)
-                    col = shade(body_col, k + 0.15 * (0.5 - rel_y))
-                    if xx in (fx * scale, (fx + fw) * scale - 1) or yy in (fy * scale, (fy + fh) * scale - 1):
-                        col = shade(trim, k)
-                    if band and band[0] <= rel_y <= band[1]:
-                        col = shade(accent, k)
-                    put(img, xx, yy, col)
+    def wool(c, x, y, seed=3, folds=True):
+        twill = 0.03 if ((x + y) // 2) % 2 else -0.03
+        n = (_noise(x, y, seed) - 0.5) * 0.09 + (_noise(x // 3, y // 3, seed + 7) - 0.5) * 0.06
+        fold = 0.08 * math.sin(x * 0.42 + math.sin(y * 0.13 + seed) * 1.6) if folds else 0
+        return shade(c, twill + n + fold)
 
-    box(layer1, 0, 0, 8, 8, 8, band=(0.55, 0.65))       # helmet
-    box(layer1, 16, 16, 8, 12, 4, band=(0.75, 0.82))    # chest
-    box(layer1, 40, 16, 4, 12, 4, band=(0.0, 0.08))     # arms
-    box(layer1, 0, 16, 4, 12, 4, band=(0.62, 0.68), body=boots_col)     # boots
-    box(layer2, 16, 16, 8, 12, 4, band=(0.62, 0.7), body=legs_col)      # leggings: waist with a belt
-    box(layer2, 0, 16, 4, 12, 4, band=(0.9, 1.0), body=legs_col)        # leggings: legs
-    # an emblem on the chest front
-    for yy in range(23 * scale, 26 * scale):
-        for xx in range(23 * scale, 25 * scale):
-            put(layer1, xx, yy, accent)
-    return layer1, layer2
+    def felt(c, x, y):
+        return shade(c, (_noise(x, y, 21) - 0.5) * 0.12 + (_noise(x // 2, y // 2, 22) - 0.5) * 0.08)
 
+    def hide(c, x, y, w):
+        """Leather: a soft vertical highlight, fine grain and a few creases."""
+        hl = 0.16 * math.exp(-((x - w * 0.35) / (w * 0.18)) ** 2)
+        crease = -0.12 if _noise(0, y, 31) > 0.86 else 0
+        return shade(c, hl + crease + (_noise(x, y, 33) - 0.5) * 0.07)
+
+    def brass(x, y, cx, cy):
+        """A 3x3 brass button with a highlight top-left and a shadow bottom-right."""
+        dx, dy = x - cx, y - cy
+        if max(abs(dx), abs(dy)) > 1:
+            return None
+        if dx + dy < 0:
+            return shade(accent, 0.35)
+        if dx + dy > 0:
+            return shade(accent, -0.35)
+        return accent
+
+    def worn(c, x, y, w, h):
+        """Worn edges: the outer pixel row of every face is a little darker (seams), the next one lighter (rubbed)."""
+        e = min(x, y, w - 1 - x, h - 1 - y)
+        if e == 0:
+            return shade(c, -0.18)
+        if e == 1:
+            return shade(c, 0.06)
+        return c
+
+    def box(img, u, v, w, h, d, paint):
+        faces = {"top": (u + d, v, w, d), "bottom": (u + d + w, v, w, d), "right": (u, v + d, d, h),
+                 "front": (u + d, v + d, w, h), "left": (u + d + w, v + d, d, h), "back": (u + d + w + d, v + d, w, h)}
+        px = img.load()
+        for face, (fu, fv, fw, fh) in faces.items():
+            for fy in range(fh * S):
+                for fx in range(fw * S):
+                    c = paint(face, fx, fy, fw * S, fh * S)
+                    if c is None:
+                        continue
+                    px[fu * S + fx, fv * S + fy] = shade(c, LIGHT[face]) + (255,)
+
+    # ---- hat (8x8x8): felt crown, a ribbon band, braided edge and a cockade
+    def hat_paint(face, x, y, w, h):
+        if face == "bottom":
+            return None
+        if face == "top":
+            r = math.hypot(x - w / 2, y - h / 2) / (w / 2)
+            return worn(shade(felt(hat_col, x, y), -0.12 * (1 - min(1, r))), x, y, w, h)
+        if y >= h - 3:
+            return shade(accent, 0.15 if (x + y) % 3 == 0 else -0.1)          # braid
+        if h - 11 <= y < h - 6:
+            c = shade(trim, 0.08 if y == h - 11 else (-0.12 if y == h - 7 else 0))   # ribbon band
+            if face == "front" and abs(x - (w - 8)) <= 3 and h - 13 <= y <= h - 5:
+                r = math.hypot(x - (w - 8), y - (h - 9))
+                return shade(accent, 0.25 - r * 0.12) if r <= 1 else shade(linen, -0.05 - r * 0.04)   # cockade
+            return c
+        return worn(felt(hat_col, x, y), x, y, w, h)
+    box(l1, 0, 0, 8, 8, 8, hat_paint)
+
+    # ---- coat (8x12x4)
+    def coat(face, x, y, w, h):
+        cx = w / 2
+        if face in ("top", "bottom"):
+            return wool(base, x, y, 5, False)
+        if face == "front":
+            if y < 22 and abs(x - cx) <= 2 + y * 0.18:
+                c = shade(linen, (_noise(x, y, 41) - 0.5) * 0.08 - 0.04 * (y % 4 == 0))   # shirt and cravat
+                return shade(c, -0.15) if abs(x - cx) > 1 + y * 0.18 else c
+            if y < 24 and abs(x - cx) <= 9 - y * 0.12:
+                c = wool(trim, x, y, 9, False)                               # lapels / facings
+                return shade(c, -0.2) if abs(abs(x - cx) - (2 + y * 0.18)) < 1 else c
+            if 31 <= y <= 35:
+                if abs(x - cx) <= 2 and y in (31, 35) or abs(x - cx) == 2:
+                    return shade(accent, 0.2)                                # buckle
+                return shade(hide(leather, x, y, w), 0.06 if y == 31 else (-0.15 if y == 35 else 0))   # belt
+            for by in (14, 20, 26):
+                for bx in (cx - 6.5, cx + 5.5):
+                    b = brass(x, y, int(bx), by)
+                    if b is not None:
+                        return b
+            c = wool(base, x, y)
+            if y > 35 and abs(x - cx) < 1:
+                return shade(c, -0.3)                                        # the coat opens below the belt
+            return worn(c, x, y, w, h)
+        if face == "back":
+            c = wool(base, x, y, 6)
+            if y > 35 and abs(x - cx) < 1:
+                return shade(c, -0.3)                                        # back vent
+            if 31 <= y <= 35:
+                return shade(hide(leather, x, y, w), -0.05)
+            return worn(c, x, y, w, h)
+        if 31 <= y <= 35:
+            return shade(hide(leather, x, y, w), -0.05)
+        return worn(wool(base, x, y, 7), x, y, w, h)
+    box(l1, 16, 16, 8, 12, 4, coat)
+
+    # ---- sleeves (4x12x4): an epaulette with fringe, wool sleeve, turned-back cuff with two buttons
+    def sleeve(face, x, y, w, h):
+        if face == "bottom":
+            return None
+        if face == "top":
+            return shade(accent, -0.05 + 0.18 * ((x // 2) % 2) + (_noise(x, y, 51) - 0.5) * 0.1)   # epaulette
+        if y < 3:
+            return shade(accent, 0.1 if x % 2 else -0.25)                    # fringe
+        if y >= h - 10:
+            c = wool(trim, x, y, 11, False)
+            if y == h - 10:
+                return shade(c, 0.12)
+            if face == "right" or face == "left":
+                for by in (h - 7, h - 3):
+                    b = brass(x, y, w // 2, by)
+                    if b is not None:
+                        return b
+            return worn(c, x, y, w, h)
+        c = wool(base, x, y, 13)
+        if (y - 18) % 11 == 0 and y > 10:
+            c = shade(c, -0.12)                                              # elbow wrinkles
+        return worn(c, x, y, w, h)
+    box(l1, 40, 16, 4, 12, 4, sleeve)
+
+    # ---- boots (layer 1, 4x12x4): leather with a turned-down cuff, a sole and a polished toe
+    def boot(face, x, y, w, h):
+        if face == "top" or y < 22:
+            return None
+        if face == "bottom":
+            return shade(boots_col, -0.5)
+        if y >= h - 3:
+            return shade(boots_col, -0.45 if y == h - 1 else -0.32)          # sole
+        if y < 29:
+            return shade(hide(boots_col, x, y, w), 0.22 if y == 22 else (0.08 if y < 27 else -0.25))   # cuff
+        c = hide(boots_col, x, y, w)
+        if face == "front" and y >= h - 9:
+            c = shade(c, 0.1 + 0.15 * math.exp(-((x - w * 0.4) / 2.5) ** 2))   # toe shine
+        return c
+    box(l1, 0, 16, 4, 12, 4, boot)
+
+    # ---- breeches (layer 2): a waistband with a buckle, legs with creases, buttons at the knee
+    def waist(face, x, y, w, h):
+        if face in ("top", "bottom") or y < 30:
+            return None
+        if y < 35:
+            if face == "front" and abs(x - w / 2) <= 2 and 30 <= y <= 34:
+                return shade(accent, 0.25 if (x + y) % 2 else 0)
+            return shade(hide(leather, x, y, w), 0.06 if y == 30 else 0)
+        return worn(wool(legs_col, x, y, 15), x, y, w, h)
+    box(l2, 16, 16, 8, 12, 4, waist)
+
+    def breeches(face, x, y, w, h):
+        if face in ("top", "bottom"):
+            return None
+        c = wool(legs_col, x, y, 17)
+        if face in ("right", "left") and abs(x - w / 2) < 1:
+            c = shade(c, -0.12)                                              # side seam
+            if 26 <= y <= 34 and y % 4 == 2:
+                return shade(accent, 0.2)                                    # knee buttons
+        if 34 <= y <= 36:
+            return shade(wool(trim if legs is None else legs_col, x, y, 19), -0.15)    # knee band
+        return worn(c, x, y, w, h)
+    box(l2, 0, 16, 4, 12, 4, breeches)
+    return l1, l2
 
 
 def plate_armor_layers(base, trim, accent, seed=11):
@@ -761,12 +905,18 @@ def plate_armor_layers(base, trim, accent, seed=11):
     l1 = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     l2 = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     base, trim, accent = rgb(base), rgb(trim), rgb(accent)
-    dark = shade(trim, -0.25)
+    dark = shade(base, -0.55)
+    leather_dark = rgb("#24170e")
     LIGHT = {"top": 0.18, "bottom": -0.3, "front": 0.05, "right": -0.08, "left": -0.08, "back": -0.16}
 
     def metal(c, x, y, h):
-        sheen = 0.16 * math.sin(y / max(1, h) * math.pi * 1.1 + 0.4) + 0.05 * math.sin(x * 0.35 + y * 0.12)
-        return shade(c, sheen + (_noise(x, y, seed) - 0.5) * 0.06)
+        """Brushed steel: a broad soft sheen, fine streaks along the plate, light scratches and pitting."""
+        sheen = 0.13 * math.sin(y / max(1, h) * math.pi * 1.1 + 0.4) + 0.04 * math.sin(x * 0.21 + y * 0.07)
+        streak = (_noise(x // 5, y, seed) - 0.5) * 0.09
+        grain = (_noise(x, y, seed + 1) - 0.5) * 0.05
+        scratch = 0.22 if ((x * 2 - y) % 29 == 0 and _noise(x // 4, y // 4, seed + 2) > 0.72) else 0
+        pit = -0.18 if _noise(x, y, seed + 3) > 0.985 else 0
+        return shade(c, sheen + streak + grain + scratch + pit)
 
     def box(img, u, v, w, h, d, paint):
         faces = {"top": (u + d, v, w, d), "bottom": (u + d + w, v, w, d), "right": (u, v + d, d, h),
@@ -784,13 +934,13 @@ def plate_armor_layers(base, trim, accent, seed=11):
         """A horizontal plate between rows top..bottom: bevel light on top, shadow at the bottom, dark seam."""
         c = metal(col or base, x, y, h)
         if y == top:
-            return shade(c, 0.3)
+            return shade(c, 0.24)                                               # the rolled edge catches light
         if y == top + 1:
-            return shade(c, 0.15)
+            return shade(c, 0.1)
         if y == bottom:
-            return dark
-        if y == bottom - 1:
-            return shade(c, -0.18)
+            return shade(dark, (_noise(x, y, seed + 5) - 0.5) * 0.1)
+        if y >= bottom - 2:
+            return shade(c, -0.16 - 0.1 * _noise(x, y, seed + 6))               # grime under the overlap
         return c
 
     def rivet(x, y, every=10, row=None):
@@ -800,7 +950,7 @@ def plate_armor_layers(base, trim, accent, seed=11):
     def helmet(face, x, y, w, h):
         if face == "top":
             if abs(x - w / 2) < 3:
-                return shade(accent, 0.1) if abs(x - w / 2) < 1.5 else trim       # glowing crest
+                return metal(trim, x, y, h) if abs(x - w / 2) < 1.5 else shade(trim, -0.2)   # brass crest
             return metal(base, x, y, h) if (x + y) % 9 else shade(base, 0.2)
         if face == "bottom":
             return None
@@ -816,7 +966,7 @@ def plate_armor_layers(base, trim, accent, seed=11):
         if face != "front" and y in (14, 15) and rivet(x, y, 8):
             return shade(trim, 0.45)
         if abs(x - w / 2) < 2 and face in ("front", "back") and y < 10:
-            return shade(accent, 0.05)                                          # the crest runs down front and back
+            return metal(trim, x, y, h)                                         # the crest runs down front and back
         return plate(x, y, w, h, 0, h - 1)
     box(l1, 0, 0, 8, 8, 8, helmet)
 
@@ -829,7 +979,7 @@ def plate_armor_layers(base, trim, accent, seed=11):
             if 6 <= y <= 18 and abs(x - cx) <= 6 - (y - 6) * 0.25:
                 emblem = abs(math.sin((x - cx) * 0.6) * 3 + 11 - y) < 1.4 or (y > 13 and abs(x - cx) < 1.2)
                 if emblem:
-                    return shade(accent, 0.15 if (x + y) % 3 else 0.35)          # the wave and trident
+                    return shade(mix(metal(base, x, y, h), accent, 0.35), 0.12)  # the etched wave and trident
             if abs(x - cx) < 1:
                 return shade(base, 0.22)                                        # the ridge
             if y < 22:
@@ -852,13 +1002,14 @@ def plate_armor_layers(base, trim, accent, seed=11):
         if y < 18:
             seg = (y // 6) * 6
             c = plate(x, y, w, h, seg, seg + 5, trim if seg == 0 else base)
-            return shade(accent, 0.1) if y == 16 else c                         # accent edge on the pauldron
+            return metal(trim, x, y, h) if y in (16, 17) else c                 # brass edge on the pauldron
         if y < 26:
-            return shade(rgb("#2a3140"), (_noise(x, y, 4) - 0.5) * 0.1)          # padded sleeve
+            quilt = -0.14 if ((x + y) % 8 == 0 or (x - y) % 8 == 0) else 0
+            return shade(rgb("#3a3a36"), quilt + (_noise(x, y, 4) - 0.5) * 0.1)  # quilted gambeson
         if y >= h - 10:
             c = plate(x, y, w, h, h - 10, h - 1)
             return shade(trim, 0.4) if rivet(x, y, 6, (h - 6,)) else c          # bracer
-        return shade(rgb("#2a3140"), -0.05)
+        return shade(rgb("#3a3a36"), -0.05 + (_noise(x, y, 4) - 0.5) * 0.1)
     box(l1, 40, 16, 4, 12, 4, arm)
 
     # ---- boots (layer 1, 4x12x4): greaves and sabatons with a toe cap
@@ -871,7 +1022,7 @@ def plate_armor_layers(base, trim, accent, seed=11):
             return None                                                         # (the leggings cover the thighs)
         if y < 34:
             c = plate(x, y, w, h, 20, 33)
-            return shade(accent, 0.05) if face == "front" and abs(x - w / 2) < 1 else c
+            return metal(trim, x, y, h) if face == "front" and abs(x - w / 2) < 1 else c
         seg = 34 + ((y - 34) // 7) * 7
         c = plate(x, y, w, h, seg, seg + 6, shade(base, -0.08))
         if face == "front" and y >= h - 5:
@@ -886,7 +1037,7 @@ def plate_armor_layers(base, trim, accent, seed=11):
         if 28 <= y < 36:
             c = shade(rgb("#3a2414"), 0.05 if y in (28, 29) else -0.05)          # belt
             if face == "front" and abs(x - w / 2) < 4 and 29 <= y <= 34:
-                return shade(trim, 0.35) if (abs(x - w / 2) > 2.5 or y in (29, 34)) else accent   # buckle
+                return metal(trim, x, y, h) if (abs(x - w / 2) > 2.5 or y in (29, 34)) else shade(leather_dark, 0)   # buckle
             return c
         if y >= 36:
             return plate(x, y, w, h, 36, h - 1, shade(base, -0.05))             # tassets
@@ -1958,26 +2109,26 @@ def main():
     item("seafoam_milkshake", milkshake())
     # armour sets: icons and how they look when worn
     for piece in ("helmet", "chestplate", "leggings", "boots"):
-        item("tidewarden_" + piece, armor_icon(piece, "#2a6fb5", "#123a66", "#5ff3ff"))
-    equipment("tidewarden", *plate_armor_layers("#2a6fb5", "#7d93a8", "#5ff3ff"))
-    item("corsair_hat", armor_icon("helmet", "#2a1d16", "#120c09", "#e2b33c", style="tricorn"))
-    item("corsair_coat", armor_icon("chestplate", "#9b2c2c", "#3a1a12", "#e2b33c", style="coat"))
-    item("corsair_breeches", armor_icon("leggings", "#c9a77a", "#5a4026", "#3a1a12", style="cloth"))
-    item("corsair_boots", armor_icon("boots", "#2a1d16", "#120c09", "#e2b33c"))
-    equipment("corsair", *armor_layers("#9b2c2c", "#3a1a12", "#e2b33c"))
-    item("captains_coat", armor_icon("chestplate", "#2b2b33", "#c0392b", "#e2b33c", style="coat"))
+        item("tidewarden_" + piece, armor_icon(piece, "#5c6976", "#8a7045", "#6a9e99"))
+    equipment("tidewarden", *plate_armor_layers("#5c6976", "#8a7045", "#6a9e99"))
+    item("corsair_hat", armor_icon("helmet", "#2a1d16", "#120c09", "#b8933f", style="tricorn"))
+    item("corsair_coat", armor_icon("chestplate", "#7e2a25", "#3a2318", "#b8933f", style="coat"))
+    item("corsair_breeches", armor_icon("leggings", "#b49a74", "#5a4026", "#3a2318", style="cloth"))
+    item("corsair_boots", armor_icon("boots", "#2a1d16", "#120c09", "#b8933f"))
+    equipment("corsair", *armor_layers("#7e2a25", "#3a2318", "#b8933f", legs="#b49a74", boots="#2a1d14", hat="#2a1d16"))
+    item("captains_coat", armor_icon("chestplate", "#2c2a30", "#7a2420", "#b8933f", style="coat"))
     # Tidewatch uniforms (worn by the garrison)
-    item("tidewatch_hat", armor_icon("helmet", "#1d3a6b", "#0d1f3d", "#e8e4d8", style="tricorn"))
-    item("tidewatch_coat", armor_icon("chestplate", "#1d3a6b", "#0d1f3d", "#e8e4d8", style="coat"))
-    item("tidewatch_trousers", armor_icon("leggings", "#e8e4d8", "#9a968c", "#1d3a6b", style="cloth"))
-    item("tidewatch_boots", armor_icon("boots", "#1a1a1a", "#080808", "#e8e4d8"))
-    item("tidewatch_officer_coat", armor_icon("chestplate", "#14284d", "#0a1530", "#e2b33c", style="coat"))
-    item("tidewatch_captain_hat", armor_icon("helmet", "#f2f2f2", "#b8a26a", "#d4a017", style="tricorn"))
-    item("tidewatch_captain_coat", armor_icon("chestplate", "#f2f2f2", "#b8a26a", "#d4a017", style="coat"))
-    equipment("tidewatch", *armor_layers("#1d3a6b", "#0d1f3d", "#e8e4d8", legs="#e8e4d8", boots="#1a1a1a"))
-    equipment("tidewatch_officer", *armor_layers("#14284d", "#0a1530", "#e2b33c", legs="#e8e4d8", boots="#1a1a1a"))
-    equipment("tidewatch_captain", *armor_layers("#f2f2f2", "#b8a26a", "#d4a017", legs="#e8e4d8", boots="#1a1a1a"))
-    equipment("captains_coat", armor_layers("#2b2b33", "#c0392b", "#e2b33c")[0])
+    item("tidewatch_hat", armor_icon("helmet", "#1f2a3d", "#11182a", "#cfc8b4", style="tricorn"))
+    item("tidewatch_coat", armor_icon("chestplate", "#24334f", "#141d31", "#cfc8b4", style="coat"))
+    item("tidewatch_trousers", armor_icon("leggings", "#d9d3c2", "#9a968c", "#24334f", style="cloth"))
+    item("tidewatch_boots", armor_icon("boots", "#221c17", "#0e0b08", "#cfc8b4"))
+    item("tidewatch_officer_coat", armor_icon("chestplate", "#1a2742", "#0e1628", "#b8933f", style="coat"))
+    item("tidewatch_captain_hat", armor_icon("helmet", "#e4e0d6", "#8f7a4c", "#b8933f", style="tricorn"))
+    item("tidewatch_captain_coat", armor_icon("chestplate", "#e4e0d6", "#8f7a4c", "#b8933f", style="coat"))
+    equipment("tidewatch", *armor_layers("#24334f", "#141d31", "#cfc8b4", legs="#d9d3c2", boots="#221c17", hat="#1f2a3d"))
+    equipment("tidewatch_officer", *armor_layers("#1a2742", "#0e1628", "#b8933f", legs="#d9d3c2", boots="#221c17", hat="#1f2a3d"))
+    equipment("tidewatch_captain", *armor_layers("#e4e0d6", "#8f7a4c", "#b8933f", legs="#d9d3c2", boots="#221c17", hat="#e4e0d6"))
+    equipment("captains_coat", armor_layers("#2c2a30", "#7a2420", "#b8933f", hat="#1c1a1e")[0])
     for name, image in FRUITS.items():
         item(name, image)
     crown().resize((128, 128), Image.NEAREST).save(os.path.join(PACK, "pack.png"))

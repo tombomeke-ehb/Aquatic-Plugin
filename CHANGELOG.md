@@ -1,5 +1,29 @@
 # Changelog
 
+## 2.18.1 (2026-11-13)
+
+### Added
+- **Effects on the last items that had none:**
+  - **Coral Trident:** a slash on a charged hit, a crescent and a glowing, bubbling trail when thrown, and a splash burst where it lands.
+  - **Deepcore Pickaxe:** a slash on a charged hit, plus sparks and light on every block it breaks (a bigger burst on ores).
+  - **Marauder's Buckler:** a flash, sparks and a ring when it blocks a hit.
+  - Any custom tool or weapon gets the charged-hit slash.
+- **Stronger fruit moves:**
+  - **Fireballs:** a flash and crescent on launch, a glowing trail, and a nova plus a pillar of fire on impact.
+  - **Dashes:** a shockwave and flash at the start, and an afterimage streak.
+- **Hand Cannon:** a nova and a shockwave on impact.
+
+### Changed
+- **Less cartoony armour.**
+  - **Tidewarden plate:** blued steel with brass trim instead of bright blue and neon. It has brushed metal, scratches, pitting, grime under the plates, a quilted gambeson and an etched emblem.
+  - **Coats, hats, breeches and boots:** these are repainted at 4x with a wool twill weave, folds and worn edges.
+    - The coats have facings, brass buttons and a leather belt.
+    - The epaulettes have fringe.
+    - The felt hats have a ribbon band, braid and a cockade.
+    - The boots are leather with a turned-down cuff.
+  - **Dyes:** all sets use muted, period colours: madder red, navy, buff and aged gold.
+  - **Icons:** they use the same colours and lose the hard black outline.
+
 ## 2.18.0 (2026-11-13)
 
 ### Added

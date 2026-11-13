@@ -79,7 +79,7 @@ public final class Abilities {
     }
 
     /** Ability colour: "color" in its config section, or a default per ability type. */
-    private static org.bukkit.Color colorOf(ConfigurationSection a, String type) {
+    static org.bukkit.Color colorOf(ConfigurationSection a, String type) {
         org.bukkit.Color def = switch (type) {
             case "fireball", "blast" -> org.bukkit.Color.fromRGB(0xFF6A00);
             case "nova" -> org.bukkit.Color.fromRGB(0x9BE7FF);
@@ -344,6 +344,8 @@ public final class Abilities {
                 ball.setYield(0);
                 gear.track(ball, p, "blast", a);
                 fx.burst(eye.clone().add(dir.clone().multiply(1.2)), Particle.FLAME, 14, 0.15, 0.06);
+                fx.flash(eye.clone().add(dir.clone().multiply(1.2)), colorOf(a, type), 1.2f);
+                fx.crescent(eye, dir, 1.6, colorOf(a, type));
                 sound(a, "entity.blaze.shoot", p.getLocation());
                 return true;
             }
@@ -443,6 +445,8 @@ public final class Abilities {
                 dash.damage = damage;
                 dashes.add(dash);
                 fx.burst(p.getLocation().add(0, 0.5, 0), Particle.CLOUD, 12, 0.3, 0.05);
+                fx.shockwave(p.getLocation().add(0, 0.1, 0), 1.6, 5, colorOf(a, type));
+                fx.flash(p.getLocation().add(0, 1, 0), colorOf(a, type), 1.0f);
                 sound(a, "entity.player.attack.sweep", p.getLocation());
                 selfEffects(p, a);
                 return true;
@@ -621,6 +625,8 @@ public final class Abilities {
         fx.burst(at, Particle.EXPLOSION, 2, 0.4, 0);
         fx.wave(at.clone().add(0, 0.3, 0), a.getDouble("radius", 3) + 0.5, 6, colorOf(a, "blast"), Particle.FLAME, false);
         fx.burst(at, Particle.LAVA, 8, 0.6, 0);
+        fx.nova(at.clone().add(0, 0.6, 0), colorOf(a, "blast"), a.getDouble("radius", 3) * 0.9);
+        fx.pillar(at, colorOf(a, "blast"), 2.5, 8);
         Util.sound(at, a.getString("hit-sound", "entity.generic.explode"), 1f, 1.2f);
     }
 
@@ -644,6 +650,7 @@ public final class Abilities {
             }
             particles(d.cfg, "CRIT", p.getLocation().add(0, 1, 0), 4, 0.3);
             fx.dust(p.getLocation().add(0, 1, 0), colorOf(d.cfg, "dash"), 1.6f, 6, 0.3);
+            fx.glow(p.getLocation().add(0, 0.6, 0), colorOf(d.cfg, "dash"), 1.1f, 2, 0.25);   // an afterimage streak
         }
     }
 
