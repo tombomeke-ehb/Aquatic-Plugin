@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.16.3 (2026-11-13)
+
+### Changed
+- **No more big illager noses:** the Tidewatch's nose is invisible now, with a small, normal nose painted on the face instead. The old painted hat is short hair now, because the hats are real 3D models (below).
+- **Every soldier looks different:** each one gets a random look when it spawns, a 3D hat with or without facial hair.
+  - **Riflemen:** a tall shako with a badge and pompom, sometimes with a brown, black or ginger mustache, a beard or an eyepatch.
+  - **Lieutenants:** a tricorn with gold edging, sometimes with a grey mustache, a black or ginger beard, or an eyepatch.
+  - **Warden Captains:** a wide bicorne with a cockade and a white plume, with a white mustache, a grey beard or an eyepatch.
+- The looks are lists under `tidewatch.mobs.<soldier>.equipment.helmet` in `islands.yml` (`look:<id>`). Remove entries to make one more or less common, or repeat one to make it appear more often.
+
+### Your server
+- `islands.yml` upgrades automatically (only soldiers whose helmet was never changed get the new looks). The resource pack has changed; the plugin sends it by itself.
+
 ## 2.16.2 (2026-11-13)
 
 ### Changed

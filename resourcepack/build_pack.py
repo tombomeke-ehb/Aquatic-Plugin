@@ -1290,6 +1290,152 @@ def deepcore_pickaxe():
 
 # ---------------------------------------------------------------- Tidewatch illagers (vindicator / pillager skin)
 
+# ---------------------------------------------------------------- Tidewatch headgear: 3D hats and faces worn on the head
+# Mobs draw what they wear on their head as its item model ("head" view), the model's centre at the middle of the
+# head: an illager head (10 px tall) covers about x/z 1.6..14.4 and y 1.6..17.6 here, its face at z = 1.6 (north).
+# Every variant is one item model: a hat plus (maybe) a mustache, a beard or an eyepatch.
+
+HEADGEAR_COLOURS = {
+    "navy": "#1d3a6b", "navy_dark": "#14284d", "black": "#1b1b20", "gold": "#e2b33c", "white": "#ece8dc",
+    "silver": "#c9ccd1", "red": "#b3262b", "leather": "#2a1d14",
+    "hair_brown": "#5a3a22", "hair_black": "#1e1a17", "hair_ginger": "#b5531f", "hair_grey": "#8d8a86", "hair_white": "#e6e2da",
+}
+
+
+def headgear_textures():
+    tex = os.path.join(PACK, "assets", "aquatic", "textures", "item", "headgear")
+    os.makedirs(tex, exist_ok=True)
+    for name, col in HEADGEAR_COLOURS.items():
+        c = rgb(col)
+        img = Image.new("RGBA", (32, 32))
+        p = img.load()
+        hair = name.startswith("hair")
+        for y in range(32):
+            for x in range(32):
+                if hair:     # strands
+                    k = 0.12 * math.sin(x * 1.3 + _noise(x // 3, y, 4) * 3) + (_noise(x, y, 5) - 0.5) * 0.12
+                elif name in ("gold", "silver"):
+                    k = 0.12 * math.sin((x + y) * 0.6) + (_noise(x, y, 6) - 0.5) * 0.05
+                else:        # felt and wool
+                    k = (0.03 if (x + y) % 2 == 0 else -0.02) + (_noise(x, y, 7) - 0.5) * 0.09
+                edge = min(x, y, 31 - x, 31 - y)
+                if edge == 0 and not hair:
+                    k -= 0.12
+                p[x, y] = shade(c, k) + (255,)
+        img.save(os.path.join(tex, name + ".png"))
+
+
+def _hg(frm, to, t, rot=None):
+    e = {"from": frm, "to": to, "faces": {f: {"texture": "#" + t} for f in ("north", "south", "east", "west", "up", "down")}}
+    if rot:
+        e["rotation"] = rot
+    return e
+
+
+def hat_elements(kind):
+    if kind == "shako":       # riflemen: a tall cap with a peak, a badge and a pompom
+        return [
+            _hg([3.2, 17.4, 3.2], [12.8, 25.4, 12.8], "navy"),
+            _hg([3.0, 17.4, 3.0], [13.0, 18.6, 13.0], "white"),
+            _hg([3.0, 24.6, 3.0], [13.0, 25.6, 13.0], "white"),
+            _hg([3.2, 17.4, 0.8], [12.8, 18.1, 3.2], "leather"),
+            _hg([6.8, 20.0, 2.8], [9.2, 23.2, 3.2], "silver"),
+            _hg([6.8, 25.6, 6.8], [9.2, 28.0, 9.2], "white"),
+        ]
+    if kind == "tricorn":     # lieutenants: a tricorn with gold edging
+        return [
+            _hg([3.6, 17.4, 3.6], [12.4, 21.2, 12.4], "navy_dark"),
+            _hg([0.6, 17.0, 0.6], [15.4, 17.8, 15.4], "navy_dark"),
+            _hg([0.6, 17.8, 13.8], [15.4, 20.4, 15.4], "navy_dark"),
+            _hg([0.6, 17.8, 3.0], [2.2, 20.4, 13.8], "navy_dark"),
+            _hg([13.8, 17.8, 3.0], [15.4, 20.4, 13.8], "navy_dark"),
+            _hg([2.2, 17.8, 0.6], [13.8, 18.8, 2.2], "navy_dark"),
+            _hg([0.6, 20.4, 13.8], [15.4, 20.8, 15.4], "gold"),
+            _hg([0.6, 20.4, 3.0], [2.2, 20.8, 13.8], "gold"),
+            _hg([13.8, 20.4, 3.0], [15.4, 20.8, 13.8], "gold"),
+            _hg([7.0, 18.8, 0.4], [9.0, 20.6, 0.8], "gold"),
+        ]
+    # the Warden Captain: a wide bicorne with gold edging, a cockade and a white plume
+    return [
+        _hg([-1.5, 17.0, 6.0], [17.5, 18.6, 10.0], "black"),
+        _hg([0.0, 18.6, 6.3], [16.0, 21.0, 9.7], "black"),
+        _hg([2.5, 21.0, 6.6], [13.5, 23.0, 9.4], "black"),
+        _hg([5.0, 23.0, 6.9], [11.0, 24.0, 9.1], "black"),
+        _hg([-1.5, 17.0, 5.7], [17.5, 17.6, 6.0], "gold"),
+        _hg([-1.5, 17.0, 10.0], [17.5, 17.6, 10.3], "gold"),
+        _hg([7.0, 19.0, 5.6], [9.0, 21.2, 6.0], "red"),
+        _hg([7.4, 19.4, 5.4], [8.6, 20.8, 5.6], "gold"),
+        _hg([7.0, 24.0, 7.0], [9.0, 27.6, 9.0], "white"),
+        _hg([8.0, 26.8, 8.6], [10.4, 28.6, 10.2], "white"),
+    ]
+
+
+def face_elements(kind, colour):
+    h = "hair_" + (colour or "black")
+    if kind == "mustache":
+        return [
+            _hg([4.6, 3.9, 1.0], [11.4, 5.3, 1.6], h),
+            _hg([3.4, 4.6, 1.0], [4.6, 6.2, 1.6], h),
+            _hg([11.4, 4.6, 1.0], [12.6, 6.2, 1.6], h),
+        ]
+    if kind == "beard":
+        return [
+            _hg([3.2, 1.0, 0.9], [12.8, 4.6, 1.6], h),
+            _hg([5.0, 0.0, 1.0], [11.0, 1.0, 1.6], h),
+            _hg([4.4, 4.4, 0.9], [11.6, 5.6, 1.6], h),
+            _hg([1.0, 1.6, 1.6], [1.6, 7.0, 7.0], h),
+            _hg([14.4, 1.6, 1.6], [15.0, 7.0, 7.0], h),
+        ]
+    if kind == "eyepatch":
+        return [
+            _hg([9.4, 7.8, 1.0], [12.4, 10.4, 1.6], "black"),
+            _hg([4.0, 10.4, 1.3], [9.6, 11.0, 1.6], "black"),
+            _hg([1.3, 10.4, 1.6], [1.6, 11.0, 14.4], "black"),
+            _hg([14.4, 10.4, 1.6], [14.7, 11.0, 14.4], "black"),
+            _hg([1.3, 10.4, 14.4], [14.7, 11.0, 14.7], "black"),
+            _hg([12.4, 9.6, 1.3], [14.4, 10.2, 1.6], "black"),
+        ]
+    return []
+
+
+# variant id -> (hat, face, face colour)
+HEADGEAR = {
+    "tw_shako": ("shako", None, None),
+    "tw_shako_mustache_brown": ("shako", "mustache", "brown"),
+    "tw_shako_mustache_black": ("shako", "mustache", "black"),
+    "tw_shako_mustache_ginger": ("shako", "mustache", "ginger"),
+    "tw_shako_beard_brown": ("shako", "beard", "brown"),
+    "tw_shako_eyepatch": ("shako", "eyepatch", None),
+    "tw_tricorn": ("tricorn", None, None),
+    "tw_tricorn_mustache_grey": ("tricorn", "mustache", "grey"),
+    "tw_tricorn_beard_black": ("tricorn", "beard", "black"),
+    "tw_tricorn_beard_ginger": ("tricorn", "beard", "ginger"),
+    "tw_tricorn_eyepatch": ("tricorn", "eyepatch", None),
+    "tw_bicorne_mustache_white": ("bicorne", "mustache", "white"),
+    "tw_bicorne_beard_grey": ("bicorne", "beard", "grey"),
+    "tw_bicorne_eyepatch": ("bicorne", "eyepatch", None),
+}
+
+
+def tidewatch_headgear():
+    headgear_textures()
+    textures = {n: "aquatic:item/headgear/" + n for n in HEADGEAR_COLOURS}
+    textures["particle"] = textures["navy"]
+    for vid, (hat, face, colour) in HEADGEAR.items():
+        write_json(os.path.join(PACK, "assets", "aquatic", "models", "item", vid + ".json"), {
+            "textures": textures,
+            "elements": hat_elements(hat) + face_elements(face, colour),
+            "display": {
+                "head": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+                "gui": {"rotation": [20, 200, 0], "translation": [0, -6, 0], "scale": [0.55, 0.55, 0.55]},
+                "ground": {"rotation": [0, 0, 0], "translation": [0, -2, 0], "scale": [0.3, 0.3, 0.3]},
+            },
+        })
+        write_json(os.path.join(PACK, "assets", "aquatic", "items", vid + ".json"), {
+            "model": {"type": "minecraft:model", "model": "aquatic:item/" + vid},
+        })
+
+
 def illager_hd(coat, trim, belts, hat, seed=1):
     """A 128x128 (2x) illager skin in Tidewatch uniform: vanilla illager layout, every box drawn per face with
     light from above (tops brighter, sides and backs darker), fabric texture, folds and the uniform's details."""
@@ -1324,14 +1470,11 @@ def illager_hd(coat, trim, belts, hat, seed=1):
     # ---- head (8x10x8): tricorn at the top, a weathered face, hair at the back
     def head(face, x, y, w, h):
         if face == "top":
-            edge = min(x, y, w - 1 - x, h - 1 - y)
-            return trim if edge < 2 else fabric(hat, x, y, 0.05)
+            return fabric(hair, x, y, 0.05)                    # short hair (the hats are 3D, worn on top)
         if face == "bottom":
             return skin_d
-        if y < 5:                                          # hat crown
-            return fabric(hat, x, y)
-        if y < 7:                                          # gold (or white) hat band
-            return shade(trim, 0.15 if y == 5 else -0.1)
+        if y < 4 or (face != "front" and y < 7):
+            return fabric(hair, x, y)
         if face == "back":
             return fabric(hair, x, y, -0.05) if y < 17 else skin_d
         if face in ("right", "left"):
@@ -1351,6 +1494,12 @@ def illager_hd(coat, trim, belts, hat, seed=1):
                 c = skin_d
         if y in (12, 13) and x in (2, 3, 12, 13):
             c = shade(skin, 0.06)                          # cheeks
+        if 11 <= y <= 13 and x in (7, 8):
+            c = shade(skin, 0.04 if x == 7 else -0.06)     # a small, normal nose
+        if y == 13 and x in (6, 9):
+            c = shade(skin, -0.12)
+        if y == 13 and x in (7, 8):
+            c = shade(skin, 0.1)
         if 14 <= y <= 15 and 4 <= x <= 11:
             c = shade(skin, -0.12) if y == 14 else skin_d  # upper lip shadow
         if y == 16 and 5 <= x <= 10:
@@ -1360,8 +1509,7 @@ def illager_hd(coat, trim, belts, hat, seed=1):
         return c
     box(0, 0, 8, 10, 8, head)
 
-    # ---- nose (2x4x2)
-    box(24, 0, 2, 4, 2, lambda f, x, y, w, h: shade(skin, 0.08 if f == "front" and y < 4 else -0.05))
+    # ---- no nose box: left transparent, so the big illager nose is invisible (a small one is painted on the face)
 
     # ---- body (8x12x6): the uniform jacket with crossed belts, buttons and a collar
     def body(face, x, y, w, h):
@@ -1532,6 +1680,7 @@ def main():
     ill = os.path.join(PACK, "assets", "minecraft", "textures", "entity", "illager")
     os.makedirs(ill, exist_ok=True)
     # officers (vindicators): dark navy with gold; riflemen (pillagers): blue with white (128x128, twice the detail)
+    tidewatch_headgear()
     illager_hd("#14284d", "#e2b33c", "#e8e4d8", "#0f1d38", seed=3).save(os.path.join(ill, "vindicator.png"))
     illager_hd("#1d3a6b", "#e8e4d8", "#e8e4d8", "#16294a", seed=5).save(os.path.join(ill, "pillager.png"))
     hand_cannon_3d()

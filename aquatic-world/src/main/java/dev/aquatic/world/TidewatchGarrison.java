@@ -297,11 +297,11 @@ final class TidewatchGarrison implements Listener {
         EntityEquipment eq = le.getEquipment();
         ConfigurationSection gear = mob.getConfigurationSection("equipment");
         if (eq != null && gear != null) {
-            eq.setHelmet(item(gear.getString("helmet")));
-            eq.setChestplate(item(gear.getString("chestplate")));
-            eq.setLeggings(item(gear.getString("leggings")));
-            eq.setBoots(item(gear.getString("boots")));
-            eq.setItemInMainHand(item(gear.getString("mainhand")));
+            eq.setHelmet(item(pick(gear, "helmet")));
+            eq.setChestplate(item(pick(gear, "chestplate")));
+            eq.setLeggings(item(pick(gear, "leggings")));
+            eq.setBoots(item(pick(gear, "boots")));
+            eq.setItemInMainHand(item(pick(gear, "mainhand")));
             eq.setHelmetDropChance(0);
             eq.setChestplateDropChance(0);
             eq.setLeggingsDropChance(0);
@@ -327,10 +327,38 @@ final class TidewatchGarrison implements Listener {
         return le;
     }
 
-    /** "MATERIAL" or "item:<custom id>" (a custom item, e.g. a Tidewatch uniform piece). */
+    /** One value, or a random one from a list (so every soldier can look a bit different). */
+    private static String pick(ConfigurationSection gear, String key) {
+        if (gear.isList(key)) {
+            List<String> options = gear.getStringList(key);
+            return options.isEmpty() ? null : options.get(ThreadLocalRandom.current().nextInt(options.size()));
+        }
+        return gear.getString(key);
+    }
+
+    /** Headgear looks need the resource pack (items.yml resource-pack.enabled). */
+    private boolean packOn() {
+        dev.aquatic.core.AquaticModule items = m.plugin().module("items");
+        return items != null && items.isEnabled() && items.config().getBoolean("resource-pack.enabled", false);
+    }
+
+    /**
+     * "MATERIAL", "item:<custom id>" (a custom item, e.g. a Tidewatch uniform piece) or "look:<id>": a 3D hat (and
+     * face) from the resource pack, worn on the head (aquatic:item/&lt;id&gt;; nothing without the pack).
+     */
     private ItemStack item(String spec) {
         if (spec == null) {
             return null;
+        }
+        if (spec.toLowerCase(Locale.ROOT).startsWith("look:")) {
+            if (!packOn()) {
+                return null;
+            }
+            ItemStack look = new ItemStack(Material.PAPER);
+            org.bukkit.inventory.meta.ItemMeta meta = look.getItemMeta();
+            meta.setItemModel(NamespacedKey.fromString("aquatic:" + spec.substring(5).toLowerCase(Locale.ROOT)));
+            look.setItemMeta(meta);
+            return look;
         }
         if (spec.toLowerCase(Locale.ROOT).startsWith("item:")) {
             dev.aquatic.api.ItemService items = m.service(dev.aquatic.api.ItemService.class);

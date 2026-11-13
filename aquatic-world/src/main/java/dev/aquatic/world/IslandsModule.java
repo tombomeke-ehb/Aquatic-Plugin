@@ -1111,6 +1111,21 @@ public final class IslandsModule extends AquaticModule implements IslandService,
             addMissing(file, defaults, "generation.island-type-weights.VILLAGE");
             addMissing(file, defaults, "island-names.VILLAGE");
         }
+        if (from < 8) {
+            // 2.16.3: every Tidewatch soldier gets a random 3D hat and face (only if the garrison was never edited)
+            String base = "tidewatch.mobs.";
+            if (file.contains("tidewatch.mobs")) {
+                for (String mob : List.of("rifleman", "lieutenant", "captain")) {
+                    String path = base + mob + ".equipment";
+                    Object old = file.get(path + ".helmet");
+                    boolean untouched = mob.equals("rifleman") ? old == null
+                            : mob.equals("lieutenant") ? "item:tidewatch_hat".equals(old) : "item:tidewatch_captain_hat".equals(old);
+                    if (untouched && file.contains(path)) {
+                        file.set(path + ".helmet", defaults.getList(path + ".helmet"));
+                    }
+                }
+            }
+        }
         if (from < 7) {
             // 2.14.0: builds from schematic files
             addMissing(file, defaults, "schematics");

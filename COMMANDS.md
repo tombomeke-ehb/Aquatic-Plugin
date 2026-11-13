@@ -412,6 +412,7 @@ TIDEWATCH islands (`/island admin spawn tidewatch <radius>`, or random spawns) h
 - **The garrison:** while players are on the island, soldiers keep coming, and the Warden Captain guards the keep.
 - **Liberating:** kill the captain to liberate the island. Every attacker on the island gets 1,500 Doubloons and XP, and the fort's strongbox is buried in the keep.
 - **Claiming:** a crew can claim the island for 12 hours afterwards. Unclaimed forts get a new garrison after that.
+- **Looks:** every soldier spawns with a random 3D hat and face (shakos, tricorns, the captain's bicorne; mustaches, beards, eyepatches), set as `look:<id>` lists in `tidewatch.mobs.<soldier>.equipment.helmet`. They need the resource pack.
 - **Settings:** everything is under `tidewatch` in `islands.yml`.
 
 ## Schematics: your own builds
