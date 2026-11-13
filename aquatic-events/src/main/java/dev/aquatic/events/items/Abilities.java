@@ -94,6 +94,51 @@ public final class Abilities {
         return Fx.color(a.getString("color"), def);
     }
 
+    /**
+     * The element of a move, for its sprites: "style" in the config, else read from its particle, else from its
+     * type. fire, ice, water, smoke, void, wind, lightning, earth, beast or "" (a plain impact star).
+     */
+    static String styleOf(ConfigurationSection a) {
+        String set = a.getString("style");
+        if (set != null && !set.isBlank()) {
+            return set.toLowerCase(Locale.ROOT);
+        }
+        String particle = (a.getString("particle", "") + " " + a.getString("cloud", "")).toUpperCase(Locale.ROOT);
+        if (particle.contains("SMOKE") || particle.contains("ASH")) {
+            return "smoke";                          // before fire: CAMPFIRE_COSY_SMOKE is smoke
+        }
+        if (particle.contains("FLAME") || particle.contains("LAVA") || particle.contains("FIRE")) {
+            return "fire";
+        }
+        if (particle.contains("SNOW") || particle.contains("ICE")) {
+            return "ice";
+        }
+        if (particle.contains("ELECTRIC")) {
+            return "lightning";
+        }
+        if (particle.contains("SQUID") || particle.contains("PORTAL") || particle.contains("SOUL") || particle.contains("SCULK")
+                || particle.contains("WITCH") || particle.contains("DRAGON")) {
+            return "void";
+        }
+        if (particle.contains("SPLASH") || particle.contains("BUBBLE") || particle.contains("DRIP") || particle.contains("RAIN")
+                || particle.contains("FALLING_WATER")) {
+            return "water";
+        }
+        if (particle.contains("CLOUD") || particle.contains("GUST") || particle.contains("SWEEP")) {
+            return "wind";
+        }
+        return switch (a.getString("type", "").toLowerCase(Locale.ROOT)) {
+            case "fireball", "blast" -> "fire";
+            case "nova" -> "ice";
+            case "lightning", "chain" -> "lightning";
+            case "pull", "swap" -> "void";
+            case "dash", "slash" -> "wind";
+            case "transform" -> "beast";
+            case "invisibility" -> "smoke";
+            default -> "";
+        };
+    }
+
     // ------------------------------------------------------------------ damage rules
 
     /** PvP rules for abilities: never yourself, crewmates, your pets, creative/spectator players. */
@@ -152,8 +197,8 @@ public final class Abilities {
         }
         // impact: sparks, a crit flash and a punchy sound
         Location hitAt = target.getLocation().add(0, target.getHeight() * 0.6, 0);
-        fx.burst(hitAt, Particle.CRIT, 12, 0.3, 0.25);
-        fx.burst(hitAt, Particle.ENCHANTED_HIT, 6, 0.3, 0.2);
+        fx.burst(hitAt, Particle.CRIT, 6, 0.3, 0.25);
+        fx.element(hitAt, styleOf(cfg), colorOf(cfg, cfg.getString("type", "")), 0.9f);   // the move's element on whoever it hits
         Util.sound(hitAt, "entity.player.attack.crit", 0.7f, 1.1f);
         if (module.fruits() != null && module.fruits().isFruitMove(cfg)) {
             module.fruits().addMastery(source, module.config().getLong("fruits.mastery.xp-per-hit", 3));
@@ -322,6 +367,7 @@ public final class Abilities {
                     org.bukkit.Color c = colorOf(a, type);
                     fx.beam(eye.clone().add(dir.clone().multiply(0.6)), t.getLocation().add(0, 1, 0), c, 1.5f, 0.35);
                     fx.impact(t.getLocation().add(0, 1, 0), c, 1.8f);
+                    fx.crack(t.getLocation(), c, 2.2);
                     fx.wave(t.getLocation().add(0, 0.2, 0), 2.5, 6, c, Particle.CLOUD, false);
                     sound(a, "entity.player.attack.strong", t.getLocation());
                     Util.sound(t.getLocation(), "entity.generic.explode", 0.5f, 1.6f);
@@ -333,7 +379,8 @@ public final class Abilities {
                 }
                 push(p, dir.clone().multiply(leap));
                 p.setFallDistance(0);
-                particles(a, "CLOUD", p.getLocation(), 15, 0.3);
+                particles(a, "CLOUD", p.getLocation(), 8, 0.3);
+                fx.speedLines(p.getLocation(), dir, colorOf(a, type));
                 fx.wave(p.getLocation().add(0, 0.1, 0), 2.0, 5, colorOf(a, type), Particle.CLOUD, false);
                 sound(a, "entity.slime.jump", p.getLocation());
                 return true;
@@ -345,7 +392,7 @@ public final class Abilities {
                 gear.track(ball, p, "blast", a);
                 fx.burst(eye.clone().add(dir.clone().multiply(1.2)), Particle.FLAME, 14, 0.15, 0.06);
                 fx.flash(eye.clone().add(dir.clone().multiply(1.2)), colorOf(a, type), 1.2f);
-                fx.crescent(eye, dir, 1.6, colorOf(a, type));
+                fx.element(eye.clone().add(dir.clone().multiply(1.3)).add(0, -0.5, 0), styleOf(a), colorOf(a, type), 0.8f);
                 sound(a, "entity.blaze.shoot", p.getLocation());
                 return true;
             }
@@ -354,7 +401,7 @@ public final class Abilities {
                 area(p, c, radius, damage, a);
                 ring(a, "SNOWFLAKE", p.getLocation().add(0, 0.3, 0), radius);
                 fx.wave(p.getLocation().add(0, 0.3, 0), radius, 8, colorOf(a, type), Particle.SNOWFLAKE, false);
-                fx.impact(c, colorOf(a, type), (float) Math.max(1.6, radius * 0.7));
+                fx.element(c, styleOf(a), colorOf(a, type), (float) Math.max(1.4, radius * 0.6));
                 fx.burst(c, Particle.WHITE_ASH, 12, radius / 3, 0.02);
                 sound(a, "block.glass.break", c);
                 selfEffects(p, a);
@@ -384,7 +431,8 @@ public final class Abilities {
                 p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, ticks, 0, true, false, true));
                 invisible.put(p.getUniqueId(), System.currentTimeMillis() + ticks * 50L);
                 selfEffects(p, a);
-                particles(a, "CLOUD", p.getLocation().add(0, 1, 0), 25, 0.4);
+                particles(a, "CLOUD", p.getLocation().add(0, 1, 0), 10, 0.4);
+                fx.element(p.getLocation().add(0, 1, 0), "smoke", colorOf(a, type), 1.5f);
                 fx.burst(p.getLocation().add(0, 1, 0), Particle.LARGE_SMOKE, 35, 0.6, 0.03);
                 sound(a, "entity.illusioner.mirror_move", p.getLocation());
                 return true;
@@ -405,8 +453,10 @@ public final class Abilities {
                 fx.beam(mine.clone().add(0, 1, 0), theirs.clone().add(0, 1, 0), colorOf(a, type), 1.4f, 0.3);
                 p.teleport(toMine);
                 t.teleport(toTheirs);
-                particles(a, "PORTAL", mine.add(0, 1, 0), 40, 0.5);
-                particles(a, "PORTAL", theirs.add(0, 1, 0), 40, 0.5);
+                fx.vortex(mine.clone().add(0, 1, 0), colorOf(a, type), 1.1, 12, false);
+                fx.vortex(theirs.clone().add(0, 1, 0), colorOf(a, type), 1.1, 12, false);
+                particles(a, "PORTAL", mine.add(0, 1, 0), 20, 0.5);
+                particles(a, "PORTAL", theirs.add(0, 1, 0), 20, 0.5);
                 sound(a, "entity.enderman.teleport", toMine);
                 return true;
             }
@@ -424,6 +474,7 @@ public final class Abilities {
                 }
                 ring(a, "SQUID_INK", c.clone().add(0, 0.5, 0), radius);
                 fx.wave(c.clone().add(0, 0.5, 0), radius, 10, colorOf(a, type), Particle.SQUID_INK, true);
+                fx.vortex(c.clone().add(0, 0.1, 0), colorOf(a, type), radius, 20, true);
                 sound(a, "entity.wither.ambient", c);
                 selfEffects(p, a);
                 return true;
@@ -432,7 +483,9 @@ public final class Abilities {
                 selfEffects(p, a);
                 fx.spiral(p, Math.min(100, (int) (a.getDouble("duration", 10) * 20)), colorOf(a, type));
                 fx.wave(p.getLocation().add(0, 0.1, 0), 3, 6, colorOf(a, type), Particle.CRIT, false);
-                particles(a, "ANGRY_VILLAGER", p.getLocation().add(0, 1, 0), 20, 0.6);
+                fx.crack(p.getLocation(), colorOf(a, type), 2.6);
+                fx.claw(eye, dir, colorOf(a, type), 2.8f);
+                particles(a, "ANGRY_VILLAGER", p.getLocation().add(0, 1, 0), 6, 0.6);
                 sound(a, "entity.ravager.roar", p.getLocation());
                 return true;
             }
@@ -447,7 +500,7 @@ public final class Abilities {
                 dashes.add(dash);
                 fx.burst(p.getLocation().add(0, 0.5, 0), Particle.CLOUD, 12, 0.3, 0.05);
                 fx.shockwave(p.getLocation().add(0, 0.1, 0), 1.6, 5, colorOf(a, type));
-                fx.flash(p.getLocation().add(0, 1, 0), colorOf(a, type), 1.0f);
+                fx.speedLines(p.getLocation(), dir, colorOf(a, type));
                 sound(a, "entity.player.attack.sweep", p.getLocation());
                 selfEffects(p, a);
                 return true;
@@ -476,6 +529,8 @@ public final class Abilities {
                         Location pt = start.clone().add(stepV.clone().multiply(n));
                         if (n % 2 == 1) {
                             fx.crescent(pt.clone().add(0, 0.9, 0), stepV, Math.max(1.4, width * 1.1), c);   // the rolling front
+                        } else {
+                            fx.element(pt.clone().add(0, 0.4, 0), styleOf(a), c, 0.9f);                     // what it leaves behind
                         }
                         particles(a, "FLAME", pt.clone().add(0, 0.3, 0), 3, width / 3);
                         for (Entity e : p.getWorld().getNearbyEntities(pt, width, 1.6, width)) {
@@ -630,6 +685,7 @@ public final class Abilities {
         fx.wave(at.clone().add(0, 0.3, 0), a.getDouble("radius", 3) + 0.5, 6, colorOf(a, "blast"), Particle.FLAME, false);
         fx.burst(at, Particle.LAVA, 8, 0.6, 0);
         fx.nova(at.clone().add(0, 0.6, 0), colorOf(a, "blast"), a.getDouble("radius", 3) * 0.9);
+        fx.element(at.clone().add(0, 0.3, 0), styleOf(a), colorOf(a, "blast"), (float) Math.max(1.5, a.getDouble("radius", 3) * 0.6));
         fx.pillar(at, colorOf(a, "blast"), 2.5, 8);
         Util.sound(at, a.getString("hit-sound", "entity.generic.explode"), 1f, 1.2f);
     }

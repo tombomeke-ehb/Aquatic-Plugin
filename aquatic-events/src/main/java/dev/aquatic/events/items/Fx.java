@@ -105,7 +105,8 @@ final class Fx {
     }
 
     // ------------------------------------------------------------------ sprite effects (resource pack)
-    // Hand-drawn frames (resourcepack/pixelart.py): slash 6, burst 5, ring 6, spark 4, beam 3, bolt 3.
+    // Hand-drawn frames (resourcepack/pixelart.py): slash 6, burst 5, ring 6, spark 4, beam 3, bolt 3, rune 2,
+    // flame 6, shard 5, puff 6, splash 5, swirl 6, crack 4, claw 5, shield 4, lines 4.
     // Every frame is the model "aquatic:vfx_<name>_<n>": a layer tinted in the effect's colour plus a white core.
 
     /** Sprite effects need the resource pack. */
@@ -201,6 +202,114 @@ final class Fx {
         }
         play(at, "burst", upTo(5), 2, color, FACING, pose(new org.joml.Vector3f(), new org.joml.Quaternionf(), size * 0.8f),
                 pose(new org.joml.Vector3f(), new org.joml.Quaternionf(), size * 1.25f));
+    }
+
+    private static final org.bukkit.entity.Display.Billboard UPRIGHT = org.bukkit.entity.Display.Billboard.VERTICAL;
+
+    /** A magic circle on the ground that turns and grows while it shows (casting a move). */
+    void rune(Location ground, Color color, double radius, int ticks) {
+        if (!displays() || ground.getWorld() == null) {
+            return;
+        }
+        org.joml.Quaternionf flat = new org.joml.Quaternionf().rotateX((float) Math.toRadians(90));
+        int[] order = new int[Math.max(2, ticks / 4)];
+        for (int i = 0; i < order.length; i++) {
+            order[i] = i % 2;
+        }
+        float s = (float) (radius * 2);
+        play(ground.clone().add(0, 0.07, 0), "rune", order, 4, color, FIXED, pose(new org.joml.Vector3f(), flat, s * 0.55f),
+                pose(new org.joml.Vector3f(), new org.joml.Quaternionf(flat).rotateZ(2.4f), s));
+    }
+
+    /**
+     * The sprite of an element where a move lands: fire = a tongue of flame, ice = shards, water = a splash,
+     * smoke = a puff, void / wind = a vortex, beast = claw marks, anything else = an impact star.
+     */
+    void element(Location at, String style, Color color, float size) {
+        if (!displays() || at.getWorld() == null) {
+            return;
+        }
+        org.joml.Quaternionf none = new org.joml.Quaternionf();
+        switch (style == null ? "" : style) {
+            case "fire" -> play(at.clone().add(0, size * 0.55, 0), "flame", upTo(6), 2, color, UPRIGHT,
+                    pose(new org.joml.Vector3f(), none, size * 1.5f), pose(new org.joml.Vector3f(0, size * 0.25f, 0), none, size * 1.9f));
+            case "ice" -> play(at, "shard", upTo(5), 2, color, FACING, pose(new org.joml.Vector3f(), none, size * 1.2f),
+                    pose(new org.joml.Vector3f(), none, size * 2.0f));
+            case "water" -> play(at.clone().add(0, size * 0.4, 0), "splash", upTo(5), 2, color, UPRIGHT,
+                    pose(new org.joml.Vector3f(), none, size * 1.8f), pose(new org.joml.Vector3f(), none, size * 2.2f));
+            case "smoke" -> play(at, "puff", upTo(6), 2, color, FACING, pose(new org.joml.Vector3f(), none, size * 1.4f),
+                    pose(new org.joml.Vector3f(0, size * 0.4f, 0), none, size * 2.3f));
+            case "void", "wind" -> play(at, "swirl", upTo(6), 2, color, FACING, pose(new org.joml.Vector3f(), none, size * 1.9f),
+                    pose(new org.joml.Vector3f(), none, size * 1.3f));
+            case "beast" -> play(at, "claw", upTo(5), 2, color, FACING, pose(new org.joml.Vector3f(), new org.joml.Quaternionf().rotateZ(0.6f), size * 1.6f),
+                    pose(new org.joml.Vector3f(), new org.joml.Quaternionf().rotateZ(0.6f), size * 2.0f));
+            default -> impact(at, color, size);
+        }
+    }
+
+    /** Glowing cracks that shoot over the ground from a heavy hit. */
+    void crack(Location ground, Color color, double radius) {
+        if (!displays() || ground.getWorld() == null) {
+            return;
+        }
+        org.joml.Quaternionf flat = new org.joml.Quaternionf().rotateX((float) Math.toRadians(90))
+                .rotateZ((float) (Math.random() * Math.PI * 2));
+        float s = (float) (radius * 2);
+        play(ground.clone().add(0, 0.05, 0), "crack", new int[]{0, 1, 2, 2, 2, 3}, 3, color, FIXED,
+                pose(new org.joml.Vector3f(), flat, s * 0.9f), pose(new org.joml.Vector3f(), flat, s));
+    }
+
+    /** A vortex that keeps turning for "ticks" ticks: lying on the ground (flat) or facing the viewer. */
+    void vortex(Location at, Color color, double radius, int ticks, boolean flat) {
+        if (!displays() || at.getWorld() == null) {
+            return;
+        }
+        int[] order = new int[Math.max(6, ticks / 2)];
+        for (int i = 0; i < order.length; i++) {
+            order[i] = i >= order.length - 2 ? 4 + (i - (order.length - 2)) : i % 4;   // spin, then fade out
+        }
+        org.joml.Quaternionf rot = flat ? new org.joml.Quaternionf().rotateX((float) Math.toRadians(90)) : new org.joml.Quaternionf();
+        float s = (float) (radius * 2);
+        play(flat ? at.clone().add(0, 0.08, 0) : at, "swirl", order, 2, color, flat ? FIXED : FACING,
+                pose(new org.joml.Vector3f(), rot, s), pose(new org.joml.Vector3f(), new org.joml.Quaternionf(rot).rotateZ(-2.0f), s * 0.75f));
+    }
+
+    /** Three claw marks ripped through the air in front of the eyes. */
+    void claw(Location eye, Vector dir, Color color, float size) {
+        if (!displays() || eye.getWorld() == null) {
+            return;
+        }
+        Vector f = dir.clone().normalize();
+        org.joml.Quaternionf face = new org.joml.Quaternionf().rotateY((float) Math.toRadians(-eye.getYaw()))
+                .rotateX((float) Math.toRadians(eye.getPitch())).rotateZ(0.7f);
+        play(eye.clone().add(f.clone().multiply(1.8)).add(0, -0.2, 0), "claw", upTo(5), 2, color, FIXED,
+                pose(new org.joml.Vector3f(), face, size * 0.85f), pose(new org.joml.Vector3f(), face, size));
+    }
+
+    /** A shield that flashes up in front of someone (blocks). */
+    void shield(Location front, float yaw, Color color, float size) {
+        if (!displays() || front.getWorld() == null) {
+            return;
+        }
+        org.joml.Quaternionf face = new org.joml.Quaternionf().rotateY((float) Math.toRadians(-yaw));
+        play(front, "shield", upTo(4), 2, color, FIXED, pose(new org.joml.Vector3f(), face, size * 0.8f),
+                pose(new org.joml.Vector3f(), face, size));
+    }
+
+    /** Speed lines streaking past behind someone who shoots forward (dashes, leaps). */
+    void speedLines(Location body, Vector dir, Color color) {
+        if (!displays() || body.getWorld() == null || dir.lengthSquared() < 1e-6) {
+            return;
+        }
+        Vector f = dir.clone().normalize();
+        Location mid = body.clone().add(0, 1.0, 0).subtract(f.clone().multiply(0.6));
+        org.joml.Quaternionf along = new org.joml.Quaternionf().rotationTo(1, 0, 0, (float) f.getX(), (float) f.getY(), (float) f.getZ());
+        Vector move = f.clone().multiply(1.5);
+        org.joml.Vector3f shift = new org.joml.Vector3f((float) move.getX(), (float) move.getY(), (float) move.getZ());
+        for (int k = 0; k < 2; k++) {
+            org.joml.Quaternionf rot = k == 0 ? along : new org.joml.Quaternionf(along).rotateX((float) Math.toRadians(90));
+            play(mid, "lines", upTo(4), 2, color, FIXED, pose(new org.joml.Vector3f(), rot, 3.2f, 1.9f, 1f), pose(shift, rot, 3.2f, 1.9f, 1f));
+        }
     }
 
     /** A shockwave ring that grows over the ground to "radius" in about "ticks" ticks. */

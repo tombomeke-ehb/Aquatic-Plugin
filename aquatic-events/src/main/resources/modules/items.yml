@@ -87,6 +87,8 @@ fruits:
   show-cooldown-bar: true
   # Fruits with more than one move: sneak + scroll the hotbar (empty hand) to pick a move.
   # Every move has its own cooldown. Moves are "ability" (move 1) plus the list "extra-moves".
+  # Every move shows the sprites of its element. It is read from the move's particle or type; set
+  # "style: fire|ice|water|smoke|void|wind|lightning|beast" on a move to choose it yourself.
   # Ability types: punch, fireball, nova, lightning, invisibility, swap, pull, transform, dash, slash,
   #   wave (rolls forward over the ground), beam (instant ray, "pierce" targets), chain (jumps between
   #   targets: "jumps", "jump-range", "falloff").

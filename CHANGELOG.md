@@ -1,5 +1,30 @@
 # Changelog
 
+## 2.21.0 (2026-11-13)
+
+### Added
+- **Ten new animated effect sprites**, so moves no longer lean on particles alone:
+  - **Rune circle:** a magic circle that turns and grows on the ground.
+  - **Flame, ice shards, water splash, smoke puff, vortex:** one per element.
+  - **Ground cracks, claw marks, shield flash, speed lines.**
+- **Every move shows its element.** The element comes from the move's particle or type (or set `style:` on a move in `items.yml`: fire, ice, water, smoke, void, wind, lightning, beast).
+  - Whoever a move hits gets that element's sprite: a tongue of flame, a burst of shards, a splash, a vortex and so on.
+  - Fireballs, novas, waves and bombs show it where they land. Smoke, frost and fire bombs each have their own.
+- **Casting:**
+  - A rune circle appears under you when you cast a fruit move or a weapon ability.
+  - Eating a fruit draws a large rune circle around you.
+- **Per move:**
+  - **Punch:** cracks split the ground under the target.
+  - **Dash and leap:** speed lines streak past behind you.
+  - **Pull:** a vortex turns on the ground where it pulls to.
+  - **Swap:** a vortex at both ends.
+  - **Transform:** claw marks rip through the air and the ground cracks.
+  - **Invisibility:** you vanish in a puff of smoke.
+- **Weapons and gear:**
+  - **Marauder's Buckler:** a hexagon shield flashes up when it blocks.
+  - **Kraken's Maul and Abyssal Anchor:** their on-hit effect cracks the ground.
+  - On-hit effects of weapons show their element on the target.
+
 ## 2.20.0 (2026-11-13)
 
 ### Changed

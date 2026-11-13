@@ -176,9 +176,8 @@ public final class GearListener implements Listener {
         org.bukkit.Color c = weaponColor(def);
         Vector dir = p.getEyeLocation().getDirection();
         Location front = p.getLocation().add(0, 1.1, 0).add(dir.clone().setY(0).normalize().multiply(0.7));
-        abilities.fx().flash(front, c, 1.3f);
-        abilities.fx().sparkles(front, c, 10, 0.4);
-        abilities.fx().burst(front, org.bukkit.Particle.ELECTRIC_SPARK, 12, 0.3, 0.2);
+        abilities.fx().shield(front, p.getLocation().getYaw(), c, 2.0f);
+        abilities.fx().burst(front, org.bukkit.Particle.ELECTRIC_SPARK, 8, 0.3, 0.2);
         abilities.fx().shockwave(p.getLocation().add(0, 0.1, 0), 1.5, 5, c);
     }
 
@@ -257,6 +256,13 @@ public final class GearListener implements Listener {
             fx.crescent(eye, eye.getDirection(), 2.4, c);
             fx.shockwave(victim.getLocation().add(0, 0.1, 0), 1.8, 7, c);
             fx.spray(hit, org.bukkit.Particle.ENCHANTED_HIT, 10, 0.35);
+            if (p.getInventory().getItemInMainHand().getType().name().endsWith("_AXE")) {
+                fx.crack(victim.getLocation(), c, 2.4);          // mauls and anchors split the ground
+            }
+            ConfigurationSection onHit = def.cfg.getConfigurationSection("on-hit");
+            if (onHit != null) {
+                fx.element(hit, Abilities.styleOf(onHit), c, 1.0f);
+            }
         }
     }
 
@@ -265,7 +271,7 @@ public final class GearListener implements Listener {
         Fx fx = abilities.fx();
         org.bukkit.Color c = weaponColor(def);
         fx.crescent(p.getEyeLocation(), p.getEyeLocation().getDirection(), 2.2, c);
-        fx.shockwave(p.getLocation().add(0, 0.1, 0), 1.4, 5, c);
+        fx.rune(p.getLocation(), c, 1.2, 12);
     }
 
     /** Muzzle flash, sparks and a puff of smoke in front of the barrel. */
@@ -319,6 +325,7 @@ public final class GearListener implements Listener {
         org.bukkit.Color bc = Fx.color(b.getString("color"), org.bukkit.Color.GRAY);
         abilities.fx().wave(at.clone().add(0, 0.2, 0), radius, 6, bc, null, false);
         abilities.fx().nova(at.clone().add(0, 0.8, 0), bc, radius * 0.8);
+        abilities.fx().element(at.clone().add(0, 0.6, 0), Abilities.styleOf(b), bc, (float) Math.max(1.6, radius * 0.6));
         Util.sound(at, b.getString("hit-sound", "entity.generic.explode"), 0.8f, 1.4f);
         int linger = Math.max(0, b.getInt("linger-seconds", 0));
         for (int i = 1; i <= linger; i++) {

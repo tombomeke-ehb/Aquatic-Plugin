@@ -514,6 +514,7 @@ public final class FruitManager implements Listener {
         org.bukkit.Color fc = Fx.color(first == null ? null : first.getString("color"), org.bukkit.Color.fromRGB(0xB388FF));
         Fx fx = module.gear().abilities().fx();
         fx.pillar(p.getLocation(), fc, 4.5, 18);
+        fx.rune(p.getLocation(), fc, 3.2, 60);
         fx.nova(p.getLocation().add(0, 1, 0), fc, 3.0);
         fx.orbit(p, 60, fc, 4);
         Util.sound(p.getLocation(), "entity.elder_guardian.curse", 1f, 1.4f);
@@ -715,7 +716,8 @@ public final class FruitManager implements Listener {
             org.bukkit.Color mc = Fx.color(ability.getString("color"), org.bukkit.Color.fromRGB(0xB388FF));
             org.bukkit.Location hand = p.getEyeLocation().add(p.getEyeLocation().getDirection().multiply(0.8)).add(0, -0.3, 0);
             fx.flash(hand, mc, 1.0f);
-            fx.sparkles(hand, mc, 8, 0.3);
+            fx.sparkles(hand, mc, 6, 0.3);
+            fx.rune(p.getLocation(), mc, 1.5, 16);
             addMastery(p, masteryCfg().getLong("xp-per-use", 6));
             setCooldown(uuid, key, ability.getDouble("cooldown", 10) * cooldownScale(uuid));
             module.actionBar(p, "ability-used", "ability", name);

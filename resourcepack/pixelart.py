@@ -674,5 +674,331 @@ def bolt_frames():
     return frames
 
 
+def _seg(px, py, x0, y0, x1, y1):
+    vx, vy = x1 - x0, y1 - y0
+    t = max(0.0, min(1.0, ((px - x0) * vx + (py - y0) * vy) / max(1e-6, vx * vx + vy * vy)))
+    return math.hypot(px - (x0 + vx * t), py - (y0 + vy * t)), t
+
+
+def rune_frames():
+    """A magic circle (lies on the ground and turns), 2 frames: two rings, tick marks, a six-pointed star."""
+    frames = []
+    for f in range(2):
+        fr = _frame()
+        tri = []
+        for k in range(2):
+            pts = [(16 + 9.2 * math.cos(math.radians(90 + 60 * k + 120 * j)), 16 + 9.2 * math.sin(math.radians(90 + 60 * k + 120 * j)))
+                   for j in range(3)]
+            tri += list(zip(pts, pts[1:] + pts[:1]))
+        for y in range(S):
+            for x in range(S):
+                dx, dy = x + 0.5 - 16, y + 0.5 - 16
+                r = math.hypot(dx, dy)
+                ang = math.degrees(math.atan2(dy, dx)) % 360
+                tone = None
+                if 14.3 <= r <= 15.6:
+                    tone = LIGHT
+                elif 10.4 <= r <= 11.3:
+                    tone = MID
+                elif 11.3 < r < 14.3:
+                    a = (ang + (15 if f else 0)) % 30
+                    if min(a, 30 - a) * math.pi / 180 * r <= 0.7:
+                        tone = LIGHT if int(((ang + (15 if f else 0)) + 15) // 30) % 3 == 0 else MID
+                elif r < 10.4:
+                    if abs(dx) + abs(dy) <= (2.2 if f == 0 else 3.2):
+                        tone = WHITE_CORE
+                    else:
+                        d = min(_seg(x + 0.5, y + 0.5, a[0], a[1], b[0], b[1])[0] for a, b in tri)
+                        if d <= 0.62:
+                            tone = LIGHT
+                if tone is not None:
+                    _put(fr, x, y, tone)
+        frames.append(fr)
+    return frames
+
+
+def flame_frames():
+    """A tongue of fire, 6 frames: it flares up, sways and dies down, with embers above it."""
+    frames = []
+    height = [13, 20, 25, 24, 17, 9]
+    for f in range(6):
+        fr = _frame()
+        H = height[f]
+        for y in range(S):
+            t = (29.5 - (y + 0.5)) / H
+            if not 0 <= t <= 1:
+                continue
+            w = 8.2 * (1 - t) ** 0.75 * min(1.0, t * 5 + 0.35)
+            sway = math.sin(t * 5.2 + f * 1.1) * 2.4 * t
+            for x in range(S):
+                dx = abs(x + 0.5 - 16 - sway)
+                if dx > w:
+                    continue
+                if dx <= w * 0.32 and t < 0.5:
+                    tone = WHITE_CORE
+                elif dx <= w * 0.62 and t < 0.78:
+                    tone = LIGHT
+                elif dx <= w - 1.0:
+                    tone = MID
+                else:
+                    tone = DARK
+                _put(fr, x, y, tone)
+        for k in range(3):                                           # embers
+            ex = 10 + int(_hash(k, f, 31) * 12)
+            ey = 29 - H - 1 - int(_hash(k, f, 32) * 4)
+            if ey >= 0 and f < 5:
+                _put(fr, ex, ey, LIGHT if k else WHITE_CORE)
+        frames.append(fr)
+    return frames
+
+
+def shard_frames():
+    """Ice crystals bursting out, 5 frames: six sharp shards, lit on one side."""
+    frames = []
+    start = [1, 3, 6, 9.5, 12.5]
+    length = [5, 9, 9.5, 6.5, 3.5]
+    half = [2.0, 2.8, 2.6, 1.9, 1.2]
+    for f in range(5):
+        fr = _frame()
+        for y in range(S):
+            for x in range(S):
+                dx, dy = x + 0.5 - 16, y + 0.5 - 16
+                if f == 0 and abs(dx) + abs(dy) <= 3:
+                    _put(fr, x, y, WHITE_CORE)
+                    continue
+                for k in range(6):
+                    a = math.radians(15 + 60 * k)
+                    ux, uy = math.cos(a), math.sin(a)
+                    L = length[f] * (1.0 if k % 2 == 0 else 0.75)
+                    t = (dx * ux + dy * uy - start[f]) / L
+                    sgn = -dx * uy + dy * ux
+                    if 0 <= t <= 1:
+                        w = half[f] * (t / 0.35 if t < 0.35 else (1 - t) / 0.65)
+                        if abs(sgn) <= w + 0.3:
+                            if abs(sgn) <= 0.5 and f <= 2 and 0.15 < t < 0.8:
+                                tone = WHITE_CORE
+                            else:
+                                tone = LIGHT if sgn < 0 else MID
+                            if abs(sgn) > w - 0.4 and sgn >= 0:
+                                tone = DARK
+                            _put(fr, x, y, tone)
+                            break
+        frames.append(fr)
+    return frames
+
+
+def puff_frames():
+    """A puff of smoke, 6 frames: a round cloud that swells, splits into lumps and thins out (no white core)."""
+    frames = []
+    spread = [2, 4.5, 7, 9, 10.5, 11.5]
+    lump = [5, 6, 6, 5, 4, 2.6]
+    middle = [6, 7, 6, 4, 0, 0]
+    for f in range(6):
+        circles = [(16 + spread[f] * math.cos(math.radians(72 * k + f * 14)), 16 + spread[f] * math.sin(math.radians(72 * k + f * 14)),
+                    lump[f] * (1.0 if k % 2 == 0 else 0.8)) for k in range(5)]
+        if middle[f]:
+            circles.append((16, 16, middle[f]))
+
+        def inside(px, py):
+            return any(math.hypot(px - cx, py - cy) <= r for cx, cy, r in circles)
+
+        fr = _frame()
+        for y in range(S):
+            for x in range(S):
+                if not inside(x + 0.5, y + 0.5):
+                    continue
+                if not inside(x + 2.5, y + 2.5):
+                    tone = DARK
+                elif not inside(x - 1.5, y - 1.5):
+                    tone = LIGHT
+                else:
+                    tone = MID
+                _put(fr, x, y, tone)
+        frames.append(fr)
+    return frames
+
+
+def splash_frames():
+    """A splash of water, 5 frames: a crown of drops that rises and falls over a widening ripple."""
+    frames = []
+    for f in range(5):
+        fr = _frame()
+        n = f + 1
+        rx = 3 + 2.4 * n
+        for y in range(S):
+            for x in range(S):
+                dx, dy = (x + 0.5 - 16) / rx, (y + 0.5 - 28.5) / 1.8
+                d = math.hypot(dx, dy)
+                if 0.72 <= d <= 1.0:
+                    _put(fr, x, y, LIGHT if dy < 0 else MID)           # the ripple
+        for k in range(-2, 3):
+            hx = 16 + k * 1.25 * n
+            hy = 27 - (5.6 * n - 0.78 * n * n) * (1 - 0.13 * abs(k))
+            r = 1.9 if f < 3 else 1.3
+            for y in range(S):
+                for x in range(S):
+                    d, t = _seg(x + 0.5, y + 0.5, hx, hy, 16 + k * 0.9 * n, min(28.0, hy + 5.5))
+                    if math.hypot(x + 0.5 - hx, y + 0.5 - hy) <= r:
+                        _put(fr, x, y, WHITE_CORE if f < 3 and math.hypot(x + 0.5 - hx, y + 0.5 - hy) <= r * 0.55 else LIGHT)
+                    elif d <= 0.75 and f < 4:
+                        _put(fr, x, y, MID if t < 0.6 else DARK)      # the trail under the drop
+        frames.append(fr)
+    return frames
+
+
+def swirl_frames():
+    """A vortex, 6 frames: three spiral arms turning around a bright centre."""
+    frames = []
+    for f in range(6):
+        fr = _frame()
+        fade = 1.0 if f < 4 else (0.7 if f == 4 else 0.45)
+        for y in range(S):
+            for x in range(S):
+                dx, dy = x + 0.5 - 16, y + 0.5 - 16
+                r = math.hypot(dx, dy)
+                if r > 15.2:
+                    continue
+                if r <= 2.4:
+                    _put(fr, x, y, WHITE_CORE if f < 5 else LIGHT)
+                    continue
+                ang = math.atan2(dy, dx) - r * 0.3 - f * math.radians(24)
+                a = ang % (2 * math.pi / 3)
+                off = min(a, 2 * math.pi / 3 - a)
+                width = (0.52 * (1 - r / 16.5) + 0.1) * fade
+                if off <= width:
+                    if r < 5.5 and off <= width * 0.5:
+                        tone = WHITE_CORE
+                    elif r < 9:
+                        tone = LIGHT
+                    elif r < 12.5:
+                        tone = MID
+                    else:
+                        tone = DARK
+                    _put(fr, x, y, tone)
+        frames.append(fr)
+    return frames
+
+
+def crack_frames():
+    """Cracks in the ground, 4 frames: jagged lines shoot out from the middle, glow, then fade to dashes."""
+    frames = []
+    lines = []
+    for k in range(6):
+        a = math.radians(60 * k + (_hash(k, 1, 41) - 0.5) * 30)
+        pts = [(16.0, 16.0)]
+        for step in range(1, 5):
+            a += (_hash(k, step, 42) - 0.5) * 0.9
+            r = step * 3.6 * (1.0 if k % 2 == 0 else 0.8)
+            pts.append((16 + r * math.cos(a), 16 + r * math.sin(a)))
+        lines.append(pts)
+    reach = [0.45, 1.0, 1.0, 1.0]
+    for f in range(4):
+        fr = _frame()
+        for y in range(S):
+            for x in range(S):
+                best, where = 99.0, 0.0
+                for pts in lines:
+                    n = len(pts) - 1
+                    for i, (a, b) in enumerate(zip(pts, pts[1:])):
+                        if (i + 1) / n > reach[f] + 1e-6 and i / n >= reach[f]:
+                            continue
+                        d, t = _seg(x + 0.5, y + 0.5, a[0], a[1], b[0], b[1])
+                        if d < best:
+                            best, where = d, (i + t) / n
+                thick = 1.5 * (1 - where) + 0.45
+                if best > thick:
+                    continue
+                if f == 3 and _hash(x // 2, y // 2, 43) < 0.5:
+                    continue
+                if best <= thick * 0.4 and f <= 1 and where < 0.6:
+                    tone = WHITE_CORE
+                elif best <= thick * 0.65:
+                    tone = LIGHT if f < 3 else MID
+                else:
+                    tone = MID if f < 3 else DARK
+                _put(fr, x, y, tone)
+        frames.append(fr)
+    return frames
+
+
+def claw_frames():
+    """Three claw marks, 5 frames: thin parallel arcs that rip across and break up."""
+    frames = []
+    spans = [(-70, -15), (-70, 40), (-70, 70), (-35, 70), (10, 70)]
+    thick = [2.0, 3.2, 3.4, 2.6, 1.8]
+    dissolve = [0, 0, 0, 0.25, 0.5]
+    cx, cy = 16.0, 27.0
+    for f in range(5):
+        fr = _frame()
+        a0, a1 = spans[f]
+        for y in range(S):
+            for x in range(S):
+                dx, dy = x + 0.5 - cx, y + 0.5 - cy
+                r = math.hypot(dx, dy)
+                ang = math.degrees(math.atan2(dx, -dy))
+                if not a0 <= ang <= a1:
+                    continue
+                u = (ang - a0) / max(1e-6, a1 - a0)
+                th = thick[f] * math.sin(math.pi * min(1.0, 0.1 + u * 0.9)) ** 0.6
+                for R in (24.5, 18.5, 12.5):
+                    d = R - r
+                    if 0 <= d <= th:
+                        if _hash(x // 2, y // 2, 51 + f) < dissolve[f] * (1.3 - u):
+                            break
+                        tone = WHITE_CORE if (d < th * 0.45 and f <= 2 and u > 0.3) else (LIGHT if d < th * 0.75 else MID)
+                        _put(fr, x, y, tone)
+                        break
+        frames.append(fr)
+    return frames
+
+
+def shield_frames():
+    """A shield flash, 4 frames: a hexagon that snaps open with a honeycomb inside and fades."""
+    frames = []
+    size = [8, 12, 14, 15.2]
+    thick = [3, 2.6, 2, 1.2]
+    for f in range(4):
+        fr = _frame()
+        for y in range(S):
+            for x in range(S):
+                dx, dy = abs(x + 0.5 - 16), abs(y + 0.5 - 16)
+                h = max(dx * 0.866 + dy * 0.5, dy)
+                d = size[f] - h
+                if d < 0:
+                    continue
+                if d <= thick[f]:
+                    tone = WHITE_CORE if (f == 0 or (f == 1 and d < 1.1)) else (LIGHT if d < thick[f] * 0.6 else MID)
+                    _put(fr, x, y, tone)
+                elif f <= 2:
+                    cellx, celly = (x + (4 if (y // 7) % 2 else 0)) % 8, y % 7
+                    if cellx == 0 or celly == 0:
+                        if f < 2 or (x + y) % 2 == 0:
+                            _put(fr, x, y, MID if f == 0 else DARK)
+        frames.append(fr)
+    return frames
+
+
+def lines_frames():
+    """Speed lines, 4 frames: streaks that rush past from right to left."""
+    frames = []
+    rows = [(4, 14, 0), (8, 22, 5), (12, 10, 2), (15, 26, 8), (19, 16, 3), (23, 20, 6), (27, 12, 1)]
+    for f in range(4):
+        fr = _frame()
+        for (y0, L, off) in rows:
+            head = 31 - f * 7 - off
+            for x in range(S):
+                t = (x - head) / L
+                if not 0 <= t <= 1:
+                    continue
+                tone = WHITE_CORE if t < 0.18 else (LIGHT if t < 0.5 else (MID if t < 0.8 else DARK))
+                _put(fr, x, y0, tone)
+                if L >= 18 and t < 0.6:
+                    _put(fr, x, y0 + 1, LIGHT if t < 0.3 else MID)
+        frames.append(fr)
+    return frames
+
+
 VFX = {"slash": slash_frames, "burst": burst_frames, "ring": ring_frames, "spark": spark_frames,
-       "beam": beam_frames, "bolt": bolt_frames}
+       "beam": beam_frames, "bolt": bolt_frames, "rune": rune_frames, "flame": flame_frames, "shard": shard_frames,
+       "puff": puff_frames, "splash": splash_frames, "swirl": swirl_frames, "crack": crack_frames, "claw": claw_frames,
+       "shield": shield_frames, "lines": lines_frames}
