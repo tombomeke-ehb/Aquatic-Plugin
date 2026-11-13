@@ -1,5 +1,25 @@
 # Changelog
 
+## 2.8.0 (2026-11-13)
+
+### Added
+- **3D models:** the **Flintlock** and the new **Hand Cannon** are real 3D models, so they're no longer flat.
+  - Flintlock: a barrel, a wooden stock, an angled grip with a brass butt cap, lock plates, the cock and a trigger guard.
+  - Hand Cannon: a heavy barrel with brass bands, a flared muzzle and a fuse.
+- **Custom textures for 40 of the 43 custom items:**
+  - all 10 Abyss Fruits
+  - every sword: Tidecleaver, Nightbloom, Leviathan's Fang, Tide Rapier, Abyss Cutlass, plus the Kraken's Maul
+  - the Abyssal Iron Shackles
+  - Smoke, Frost and Fire Bombs, and the cannonball
+  - the Echo Conch
+  - Pirate Rum, Healing Tonic, Grog of the Gale and the Seafoam Milkshake
+- **Armour that looks different when worn:** the Tidewarden set (blue steel), the Corsair set (red coat, breeches, black tricorn and boots) and the Captain's Greatcoat have their own icons and their own look on your body.
+- **Still the normal look**, because a custom model would break how they work:
+  - the **Tide Compass** (its needle)
+  - the **Marauder's Buckler** (the shield blocking pose)
+  - the **Coral Trident** (the throwing pose)
+- **Your server:** the upgrade adds the new texture lines automatically. Update the resource pack link and SHA-1 in `server.properties` (see the release notes).
+
 ## 2.7.5 (2026-11-13)
 
 ### Changed

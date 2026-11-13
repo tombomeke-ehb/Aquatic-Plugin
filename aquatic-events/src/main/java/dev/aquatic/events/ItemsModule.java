@@ -578,5 +578,49 @@ public final class ItemsModule extends AquaticModule implements ItemService {
                 file.set("items.tide_compass.item-model", null);
             }
         }
+        if (from < 5) {
+            // 2.8.0: textures for (almost) every custom item, 3D guns, worn armour looks
+            addMissing(file, defaults, "items.ghostglass.item-model");
+            addMissing(file, defaults, "items.riftshift.item-model");
+            addMissing(file, defaults, "items.hollowvoid.item-model");
+            addMissing(file, defaults, "items.behemoth.item-model");
+            addMissing(file, defaults, "items.galeborn.item-model");
+            addMissing(file, defaults, "items.stoneskin.item-model");
+            addMissing(file, defaults, "items.tidecleaver.item-model");
+            addMissing(file, defaults, "items.nightbloom.item-model");
+            addMissing(file, defaults, "items.leviathans_fang.item-model");
+            addMissing(file, defaults, "items.tide_rapier.item-model");
+            addMissing(file, defaults, "items.abyss_cutlass.item-model");
+            addMissing(file, defaults, "items.krakens_maul.item-model");
+            addMissing(file, defaults, "items.abyssal_shackles.item-model");
+            addMissing(file, defaults, "items.smoke_bomb.item-model");
+            addMissing(file, defaults, "items.frost_bomb.item-model");
+            addMissing(file, defaults, "items.fire_bomb.item-model");
+            addMissing(file, defaults, "items.cannonball.item-model");
+            addMissing(file, defaults, "items.echo_conch.item-model");
+            addMissing(file, defaults, "items.rum.item-model");
+            addMissing(file, defaults, "items.healing_tonic.item-model");
+            addMissing(file, defaults, "items.gale_grog.item-model");
+            addMissing(file, defaults, "items.seafoam_milkshake.item-model");
+            addMissing(file, defaults, "items.hand_cannon.item-model");
+            addMissing(file, defaults, "items.tidewarden_helmet.item-model");
+            addMissing(file, defaults, "items.tidewarden_chestplate.item-model");
+            addMissing(file, defaults, "items.tidewarden_leggings.item-model");
+            addMissing(file, defaults, "items.tidewarden_boots.item-model");
+            addMissing(file, defaults, "items.corsair_hat.item-model");
+            addMissing(file, defaults, "items.corsair_coat.item-model");
+            addMissing(file, defaults, "items.corsair_breeches.item-model");
+            addMissing(file, defaults, "items.corsair_boots.item-model");
+            addMissing(file, defaults, "items.captains_coat.item-model");
+            addMissing(file, defaults, "items.tidewarden_helmet.equipment-model");
+            addMissing(file, defaults, "items.tidewarden_chestplate.equipment-model");
+            addMissing(file, defaults, "items.tidewarden_leggings.equipment-model");
+            addMissing(file, defaults, "items.tidewarden_boots.equipment-model");
+            addMissing(file, defaults, "items.corsair_hat.equipment-model");
+            addMissing(file, defaults, "items.corsair_coat.equipment-model");
+            addMissing(file, defaults, "items.corsair_breeches.equipment-model");
+            addMissing(file, defaults, "items.corsair_boots.equipment-model");
+            addMissing(file, defaults, "items.captains_coat.equipment-model");
+        }
     }
 }

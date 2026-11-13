@@ -3,7 +3,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 4
+config-version: 5
 #  Custom pirate items: Abyss Fruits, Abyssal Iron, legendary swords, guns,
 #  cannons, the Tide Compass, Echo Conch, rum and the Conqueror of the Sea's crown.
 #
@@ -321,6 +321,7 @@ items:
       - ""
       - "<dark_aqua>A fragment of the drowned Abyss."
       - "<red>The sea wants it back: eat it and you will never swim again."
+    item-model: "aquatic:ghostglass"
     custom-model-data: 0
     glint: true
     max-stack: 1
@@ -352,6 +353,7 @@ items:
       - ""
       - "<dark_aqua>A fragment of the drowned Abyss."
       - "<red>The sea wants it back: eat it and you will never swim again."
+    item-model: "aquatic:riftshift"
     custom-model-data: 0
     glint: true
     max-stack: 1
@@ -382,6 +384,7 @@ items:
       - ""
       - "<dark_aqua>A fragment of the drowned Abyss."
       - "<red>The sea wants it back: eat it and you will never swim again."
+    item-model: "aquatic:hollowvoid"
     custom-model-data: 0
     glint: true
     max-stack: 1
@@ -419,6 +422,7 @@ items:
       - ""
       - "<dark_aqua>A fragment of the drowned Abyss."
       - "<red>The sea wants it back: eat it and you will never swim again."
+    item-model: "aquatic:behemoth"
     custom-model-data: 0
     glint: true
     max-stack: 1
@@ -459,6 +463,7 @@ items:
       - ""
       - "<dark_aqua>A fragment of the drowned Abyss."
       - "<red>The sea wants it back: eat it and you will never swim again."
+    item-model: "aquatic:galeborn"
     custom-model-data: 0
     glint: true
     max-stack: 1
@@ -498,6 +503,7 @@ items:
       - ""
       - "<dark_aqua>A fragment of the drowned Abyss."
       - "<red>The sea wants it back: eat it and you will never swim again."
+    item-model: "aquatic:stoneskin"
     custom-model-data: 0
     glint: true
     max-stack: 1
@@ -559,6 +565,7 @@ items:
       - "<aqua>A shackled Abyss Fruit user loses their"
       - "<aqua>power and is slowed for <white>20s</white>."
       - "<dark_gray>Single use."
+    item-model: "aquatic:abyssal_shackles"
     custom-model-data: 0
     max-stack: 16
     abyssal:
@@ -594,6 +601,7 @@ items:
       - ""
       - "<gray>On hit: <white>25% chance to cut deep (+3, slowness)"
       - "<gray>Right-click: <white>Gale Cutter"
+    item-model: "aquatic:tidecleaver"
     custom-model-data: 0
     unbreakable: true
     flags: [HIDE_UNBREAKABLE]
@@ -628,6 +636,7 @@ items:
       - ""
       - "<gray>On hit: <white>steals 15% of the damage as health"
       - "<gray>Right-click: <white>Lion's Lunge dash (withers)"
+    item-model: "aquatic:nightbloom"
     custom-model-data: 0
     unbreakable: true
     flags: [HIDE_UNBREAKABLE]
@@ -660,6 +669,7 @@ items:
       - ""
       - "<gray>On hit: <white>20% chance for +4 damage and lightning"
       - "<gray>Sneak + right-click: <white>Abyss Cleave"
+    item-model: "aquatic:leviathans_fang"
     custom-model-data: 0
     unbreakable: true
     glint: true
@@ -733,6 +743,7 @@ items:
       - ""
       - "<gray>Fast attacks. On hit: <white>30% chance to slow (+1)"
       - "<gray>Right-click: <white>Riptide Lunge <dark_gray>(dash through enemies)"
+    item-model: "aquatic:tide_rapier"
     custom-model-data: 0
     unbreakable: true
     flags: [HIDE_UNBREAKABLE]
@@ -769,6 +780,7 @@ items:
       - ""
       - "<gray>On hit: <white>steals 20% of the damage as health"
       - "<gray>Sneak + right-click: <white>Drowning Wave"
+    item-model: "aquatic:abyss_cutlass"
     custom-model-data: 0
     unbreakable: true
     flags: [HIDE_UNBREAKABLE]
@@ -805,6 +817,7 @@ items:
       - ""
       - "<gray>Heavy hits. On hit: <white>25% chance to knock the wind out (+4)"
       - "<gray>Sneak + right-click: <white>Tidal Slam <dark_gray>(shockwave)"
+    item-model: "aquatic:krakens_maul"
     custom-model-data: 0
     unbreakable: true
     flags: [HIDE_UNBREAKABLE]
@@ -860,6 +873,7 @@ items:
     lore:
       - "<gray>Right-click to throw."
       - "<gray>A thick cloud: blinds and slows."
+    item-model: "aquatic:smoke_bomb"
     custom-model-data: 0
     max-stack: 16
     bomb:
@@ -880,6 +894,7 @@ items:
     lore:
       - "<gray>Right-click to throw."
       - "<gray>Freezes and slows everything it hits."
+    item-model: "aquatic:frost_bomb"
     custom-model-data: 0
     max-stack: 16
     bomb:
@@ -900,6 +915,7 @@ items:
     lore:
       - "<gray>Right-click to throw."
       - "<gray>Bursts into flames. Does not burn blocks."
+    item-model: "aquatic:fire_bomb"
     custom-model-data: 0
     max-stack: 16
     bomb:
@@ -962,6 +978,7 @@ items:
       - ""
       - "<gray>Right-click to fire a <white>Cannonball</white>."
       - "<gray>Explodes on impact."
+    item-model: "aquatic:hand_cannon"
     custom-model-data: 0
     cannon:
       ammo: "item:cannonball"
@@ -997,6 +1014,7 @@ items:
     name: "<dark_gray><bold>Cannonball</bold>"
     lore:
       - "<gray>Ammunition for hand cannons."
+    item-model: "aquatic:cannonball"
     custom-model-data: 0
     max-stack: 16
     recipe:
@@ -1041,6 +1059,7 @@ items:
       - "<gray>Paired conch shells carry voices across the sea."
       - ""
       - "<gray>Right-click: <white>call your crew to your position"
+    item-model: "aquatic:echo_conch"
     custom-model-data: 0
     max-stack: 1
     conch:
@@ -1056,6 +1075,7 @@ items:
       - "<gray>Distilled in the harbour taverns of the capital."
       - ""
       - "<gray>A burst of courage... and a spinning head."
+    item-model: "aquatic:rum"
     custom-model-data: 0
     color: "#8B4513"
     flags: [HIDE_ADDITIONAL_TOOLTIP]
@@ -1089,6 +1109,7 @@ items:
       - ""
       - "<aqua>Washes away your Abyss Fruit power."
       - "<gray>You can eat a new fruit afterwards."
+    item-model: "aquatic:seafoam_milkshake"
     custom-model-data: 0
     color: "#F3EEE2"
     flags: [HIDE_ADDITIONAL_TOOLTIP]
@@ -1129,6 +1150,8 @@ items:
       - "<gray>Every patch is a story."
       - ""
       - "<gray>Tough as plate, light as cloth."
+    item-model: "aquatic:captains_coat"
+    equipment-model: "aquatic:captains_coat"
     custom-model-data: 0
     max-stack: 1
     unbreakable: true
@@ -1148,6 +1171,7 @@ items:
       - "<gray>Brewed from glow berries and kelp."
       - ""
       - "<gray>Mends wounds in seconds."
+    item-model: "aquatic:healing_tonic"
     custom-model-data: 0
     color: "#e84393"
     flags: [HIDE_ADDITIONAL_TOOLTIP]
@@ -1166,6 +1190,7 @@ items:
       - "<gray>Sailors swear it makes the wind obey."
       - ""
       - "<gray>Swift feet and quick hands for a while."
+    item-model: "aquatic:gale_grog"
     custom-model-data: 0
     color: "#4dd0e1"
     flags: [HIDE_ADDITIONAL_TOOLTIP]
@@ -1186,6 +1211,8 @@ items:
     set: tidewarden
     name: "<gradient:#1fa2ff:#12d8fa><bold>Tidewarden Helm</bold></gradient>"
     lore: ["<gray>Forged from the hulls of sunken warships.", "", "<dark_aqua>Set: Tidewarden (4 pieces)"]
+    item-model: "aquatic:tidewarden_helmet"
+    equipment-model: "aquatic:tidewarden"
     custom-model-data: 0
     max-stack: 1
     enchants: {protection: 3, respiration: 3}
@@ -1204,6 +1231,8 @@ items:
     set: tidewarden
     name: "<gradient:#1fa2ff:#12d8fa><bold>Tidewarden Cuirass</bold></gradient>"
     lore: ["<gray>Forged from the hulls of sunken warships.", "", "<dark_aqua>Set: Tidewarden (4 pieces)"]
+    item-model: "aquatic:tidewarden_chestplate"
+    equipment-model: "aquatic:tidewarden"
     custom-model-data: 0
     max-stack: 1
     enchants: {protection: 3}
@@ -1223,6 +1252,8 @@ items:
     set: tidewarden
     name: "<gradient:#1fa2ff:#12d8fa><bold>Tidewarden Greaves</bold></gradient>"
     lore: ["<gray>Forged from the hulls of sunken warships.", "", "<dark_aqua>Set: Tidewarden (4 pieces)"]
+    item-model: "aquatic:tidewarden_leggings"
+    equipment-model: "aquatic:tidewarden"
     custom-model-data: 0
     max-stack: 1
     enchants: {protection: 3}
@@ -1241,6 +1272,8 @@ items:
     set: tidewarden
     name: "<gradient:#1fa2ff:#12d8fa><bold>Tidewarden Boots</bold></gradient>"
     lore: ["<gray>Forged from the hulls of sunken warships.", "", "<dark_aqua>Set: Tidewarden (4 pieces)"]
+    item-model: "aquatic:tidewarden_boots"
+    equipment-model: "aquatic:tidewarden"
     custom-model-data: 0
     max-stack: 1
     enchants: {protection: 3, depth_strider: 3}
@@ -1260,6 +1293,8 @@ items:
     set: corsair
     name: "<gradient:#f7971e:#c0392b><bold>Corsair's Tricorn</bold></gradient>"
     lore: ["<gray>Light, sharp and a little flashy.", "", "<gold>Set: Corsair (4 pieces)"]
+    item-model: "aquatic:corsair_hat"
+    equipment-model: "aquatic:corsair"
     custom-model-data: 0
     max-stack: 1
     unbreakable: true
@@ -1279,6 +1314,8 @@ items:
     set: corsair
     name: "<gradient:#f7971e:#c0392b><bold>Corsair's Longcoat</bold></gradient>"
     lore: ["<gray>Light, sharp and a little flashy.", "", "<gold>Set: Corsair (4 pieces)"]
+    item-model: "aquatic:corsair_coat"
+    equipment-model: "aquatic:corsair"
     custom-model-data: 0
     max-stack: 1
     unbreakable: true
@@ -1298,6 +1335,8 @@ items:
     set: corsair
     name: "<gradient:#f7971e:#c0392b><bold>Corsair's Breeches</bold></gradient>"
     lore: ["<gray>Light, sharp and a little flashy.", "", "<gold>Set: Corsair (4 pieces)"]
+    item-model: "aquatic:corsair_breeches"
+    equipment-model: "aquatic:corsair"
     custom-model-data: 0
     max-stack: 1
     unbreakable: true
@@ -1317,6 +1356,8 @@ items:
     set: corsair
     name: "<gradient:#f7971e:#c0392b><bold>Corsair's Boots</bold></gradient>"
     lore: ["<gray>Light, sharp and a little flashy.", "", "<gold>Set: Corsair (4 pieces)"]
+    item-model: "aquatic:corsair_boots"
+    equipment-model: "aquatic:corsair"
     custom-model-data: 0
     max-stack: 1
     unbreakable: true

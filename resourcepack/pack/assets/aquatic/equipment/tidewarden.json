@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "aquatic:tidewarden"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "aquatic:tidewarden"
+      }
+    ]
+  }
+}
