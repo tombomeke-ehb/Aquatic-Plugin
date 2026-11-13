@@ -180,21 +180,21 @@ FLINTLOCK = [
     "................",
     "................",
     "................",
-    "................",
-    "......KKKKKKKKK.",
-    "....KKGGGGGGGGLK",
-    "...KHKgggggggggK",
-    "..KWWKKKKKKKKKK.",
-    "..KWWWKAK.......",
-    ".KWWWDK.AK......",
-    ".KWWDK..KK......",
-    "KWWDK...........",
+    "....KK..........",
+    "....KAK.........",
+    "...KKAKKKKKKKKKK",
+    "..KwwwKLLLLLLLLK",
+    "..KwWWKGGGGGGGGK",
+    ".KwWWWKgggggggKK",
+    ".KWWWDKKKKKKKK..",
+    "KwWWDK.KAK......",
+    "KWWDK..KAAK.....",
+    "KWDK....KK......",
     "KDDK............",
     "KKK.............",
-    "................",
 ]
-FLINTLOCK_PALETTE = {"K": "#1b1410", "G": "#8a8f99", "L": "#d7dbe3", "g": "#4d525c", "H": "#d4a017",
-                     "W": "#8b5a2b", "D": "#5a3418", "A": "#c9a227"}
+FLINTLOCK_PALETTE = {"K": "#1b1410", "G": "#8a8f99", "L": "#d7dbe3", "g": "#4d525c", "W": "#8b5a2b",
+                     "w": "#b07a3e", "D": "#5a3418", "A": "#d4a017"}
 
 # ---------------------------------------------------------------- Tide Compass
 
@@ -256,7 +256,6 @@ def main():
     for name, palette in FRUITS.items():
         item(name, from_rows(FRUIT, palette))
     item("flintlock", from_rows(FLINTLOCK, FLINTLOCK_PALETTE))
-    item("tide_compass", from_rows(COMPASS, COMPASS_PALETTE))
     item("abyssal_baton", from_rows(SABER, BATON_PALETTE), handheld=True)
     # pack icon: the crown, scaled up
     from_rows(CROWN, CROWN_PALETTE).resize((128, 128), Image.NEAREST).save(os.path.join(PACK, "pack.png"))

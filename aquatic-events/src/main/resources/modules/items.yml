@@ -3,7 +3,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 3
+config-version: 4
 #  Custom pirate items: Abyss Fruits, Abyssal Iron, legendary swords, guns,
 #  cannons, the Tide Compass, Echo Conch, rum and the Conqueror of the Sea's crown.
 #
@@ -1020,7 +1020,6 @@ items:
       - ""
       - "<gray>Right-click: <white>point to the next island"
       - "<gray>Sneak + right-click: <white>nearest island"
-    item-model: "aquatic:tide_compass"
     custom-model-data: 0
     max-stack: 1
     recipe:

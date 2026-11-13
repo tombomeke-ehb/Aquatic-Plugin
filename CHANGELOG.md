@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.7.3 (2026-11-13)
+
+### Fixed
+- **Tide Compass:** it keeps the normal compass look again, so its needle points the way again. A still custom texture removed the needle animation.
+  - Existing servers get this automatically, and Tide Compasses players already own switch back when they log in or open a chest.
+- **Flintlock:** redrawn as one solid pistol (barrel, wooden stock and grip, brass hammer and trigger guard). The old texture looked broken.
+- **Your server:** update the resource pack link and SHA-1 in `server.properties` (see the release notes).
+
 ## 2.7.2 (2026-11-13)
 
 ### Added

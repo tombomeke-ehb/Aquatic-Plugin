@@ -572,5 +572,11 @@ public final class ItemsModule extends AquaticModule implements ItemService {
             addMissing(file, defaults, "items.tide_compass.item-model");
             addMissing(file, defaults, "items.abyssal_baton.item-model");
         }
+        if (from < 4) {
+            // 2.7.3: the Tide Compass keeps the normal compass look, so its needle keeps pointing
+            if ("aquatic:tide_compass".equals(file.getString("items.tide_compass.item-model"))) {
+                file.set("items.tide_compass.item-model", null);
+            }
+        }
     }
 }
