@@ -32,4 +32,18 @@ public interface TreasureService {
 
         /** Removes an unopened treasure (used by events that time out). */
     void removeTreasure(Location treasure);
+
+    /**
+     * A map to a treasure that already exists (never buries a new one), for selling in the shop. kind =
+     * "standard" (common/uncommon/rare), "epic" or "legendary" (treasure.yml shop-maps.kinds). Each treasure
+     * is sold to a few players at most, so it is a race. Null when none of that kind is left.
+     */
+    default ItemStack sellTreasureMap(String kind, java.util.UUID buyer) {
+        return null;
+    }
+
+    /** Maps of that kind still for sale (buyer null = in total, else what that player can still buy). */
+    default int treasureMapsAvailable(String kind, java.util.UUID buyer) {
+        return 0;
+    }
 }

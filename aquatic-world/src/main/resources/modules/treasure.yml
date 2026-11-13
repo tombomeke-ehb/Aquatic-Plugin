@@ -394,6 +394,17 @@ effects:
 # -------------------------------------------------------------------------------------
 # Natural spawning
 # -------------------------------------------------------------------------------------
+# Treasure maps sold in the shop: a map to a treasure that is already out there, never a new one.
+# Each active treasure's map is sold to a few different players (copies, rolled per treasure), so they
+# race each other; nobody can buy the same treasure twice. More treasures out there = more maps.
+# Shop entries: "treasure-map" (standard), "treasure-map:epic", "treasure-map:legendary".
+shop-maps:
+  copies: 2-3
+  kinds:
+    standard: [common, uncommon, rare]
+    epic: [epic]
+    legendary: [legendary]
+
 natural:
   enabled: true
   interval-minutes: 8

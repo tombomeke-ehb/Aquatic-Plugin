@@ -375,6 +375,10 @@ XP comes from PvP kills, monsters, treasure, discovering islands and claiming bo
 
 ## Harbor Market (`shop`, needs `economy`)
 
+**Treasure maps** (Sailing category): a Treasure Map (common to rare), an Epic and a Legendary Treasure Map.
+- Each one leads to a treasure that already exists. Each treasure's map is sold to 2–3 different players, so it's a race.
+- You can't buy the same treasure twice, and a kind is sold out when no such treasure is left.
+
 | Command | What it does | Permission |
 | --- | --- | --- |
 | `/shop [category]` | Open the market (alias `/market`). Left-click buy, shift-left buy a stack, right-click sell, shift-right sell all | Everyone |

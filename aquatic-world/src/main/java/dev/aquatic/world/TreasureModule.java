@@ -88,6 +88,9 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
         final boolean natural;
         String islandId;
         double doubloons;
+        /** Players who bought this treasure's map in the shop, and how many may (rolled once, e.g. 2-3). */
+        final List<String> mapBuyers = new ArrayList<>();
+        int mapCap;
         final List<String> marker = new ArrayList<>();
 
         Treasure(String world, int x, int y, int z, String tier, long created, boolean natural) {
@@ -238,6 +241,8 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
                         s.getString("tier", "common"), s.getLong("created"), s.getBoolean("natural"));
                 t.islandId = s.getString("island");
                 t.doubloons = s.getDouble("doubloons");
+                t.mapBuyers.addAll(s.getStringList("map-buyers"));
+                t.mapCap = s.getInt("map-cap");
                 t.marker.addAll(s.getStringList("marker"));
                 treasures.put(t.key(), t);
             }
@@ -268,6 +273,8 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
             s.set("natural", t.natural);
             s.set("island", t.islandId);
             s.set("doubloons", t.doubloons);
+            s.set("map-buyers", t.mapBuyers);
+            s.set("map-cap", t.mapCap);
             s.set("marker", t.marker);
         }
         for (Map.Entry<Integer, String> e : mapLinks.entrySet()) {
@@ -345,6 +352,80 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
         im.getPersistentDataContainer().set(mapKey, PersistentDataType.STRING, link);
         item.setItemMeta(im);
         return item;
+    }
+
+    /** Tiers a shop map kind leads to (shop-maps.kinds in treasure.yml). */
+    private List<String> mapKindTiers(String kind) {
+        String k = kind == null || kind.isBlank() ? "standard" : kind.toLowerCase(Locale.ROOT);
+        List<String> out = new ArrayList<>();
+        for (String t : config().getStringList("shop-maps.kinds." + k)) {
+            out.add(t.toLowerCase(Locale.ROOT));
+        }
+        return out;
+    }
+
+    /** How many players may buy this treasure's map: rolled once per treasure (shop-maps.copies, e.g. 2-3). */
+    private int mapCap(Treasure t) {
+        if (t.mapCap <= 0) {
+            String[] range = config().getString("shop-maps.copies", "2-3").split("-");
+            try {
+                int lo = Integer.parseInt(range[0].trim()), hi = range.length > 1 ? Integer.parseInt(range[1].trim()) : lo;
+                t.mapCap = Math.max(1, lo + ThreadLocalRandom.current().nextInt(Math.max(1, hi - lo + 1)));
+            } catch (NumberFormatException e) {
+                t.mapCap = 3;
+            }
+            dirty = true;
+        }
+        return t.mapCap;
+    }
+
+    /** Treasures of that kind with copies left (and, for a buyer, that they don't already have). */
+    private List<Treasure> sellable(String kind, UUID buyer) {
+        List<String> tiersOfKind = mapKindTiers(kind);
+        List<Treasure> out = new ArrayList<>();
+        for (Treasure t : treasures.values()) {
+            if (tiersOfKind.contains(t.tier) && t.location() != null && t.mapBuyers.size() < mapCap(t)
+                    && (buyer == null || !t.mapBuyers.contains(buyer.toString()))) {
+                out.add(t);
+            }
+        }
+        return out;
+    }
+
+    @Override
+    public int treasureMapsAvailable(String kind, UUID buyer) {
+        if (buyer != null) {
+            return sellable(kind, buyer).size();
+        }
+        int n = 0;
+        for (Treasure t : sellable(kind, null)) {
+            n += mapCap(t) - t.mapBuyers.size();
+        }
+        return n;
+    }
+
+    @Override
+    public ItemStack sellTreasureMap(String kind, UUID buyer) {
+        // only treasures that are already out there, never a new one: buying can't be used to roll for legendaries
+        List<Treasure> open = new ArrayList<>();
+        int fewest = Integer.MAX_VALUE;
+        for (Treasure t : sellable(kind, buyer)) {
+            int sold = t.mapBuyers.size();
+            if (sold < fewest) {
+                open.clear();
+                fewest = sold;
+            }
+            if (sold == fewest) {
+                open.add(t);
+            }
+        }
+        if (open.isEmpty()) {
+            return null;
+        }
+        Treasure t = open.get(ThreadLocalRandom.current().nextInt(open.size()));
+        t.mapBuyers.add(buyer.toString());
+        dirty = true;
+        return createTreasureMap(t.location(), t.tier);
     }
 
     @Override

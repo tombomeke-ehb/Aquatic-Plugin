@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.5.1 (2026-11-13)
+
+### Added
+- **Treasure maps in the shop** (Sailing category). There are three kinds:
+  - **Treasure Map** (common to rare), 400 Doubloons
+  - **Epic Treasure Map**, 1,500 Doubloons
+  - **Legendary Treasure Map**, 4,000 Doubloons
+- **How buying works:**
+  - A bought map always leads to a treasure that is **already out there**. Buying never buries a new one, so you can't keep buying until you get a legendary.
+  - Every active treasure's map is sold to **2 or 3 different players** (rolled per treasure), so they race each other.
+  - Nobody can buy the same treasure twice. You can own several maps, each to a different treasure.
+  - The number of maps for sale follows the number of active treasures. The shop item shows how many are left.
+  - When none of that kind are left, it is not for sale and you aren't charged.
+- **Settings:**
+  - In `treasure.yml` under `shop-maps`: `copies` (default 2-3) and which tiers each kind covers.
+  - Prices are in `shop.yml`.
+
 ## 2.5.0 (2026-11-13)
 
 ### Added

@@ -16,7 +16,7 @@
 title: "<dark_aqua><bold>Harbor Market"
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 1
+config-version: 2
 
 categories:
   tools:
@@ -72,6 +72,9 @@ categories:
       - {item: COMPASS, amount: 1, buy: 90, sell: 10}
       - {item: SPYGLASS, amount: 1, buy: 150, sell: 15}
       - {item: MAP, amount: 1, buy: 40, sell: 0}
+      - {item: treasure-map, amount: 1, buy: 400, sell: 0}
+      - {item: "treasure-map:epic", amount: 1, buy: 1500, sell: 0}
+      - {item: "treasure-map:legendary", amount: 1, buy: 4000, sell: 0}
       - {item: "item:tide_compass", amount: 1, buy: 900, sell: 0}
       - {item: "item:echo_conch", amount: 1, buy: 600, sell: 0}
   pirate:
@@ -193,7 +196,21 @@ categories:
       - {item: SCAFFOLDING, amount: 32, buy: 64, sell: 2}
       - {item: TORCH, amount: 64, buy: 32, sell: 0}
       - {item: WHITE_BANNER, amount: 4, buy: 60, sell: 3}
+# Treasure map shop entries ("treasure-map", "treasure-map:epic", "treasure-map:legendary"): a map to a
+# treasure that is already out there (see shop-maps in treasure.yml). <left> = maps of that kind left.
+treasure-map:
+  names:
+    standard: "<gold>Treasure Map <gray>(common to rare)"
+    epic: "<light_purple>Epic Treasure Map"
+    legendary: "<gradient:#ffcc00:#ff6a00><bold>Legendary Treasure Map</bold></gradient>"
+  lore:
+    - "<gray>A map to a treasure that is already buried."
+    - "<gray>2 or 3 pirates get the same map: <yellow>it's a race!"
+    - ""
+    - "<white>Maps left: <yellow><left>"
+    - "<dark_gray>Only for sale while such treasures exist."
 messages:
+  no-treasure-maps: "<red>No maps of this kind left. <gray>Every such treasure is already charted (or there are none). Try again later."
   menu-items: "<gray><count> item(s)"
   menu-open: "<yellow>Click to open"
   menu-back: "<yellow>« Back"

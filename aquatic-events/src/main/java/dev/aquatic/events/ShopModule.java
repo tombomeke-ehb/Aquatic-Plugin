@@ -101,6 +101,18 @@ public final class ShopModule extends AquaticModule implements Listener {
     /** The item an entry sells (one bundle), or null when it can't be made (e.g. items module off). */
     private ItemStack create(Entry e) {
         ItemStack item = null;
+        if (isTreasureMap(e)) {
+            // only the icon: the real map is made when it is bought (see buyTreasureMap)
+            String kind = mapKind(e);
+            dev.aquatic.api.TreasureService treasure = service(dev.aquatic.api.TreasureService.class);
+            int left = treasure == null ? 0 : treasure.treasureMapsAvailable(kind, null);
+            item = new ItemStack(org.bukkit.Material.FILLED_MAP);
+            org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
+            meta.displayName(Text.item(config().getString("treasure-map.names." + kind, "<gold>Treasure Map")));
+            meta.lore(Text.itemLore(config().getStringList("treasure-map.lore"), "left", left));
+            item.setItemMeta(meta);
+            return item;
+        }
         if (e.stack() != null) {
             try {
                 item = ItemStack.deserializeBytes(Base64.getDecoder().decode(e.stack()));
@@ -306,9 +318,39 @@ public final class ShopModule extends AquaticModule implements Listener {
 
     // ------------------------------------------------------------------ trading
 
+    private static boolean isTreasureMap(Entry e) {
+        return e.spec() != null && e.spec().toLowerCase(Locale.ROOT).startsWith("treasure-map");
+    }
+
+    /** "treasure-map" = standard, "treasure-map:epic", "treasure-map:legendary". */
+    private static String mapKind(Entry e) {
+        int colon = e.spec().indexOf(':');
+        return colon < 0 ? "standard" : e.spec().substring(colon + 1).trim().toLowerCase(Locale.ROOT);
+    }
+
+    /** A map to a treasure that already exists; refused (and not charged) when there is none. */
+    private void buyTreasureMap(Player p, Entry e) {
+        EconomyService eco = service(EconomyService.class);
+        dev.aquatic.api.TreasureService treasure = service(dev.aquatic.api.TreasureService.class);
+        if (eco == null || !eco.has(p.getUniqueId(), e.buy())) {
+            throw new CommandFail(rawMsg("no-money", "price", money(eco, e.buy())));
+        }
+        ItemStack map = treasure == null ? null : treasure.sellTreasureMap(mapKind(e), p.getUniqueId());
+        if (map == null) {
+            throw new CommandFail(rawMsg("no-treasure-maps"));
+        }
+        eco.withdraw(p.getUniqueId(), e.buy());
+        Util.give(p, map);
+        send(p, "bought", "amount", 1, "item", name(map), "price", money(eco, e.buy()));
+    }
+
     private void buy(Player p, Entry e, boolean stack) {
         if (e.buy() <= 0) {
             throw new CommandFail(rawMsg("not-for-sale"));
+        }
+        if (isTreasureMap(e)) {
+            buyTreasureMap(p, e);
+            return;
         }
         ItemStack bundle = create(e);
         if (bundle == null) {
@@ -510,6 +552,23 @@ public final class ShopModule extends AquaticModule implements Listener {
             // 2.4.0: building block categories
             addMissing(file, defaults, "categories.masonry");
             addMissing(file, defaults, "categories.decor");
+        }
+        if (from < 2) {
+            // 2.5.1: treasure maps for sale (only to treasures that already exist)
+            List<Map<?, ?>> items = new ArrayList<>(file.getMapList("categories.sailing.items"));
+            boolean has = items.stream().anyMatch(m -> String.valueOf(m.get("item")).startsWith("treasure-map"));
+            if (file.contains("categories.sailing", true) && !has) {
+                String[][] maps = {{"treasure-map", "400"}, {"treasure-map:epic", "1500"}, {"treasure-map:legendary", "4000"}};
+                for (String[] m : maps) {
+                    Map<String, Object> entry = new java.util.LinkedHashMap<>();
+                    entry.put("item", m[0]);
+                    entry.put("amount", 1);
+                    entry.put("buy", Integer.parseInt(m[1]));
+                    entry.put("sell", 0);
+                    items.add(entry);
+                }
+                file.set("categories.sailing.items", items);
+            }
         }
     }
 }
