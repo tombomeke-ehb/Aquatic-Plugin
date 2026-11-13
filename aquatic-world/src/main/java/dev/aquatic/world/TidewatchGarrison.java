@@ -269,7 +269,9 @@ final class TidewatchGarrison implements Listener {
         }
         // officers with an Abyss Fruit power (picked at random from the template's list)
         List<String> powers = mob.getStringList("powers");
-        String power = powers.isEmpty() ? null : powers.get(ThreadLocalRandom.current().nextInt(powers.size())).toLowerCase(Locale.ROOT);
+        double chance = mob.getDouble("power-chance", cfg().getDouble("power-chance", 0.2));
+        String power = powers.isEmpty() || ThreadLocalRandom.current().nextDouble() >= chance ? null
+                : powers.get(ThreadLocalRandom.current().nextInt(powers.size())).toLowerCase(Locale.ROOT);
         if (le instanceof org.bukkit.entity.Ageable ageable) {
             ageable.setAdult();
         }

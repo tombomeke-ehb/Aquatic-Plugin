@@ -1,5 +1,27 @@
 # Changelog
 
+## 2.11.0 (2026-11-13)
+
+### Added
+- **Four new weapons and tools.** Each one can be crafted and has its own texture:
+  - **Whaler's Harpoon:** right-click to **Reel In**, which pulls nearby enemies towards you.
+  - **Coral Scimitar:** a curved coral blade. Right-click sends a **Reef Wave** across the ground.
+  - **Abyssal Anchor:** a heavy, slow weapon (10 damage). Sneak + right-click for **Anchor Drop**, a slam that knocks everyone back.
+  - **Deepcore Pickaxe:** Efficiency V and Fortune III, never breaks, and has a glowing gem in its head.
+- **Animated weapons:** a shine sweeps along every sword, club, hammer and tool. Runes and gems pulse (Storm Saber, Abyssal Baton, Tidecleaver, Nightbloom, Leviathan's Fang, Tide Rapier, Abyss Cutlass, Kraken's Maul and the new items).
+- **Every fruit is animated now:**
+  - Springcoil bounces.
+  - Ghostglass fades in and out with ghostly sparkles.
+  - Behemoth stomps up dust.
+  - Stoneskin glints and has pebbles circling it.
+
+### Changed
+- **Fruit powers are rare among Tidewatch officers:** only about 1 in 5 Lieutenants and Warden Captains has one. Change this with `tidewatch.power-chance` in `islands.yml`, or set `power-chance` on a single officer type.
+
+### Your server
+- `items.yml` upgrades automatically and adds the new items (a backup is kept).
+- Update the resource pack link and SHA-1 in `server.properties` (see the release notes).
+
 ## 2.10.0 (2026-11-13)
 
 ### Added

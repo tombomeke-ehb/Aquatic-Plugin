@@ -922,8 +922,181 @@ def fruit_anim(main, swirl, leaf="#3f9b3a", outline_col="#2a1626", theme=None):
                 x, y = int(16 + math.cos(a) * 14), int(18 + math.sin(a) * 13)
                 put(img, x, y, rgb("#9d4dff"))
                 put(img, x, y + 1, rgb("#3a2a52"))
+        elif theme == "bounce":  # the fruit hops on a little spring
+            dy = (0, -1, -2, -2, -1, 0, 1, 0)[f]
+            hop = new()
+            hop.paste(img, (0, dy), img)
+            img = hop
+            if dy > 0:  # squashed: little motion lines under it
+                for x in (10, 13, 19, 22):
+                    put(img, x, 31, rgb("#ffc2e3"))
+            elif dy < -1:
+                for x in (12, 16, 20):
+                    put(img, x, 30, rgb("#ffd6ec"), 160)
+        elif theme == "ghost":  # fades in and out, with ghostly sparkles
+            fade = 0.62 + 0.38 * (0.5 + 0.5 * math.cos(t * 2 * math.pi))
+            px = img.load()
+            for y in range(N):
+                for x in range(N):
+                    r, g, b, a = px[x, y]
+                    if a:
+                        px[x, y] = (r, g, b, int(a * fade))
+            for k in range(3):
+                a = 2 * math.pi * (t * 0.5 + k / 3)
+                x, y = int(16 + math.cos(a) * 12), int(17 - ((t * 10 + k * 4) % 10) + math.sin(a) * 3)
+                put(img, x, y, WHITE, 220)
+                if (f + k) % 3 == 0:
+                    put(img, x + 1, y, rgb("#cfe6ff"), 140)
+        elif theme == "dust":  # heavy stomps that kick up dust
+            r = (f % 4) * 0.9 + 0.6
+            alpha = 220 - (f % 4) * 50
+            for cx in (5, 26):
+                for y in range(N):
+                    for x in range(N):
+                        if (x - cx) ** 2 + (y - 28) ** 2 <= r * r and not opaque(img, x, y):
+                            put(img, x, y, rgb("#c9a27a") if (x + y) % 2 else rgb("#a07850"), alpha)
+        elif theme == "pebble":  # a glint runs over its stony skin, pebbles circle it
+            spots = ((12, 14), (18, 13), (21, 18), (15, 21), (11, 19), (19, 23), (14, 17), (20, 15))
+            gx, gy = spots[f]
+            if opaque(img, gx, gy):
+                put(img, gx, gy, WHITE)
+                for dx, dy2 in ((1, 0), (0, 1)):
+                    if opaque(img, gx + dx, gy + dy2):
+                        put(img, gx + dx, gy + dy2, rgb("#dfe7ec"))
+            for k in range(2):
+                a = 2 * math.pi * (t + k / 2)
+                x, y = int(16 + math.cos(a) * 14), int(18 + math.sin(a) * 12)
+                put(img, x, y, rgb("#8e9ba3"))
+                put(img, x + 1, y, rgb("#5c6b73"))
         frames.append(img)
     return frames
+
+
+# ---------------------------------------------------------------- animated weapons: a shine sweeps over them
+
+SHINE_FRAMES = 12
+
+
+def shimmer(img, glow=(), band=3.2, strength=0.6):
+    """Frames of a weapon: a band of light sweeps along it (from the handle to the tip), then rests;
+    pixels in one of the glow colours (runes, gems) pulse softly."""
+    glow = [rgb(c) if isinstance(c, str) else c for c in glow]
+    base = img.load()
+    edge = set()
+    for y in range(N):
+        for x in range(N):
+            if base[x, y][3] and any(not (0 <= x + dx < N and 0 <= y + dy < N) or not base[x + dx, y + dy][3]
+                                     for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                edge.add((x, y))  # the outline: stays dark
+    frames = []
+    for f in range(SHINE_FRAMES):
+        out = img.copy()
+        px = out.load()
+        centre = -40 + f * 16  # along x - y: the blade runs bottom-left to top-right
+        pulse = 0.5 + 0.5 * math.sin(f / SHINE_FRAMES * 2 * math.pi)
+        for y in range(N):
+            for x in range(N):
+                r, g, b, a = base[x, y]
+                if not a or (x, y) in edge:
+                    continue
+                col = (r, g, b)
+                if col in glow:
+                    col = mix(col, WHITE, 0.45 * pulse)
+                d = abs((x - y) - centre)
+                if d < band:
+                    col = mix(col, WHITE, strength * (1 - d / band))
+                px[x, y] = col + (a,)
+        frames.append(out)
+    return frames
+
+
+def harpoon():
+    """A whaler's harpoon: an oak shaft with a rope grip and a barbed steel head."""
+    img = new()
+    wood, rope, steel, light, dark = rgb("#8b5a2b"), rgb("#d8c39a"), rgb("#aeb8bf"), rgb("#eef6fa"), rgb("#5f6a72")
+    origin = (6.5, 25.5)
+    for y in range(N):
+        for x in range(N):
+            s, t = blade_frame(x, y, origin)
+            if -3 <= s <= 22 and abs(t) <= 0.9:
+                put(img, x, y, shade(wood, 0.2 if t < 0 else -0.2))
+            if 2 <= s <= 7 and abs(t) <= 1.3:
+                put(img, x, y, shade(rope, 0.15 if int(s * 1.5) % 2 == 0 else -0.2))
+            if 20 <= s <= 22.5 and abs(t) <= 1.3:  # steel socket
+                put(img, x, y, dark)
+            if 22.5 <= s <= 31:  # the head
+                w = 2.4 * (31 - s) / 8.5
+                if abs(t) <= w:
+                    put(img, x, y, light if t < -w * 0.3 else (steel if t < w * 0.4 else dark))
+            for side in (-1, 1):  # two barbs pointing back
+                bs = 22.5 + (abs(t) - 1) * 0.9
+                if 1.2 <= abs(t) <= 3.6 and t * side > 0 and bs - 1.1 <= s <= bs + 0.4:
+                    put(img, x, y, steel if side < 0 else dark)
+    return outline(img, rgb("#14202a"))
+
+
+def coral_scimitar():
+    """A curved blade of living coral with little polyps along it."""
+    def polyps(s_, t_, w_):
+        if int(s_ * 1.3) % 4 == 1 and abs(t_) < 0.7:
+            return rgb("#fff0e0")
+        return None
+    return blade("#ffd1b8", "#ff9a76", "#ff6b57", "#b8324a", "#f2c230", "#5a2a1a", "#ff9a76",
+                 curve=4.0, width=2.6, tip=6, pattern=polyps, outline_col="#3a0d14")
+
+
+def abyssal_anchor():
+    """A ship's anchor of Abyssal Iron: ring, stock, shank and two curved arms with flukes."""
+    img = new()
+    iron, light, dark, rune = rgb("#2f8f86"), rgb("#9fe8de"), rgb("#174a45"), rgb("#7dfff0")
+    origin = (11.5, 20.5)
+    for y in range(N):
+        for x in range(N):
+            s, t = blade_frame(x, y, origin)
+            col = None
+            if -7 <= s <= 14 and abs(t) <= 1.3:  # shank
+                col = light if t < -0.5 else (iron if t < 0.6 else dark)
+                if any(abs(s - r) < 0.6 for r in (0, 5, 10)) and abs(t) < 0.8:
+                    col = rune
+            if 10.5 <= s <= 12.2 and abs(t) <= 5.5:  # stock (cross bar)
+                col = shade(iron, 0.3 if s > 11.4 else -0.2)
+            d = math.hypot(s - 16.5, t)
+            if 1.3 <= d <= 2.9:  # ring
+                col = light if s > 16.5 else iron
+            d = math.hypot(s + 1, t)
+            if 6.0 <= d <= 7.9 and s <= -1.5:  # curved arms
+                col = light if d < 6.7 else dark
+            for side in (-1, 1):  # flukes at the end of each arm
+                fs, ft = -2.2, 7.6 * side
+                if abs(s - fs) + abs(t - ft) * 0.8 <= 2.4:
+                    col = shade(iron, 0.25 if side < 0 else -0.15)
+            if col is not None:
+                put(img, x, y, col)
+    return outline(img, rgb("#071c1a"))
+
+
+def deepcore_pickaxe():
+    """A pickaxe with a dark steel head and a glowing deep-sea gem in its centre."""
+    img = new()
+    wood, band, steel, light, dark = rgb("#5a3a22"), rgb("#9fe8de"), rgb("#5d7d9a"), rgb("#cfe3f2"), rgb("#2b3d52")
+    gem, gem_l = rgb("#3fd8ff"), rgb("#c8fbff")
+    origin = (8.5, 23.5)
+    for y in range(N):
+        for x in range(N):
+            s, t = blade_frame(x, y, origin)
+            if -8 <= s <= 18 and abs(t) <= 1.1:  # handle
+                c = shade(wood, 0.2 if t < 0 else -0.2)
+                if any(abs(s - b) < 0.6 for b in (-5, 0, 6)):
+                    c = band
+                put(img, x, y, c)
+            arc = 19.0 - 0.075 * t * t  # the head curves down at both ends
+            half = 1.9 * (1 - (abs(t) / 11.5) ** 2) + 0.35
+            if abs(t) <= 11 and abs(s - arc) <= half:
+                put(img, x, y, light if s > arc + half * 0.3 else (steel if s > arc - half * 0.4 else dark))
+            dg = (s - 19) ** 2 + t * t
+            if dg <= 3.0:
+                put(img, x, y, gem_l if dg <= 0.7 else gem)
+    return outline(img, rgb("#0b1622"))
 
 
 # ---------------------------------------------------------------- Tidewatch illagers (vindicator / pillager skin)
@@ -1027,17 +1200,17 @@ def musket_3d():
 
 
 FRUITS = {
-    "ghostglass": fruit_anim("#e8eef2", "#9aa7ad", outline_col="#3a444a"),
+    "ghostglass": fruit_anim("#e8eef2", "#9aa7ad", outline_col="#3a444a", theme="ghost"),
     "riftshift": fruit_anim("#ff9aa8", "#ff4f6d", theme="void"),
     "hollowvoid": fruit_anim("#3a2a52", "#9d4dff", outline_col="#0d0714", theme="void"),
-    "behemoth": fruit_anim("#b8743a", "#5a3418"),
+    "behemoth": fruit_anim("#b8743a", "#5a3418", theme="dust"),
     "galeborn": fruit_anim("#c9f3f7", "#3fb8c9", outline_col="#123a40", theme="wind"),
-    "stoneskin": fruit_anim("#8e9ba3", "#5c6b73", outline_col="#1f262a"),
+    "stoneskin": fruit_anim("#8e9ba3", "#5c6b73", outline_col="#1f262a", theme="pebble"),
     "tidecaller": fruit_anim("#2e86de", "#a9dcff", outline_col="#0b2a4a", theme="water"),
     "venomfang": fruit_anim("#7dcf3a", "#2f5d1a", leaf="#2f5d1a", outline_col="#13260a", theme="venom"),
     "dunemaw": fruit_anim("#e2c275", "#9c7a3c", outline_col="#3d2b10", theme="sand"),
     "luminara": fruit_anim("#fff6b0", "#ffb703", outline_col="#5a4a10", theme="light"),
-    "springcoil": fruit_anim("#e86fb0", "#7a1f6e"),
+    "springcoil": fruit_anim("#e86fb0", "#7a1f6e", theme="bounce"),
     "emberheart": fruit_anim("#ff7a1a", "#c4100c", theme="fire"),
     "rimefrost": fruit_anim("#a7e6ff", "#ffffff", leaf="#bfe9ff", outline_col="#123247", theme="frost"),
     "thunderveil": fruit_anim("#ffe14a", "#8a3cd6", outline_col="#3a2600", theme="thunder"),
@@ -1051,8 +1224,8 @@ def main():
     })
     item("conqueror_crown", crown())
     equipment("conqueror_crown", crown_worn())
-    item("storm_saber", storm_saber(), handheld=True)
-    item("abyssal_baton", abyssal_baton(), handheld=True)
+    item("storm_saber", shimmer(storm_saber(), glow=("#fff35c",)), handheld=True)
+    item("abyssal_baton", shimmer(abyssal_baton(), glow=("#7dfff0",)), handheld=True)
     vfx_item("vfx_slash", vfx_slash())
     vfx_item("vfx_ring", vfx_ring())
     vfx_item("vfx_flash", vfx_flash())
@@ -1065,16 +1238,20 @@ def main():
     illager_skin("#1d3a6b", "#e8e4d8", "#e8e4d8", "#e8e4d8").save(os.path.join(ill, "pillager.png"))
     hand_cannon_3d()
     # swords and weapons
-    item("tidecleaver", blade("#ffffff", "#dfe6ea", "#aeb8bf", "#7f8a91", "#b0b7bd", "#2d4a6b", "#9fe3ff", width=2.8, tip=5), True)
-    item("nightbloom", blade("#f6c1d6", "#a35d9c", "#5a2a7a", "#2c1240", "#d76d77", "#1d0f2b", "#ff8fb1",
-                             pattern=lambda s_, t_, w_: rgb("#ff9ec4") if int(s_) % 5 == 2 and abs(t_) < 0.6 else None), True)
-    item("leviathans_fang", blade("#ff7a6b", "#5a1a1a", "#2a0b0b", "#120404", "#3a3a3a", "#4a0f0f", "#c0392b",
-                                  serrate=True, outline_col="#050101"), True)
-    item("tide_rapier", blade("#e8fffb", "#8fe6d6", "#43cea2", "#185a9d", "#d9a521", "#185a9d", "#43cea2",
-                              width=1.2, length=27, tip=5, guard_half=4.2), True)
-    item("abyss_cutlass", blade("#9ff5e6", "#3fa79a", "#1c4f4a", "#0c2422", "#00c9a7", "#232526", "#00c9a7",
-                                curve=3.0, width=2.4), True)
-    item("krakens_maul", krakens_maul(), True)
+    item("tidecleaver", shimmer(blade("#ffffff", "#dfe6ea", "#aeb8bf", "#7f8a91", "#b0b7bd", "#2d4a6b", "#9fe3ff", width=2.8, tip=5), glow=("#9fe3ff",)), True)
+    item("nightbloom", shimmer(blade("#f6c1d6", "#a35d9c", "#5a2a7a", "#2c1240", "#d76d77", "#1d0f2b", "#ff8fb1",
+                             pattern=lambda s_, t_, w_: rgb("#ff9ec4") if int(s_) % 5 == 2 and abs(t_) < 0.6 else None), glow=("#ff9ec4", "#ff8fb1")), True)
+    item("leviathans_fang", shimmer(blade("#ff7a6b", "#5a1a1a", "#2a0b0b", "#120404", "#3a3a3a", "#4a0f0f", "#c0392b",
+                                  serrate=True, outline_col="#050101"), glow=("#c0392b",), strength=0.45), True)
+    item("tide_rapier", shimmer(blade("#e8fffb", "#8fe6d6", "#43cea2", "#185a9d", "#d9a521", "#185a9d", "#43cea2",
+                              width=1.2, length=27, tip=5, guard_half=4.2), glow=("#43cea2",)), True)
+    item("abyss_cutlass", shimmer(blade("#9ff5e6", "#3fa79a", "#1c4f4a", "#0c2422", "#00c9a7", "#232526", "#00c9a7",
+                                curve=3.0, width=2.4), glow=("#00c9a7",)), True)
+    item("krakens_maul", shimmer(krakens_maul(), glow=("#c47cff",), strength=0.45), True)
+    item("harpoon", shimmer(harpoon()), True)
+    item("coral_scimitar", shimmer(coral_scimitar(), glow=("#fff0e0",)), True)
+    item("abyssal_anchor", shimmer(abyssal_anchor(), glow=("#7dfff0",), band=4.0), True)
+    item("deepcore_pickaxe", shimmer(deepcore_pickaxe(), glow=("#3fd8ff", "#c8fbff", "#9fe8de")), True)
     item("abyssal_shackles", shackles())
     # bombs and shot
     item("smoke_bomb", bomb("#6f757b", "#3b3f43", "#ffe680", smoke_mark))

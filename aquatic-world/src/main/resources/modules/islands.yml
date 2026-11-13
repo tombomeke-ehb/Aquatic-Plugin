@@ -751,6 +751,9 @@ tidewatch:
   # Powers: ember (fireballs), frost (freezing nova), thunder (lightning at the target), gale (gust).
   power-cooldown-seconds: 9
   power-damage: 6
+  # Chance that an officer has a fruit power at all (0.2 = one in five). A template can set its own
+  # "power-chance" too.
+  power-chance: 0.2
   power-names:
     ember: "<gold>(Emberheart)"
     frost: "<aqua>(Rimefrost)"

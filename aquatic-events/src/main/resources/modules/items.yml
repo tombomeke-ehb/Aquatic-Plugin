@@ -3,7 +3,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 7
+config-version: 8
 #  Custom pirate items: Abyss Fruits, Abyssal Iron, legendary swords, guns,
 #  cannons, the Tide Compass, Echo Conch, rum and the Conqueror of the Sea's crown.
 #
@@ -1014,6 +1014,152 @@ items:
         I: IRON_INGOT
         F: FLINT
         W: OAK_PLANKS
+
+  # A barbed harpoon: right-click pulls an enemy (and everyone near it) towards you.
+  harpoon:
+    type: sword
+    material: IRON_SWORD
+    name: "<gradient:#bfe9ff:#2e86de><bold>Whaler's Harpoon</bold></gradient>"
+    lore:
+      - "<gray>Barbed steel on an oak shaft."
+      - ""
+      - "<white>Right-click: <aqua>Reel In</aqua> <gray>(pulls enemies to you)"
+    item-model: "aquatic:harpoon"
+    custom-model-data: 0
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE]
+    enchants:
+      sharpness: 2
+    attributes:
+      - {attribute: attack_damage, amount: 6, operation: ADD_NUMBER, slot: mainhand}
+      - {attribute: attack_speed, amount: -2.6, operation: ADD_NUMBER, slot: mainhand}
+    ability:
+      name: "<aqua>Reel In"
+      type: pull
+      trigger: right-click
+      cooldown: 12
+      radius: 6
+      damage: 4
+      pull-strength: 1.6
+      particle: SPLASH
+      color: "#5dade2"
+    recipe:
+      enabled: true
+      amount: 1
+      shape:
+        - "  I"
+        - " SI"
+        - "S  "
+      ingredients:
+        I: IRON_INGOT
+        S: STICK
+
+  # A curved blade of living coral: right-click sends a cutting wave over the ground.
+  coral_scimitar:
+    type: sword
+    material: DIAMOND_SWORD
+    name: "<gradient:#ff7e5f:#feb47b><bold>Coral Scimitar</bold></gradient>"
+    lore:
+      - "<gray>Grown, not forged. It is still a little warm."
+      - ""
+      - "<white>Right-click: <gold>Reef Wave"
+    item-model: "aquatic:coral_scimitar"
+    custom-model-data: 0
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE]
+    enchants:
+      sharpness: 3
+    attributes:
+      - {attribute: attack_damage, amount: 7, operation: ADD_NUMBER, slot: mainhand}
+      - {attribute: attack_speed, amount: -2.2, operation: ADD_NUMBER, slot: mainhand}
+    ability:
+      name: "<gold>Reef Wave"
+      type: wave
+      trigger: right-click
+      cooldown: 11
+      range: 12
+      width: 1.6
+      damage: 7
+      knockback: 0.8
+      particle: SPLASH
+      color: "#ff7e5f"
+    recipe:
+      enabled: true
+      amount: 1
+      shape:
+        - " C "
+        - " C "
+        - " D "
+      ingredients:
+        C: BRAIN_CORAL_BLOCK
+        D: DIAMOND_SWORD
+
+  # A ship's anchor as a weapon: heavy, slow, and its slam throws everyone back.
+  abyssal_anchor:
+    type: sword
+    material: IRON_AXE
+    name: "<gradient:#43cea2:#185a9d><bold>Abyssal Anchor</bold></gradient>"
+    lore:
+      - "<gray>Torn from a sunken warship."
+      - ""
+      - "<white>Sneak + right-click: <dark_aqua>Anchor Drop"
+    item-model: "aquatic:abyssal_anchor"
+    custom-model-data: 0
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE]
+    attributes:
+      - {attribute: attack_damage, amount: 10, operation: ADD_NUMBER, slot: mainhand}
+      - {attribute: attack_speed, amount: -3.2, operation: ADD_NUMBER, slot: mainhand}
+    ability:
+      name: "<dark_aqua>Anchor Drop"
+      type: nova
+      trigger: sneak-right-click
+      cooldown: 18
+      radius: 6
+      damage: 9
+      knockback: 2.2
+      windup-ticks: 10
+      particle: SPLASH
+      color: "#2f8f86"
+    recipe:
+      enabled: true
+      amount: 1
+      shape:
+        - " I "
+        - "BIB"
+        - "IHI"
+      ingredients:
+        I: IRON_BLOCK
+        B: CHAIN
+        H: HEART_OF_THE_SEA
+
+  # A miner's pickaxe with a glowing deep-sea gem: mines very fast and finds more ore.
+  deepcore_pickaxe:
+    type: plain
+    material: DIAMOND_PICKAXE
+    name: "<gradient:#7dfff0:#1f5fd1><bold>Deepcore Pickaxe</bold></gradient>"
+    lore:
+      - "<gray>A gem from the bottom of the sea glows in its head."
+      - ""
+      - "<gray>Efficiency V, Fortune III, never breaks."
+    item-model: "aquatic:deepcore_pickaxe"
+    custom-model-data: 0
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE]
+    enchants:
+      efficiency: 5
+      fortune: 3
+    recipe:
+      enabled: true
+      amount: 1
+      shape:
+        - "DGD"
+        - " P "
+        - " P "
+      ingredients:
+        D: DIAMOND_BLOCK
+        G: HEART_OF_THE_SEA
+        P: PRISMARINE_SHARD
 
   hand_cannon:
     type: cannon

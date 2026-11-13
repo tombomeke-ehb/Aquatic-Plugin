@@ -578,6 +578,12 @@ public final class ItemsModule extends AquaticModule implements ItemService {
                 file.set("items.tide_compass.item-model", null);
             }
         }
+        if (from < 8) {
+            // 2.11.0: the harpoon, coral scimitar, abyssal anchor and deepcore pickaxe
+            for (String id : java.util.List.of("harpoon", "coral_scimitar", "abyssal_anchor", "deepcore_pickaxe")) {
+                addMissing(file, defaults, "items." + id);
+            }
+        }
         if (from < 7) {
             // 2.10.0: the Musket
             addMissing(file, defaults, "items.musket");

@@ -292,9 +292,9 @@ Aliases: `/aquaticitem`, `/pirateitem`.
 
 Default item ids:
 - **Abyss Fruits:** `springcoil`, `emberheart`, `rimefrost`, `thunderveil`, `ghostglass`, `riftshift`, `hollowvoid`, `behemoth`, `galeborn`, `stoneskin`
-- **Weapons:** `abyssal_baton`, `abyssal_shackles`, `tidecleaver`, `nightbloom`, `leviathans_fang`, `storm_saber`, `tide_rapier`, `abyss_cutlass`, `krakens_maul`, `flintlock`, `hand_cannon`, `cannonball`
+- **Weapons:** `abyssal_baton`, `abyssal_shackles`, `tidecleaver`, `nightbloom`, `leviathans_fang`, `storm_saber`, `tide_rapier`, `abyss_cutlass`, `krakens_maul`, `harpoon`, `coral_scimitar`, `abyssal_anchor`, `musket`, `flintlock`, `hand_cannon`, `cannonball`
 - **Throwables (right-click):** `smoke_bomb`, `frost_bomb`, `fire_bomb`
-- **Tools and other:** `tide_compass`, `echo_conch`, `rum`, `healing_tonic`, `gale_grog`, `conqueror_crown`
+- **Tools and other:** `deepcore_pickaxe`, `tide_compass`, `echo_conch`, `rum`, `healing_tonic`, `gale_grog`, `conqueror_crown`
 - **Gear:** `coral_trident`, `captains_coat`, `marauders_buckler`
 - **Armour sets (craftable):** `tidewarden_helmet`, `tidewarden_chestplate`, `tidewarden_leggings`, `tidewarden_boots`, `corsair_hat`, `corsair_coat`, `corsair_breeches`, `corsair_boots`
 - **Special:** `fruit_random` gives a random Abyss Fruit
