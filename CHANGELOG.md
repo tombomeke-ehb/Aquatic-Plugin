@@ -1,5 +1,29 @@
 # Changelog
 
+## 2.5.0 (2026-11-13)
+
+### Added
+- **Players can see how to craft custom items:**
+  - Every custom recipe is unlocked in the vanilla recipe book (the green book in the crafting table).
+  - `/recipes` opens a menu with all of them; click one to see its 3x3 layout.
+
+### Changed
+- **No treasure map in the starter kit any more:** new players no longer all head for the same few treasures at spawn.
+- **Treasure maps never reroll:**
+  - Each map is a one-time item tied to its own freshly buried treasure.
+  - If someone digs it up first, the map becomes a "Looted Treasure Map".
+  - Fixed: after an unsaved server stop, the world could hand out a map id an old map already had, and that old map would suddenly show a new treasure. Those ids are now skipped.
+- **Loot rebalanced for every tier, with no totems:**
+  - **Rare** (5–7 items, 200–400 Doubloons): diamonds, ender pearls, enchanted diamond helmets and boots, strong books, the flintlock and hand cannon, the Tide Rapier and Marauder's Buckler, Corsair armour pieces, and sealed maps to epic chests.
+  - **Epic** (6–8 items, 400–800 Doubloons): diamonds, netherite scrap and ancient debris, enchanted diamond gear, the Sea King's Fork, Mending, the big custom weapons, Tidewarden armour pieces, sometimes an Abyss Fruit, and sealed maps to legendary chests.
+  - **Legendary** (7–9 items, 1500–3000 Doubloons) is still the best: netherite, Wavebreaker, Captain's Last Word, Dreadnought Plate, the legendary swords (Tidecleaver, Nightbloom, Leviathan's Fang), the full Tidewarden set, and Abyss Fruits. Its jackpot chance is 12%.
+  - **No repeats and jackpots:** every tier now has no-repeat rolls and its own jackpot.
+
+### Updating
+- Replace the jar and restart.
+- Your rare, epic and legendary loot is replaced only if you never edited it (a backup is kept).
+- The starter map switches off automatically unless you changed that setting.
+
 ## 2.4.1 (2026-11-13)
 
 ### Changed

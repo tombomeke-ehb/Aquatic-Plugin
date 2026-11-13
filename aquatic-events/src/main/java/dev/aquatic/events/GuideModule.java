@@ -135,7 +135,7 @@ public final class GuideModule extends AquaticModule implements Listener {
         boolean map = false;
         String tier = config().getString("starter-kit.treasure-map-tier", "common");
         dev.aquatic.api.TreasureService treasure = service(dev.aquatic.api.TreasureService.class);
-        if (config().getBoolean("starter-kit.treasure-map", true) && treasure != null) {
+        if (config().getBoolean("starter-kit.treasure-map", false) && treasure != null) {
             org.bukkit.Location spot = treasure.spawnRandomTreasure(tier);
             org.bukkit.inventory.ItemStack mapItem = spot == null ? null : treasure.createTreasureMap(spot, tier);
             if (mapItem != null) {
@@ -412,6 +412,10 @@ public final class GuideModule extends AquaticModule implements Listener {
             // 2.4.1: the real Discord invite; the section is written into the file so owners can edit it
             raise(file, "discord.link", "https://discord.gg/your-invite", defaults.getString("discord.link"));
             addMissing(file, defaults, "discord");
+        }
+        if (from < 2) {
+            // 2.5.0: no starter treasure map (everyone hunting the same few treasures at spawn)
+            raise(file, "starter-kit.treasure-map", true, false);
         }
     }
 }

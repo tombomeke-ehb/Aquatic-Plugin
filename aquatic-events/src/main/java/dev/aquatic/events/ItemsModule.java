@@ -48,6 +48,7 @@ public final class ItemsModule extends AquaticModule implements ItemService {
     private final Map<String, ItemDef> defs = new LinkedHashMap<>();
     private final List<NamespacedKey> recipes = new ArrayList<>();
     private NamespacedKey idKey;
+    private dev.aquatic.events.items.RecipeBook recipeBook;
     private FruitManager fruits;
     private GearListener gear;
 
@@ -78,6 +79,9 @@ public final class ItemsModule extends AquaticModule implements ItemService {
         registerListener(gear);
         registerService(ItemService.class, this);
         registerRecipes();
+        recipeBook = new dev.aquatic.events.items.RecipeBook(this);
+        registerListener(recipeBook);
+        Bukkit.getOnlinePlayers().forEach(recipeBook::unlock);
         registerCommands();
         long interval = Math.max(5, config().getLong("fruits.passive-interval-ticks", 20));
         runTimer(() -> {
@@ -99,6 +103,11 @@ public final class ItemsModule extends AquaticModule implements ItemService {
         }
         recipes.clear();
         defs.clear();
+    }
+
+    /** Keys of the custom crafting recipes registered by this module. */
+    public List<NamespacedKey> recipeKeys() {
+        return java.util.Collections.unmodifiableList(recipes);
     }
 
     public FruitManager fruits() {
@@ -437,6 +446,9 @@ public final class ItemsModule extends AquaticModule implements ItemService {
                 });
         registerCommand(cmd);
 
+        AquaticCommand recipesCmd = new AquaticCommand("recipes", "How to craft the custom items", "customrecipes");
+        recipesCmd.defaultExecutor((s, a) -> recipeBook.openList(AquaticCommand.player(s), 0));
+        registerCommand(recipesCmd);
         AquaticCommand fruit = new AquaticCommand("fruit", "Shows your abyss fruit power", "abyssfruit");
         fruit.sub("info", (sender, args) -> {
             Player p = AquaticCommand.player(sender);

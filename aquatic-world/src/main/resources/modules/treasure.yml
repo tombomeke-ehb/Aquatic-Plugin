@@ -15,7 +15,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 2
+config-version: 3
 
 autosave-seconds: 120
 
@@ -176,6 +176,8 @@ tiers:
         - {custom-item: storm_saber, weight: 0.3}
         - {treasure-map: epic, weight: 1.5}
         - {doubloons: 500-1000, weight: 3}
+  # Rare: deeper chests. Diamond gear, strong books, the first legendary-style weapons, Corsair armour,
+  # and sometimes a sealed map that leads to an epic chest.
   rare:
     display-name: "<aqua>Rare</aqua>"
     chest: CHEST
@@ -189,33 +191,60 @@ tiers:
     vanish: empty
     particles: none
     beam: false
+    unique-rolls: true
     loot:
-      - {material: GOLD_INGOT, amount: 3-8, weight: 8}
-      - {material: EMERALD, amount: 3-10, weight: 7}
-      - {material: DIAMOND, amount: 1-3, weight: 4}
-      - {material: GOLDEN_APPLE, amount: 1-2, weight: 3}
-      - {material: NAUTILUS_SHELL, amount: 1-3, weight: 3}
-      - {material: NAME_TAG, amount: 1, weight: 2}
-      - {material: SADDLE, amount: 1, weight: 1.5}
-      - {material: EXPERIENCE_BOTTLE, amount: 4-12, weight: 4}
-      - {material: IRON_SWORD, weight: 3, random-enchant-level: 10-20, name: "<white>Sailor's Cutlass"}
-      - {material: BOW, weight: 2, random-enchant-level: 10-20}
-      - {material: ENCHANTED_BOOK, weight: 2, enchants: [DEPTH_STRIDER:1-3]}
-      - {material: ENCHANTED_BOOK, weight: 2, enchants: [RESPIRATION:1-3]}
-      - {material: MUSIC_DISC_CAT, weight: 1}
-      - {material: MUSIC_DISC_MALL, weight: 1}
+      - {material: GOLD_INGOT, amount: 4-10, weight: 6}
+      - {material: EMERALD, amount: 4-12, weight: 6}
+      - {material: DIAMOND, amount: 2-4, weight: 5}
+      - {material: GOLDEN_APPLE, amount: 1-2, weight: 4}
+      - {material: ENDER_PEARL, amount: 3-6, weight: 3}
+      - {material: EXPERIENCE_BOTTLE, amount: 8-16, weight: 4}
+      - {material: NAUTILUS_SHELL, amount: 2-4, weight: 2}
+      - {material: DIAMOND_SWORD, weight: 2, random-enchant-level: 15-22, name: "<aqua>Sailor's Cutlass"}
+      - {material: DIAMOND_HELMET, weight: 1.5, random-enchant-level: 15-25, name: "<aqua>Navigator's Helm"}
+      - {material: DIAMOND_BOOTS, weight: 1.5, random-enchant-level: 15-25, name: "<aqua>Sea Legs"}
+      - {material: IRON_CHESTPLATE, weight: 2, random-enchant-level: 20-30, name: "<white>Bosun's Plate"}
+      - {material: BOW, weight: 1.5, random-enchant-level: 15-25}
+      - {material: ENCHANTED_BOOK, weight: 3, random-enchant-level: 20-30}
+      - {material: ENCHANTED_BOOK, weight: 1.5, enchants: [UNBREAKING:3]}
+      - {material: ENCHANTED_BOOK, weight: 1.5, enchants: [FEATHER_FALLING:4]}
+      - {material: ENCHANTED_BOOK, weight: 1.5, enchants: [DEPTH_STRIDER:3]}
+      - {material: ENCHANTED_BOOK, weight: 1, enchants: [MENDING:1]}
+      - {material: POTION, potion: long_water_breathing, weight: 1.5, name: "<aqua>Deep Diver's Draught"}
+      - {material: SPLASH_POTION, potion: strong_healing, weight: 1.5}
+      - {custom-item: healing_tonic, amount: 1-2, weight: 2}
+      - {custom-item: gale_grog, weight: 1.5}
+      - {custom-item: fire_bomb, amount: 2-3, weight: 2}
+      - {custom-item: frost_bomb, amount: 2-3, weight: 1.5}
+      - {custom-item: flintlock, weight: 1}
+      - {custom-item: hand_cannon, weight: 0.6}
       - {custom-item: tide_compass, weight: 1}
-      - {custom-item: smoke_bomb, amount: 2-3, weight: 2}
-      - {custom-item: frost_bomb, amount: 1-3, weight: 1.5}
-      - {custom-item: healing_tonic, amount: 1-2, weight: 1.5}
+      - {custom-item: echo_conch, weight: 1}
       - {custom-item: tide_rapier, weight: 0.8}
       - {custom-item: marauders_buckler, weight: 0.8}
-      - {doubloons: 75-150, weight: 4}
+      - {custom-item: corsair_hat, weight: 0.6}
+      - {custom-item: corsair_coat, weight: 0.5}
+      - {custom-item: corsair_breeches, weight: 0.5}
+      - {custom-item: corsair_boots, weight: 0.6}
+      - {treasure-map: epic, weight: 1.2}
+      - {doubloons: 150-300, weight: 4}
+    jackpot:
+      chance: 0.07
+      lore: ["", "<gold>★ Jackpot find!"]
+      loot:
+        - {material: HEART_OF_THE_SEA, weight: 2}
+        - {material: ENCHANTED_GOLDEN_APPLE, weight: 1.5}
+        - {material: NETHERITE_SCRAP, amount: 1-2, weight: 2}
+        - {custom-item: storm_saber, weight: 1}
+        - {treasure-map: legendary, weight: 0.6}
+        - {doubloons: 800-1500, weight: 3}
+  # Epic: deep chests, announced to the server. Enchanted diamond gear, netherite scraps, the big
+  # custom weapons, Tidewarden armour, sometimes an Abyss Fruit and a map to a legendary chest.
   epic:
     display-name: "<light_purple>Epic</light_purple>"
     chest: CHEST
-    rolls: 5-7
-    doubloons: 300-600
+    rolls: 6-8
+    doubloons: 400-800
     depth: 3
     marker: true
     weight: 2
@@ -224,35 +253,59 @@ tiers:
     vanish: empty
     particles: none
     beam: false
+    unique-rolls: true
     loot:
-      - {material: DIAMOND, amount: 2-6, weight: 7}
-      - {material: EMERALD_BLOCK, amount: 1-3, weight: 5}
-      - {material: GOLD_BLOCK, amount: 1-3, weight: 5}
-      - {material: HEART_OF_THE_SEA, amount: 1, weight: 2}
-      - {material: TRIDENT, weight: 2, enchants: [LOYALTY:1-3, IMPALING:1-3], name: "<aqua>Sea King's Fork"}
-      - {material: DIAMOND_SWORD, weight: 3, random-enchant-level: 20-30, name: "<light_purple>Endless Sea Saber"}
-      - {material: DIAMOND_CHESTPLATE, weight: 2, random-enchant-level: 20-30}
+      - {material: DIAMOND, amount: 4-8, weight: 6}
+      - {material: EMERALD_BLOCK, amount: 2-4, weight: 4}
+      - {material: GOLD_BLOCK, amount: 2-4, weight: 4}
+      - {material: GOLDEN_APPLE, amount: 2-4, weight: 3}
+      - {material: EXPERIENCE_BOTTLE, amount: 16-32, weight: 3}
+      - {material: HEART_OF_THE_SEA, weight: 2}
+      - {material: ANCIENT_DEBRIS, amount: 1-2, weight: 2}
+      - {material: NETHERITE_SCRAP, amount: 1-2, weight: 1.5}
+      - {material: ENCHANTED_GOLDEN_APPLE, weight: 0.8}
+      - {material: TRIDENT, weight: 2, enchants: [LOYALTY:1-3, IMPALING:2-4], name: "<aqua>Sea King's Fork"}
+      - {material: DIAMOND_SWORD, weight: 2, random-enchant-level: 25-30, name: "<light_purple>Endless Sea Saber"}
+      - {material: DIAMOND_CHESTPLATE, weight: 1.5, random-enchant-level: 25-30, name: "<light_purple>Corsair King's Plate"}
+      - {material: DIAMOND_LEGGINGS, weight: 1.5, random-enchant-level: 25-30}
+      - {material: DIAMOND_PICKAXE, weight: 1.5, random-enchant-level: 25-30, name: "<light_purple>Deepdelver"}
       - {material: ENCHANTED_BOOK, weight: 3, random-enchant-level: 25-30, treasure-enchants: true}
-      - {material: ENCHANTED_BOOK, weight: 1, enchants: [MENDING:1]}
-      - {material: ENCHANTED_GOLDEN_APPLE, amount: 1, weight: 0.7}
-      - {material: TOTEM_OF_UNDYING, amount: 1, weight: 0.8}
-      - {material: MUSIC_DISC_PIGSTEP, weight: 1}
-      - {material: SPYGLASS, weight: 2, name: "<gold>Navigator's Spyglass"}
-      - {custom-item: healing_tonic, amount: 1-2, weight: 2}
-      - {custom-item: gale_grog, weight: 1.5}
-      - {custom-item: captains_coat, weight: 0.6}
-      - {custom-item: fruit_random, weight: 0.5}
+      - {material: ENCHANTED_BOOK, weight: 1.5, enchants: [MENDING:1]}
+      - {material: SPYGLASS, weight: 1.5, name: "<gold>Navigator's Spyglass"}
+      - {material: MUSIC_DISC_PIGSTEP, weight: 0.8}
+      - {custom-item: healing_tonic, amount: 2-3, weight: 2}
+      - {custom-item: gale_grog, amount: 1-2, weight: 1.5}
       - {custom-item: fire_bomb, amount: 2-4, weight: 2}
-      - {custom-item: storm_saber, weight: 0.6}
-      - {custom-item: abyss_cutlass, weight: 0.5}
-      - {custom-item: krakens_maul, weight: 0.5}
-      - {custom-item: tide_rapier, weight: 0.8}
-      - {doubloons: 200-400, weight: 4}
+      - {custom-item: hand_cannon, weight: 1}
+      - {custom-item: tide_rapier, weight: 1}
+      - {custom-item: storm_saber, weight: 0.8}
+      - {custom-item: abyss_cutlass, weight: 0.7}
+      - {custom-item: krakens_maul, weight: 0.6}
+      - {custom-item: captains_coat, weight: 0.6}
+      - {custom-item: tidewarden_helmet, weight: 0.5}
+      - {custom-item: tidewarden_chestplate, weight: 0.4}
+      - {custom-item: tidewarden_leggings, weight: 0.4}
+      - {custom-item: tidewarden_boots, weight: 0.5}
+      - {custom-item: fruit_random, weight: 0.6}
+      - {treasure-map: legendary, weight: 0.6}
+      - {doubloons: 300-600, weight: 4}
+    jackpot:
+      chance: 0.08
+      lore: ["", "<gold>★ Jackpot find!"]
+      loot:
+        - {material: NETHERITE_INGOT, weight: 2}
+        - {material: ENCHANTED_GOLDEN_APPLE, amount: 2, weight: 1.5}
+        - {custom-item: fruit_random, weight: 1.5}
+        - {custom-item: nightbloom, weight: 0.5}
+        - {treasure-map: legendary, weight: 1}
+        - {doubloons: 1500-3000, weight: 3}
+  # Legendary: the deepest and rarest chests, announced to everyone. Netherite, the legendary swords,
+  # unique named weapons, the full Tidewarden set and Abyss Fruits. Always the best tier.
   legendary:
     display-name: "<gradient:#ffcc00:#ff6a00><bold>Legendary</bold></gradient>"
     chest: CHEST
-    rolls: 6-8
-    doubloons: 1000-2500
+    rolls: 7-9
+    doubloons: 1500-3000
     depth: 4
     marker: true
     weight: 0.5
@@ -261,32 +314,48 @@ tiers:
     vanish: empty
     particles: WAX_ON
     beam: false
+    unique-rolls: true
     loot:
-      - {material: NETHERITE_SCRAP, amount: 1-3, weight: 5}
-      - {material: NETHERITE_INGOT, amount: 1, weight: 1}
-      - {material: DIAMOND_BLOCK, amount: 1-3, weight: 4}
+      - {material: NETHERITE_SCRAP, amount: 2-4, weight: 5}
+      - {material: NETHERITE_INGOT, amount: 1-2, weight: 2}
+      - {material: ANCIENT_DEBRIS, amount: 2-4, weight: 3}
+      - {material: DIAMOND_BLOCK, amount: 2-4, weight: 4}
       - {material: HEART_OF_THE_SEA, amount: 1-2, weight: 3}
       - {material: ENCHANTED_GOLDEN_APPLE, amount: 1-2, weight: 2}
-      - {material: TOTEM_OF_UNDYING, amount: 1, weight: 2}
       - {material: TRIDENT, weight: 1.5, enchants: [RIPTIDE:3, UNBREAKING:3, MENDING:1], name: "<gold>Wavebreaker", lore: ["<gray>Rides the waves like they owe it Doubloons."]}
       - {material: NETHERITE_SWORD, weight: 1, enchants: [SHARPNESS:4-5, LOOTING:2-3, UNBREAKING:3], name: "<red>Captain's Last Word", lore: ["<gray>The last thing many sailors heard."]}
-      - {material: ENCHANTED_BOOK, weight: 1.5, enchants: [MENDING:1]}
-      - {material: MUSIC_DISC_OTHERSIDE, weight: 1}
-      - {material: MUSIC_DISC_RELIC, weight: 1}
+      - {material: NETHERITE_CHESTPLATE, weight: 0.8, enchants: [PROTECTION:4, UNBREAKING:3], name: "<gold>Dreadnought Plate", lore: ["<gray>Forged from a sunken warship's hull."]}
+      - {material: ENCHANTED_BOOK, weight: 2, enchants: [MENDING:1]}
+      - {material: ENCHANTED_BOOK, weight: 2, random-enchant-level: 30, treasure-enchants: true}
       - {material: NAME_TAG, weight: 0.8, name: "<gold>Captain's Name Plate", lore: ["<gray>Every ship deserves a proper name."]}
-      - {custom-item: storm_saber, weight: 1.2}
-      - {custom-item: abyss_cutlass, weight: 1.2}
-      - {custom-item: krakens_maul, weight: 1}
-      - {custom-item: coral_trident, weight: 1}
-      - {custom-item: captains_coat, weight: 1}
-      - {custom-item: fire_bomb, amount: 3-5, weight: 1.5}
+      - {material: MUSIC_DISC_OTHERSIDE, weight: 0.8}
+      - {material: MUSIC_DISC_RELIC, weight: 0.8}
+      - {custom-item: storm_saber, weight: 1.5}
+      - {custom-item: abyss_cutlass, weight: 1.5}
+      - {custom-item: krakens_maul, weight: 1.2}
+      - {custom-item: coral_trident, weight: 1.2}
+      - {custom-item: captains_coat, weight: 1.2}
+      - {custom-item: tidecleaver, weight: 0.6}
+      - {custom-item: nightbloom, weight: 0.6}
+      - {custom-item: leviathans_fang, weight: 0.5}
+      - {custom-item: tidewarden_helmet, weight: 1}
+      - {custom-item: tidewarden_chestplate, weight: 0.8}
+      - {custom-item: tidewarden_leggings, weight: 0.8}
+      - {custom-item: tidewarden_boots, weight: 1}
       - {custom-item: healing_tonic, amount: 2-3, weight: 1.5}
-      - {custom-item: fruit_random, weight: 2}
-      - {doubloons: 800-1500, weight: 4}
+      - {custom-item: fire_bomb, amount: 3-5, weight: 1.5}
+      - {custom-item: fruit_random, weight: 2.5}
+      - {doubloons: 1000-2000, weight: 4}
+    jackpot:
+      chance: 0.12
+      lore: ["", "<gold>★ Jackpot find!"]
+      loot:
+        - {material: NETHERITE_INGOT, amount: 2-3, weight: 2}
+        - {custom-item: fruit_random, weight: 2}
+        - {custom-item: leviathans_fang, weight: 1}
+        - {material: ENCHANTED_GOLDEN_APPLE, amount: 3, weight: 1}
+        - {doubloons: 3000-6000, weight: 3}
 
-# -------------------------------------------------------------------------------------
-# Placement
-# -------------------------------------------------------------------------------------
 placement:
   # Search radius around the requested spot for dry, solid ground.
   search-radius: 6

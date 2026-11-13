@@ -6,7 +6,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 1
+config-version: 2
 
 intro:
   enabled: true
@@ -113,7 +113,7 @@ starter-kit:
   doubloons: 0
   # Also bury a real treasure on a random island and give a treasure map to it: the best way to
   # learn treasure hunting. (Needs the treasure module.)
-  treasure-map: true
+  treasure-map: false
   treasure-map-tier: common
 
 # -------------------------------------------------------------------------------------
@@ -130,6 +130,7 @@ tips:
     - "A <red><bold>red X</bold></red> on the ground means buried treasure. Dig straight down!"
     - "Hold a <white>Tide Compass</white> to see the way to the nearest island."
     - "Right-click a treasure map to find out if you are getting warmer or colder."
+    - "How do you craft custom gear? <white>/recipes</white> shows every recipe (it's in your recipe book too)."
     - "Join forces! <white>/crew create <name></white> starts your own pirate crew."
     - "Your crew flag flies on every island you claim. Design it with <white>/crew flag</white>."
     - "New pirates are safe from PvP for a while. Check it with <white>/pvp</white>."

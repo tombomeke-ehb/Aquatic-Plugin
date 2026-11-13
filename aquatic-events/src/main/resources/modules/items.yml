@@ -1331,7 +1331,20 @@ armor-sets:
 # -------------------------------------------------------------------------------------
 #  Messages (MiniMessage). Placeholders are written as <name>.
 # -------------------------------------------------------------------------------------
+# How players learn the custom recipes: they are unlocked in the vanilla recipe book (green book in the
+# crafting table) and /recipes opens a menu with every recipe.
+recipes:
+  unlock-in-recipe-book: true
+
 messages:
+  recipes-title: "<dark_aqua><bold>Custom Recipes</bold> <dark_gray>(<page>/<pages>)"
+  recipes-recipe-title: "<dark_aqua><bold>Recipe"
+  recipes-click: "<yellow>Click to see the recipe"
+  recipes-arrow: "<gray>Craft at a crafting table"
+  recipes-back: "<yellow>Back to all recipes"
+  recipes-previous: "<yellow>Previous page"
+  recipes-next: "<yellow>Next page"
+  recipes-help: "<gold>Tip: <gray>these recipes are in your recipe book too"
   fruits-disabled: "<gray>Abyss fruits are switched off on this server."
   mastery-title: "<light_purple><bold>MASTERY <level>"
   mastery-subtitle: "<fruit> <gray>grows stronger"

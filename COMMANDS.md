@@ -278,6 +278,7 @@ Fruits are their own module: `/aquatic disable fruits` (or `fruits: false` in `c
 | Command | What it does | Permission |
 | --- | --- | --- |
 | `/fruit` | Your Abyss Fruit power, its ability and cooldown (alias `/devilfruit`) | Player: `aquatic.items.fruit` |
+| `/recipes` | A menu with every custom crafting recipe; click one to see its 3x3 layout. All custom recipes are also unlocked in the vanilla recipe book | Everyone |
 | `/aitem give <player> <id> [amount]` | Give a custom item | Admin: `aquatic.items.admin` |
 | `/aitem list` | All custom item ids | Admin |
 | `/aitem fruit set <player> <fruit\|none>` | Give or remove an Abyss Fruit power directly | Admin |

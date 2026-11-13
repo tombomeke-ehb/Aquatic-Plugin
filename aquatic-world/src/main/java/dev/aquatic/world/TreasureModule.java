@@ -312,6 +312,12 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
         MapMeta meta = (MapMeta) item.getItemMeta();
         try {
             MapView view = Bukkit.createMap(world);
+            // Every treasure map is its own map. If the world handed out an id that an older treasure map
+            // already uses (its map counter was not saved, e.g. after a crash), that old map would suddenly
+            // show this new treasure: skip such ids.
+            for (int guard = 0; mapLinks.containsKey(view.getId()) && guard < 256; guard++) {
+                view = Bukkit.createMap(world);
+            }
             int jitter = Math.max(0, config().getInt("maps.center-jitter", 40));
             ThreadLocalRandom r = ThreadLocalRandom.current();
             view.setCenterX(tx + (jitter > 0 ? r.nextInt(-jitter, jitter + 1) : 0));
@@ -1280,6 +1286,16 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
             raise(file, "tiers.rare.doubloons", "100-250", "200-400");
             addMissing(file, defaults, "sealed-map-lore");
         }
+        if (from < 3) {
+            // 2.5.0: rebalanced rare/epic/legendary loot (no totems), jackpots, sealed maps
+            replaceLoot(file, defaults, "rare", "GOLD_INGOT,EMERALD,DIAMOND,GOLDEN_APPLE,NAUTILUS_SHELL,NAME_TAG,SADDLE,EXPERIENCE_BOTTLE,IRON_SWORD,BOW,ENCHANTED_BOOK,ENCHANTED_BOOK,MUSIC_DISC_CAT,MUSIC_DISC_MALL,custom:tide_compass,custom:smoke_bomb,custom:frost_bomb,custom:healing_tonic,custom:tide_rapier,custom:marauders_buckler,doubloons");
+            replaceLoot(file, defaults, "epic", "DIAMOND,EMERALD_BLOCK,GOLD_BLOCK,HEART_OF_THE_SEA,TRIDENT,DIAMOND_SWORD,DIAMOND_CHESTPLATE,ENCHANTED_BOOK,ENCHANTED_BOOK,ENCHANTED_GOLDEN_APPLE,TOTEM_OF_UNDYING,MUSIC_DISC_PIGSTEP,SPYGLASS,custom:healing_tonic,custom:gale_grog,custom:captains_coat,custom:fruit_random,custom:fire_bomb,custom:storm_saber,custom:abyss_cutlass,custom:krakens_maul,custom:tide_rapier,doubloons");
+            replaceLoot(file, defaults, "legendary", "NETHERITE_SCRAP,NETHERITE_INGOT,DIAMOND_BLOCK,HEART_OF_THE_SEA,ENCHANTED_GOLDEN_APPLE,TOTEM_OF_UNDYING,TRIDENT,NETHERITE_SWORD,ENCHANTED_BOOK,MUSIC_DISC_OTHERSIDE,MUSIC_DISC_RELIC,NAME_TAG,custom:storm_saber,custom:abyss_cutlass,custom:krakens_maul,custom:coral_trident,custom:captains_coat,custom:fire_bomb,custom:healing_tonic,custom:fruit_random,doubloons");
+            raise(file, "tiers.epic.rolls", "5-7", "6-8");
+            raise(file, "tiers.epic.doubloons", "300-600", "400-800");
+            raise(file, "tiers.legendary.rolls", "6-8", "7-9");
+            raise(file, "tiers.legendary.doubloons", "1000-2500", "1500-3000");
+        }
     }
 
     /** Swaps a tier's loot (and adds its jackpot) when the list still matches the old default. */
@@ -1289,7 +1305,8 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
         List<String> names = new ArrayList<>();
         for (Map<?, ?> m : file.getMapList(path)) {
             names.add(m.get("material") != null ? String.valueOf(m.get("material"))
-                    : m.get("custom-item") != null ? "custom:" + m.get("custom-item") : "doubloons");
+                    : m.get("custom-item") != null ? "custom:" + m.get("custom-item")
+                    : m.get("treasure-map") != null ? "map:" + m.get("treasure-map") : "doubloons");
         }
         if (String.join(",", names).equals(oldSignature)) {
             file.set(path, defaults.get(path));
