@@ -96,18 +96,16 @@ Settings most servers change first:
 
 ## Resource pack (custom textures)
 
-The Crown of the Conqueror and the Stormcaller Saber have custom textures. To use them:
+Custom items, fruits, armour, the Tidewatch and the 3D effects use the AquaticSMP resource pack. The plugin sends it to players itself:
 
-1. Upload `AquaticSMP-ResourcePack.zip` (from the release, or build it with `python resourcepack/build_pack.py`) somewhere players can download it without logging in. For example https://mc-packs.net, which also shows the SHA-1.
-2. In `server.properties`, set:
+1. Set `resource-pack.enabled: true` in `modules/items.yml` and run `/aquatic reload items` (or restart).
+2. Leave `resource-pack=` and `resource-pack-sha1=` in `server.properties` empty.
 
-   ```
-   resource-pack=<the download link>
-   resource-pack-sha1=<the SHA-1>
-   require-resource-pack=true
-   ```
+Every jar knows its own pack (the download link on its GitHub release and the SHA-1), so updating the jar updates the pack. Players only download it again when the pack really changed.
 
-3. Set `resource-pack.enabled: true` in `modules/items.yml` and run `/aquatic reload items`.
+Settings under `resource-pack` in `items.yml`: `required` (decline = disconnected), the `prompt` text, and `url` + `sha1` to send your own pack instead.
+
+Building it yourself: run `python resourcepack/build_pack.py <version>` **before** building the jar (it writes the SHA-1 into the plugin).
 
 New textures go in `resourcepack/build_pack.py`. Give the item `item-model: "aquatic:<name>"` in `items.yml`.
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.12.1 (2026-11-13)
+
+### Changed
+- **The plugin sends the resource pack itself.** No more `server.properties` lines to update:
+  - Every jar knows its own pack (the download link on its GitHub release and the SHA-1), so updating the jar updates the pack.
+  - Players only download it again when the pack really changed.
+  - New settings under `resource-pack` in `items.yml`: `send`, `required` (decline = disconnected), the `prompt` text, and `url` + `sha1` to send your own pack instead.
+
+### Your server
+- **Once:** remove the `resource-pack=` and `resource-pack-sha1=` lines from `server.properties` (leave them empty), or players get the old pack as well. The server log warns you while they are still there.
+- `items.yml` upgrades automatically (a backup is kept). `resource-pack.enabled` must be `true`, as before.
+
 ## 2.12.0 (2026-11-13)
 
 ### Added

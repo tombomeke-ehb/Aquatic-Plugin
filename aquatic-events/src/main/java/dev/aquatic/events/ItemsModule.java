@@ -82,6 +82,7 @@ public final class ItemsModule extends AquaticModule implements ItemService {
         recipeBook = new dev.aquatic.events.items.RecipeBook(this);
         registerListener(recipeBook);
         Bukkit.getOnlinePlayers().forEach(recipeBook::unlock);
+        registerListener(new dev.aquatic.events.items.PackSender(this));
         registerCommands();
         long interval = Math.max(5, config().getLong("fruits.passive-interval-ticks", 20));
         runTimer(() -> {
@@ -577,6 +578,14 @@ public final class ItemsModule extends AquaticModule implements ItemService {
             if ("aquatic:tide_compass".equals(file.getString("items.tide_compass.item-model"))) {
                 file.set("items.tide_compass.item-model", null);
             }
+        }
+        if (from < 9) {
+            // 2.12.1: the plugin sends the resource pack itself (no server.properties lines needed)
+            for (String key : java.util.List.of("send", "required", "prompt", "url", "sha1")) {
+                addMissing(file, defaults, "resource-pack." + key);
+            }
+            addMissing(file, defaults, "messages.pack-failed");
+            addMissing(file, defaults, "messages.pack-declined");
         }
         if (from < 8) {
             // 2.11.0: the harpoon, coral scimitar, abyssal anchor and deepcore pickaxe

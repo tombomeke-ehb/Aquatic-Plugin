@@ -3,7 +3,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 8
+config-version: 9
 #  Custom pirate items: Abyss Fruits, Abyssal Iron, legendary swords, guns,
 #  cannons, the Tide Compass, Echo Conch, rum and the Conqueror of the Sea's crown.
 #
@@ -1812,13 +1812,26 @@ armor-sets:
 recipes:
   unlock-in-recipe-book: true
 
-# Custom textures (the AquaticSMP resource pack, see the README). Turn this on only once your server
-# sends the pack to players (server.properties resource-pack=...), or they see a missing texture.
-# Items with "item-model" / "equipment-model" then use their own look; turning it off restores the normal look.
+# Custom textures (the AquaticSMP resource pack, see the README).
+# enabled: items with "item-model" / "equipment-model" use their own look; off restores the normal look.
 resource-pack:
   enabled: false
+  # The plugin sends the pack to every player who joins: the pack that belongs to this plugin version,
+  # so updating the jar updates the pack. Remove resource-pack= and resource-pack-sha1= from
+  # server.properties when this is on. Players only download it again when the pack really changed.
+  send: true
+  # Players who decline the pack are disconnected (true), or play with normal looks (false).
+  required: true
+  # Shown in the download prompt.
+  prompt: "<aqua>Aquatic SMP uses a resource pack for its custom weapons, fruits, armour and effects."
+  # Your own pack instead of the one from the GitHub release: its download link and SHA-1. Leave empty
+  # for the release pack.
+  url: ""
+  sha1: ""
 
 messages:
+  pack-failed: "<red>The resource pack could not be downloaded. Rejoin to try again; custom items look plain until then."
+  pack-declined: "<gray>You play without the resource pack: custom items keep their normal look."
   cleanse-done: "<aqua>The milkshake washes the power of the <white><fruit></white> away. <gray>You can eat a new fruit now."
   cleanse-nothing: "<gray>You have no fruit power to wash away."
   recipes-title: "<dark_aqua><bold>Custom Recipes</bold> <dark_gray>(<page>/<pages>)"

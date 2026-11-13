@@ -1220,7 +1220,7 @@ FRUITS = {
 def main():
     version = sys.argv[1] if len(sys.argv) > 1 else "dev"
     write_json(os.path.join(PACK, "pack.mcmeta"), {
-        "pack": {"pack_format": 46, "description": "Aquatic SMP - Sail. Claim. Conquer. (" + version + ")"},
+        "pack": {"pack_format": 46, "description": "Aquatic SMP - Sail. Claim. Conquer."},
     })
     item("conqueror_crown", crown())
     equipment("conqueror_crown", crown_worn())
@@ -1292,13 +1292,27 @@ def main():
 
     os.makedirs(DIST, exist_ok=True)
     out = os.path.join(DIST, "AquaticSMP-ResourcePack.zip")
+    # a fixed order and date, so an unchanged pack gives the same file (and SHA-1): players keep their copy
+    entries = []
+    for root, dirs, files in os.walk(PACK):
+        dirs.sort()
+        for f in sorted(files):
+            full = os.path.join(root, f)
+            entries.append((os.path.relpath(full, PACK).replace(os.sep, "/"), full))
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
-        for root, _, files in os.walk(PACK):
-            for f in sorted(files):
-                full = os.path.join(root, f)
-                z.write(full, os.path.relpath(full, PACK).replace(os.sep, "/"))
+        for name, full in sorted(entries):
+            info = zipfile.ZipInfo(name, date_time=(2024, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o644 << 16
+            with open(full, "rb") as fh:
+                z.writestr(info, fh.read())
+    sha = hashlib.sha1(open(out, "rb").read()).hexdigest()
+    # the plugin sends the pack of its own version with this SHA-1 (build the pack before the jar)
+    baked = os.path.join(HERE, "..", "aquatic-events", "src", "main", "resources", "aquatic-pack.sha1")
+    with open(baked, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(sha + "\n")
     print(out)
-    print("sha1", hashlib.sha1(open(out, "rb").read()).hexdigest())
+    print("sha1", sha)
 
 
 if __name__ == "__main__":
