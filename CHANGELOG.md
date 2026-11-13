@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.7.4 (2026-11-13)
+
+### Fixed
+- **Flintlock texture:** it was the wrong way round in the hand; it now points forward. Update the resource pack link and SHA-1 in `server.properties` (see the release notes).
+
 ## 2.7.3 (2026-11-13)
 
 ### Fixed

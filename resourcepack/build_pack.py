@@ -255,7 +255,8 @@ def main():
     item("storm_saber", storm_saber(), handheld=True)
     for name, palette in FRUITS.items():
         item(name, from_rows(FRUIT, palette))
-    item("flintlock", from_rows(FLINTLOCK, FLINTLOCK_PALETTE))
+    # mirrored: in the hand the muzzle has to point away from the player
+    item("flintlock", from_rows([row[::-1] for row in FLINTLOCK], FLINTLOCK_PALETTE))
     item("abyssal_baton", from_rows(SABER, BATON_PALETTE), handheld=True)
     # pack icon: the crown, scaled up
     from_rows(CROWN, CROWN_PALETTE).resize((128, 128), Image.NEAREST).save(os.path.join(PACK, "pack.png"))
