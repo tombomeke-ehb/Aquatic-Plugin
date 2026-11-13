@@ -15,7 +15,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 1
+config-version: 2
 
 autosave-seconds: 120
 
@@ -44,11 +44,16 @@ autosave-seconds: 120
 #       doubloons: "min-max"      (entry that pays Doubloons instead of / besides an item)
 # -------------------------------------------------------------------------------------
 tiers:
+  # Common: shallow barrels, found often. Early-game progression (iron, gold, food, low enchants)
+  # and sometimes a sealed map that leads to an uncommon chest.
+  # Entry options: material | custom-item | doubloons | treasure-map: <tier> (a sealed map to a fresh
+  # treasure), amount, weight, name, lore, enchants, random-enchant-level, potion (for POTION items).
+  # unique-rolls: never the same entry twice in one chest. jackpot: a small chance at one extra standout item.
   common:
     display-name: "<gray>Common</gray>"
     chest: BARREL
-    rolls: 3-5
-    doubloons: 25-75
+    rolls: 4-6
+    doubloons: 60-140
     depth: 1
     marker: true
     weight: 10
@@ -57,25 +62,58 @@ tiers:
     vanish: empty
     particles: none
     beam: false
+    unique-rolls: true
     loot:
-      - {material: GOLD_NUGGET, amount: 4-16, weight: 10}
-      - {material: GOLD_INGOT, amount: 1-4, weight: 6}
-      - {material: IRON_INGOT, amount: 2-6, weight: 8}
+      - {material: IRON_INGOT, amount: 3-8, weight: 10}
+      - {material: GOLD_INGOT, amount: 2-5, weight: 7}
+      - {material: COPPER_INGOT, amount: 4-12, weight: 4}
+      - {material: COAL, amount: 6-16, weight: 5}
       - {material: EMERALD, amount: 1-4, weight: 5}
-      - {material: COOKED_COD, amount: 3-8, weight: 6}
-      - {material: BREAD, amount: 3-6, weight: 5}
-      - {material: ARROW, amount: 8-24, weight: 5}
-      - {material: GUNPOWDER, amount: 2-6, weight: 4}
+      - {material: DIAMOND, amount: 1, weight: 1.5}
+      - {material: LEATHER, amount: 3-8, weight: 3}
+      - {material: STRING, amount: 3-8, weight: 3}
+      - {material: COOKED_SALMON, amount: 4-10, weight: 6}
+      - {material: BREAD, amount: 4-8, weight: 4}
+      - {material: GOLDEN_CARROT, amount: 2-5, weight: 3}
+      - {material: ARROW, amount: 12-32, weight: 4}
+      - {material: GUNPOWDER, amount: 3-8, weight: 4}
+      - {material: EXPERIENCE_BOTTLE, amount: 2-5, weight: 3}
       - {material: NAUTILUS_SHELL, amount: 1, weight: 1.5}
       - {material: NAME_TAG, amount: 1, weight: 1}
-      - {material: LEATHER_HELMET, weight: 2, name: "<gold>Weathered Tricorn", lore: ["<gray>Smells of salt and rum."]}
-      - {custom-item: smoke_bomb, amount: 1-2, weight: 1.5}
-      - {doubloons: 20-60, weight: 4}
+      - {material: LEAD, amount: 1-2, weight: 1}
+      - {material: POTION, potion: water_breathing, weight: 1.5, name: "<aqua>Diver's Draught"}
+      - {material: POTION, potion: swiftness, weight: 1.5, name: "<white>Deckrunner's Tonic"}
+      - {material: CHAINMAIL_HELMET, weight: 1.5, random-enchant-level: 5-10, name: "<gold>Weathered Tricorn", lore: ["<gray>Smells of salt and rum."]}
+      - {material: CHAINMAIL_BOOTS, weight: 1.5, random-enchant-level: 5-10, name: "<gray>Deckhand's Boots"}
+      - {material: IRON_SWORD, weight: 1.5, random-enchant-level: 5-12, name: "<white>Rusty Cutlass", lore: ["<gray>Still sharp enough."]}
+      - {material: FISHING_ROD, weight: 1.5, enchants: [LURE:1-2, LUCK_OF_THE_SEA:1], name: "<aqua>Old Salt's Rod"}
+      - {material: ENCHANTED_BOOK, weight: 2, random-enchant-level: 5-12}
+      - {custom-item: smoke_bomb, amount: 1-2, weight: 2}
+      - {custom-item: rum, amount: 1-2, weight: 2}
+      - {custom-item: cannonball, amount: 2-4, weight: 1.5}
+      - {custom-item: fire_bomb, amount: 1, weight: 1}
+      - {custom-item: healing_tonic, amount: 1, weight: 0.8}
+      - {custom-item: tide_compass, weight: 0.4}
+      - {treasure-map: uncommon, weight: 1.2}
+      - {doubloons: 40-100, weight: 4}
+    jackpot:
+      chance: 0.05
+      lore: ["", "<gold>★ Jackpot find!"]
+      loot:
+        - {material: DIAMOND, amount: 2-3, weight: 4}
+        - {material: GOLDEN_APPLE, amount: 1-2, weight: 3}
+        - {material: ENCHANTED_BOOK, weight: 2, enchants: [EFFICIENCY:3]}
+        - {material: ENCHANTED_BOOK, weight: 2, enchants: [PROTECTION:3]}
+        - {custom-item: tide_rapier, weight: 0.6}
+        - {treasure-map: rare, weight: 2}
+        - {doubloons: 250-500, weight: 3}
+  # Uncommon: buried chests. Diamonds, enchanted iron gear, good books (sometimes Mending), more of the
+  # custom gear, and sometimes a sealed map that leads to a rare chest.
   uncommon:
     display-name: "<green>Uncommon</green>"
     chest: CHEST
-    rolls: 3-5
-    doubloons: 50-120
+    rolls: 4-6
+    doubloons: 90-200
     depth: 2
     marker: true
     weight: 7
@@ -84,32 +122,65 @@ tiers:
     vanish: empty
     particles: none
     beam: false
+    unique-rolls: true
     loot:
-      - {material: GOLD_INGOT, amount: 2-6, weight: 8}
-      - {material: IRON_INGOT, amount: 4-10, weight: 7}
-      - {material: EMERALD, amount: 2-6, weight: 6}
-      - {material: COPPER_INGOT, amount: 6-16, weight: 5}
-      - {material: LAPIS_LAZULI, amount: 4-12, weight: 4}
-      - {material: LANTERN, amount: 2-4, weight: 3}
-      - {material: SPYGLASS, amount: 1, weight: 2}
-      - {material: GOLDEN_CARROT, amount: 4-10, weight: 4}
-      - {material: EXPERIENCE_BOTTLE, amount: 2-6, weight: 3}
-      - {material: IRON_PICKAXE, weight: 2, random-enchant-level: 5-12, name: "<white>Deckhand's Pick"}
-      - {material: IRON_AXE, weight: 2, random-enchant-level: 5-12, name: "<white>Boarding Axe"}
-      - {material: CROSSBOW, weight: 1.5, random-enchant-level: 5-15}
-      - {material: ENCHANTED_BOOK, weight: 2, enchants: [UNBREAKING:1-2]}
-      - {material: NAUTILUS_SHELL, amount: 1-2, weight: 2}
-      - {custom-item: tide_compass, weight: 0.5}
-      - {custom-item: rum, amount: 1-3, weight: 2}
-      - {custom-item: fire_bomb, amount: 1-2, weight: 1.5}
-      - {custom-item: frost_bomb, amount: 1-2, weight: 1.5}
-      - {custom-item: healing_tonic, weight: 1}
-      - {doubloons: 40-100, weight: 4}
+      - {material: IRON_INGOT, amount: 8-16, weight: 8}
+      - {material: GOLD_INGOT, amount: 4-10, weight: 7}
+      - {material: DIAMOND, amount: 1-2, weight: 3}
+      - {material: EMERALD, amount: 3-8, weight: 6}
+      - {material: LAPIS_LAZULI, amount: 6-16, weight: 3}
+      - {material: REDSTONE, amount: 8-20, weight: 2}
+      - {material: GOLDEN_APPLE, amount: 1, weight: 2.5}
+      - {material: GOLDEN_CARROT, amount: 6-12, weight: 3}
+      - {material: EXPERIENCE_BOTTLE, amount: 5-12, weight: 4}
+      - {material: ENDER_PEARL, amount: 2-4, weight: 2.5}
+      - {material: IRON_CHESTPLATE, weight: 2, random-enchant-level: 10-18, name: "<white>Boarding Plate"}
+      - {material: IRON_HELMET, weight: 2, random-enchant-level: 10-18, name: "<white>Corsair's Helm"}
+      - {material: IRON_LEGGINGS, weight: 1.5, random-enchant-level: 10-18}
+      - {material: IRON_BOOTS, weight: 1.5, random-enchant-level: 10-18}
+      - {material: IRON_PICKAXE, weight: 2, random-enchant-level: 10-18, name: "<white>Deckhand's Pick"}
+      - {material: DIAMOND_PICKAXE, weight: 0.8, random-enchant-level: 5-12, name: "<aqua>Prospector's Pick"}
+      - {material: IRON_AXE, weight: 1.5, random-enchant-level: 10-18, name: "<white>Boarding Axe"}
+      - {material: CROSSBOW, weight: 1.5, random-enchant-level: 10-18}
+      - {material: BOW, weight: 1.5, random-enchant-level: 10-18}
+      - {material: ENCHANTED_BOOK, weight: 3, random-enchant-level: 10-20}
+      - {material: ENCHANTED_BOOK, weight: 1, enchants: [EFFICIENCY:3-4]}
+      - {material: ENCHANTED_BOOK, weight: 1, enchants: [PROTECTION:2-3]}
+      - {material: ENCHANTED_BOOK, weight: 1, enchants: [SHARPNESS:2-3]}
+      - {material: ENCHANTED_BOOK, weight: 0.5, enchants: [MENDING:1]}
+      - {material: POTION, potion: strength, weight: 1.2, name: "<red>Grog of Fury"}
+      - {material: POTION, potion: night_vision, weight: 1, name: "<blue>Lantern Eye Elixir"}
+      - {material: SPLASH_POTION, potion: healing, weight: 1.2}
+      - {custom-item: rum, amount: 2-3, weight: 2}
+      - {custom-item: fire_bomb, amount: 1-2, weight: 2}
+      - {custom-item: frost_bomb, amount: 1-2, weight: 2}
+      - {custom-item: healing_tonic, amount: 1-2, weight: 1.5}
+      - {custom-item: gale_grog, weight: 1}
+      - {custom-item: cannonball, amount: 3-6, weight: 1.5}
+      - {custom-item: flintlock, weight: 0.7}
+      - {custom-item: tide_compass, weight: 1}
+      - {custom-item: echo_conch, weight: 0.8}
+      - {custom-item: corsair_hat, weight: 0.4}
+      - {custom-item: corsair_boots, weight: 0.4}
+      - {treasure-map: rare, weight: 1.5}
+      - {doubloons: 80-200, weight: 4}
+    jackpot:
+      chance: 0.06
+      lore: ["", "<gold>★ Jackpot find!"]
+      loot:
+        - {material: DIAMOND, amount: 4-8, weight: 4}
+        - {material: ENCHANTED_GOLDEN_APPLE, amount: 1, weight: 0.6}
+        - {material: ENCHANTED_BOOK, weight: 2, enchants: [MENDING:1]}
+        - {custom-item: tide_rapier, weight: 1}
+        - {custom-item: marauders_buckler, weight: 1}
+        - {custom-item: storm_saber, weight: 0.3}
+        - {treasure-map: epic, weight: 1.5}
+        - {doubloons: 500-1000, weight: 3}
   rare:
     display-name: "<aqua>Rare</aqua>"
     chest: CHEST
-    rolls: 4-6
-    doubloons: 100-250
+    rolls: 5-7
+    doubloons: 200-400
     depth: 2
     marker: true
     weight: 5
@@ -334,7 +405,19 @@ info:
 # =====================================================================================
 #  Messages
 # =====================================================================================
+# Lore of sealed treasure maps found in chests (<tier> = the tier they lead to).
+sealed-map-lore:
+  - "<gray>A map sealed with wax."
+  - "<gray>Leads to a <tier> <gray>treasure."
+  - ""
+  - "<yellow>Right-click to break the seal."
+
 messages:
+  sealed-map-name: "<gold>Sealed Treasure Map <dark_gray>(<tier><dark_gray>)"
+  map-unsealed: "<gold>You break the seal... <gray>The map shows a <tier> <gray>treasure. Follow the red X!"
+  map-seal-failed: "<red>The map is too smudged to read right now. <gray>Try again in a moment."
+  sealed-map-given: "<green>Gave <white><player></white> a sealed map to a <tier> <green>treasure."
+  loot-preview-jackpot: "<gold><bold>Jackpot!</bold> <gray>This roll hit the jackpot."
   no-island-name: "uncharted land"
   hint-heart: "in the heart of the island"
   hint-inland: "inland, toward the <direction>"

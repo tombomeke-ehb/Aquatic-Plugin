@@ -56,6 +56,10 @@ final class LootTier {
     static final class Entry {
         Material material;
         String customItem;
+        /** "treasure-map: rare": a sealed map that leads to a fresh treasure of that tier. */
+        String treasureMap;
+        /** "potion: swiftness" for POTION / SPLASH_POTION / LINGERING_POTION / TIPPED_ARROW. */
+        org.bukkit.potion.PotionType potion;
         Range amount = new Range(1, 1);
         double weight = 1;
         final List<EnchantSpec> enchants = new ArrayList<>();
@@ -82,6 +86,13 @@ final class LootTier {
     boolean beam;
     final List<Entry> loot = new ArrayList<>();
     private double totalWeight;
+    /** No entry twice in one chest (Doubloon entries may repeat). */
+    boolean uniqueRolls = true;
+    /** A small chance at one extra standout item. */
+    double jackpotChance;
+    final List<Entry> jackpot = new ArrayList<>();
+    private double jackpotWeight;
+    List<String> jackpotLore = List.of();
 
     private LootTier(String id) {
         this.id = id;
@@ -122,6 +133,16 @@ final class LootTier {
                 t.totalWeight += e.weight;
             }
         }
+        t.uniqueRolls = s.getBoolean("unique-rolls", true);
+        t.jackpotChance = Math.max(0, Math.min(1, s.getDouble("jackpot.chance", 0)));
+        t.jackpotLore = s.getStringList("jackpot.lore");
+        for (Map<?, ?> raw : s.getMapList("jackpot.loot")) {
+            Entry e = parseEntry(raw, log, ctx + ".jackpot");
+            if (e != null) {
+                t.jackpot.add(e);
+                t.jackpotWeight += e.weight;
+            }
+        }
         return t;
     }
 
@@ -151,7 +172,16 @@ final class LootTier {
         if (raw.get("doubloons") != null) {
             e.doubloons = Range.parse(raw.get("doubloons"), 0);
         }
-        if (e.material == null && e.customItem == null && e.doubloons == null) {
+        if (raw.get("treasure-map") != null) {
+            e.treasureMap = String.valueOf(raw.get("treasure-map")).toLowerCase(Locale.ROOT);
+        }
+        if (raw.get("potion") != null) {
+            e.potion = Registry.POTION.get(NamespacedKey.minecraft(String.valueOf(raw.get("potion")).toLowerCase(Locale.ROOT)));
+            if (e.potion == null) {
+                log.warning(ctx + ": unknown potion " + raw.get("potion"));
+            }
+        }
+        if (e.material == null && e.customItem == null && e.doubloons == null && e.treasureMap == null) {
             return null;
         }
         e.amount = Range.parse(raw.get("amount"), 1);
@@ -184,41 +214,75 @@ final class LootTier {
     }
 
     private Entry pick(Random r) {
-        if (loot.isEmpty()) {
+        return pick(r, loot, totalWeight);
+    }
+
+    private static Entry pick(Random r, List<Entry> list, double total) {
+        if (list.isEmpty()) {
             return null;
         }
-        double roll = r.nextDouble() * totalWeight;
-        for (Entry e : loot) {
+        double roll = r.nextDouble() * total;
+        for (Entry e : list) {
             roll -= e.weight;
             if (roll < 0) {
                 return e;
             }
         }
-        return loot.get(loot.size() - 1);
+        return list.get(list.size() - 1);
     }
 
     /** Result of a roll: items plus extra Doubloons from doubloon entries and the tier base. */
-    record Roll(List<ItemStack> items, double doubloons) {
+    /** maps: tiers of sealed treasure maps to add; jackpot: whether the jackpot hit. */
+    record Roll(List<ItemStack> items, double doubloons, List<String> maps, boolean jackpot) {
     }
 
     Roll roll(Random r, Supplier<ItemService> items) {
         List<ItemStack> out = new ArrayList<>();
+        List<String> maps = new ArrayList<>();
         double money = doubloons.roll(r);
         int count = rolls.roll(r);
+        java.util.Set<Entry> used = new java.util.HashSet<>();
         for (int i = 0; i < count; i++) {
             Entry e = pick(r);
+            for (int retry = 0; uniqueRolls && e != null && e.doubloons == null && used.contains(e) && retry < 12; retry++) {
+                e = pick(r);
+            }
             if (e == null) {
                 break;
             }
-            if (e.doubloons != null) {
-                money += e.doubloons.roll(r);
-            }
-            ItemStack stack = build(e, r, items);
-            if (stack != null) {
-                out.add(stack);
+            used.add(e);
+            money += add(e, r, items, out, maps);
+        }
+        boolean hit = !jackpot.isEmpty() && r.nextDouble() < jackpotChance;
+        if (hit) {
+            Entry e = pick(r, jackpot, jackpotWeight);
+            int before = out.size();
+            money += add(e, r, items, out, maps);
+            if (!jackpotLore.isEmpty()) {
+                for (int i = before; i < out.size(); i++) {
+                    ItemStack stack = out.get(i);
+                    ItemMeta meta = stack.getItemMeta();
+                    if (meta != null) {
+                        List<Component> lore = meta.lore() == null ? new ArrayList<>() : new ArrayList<>(meta.lore());
+                        lore.addAll(Text.itemLore(jackpotLore));
+                        meta.lore(lore);
+                        stack.setItemMeta(meta);
+                    }
+                }
             }
         }
-        return new Roll(out, Math.max(0, money));
+        return new Roll(out, Math.max(0, money), maps, hit);
+    }
+
+    private static double add(Entry e, Random r, Supplier<ItemService> items, List<ItemStack> out, List<String> maps) {
+        if (e.treasureMap != null) {
+            maps.add(e.treasureMap);
+        }
+        ItemStack stack = build(e, r, items);
+        if (stack != null) {
+            out.add(stack);
+        }
+        return e.doubloons != null ? e.doubloons.roll(r) : 0;
     }
 
     private static ItemStack build(Entry e, Random r, Supplier<ItemService> items) {
@@ -256,6 +320,9 @@ final class LootTier {
             } else {
                 meta.addEnchant(spec.enchantment(), level, true);
             }
+        }
+        if (e.potion != null && meta instanceof org.bukkit.inventory.meta.PotionMeta pm) {
+            pm.setBasePotionType(e.potion);
         }
         if (e.name != null) {
             meta.displayName(Text.item(e.name));

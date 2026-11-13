@@ -1,5 +1,39 @@
 # Changelog
 
+## 2.4.1 (2026-11-13)
+
+### Changed
+- **Common and uncommon treasure are worth going after:**
+  - **Common chests** (4–6 items, 60–140 Doubloons):
+    - iron, gold, copper and coal, and sometimes a diamond
+    - food, potions (Diver's Draught, Deckrunner's Tonic) and enchanted books
+    - named enchanted gear (Weathered Tricorn, Deckhand's Boots, Rusty Cutlass, Old Salt's Rod)
+    - bombs, rum, cannonballs, sometimes a Healing Tonic or a Tide Compass
+  - **Uncommon chests** (4–6 items, 90–200 Doubloons):
+    - diamonds, golden apples and ender pearls
+    - enchanted iron armour and tools, sometimes a diamond Prospector's Pick
+    - good enchanted books (Efficiency, Protection, Sharpness, sometimes Mending)
+    - Grog of Fury and other potions
+    - the flintlock, the Echo Conch and Corsair armour pieces
+  - **No repeats:** no item appears twice in the same chest.
+  - **Jackpots:** a 5% (common) or 6% (uncommon) chance at one extra standout item, marked "★ Jackpot find!". Examples: diamonds, Mending, the Tide Rapier, an enchanted golden apple, a map to an epic chest, or a pile of Doubloons.
+  - **Rare chests:** one more item and more Doubloons (200–400), so they stay above uncommon.
+- **`/island home` with several islands:** shows a clickable list to choose from, instead of picking one.
+- **`/discord`** now links to the Aquatic SMP Discord.
+
+### Added
+- **Sealed treasure maps:**
+  - Found in chests: common chests lead to uncommon, uncommon to rare.
+  - Right-click to break the seal. A fresh treasure is buried and the item turns into a map with the red X.
+  - Admins can hand them out with `/treasure sealedmap <tier> [player]`.
+- **Loot options for server owners:**
+  - `treasure-map: <tier>` and `potion: <type>` in loot entries
+  - `jackpot:` and `unique-rolls:` per tier
+
+### Updating
+- Replace the jar and restart. The new loot replaces your common and uncommon loot only if you never edited it (a backup is kept).
+- The Discord link is set automatically if `guide.yml` still had the placeholder.
+
 ## 2.4.0 (2026-11-13)
 
 ### Added

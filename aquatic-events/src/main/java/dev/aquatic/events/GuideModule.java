@@ -405,4 +405,13 @@ public final class GuideModule extends AquaticModule implements Listener {
         cmd.takeOver(true);
         registerCommand(cmd);
     }
+
+    @Override
+    protected void migrateConfig(YamlConfiguration file, YamlConfiguration defaults, int from) {
+        if (from < 1) {
+            // 2.4.1: the real Discord invite; the section is written into the file so owners can edit it
+            raise(file, "discord.link", "https://discord.gg/your-invite", defaults.getString("discord.link"));
+            addMissing(file, defaults, "discord");
+        }
+    }
 }

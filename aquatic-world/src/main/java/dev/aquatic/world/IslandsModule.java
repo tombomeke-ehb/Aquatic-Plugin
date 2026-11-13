@@ -869,6 +869,18 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         if (owned.isEmpty()) {
             throw new dev.aquatic.command.CommandFail(rawMsg("home-no-island"));
         }
+        if (owned.size() > 1 && args.length == 0) {
+            // several islands: let the player pick one (clickable list), never guess
+            owned.sort(java.util.Comparator.comparing(is -> is.name.toLowerCase(java.util.Locale.ROOT)));
+            send(p, "home-choose", "count", owned.size());
+            for (IslandImpl is : owned) {
+                p.sendMessage(rawMsg("home-choose-line", "island", is.name, "type", is.type.name().charAt(0)
+                        + is.type.name().substring(1).toLowerCase(java.util.Locale.ROOT))
+                        .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/island home " + is.id))
+                        .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(rawMsg("home-choose-hover", "island", is.name))));
+            }
+            return;
+        }
         IslandImpl target = owned.get(0);
         if (args.length > 0) {
             String want = String.join(" ", args);

@@ -153,6 +153,7 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
     private final Map<UUID, Long> hintCooldown = new HashMap<>();
     private NamespacedKey mapKey;
     private NamespacedKey chestKey;
+    private NamespacedKey sealedKey;
     private boolean dirty;
 
     @Override
@@ -172,6 +173,7 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
         hintCooldown.clear();
         mapKey = new NamespacedKey(plugin(), "treasure_map");
         chestKey = new NamespacedKey(plugin(), "treasure_chest");
+        sealedKey = new NamespacedKey(plugin(), "sealed_map");
         ConfigurationSection sec = config().getConfigurationSection("tiers");
         if (sec != null) {
             for (String id : sec.getKeys(false)) {
@@ -456,7 +458,14 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
             }
             java.util.Collections.shuffle(slots);
             int si = 0;
-            for (ItemStack stack : roll.items()) {
+            List<ItemStack> all = new ArrayList<>(roll.items());
+            for (String mapTier : roll.maps()) {
+                ItemStack sealed = sealedMap(mapTier);
+                if (sealed != null) {
+                    all.add(sealed);
+                }
+            }
+            for (ItemStack stack : all) {
                 if (si >= slots.size()) {
                     break;
                 }
@@ -1201,6 +1210,18 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
                     return dev.aquatic.command.AquaticCommand.filter(out, a[0]);
                 });
 
+        cmd.sub("sealedmap", (sender, args) -> {
+            dev.aquatic.command.AquaticCommand.need(args, 1, "/treasure sealedmap <tier> [player]");
+            LootTier tier = tierArg(args[0]);
+            Player target = args.length > 1 ? dev.aquatic.command.AquaticCommand.onlinePlayer(args[1]) : dev.aquatic.command.AquaticCommand.player(sender);
+            give(target, sealedMap(tier.id));
+            send(sender, "sealed-map-given", "player", target.getName(), "tier", tier.displayName);
+        }).usage("<tier> [player]").description("Hand out a sealed map (the treasure is buried when it is opened)").permission(admin)
+                .completer((s, a) -> switch (a.length) {
+                    case 1 -> dev.aquatic.command.AquaticCommand.filter(tiers.keySet(), a[0]);
+                    case 2 -> dev.aquatic.command.AquaticCommand.playerNames(a[1]);
+                    default -> List.of();
+                });
         cmd.sub("give-loot", (sender, args) -> {
             dev.aquatic.command.AquaticCommand.need(args, 1, "/treasure give-loot <tier>");
             Player p = dev.aquatic.command.AquaticCommand.player(sender);
@@ -1208,6 +1229,15 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
             LootTier.Roll roll = tier.roll(new Random(), () -> service(ItemService.class));
             for (ItemStack stack : roll.items()) {
                 give(p, stack);
+            }
+            for (String mapTier : roll.maps()) {
+                ItemStack sealed = sealedMap(mapTier);
+                if (sealed != null) {
+                    give(p, sealed);
+                }
+            }
+            if (roll.jackpot()) {
+                send(p, "loot-preview-jackpot");
             }
             EconomyService eco = service(EconomyService.class);
             send(p, "loot-preview", "tier", tier.displayName, "count", roll.items().size(),
@@ -1235,5 +1265,82 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
             raise(file, "natural.tier-weights.common", 10, 16);
             raise(file, "natural.tier-weights.uncommon", 7, 11);
         }
+        if (from < 2) {
+            // 2.4.1: better common/uncommon loot (only replaced when the loot list is still the old default)
+            replaceLoot(file, defaults, "common", "GOLD_NUGGET,GOLD_INGOT,IRON_INGOT,EMERALD,COOKED_COD,BREAD,ARROW,GUNPOWDER,"
+                    + "NAUTILUS_SHELL,NAME_TAG,LEATHER_HELMET,custom:smoke_bomb,doubloons");
+            replaceLoot(file, defaults, "uncommon", "GOLD_INGOT,IRON_INGOT,EMERALD,COPPER_INGOT,LAPIS_LAZULI,LANTERN,SPYGLASS,"
+                    + "GOLDEN_CARROT,EXPERIENCE_BOTTLE,IRON_PICKAXE,IRON_AXE,CROSSBOW,ENCHANTED_BOOK,NAUTILUS_SHELL,custom:tide_compass,"
+                    + "custom:rum,custom:fire_bomb,custom:frost_bomb,custom:healing_tonic,doubloons");
+            raise(file, "tiers.common.rolls", "3-5", "4-6");
+            raise(file, "tiers.common.doubloons", "25-75", "60-140");
+            raise(file, "tiers.uncommon.rolls", "3-5", "4-6");
+            raise(file, "tiers.uncommon.doubloons", "50-120", "90-200");
+            raise(file, "tiers.rare.rolls", "4-6", "5-7");
+            raise(file, "tiers.rare.doubloons", "100-250", "200-400");
+            addMissing(file, defaults, "sealed-map-lore");
+        }
+    }
+
+    /** Swaps a tier's loot (and adds its jackpot) when the list still matches the old default. */
+    private static void replaceLoot(org.bukkit.configuration.file.YamlConfiguration file,
+                                    org.bukkit.configuration.file.YamlConfiguration defaults, String tier, String oldSignature) {
+        String path = "tiers." + tier + ".loot";
+        List<String> names = new ArrayList<>();
+        for (Map<?, ?> m : file.getMapList(path)) {
+            names.add(m.get("material") != null ? String.valueOf(m.get("material"))
+                    : m.get("custom-item") != null ? "custom:" + m.get("custom-item") : "doubloons");
+        }
+        if (String.join(",", names).equals(oldSignature)) {
+            file.set(path, defaults.get(path));
+        }
+        addMissing(file, defaults, "tiers." + tier + ".jackpot");
+    }
+
+    // ------------------------------------------------------------------ sealed treasure maps (found in chests)
+
+    /** A sealed map: right-click to break the seal, which buries a fresh treasure of that tier and charts it. */
+    ItemStack sealedMap(String tierId) {
+        LootTier tier = tiers.get(tierId == null ? "" : tierId.toLowerCase(Locale.ROOT));
+        if (tier == null) {
+            return null;
+        }
+        ItemStack stack = new ItemStack(org.bukkit.Material.PAPER);
+        org.bukkit.inventory.meta.ItemMeta meta = stack.getItemMeta();
+        meta.displayName(Text.item(config().getString("messages.sealed-map-name", "<gold>Sealed Treasure Map"), "tier", tier.displayName));
+        List<net.kyori.adventure.text.Component> lore = new ArrayList<>();
+        for (String line : config().getStringList("sealed-map-lore")) {
+            lore.add(Text.item(line, "tier", tier.displayName));
+        }
+        meta.lore(lore);
+        meta.setEnchantmentGlintOverride(true);
+        meta.getPersistentDataContainer().set(sealedKey, PersistentDataType.STRING, tier.id);
+        stack.setItemMeta(meta);
+        return stack;
+    }
+
+    @org.bukkit.event.EventHandler(ignoreCancelled = false)
+    public void onUnseal(org.bukkit.event.player.PlayerInteractEvent event) {
+        if (event.getHand() != org.bukkit.inventory.EquipmentSlot.HAND || event.getItem() == null
+                || (event.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_AIR
+                && event.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK)) {
+            return;
+        }
+        ItemStack hand = event.getItem();
+        String tierId = hand.hasItemMeta() ? hand.getItemMeta().getPersistentDataContainer().get(sealedKey, PersistentDataType.STRING) : null;
+        if (tierId == null) {
+            return;
+        }
+        event.setCancelled(true);
+        Player p = event.getPlayer();
+        LootTier tier = tiers.get(tierId);
+        Treasure t = tier == null ? null : spawnRandom(tier.id, false);
+        if (t == null) {
+            send(p, "map-seal-failed");
+            return;
+        }
+        hand.setAmount(hand.getAmount() - 1);
+        give(p, createTreasureMap(t.location(), t.tier));
+        send(p, "map-unsealed", "tier", tier.displayName);
     }
 }

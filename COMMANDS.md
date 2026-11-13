@@ -182,7 +182,7 @@ Killing a pirate with a bounty pays you the full amount. Crewmates and allies of
 | --- | --- | --- |
 | `/spawn` | Back to spawn (the point from `/island admin setspawn`, otherwise the capital). 3 s warmup, cancelled if you move or get hurt; not in combat | Everyone |
 | `/spawn <player>` | Send someone to spawn right away | Admin: `aquatic.islands.admin` |
-| `/island home [island]` | Sail to an island your crew owns (next to its flag). Same warmup and cooldown as `/spawn`; not in combat | Crew members |
+| `/island home [island]` | Sail to an island your crew owns (next to its flag). If the crew owns several, you get a clickable list to pick from. Same warmup and cooldown as `/spawn`; not in combat | Crew members |
 | `/discord` | The server's Discord invite (set the link in `guide.yml` under `discord.link`) | Everyone |
 
 ## Spawn town hub (`hub`)
@@ -264,6 +264,7 @@ Bypass all island protection: `aquatic.islands.bypass`.
 | `/treasure tp <number>` | Teleport to a treasure from the list | Admin |
 | `/treasure remove <number\|all>` | Remove treasures, chest included | Admin |
 | `/treasure give-loot <tier>` | Preview a loot roll (the items go to you) | Admin |
+| `/treasure sealedmap <tier> [player]` | Hand out a sealed treasure map. The treasure is only buried when the map is opened (right-click) | Admin |
 
 Right-click a treasure map to get a "warmer / colder" hint.
 

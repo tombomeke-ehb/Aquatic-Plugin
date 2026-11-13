@@ -5,6 +5,9 @@
 #  Placeholder: <player> = the player's name.
 # =====================================================================================
 
+# Do not edit: used to upgrade this file when the plugin updates.
+config-version: 1
+
 intro:
   enabled: true
   # first-join = only the very first time a player joins (default)
@@ -177,7 +180,7 @@ book:
 # /discord: set your invite link here.
 discord:
   enabled: true
-  link: "https://discord.gg/your-invite"
+  link: "https://discord.gg/DV8gsX4CTg"
   message:
     - "<#5865f2><bold>Join the Aquatic SMP Discord!</bold>"
     - "<click:open_url:'<link>'><hover:show_text:'<gray>Open the invite'><aqua><underlined><link></underlined></hover></click>"
