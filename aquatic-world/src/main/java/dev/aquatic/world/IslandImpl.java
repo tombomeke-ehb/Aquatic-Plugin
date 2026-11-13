@@ -30,6 +30,8 @@ final class IslandImpl implements Island {
     long claimedAt;
     /** Bought island upgrades: type -> level (see IslandUpgrades). */
     final java.util.Map<String, Integer> upgrades = new java.util.HashMap<>();
+    /** Facilities (buildings) the crew placed on this island (see IslandFacilities). */
+    final java.util.List<IslandFacilities.Placed> facilities = new java.util.ArrayList<>();
 
     /** true = only Captain, First Mate, Navigator and Quartermaster may build/break/open (not plain members). */
     boolean officersOnly;
@@ -148,6 +150,7 @@ final class IslandImpl implements Island {
                 s.set("upgrades." + e.getKey(), e.getValue());
             }
         }
+        s.set("facilities", facilities.isEmpty() ? null : facilities.stream().map(IslandFacilities.Placed::serialize).toList());
         s.set("vault", null);
         for (int i = 0; i < vault.length; i++) {
             if (vault[i] != null && !vault[i].getType().isAir()) {
@@ -179,6 +182,12 @@ final class IslandImpl implements Island {
         is.shieldUntil = s.getLong("shield-until");
         is.claimedAt = s.getLong("claimed-at");
         is.officersOnly = s.getBoolean("officers-only", false);
+        for (String raw : s.getStringList("facilities")) {
+            IslandFacilities.Placed f = IslandFacilities.Placed.parse(raw);
+            if (f != null) {
+                is.facilities.add(f);
+            }
+        }
         ConfigurationSection up = s.getConfigurationSection("upgrades");
         if (up != null) {
             for (String key : up.getKeys(false)) {

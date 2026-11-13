@@ -18,7 +18,7 @@
 
 # How often (seconds) changed data is written to plugins/AquaticSMP/data/islands/ (also saved on shutdown).
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 5
+config-version: 6
 
 autosave-seconds: 120
 
@@ -773,6 +773,84 @@ upgrades:
       costs: [2000, 6000]
 
 # -------------------------------------------------------------------------------------
+# Facilities: buildings a crew buys from the crew bank and places on its island (Captain and officers).
+# /island manage -> Facilities, or /island facility. Picking one shows a preview first: the building
+# appears in front of you (only you see it), blocks of yours in the way show as red glass, and chat says
+# what is wrong. Then [Build], [Rotate], [Move here] or [Cancel]. Stand inside one and use
+# /island facility remove to demolish it (refund of part of the price; chest contents drop).
+# income-bonus: extra island income (0.05 = +5%), on top of the Treasury upgrade.
+# -------------------------------------------------------------------------------------
+facilities:
+  enabled: true
+  # Facilities on one island (all kinds together).
+  max-per-island: 8
+  # Part of the price paid back to the crew bank when one is demolished.
+  refund: 0.5
+  # How long a preview stays up.
+  preview-seconds: 120
+  # Construction: the site is cleared, then the building goes up from the ground, block by block.
+  # build-seconds is how long that takes (a type can set its own "build-seconds").
+  build-seconds: 30
+  # Blocks fly into place (display entities, seen by everyone). false = they just appear one by one.
+  animate: true
+  types:
+    watchtower:
+      display-name: "<aqua><bold>Watchtower"
+      icon: SPYGLASS
+      description:
+        - "<gray>A tall lookout with a ladder and a roofed"
+        - "<gray>platform: see ships coming from far away."
+      cost: 3000
+      limit: 2
+      income-bonus: 0
+    forge:
+      display-name: "<gold><bold>Forge"
+      icon: ANVIL
+      description:
+        - "<gray>An open smithy: anvil, smithing table,"
+        - "<gray>blast furnace, grindstone and a chest."
+      cost: 2500
+      limit: 1
+      income-bonus: 0.05
+    farm:
+      display-name: "<green><bold>Farm Field"
+      icon: WHEAT
+      description:
+        - "<gray>A fenced 9x9 field with water, already"
+        - "<gray>planted with wheat, carrots, potatoes and beets."
+      cost: 1500
+      limit: 3
+      income-bonus: 0.05
+    dock:
+      display-name: "<dark_aqua><bold>Dock"
+      icon: OAK_BOAT
+      description:
+        - "<gray>A wooden dock out over the water on posts."
+        - "<gray>Stand at the shore and face the sea."
+      cost: 2000
+      limit: 2
+      income-bonus: 0.10
+    storehouse:
+      display-name: "<#c8a165><bold>Storehouse"
+      icon: BARREL
+      description:
+        - "<gray>A timber storehouse full of barrels,"
+        - "<gray>with a crafting table and a gabled roof."
+      cost: 2000
+      limit: 2
+      income-bonus: 0.05
+    lighthouse:
+      display-name: "<red><bold>Lighthouse"
+      icon: SEA_LANTERN
+      description:
+        - "<gray>A red and white lighthouse with a glowing"
+        - "<gray>lantern room. Climb the ladder to the top."
+      cost: 4000
+      limit: 1
+      income-bonus: 0.05
+      build-seconds: 45
+
+# -------------------------------------------------------------------------------------
 # Tidewatch outposts (island type TIDEWATCH): a garrison defends the fort while players are on the
 # island. Kill the Warden Captain in the keep to liberate the island: every attacker on the island
 # gets captain-reward Doubloons and captain-xp, the fort's strongbox appears as a buried treasure, and
@@ -936,6 +1014,48 @@ bluemap:
 #  Messages
 # =====================================================================================
 messages:
+  manage-facilities: "<gold><bold>Facilities"
+  manage-facilities-hint: "<gray>Buildings on this island: <white><count>/<max>"
+  manage-facilities-click: "<yellow>Click to build one (with a preview first)"
+  facility-menu-title: "<dark_gray>Facilities: <island>"
+  facility-menu-info: "<gold>Facilities <gray>(<count>/<max>)"
+  facility-menu-info-hint: "<gray>Pick one: a preview appears in front of you."
+  facility-menu-info-remove: "<gray>Demolish: stand in it, /island facility remove"
+  facility-menu-cost: "<gray>Cost: <gold><cost></gold> <dark_gray>(crew bank)"
+  facility-menu-size: "<gray>Size: <white><w> x <l></white>, <white><h></white> high"
+  facility-menu-bonus: "<gray>Island income: <green>+<bonus>%"
+  facility-menu-count: "<gray>On this island: <white><count>/<limit>"
+  facility-menu-click: "<yellow>Click to preview it in front of you"
+  facility-menu-back: "<yellow>Back to the island"
+  facility-preview: "<gold>Preview: <name> <gray>(only you can see it; walk around it)"
+  facility-preview-ok: " <green>✔ It fits here. <gray>Price: <gold><cost></gold> from the crew bank."
+  facility-preview-problem: " <red>✖ <problem>"
+  facility-button-build: "<click:run_command:'/island facility build'><hover:show_text:'<gray>Build it here for <cost>'><green><bold>[Build]</bold></green></hover></click> "
+  facility-buttons: "<click:run_command:'/island facility rotate'><hover:show_text:'<gray>Turn it a quarter'><yellow><bold>[Rotate]</bold></yellow></hover></click> <click:run_command:'/island facility move'><hover:show_text:'<gray>Put it in front of where you stand now'><aqua><bold>[Move here]</bold></aqua></hover></click> <click:run_command:'/island facility cancel'><hover:show_text:'<gray>Remove the preview'><red><bold>[Cancel]</bold></red></hover></click>"
+  facility-problem-outside: "<count> columns are off your island."
+  facility-problem-blocks: "<count> blocks of your own builds are in the way (red glass)."
+  facility-problem-water: "A dock has to reach out over the water: stand at the shore, facing the sea."
+  facility-problem-height: "It would stick out of the top of the world."
+  facility-problem-overlap: "It overlaps your <name>."
+  facility-problem-flag: "It is too close to the crew flag."
+  facility-problem-limit: "This island already has <max> <name>."
+  facility-problem-total: "This island has no room for more facilities (<max>)."
+  facility-blocked: "<red>It can't be built there. Rotate or move it."
+  facility-started: "<green><player> started building a <name> <green>on <white><island></white> for <gold><cost></gold>. <gray>(about <seconds> seconds)"
+  facility-finished: "<green>The <name> <green>on <white><island></white> is finished!"
+  facility-bar: "<gold>Building: <name> <gray>- <white><percent>%"
+  facility-removed: "<yellow><player> demolished the <name> <yellow>on <white><island></white> (<gold><refund></gold> back to the crew bank)."
+  facility-cancelled: "<gray>Preview removed."
+  facility-expired: "<gray>The preview of the <name> <gray>is gone."
+  facility-no-preview: "<red>You have no preview. Pick a facility in /island manage (Facilities)."
+  facility-move-off-island: "<red>Stand on <white><island></white> to place it."
+  facility-not-here: "<red>Stand inside one of your facilities to demolish it."
+  facility-unknown: "<red>Unknown facility <white><type></white>. Facilities: <gray><types>"
+  facility-disabled: "<red>Facilities are turned off on this server."
+  facility-usage: "<red>Usage: <white>/island facility [preview <type>|build|rotate|move|cancel|remove|list]"
+  facility-list-header: "<aqua>Facilities on <white><island></white> <gray>(<count>/<max>):"
+  facility-list-line: " <gray>- <name> <dark_gray>around <x>, <z>"
+  facility-list-empty: " <gray>None yet. Build one in /island manage."
   claim-tidewatch: "<red>The Tidewatch still holds <white><island></white>. <gray>Defeat the Warden Captain in the keep first."
   tidewatch-alarm: "<blue><bold>Alarm!</bold> <gray>The Tidewatch garrison of <white><island></white> spotted you. Their Warden Captain waits in the keep."
   tidewatch-soldier-reward: "<yellow>+<amount> <gray>(Tidewatch soldier)"

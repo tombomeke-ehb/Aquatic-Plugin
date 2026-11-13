@@ -220,6 +220,11 @@ The capital's plaza has eight market stalls with shopkeeper villagers (right-cli
 | `/island flag` | Move or re-place your crew flag to where you stand | `aquatic.islands.flag` |
 | `/island manage [island]` | Your island's stats and upgrade menu | `aquatic.islands.manage` |
 | `/island upgrade <treasury\|fortress\|watchtower\|harbor\|barracks\|wellspring\|vault\|granary>` | Buy the next upgrade level for the island you stand on (Captain/First Mate, paid from the crew bank) | `aquatic.islands.manage` |
+| `/island facility` | The facilities menu (also in `/island manage`): pick a building to preview | `aquatic.islands.manage` |
+| `/island facility preview <watchtower\|forge\|farm\|dock\|storehouse\|lighthouse>` | Show a preview in front of you (only you see it) | `aquatic.islands.manage` |
+| `/island facility build\|rotate\|move\|cancel` | Build the previewed facility (Captain/First Mate, crew bank), turn it, move it to where you stand, or remove the preview. The chat buttons do the same | `aquatic.islands.manage` |
+| `/island facility remove` | Demolish the facility you stand in (part of the price back; chest contents drop) | `aquatic.islands.manage` |
+| `/island facility list` | The facilities on this island | `aquatic.islands.manage` |
 | `/island vault [island]` | Open your crew's vault on that island (Vault upgrade: 9/27/54 slots, conquerors take what's inside) | `aquatic.islands.manage` |
 
 **Admin commands** (`aquatic.islands.admin`)
@@ -398,6 +403,17 @@ TIDEWATCH islands (`/island admin spawn tidewatch <radius>`, or random spawns) h
 - **Liberating:** kill the captain to liberate the island. Every attacker on the island gets 1,500 Doubloons and XP, and the fort's strongbox is buried in the keep.
 - **Claiming:** a crew can claim the island for 12 hours afterwards. Unclaimed forts get a new garrison after that.
 - **Settings:** everything is under `tidewatch` in `islands.yml`.
+
+## Facilities
+
+Crews can build real buildings on their islands: a **Watchtower**, a **Forge** (anvil, smithing table, blast furnace, grindstone), a **Farm Field**, a **Dock**, a **Storehouse** and a **Lighthouse**.
+
+1. Open `/island manage` and click **Facilities**, then pick one.
+2. **Preview:** the building appears in front of you as a ghost only you can see, with its outline on the ground (green = fits, red = doesn't). Blocks of your own builds in the way show as red glass, and chat lists any problems. Walk around it to see how it looks.
+3. Click **[Rotate]** or **[Move here]** until it is right, then **[Build]**. It is paid from the crew bank (Captain and First Mate).
+4. **Construction:** the site is cleared, then the building goes up from the ground, block by block, with blocks flying into place. Crewmates nearby see a progress bar. It takes about 30 seconds (the Lighthouse 45).
+
+Some facilities raise the island's income (Forge, Farm, Storehouse, Lighthouse +5%, Dock +10%). Prices, limits, build time and the animation are under `facilities` in `islands.yml`.
 
 ## Villages and quests (`quests`, needs `economy`)
 

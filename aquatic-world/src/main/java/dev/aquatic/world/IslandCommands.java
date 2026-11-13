@@ -85,6 +85,32 @@ final class IslandCommands {
         }).usage("[island]").description("Open your crew's vault on this island (Vault upgrade)").playerOnly()
                 .playerPermission("aquatic.islands.manage")
                 .completer((s, a) -> a.length == 1 ? islandNames(a[0]) : List.of());
+        cmd.sub("facility", (s, a) -> {
+            Player p = AquaticCommand.player(s);
+            IslandFacilities f = m.facilities();
+            String what = a.length == 0 ? "menu" : a[0].toLowerCase(Locale.ROOT);
+            switch (what) {
+                case "menu" -> f.open(p, standingOn(p));
+                case "preview" -> {
+                    AquaticCommand.need(a, 2, "/island facility preview <" + String.join("|", IslandFacilities.TYPES) + ">");
+                    f.preview(p, standingOn(p), a[1]);
+                }
+                case "build" -> f.build(p);
+                case "rotate" -> f.rotate(p);
+                case "move" -> f.move(p);
+                case "cancel" -> {
+                    if (!f.cancel(p, true)) {
+                        throw new CommandFail(m.rawMsg("facility-no-preview"));
+                    }
+                }
+                case "remove" -> f.remove(p, standingOn(p));
+                case "list" -> f.list(p, standingOn(p));
+                default -> throw new CommandFail(m.rawMsg("facility-usage"));
+            }
+        }).usage("[preview <type>|build|rotate|move|cancel|remove|list]").description("Place buildings on your island (with a preview first)")
+                .playerOnly().playerPermission("aquatic.islands.manage")
+                .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(List.of("preview", "build", "rotate", "move", "cancel", "remove", "list"), a[0])
+                        : a.length == 2 && a[0].equalsIgnoreCase("preview") ? AquaticCommand.filter(IslandFacilities.TYPES, a[1]) : List.of());
         cmd.sub("upgrade", (s, a) -> {
             AquaticCommand.need(a, 1, "/island upgrade <" + String.join("|", IslandUpgrades.TYPES) + ">");
             Player p = AquaticCommand.player(s);

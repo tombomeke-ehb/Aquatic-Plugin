@@ -241,7 +241,7 @@ final class IslandUpgrades implements Listener {
 
     private static final int SLOT_INFO = 4;
     private static final int[] SLOT_UPGRADES = {19, 21, 23, 25, 28, 30, 32, 34};
-    private static final int SLOT_ACCESS = 39, SLOT_VAULT = 41;
+    private static final int SLOT_ACCESS = 39, SLOT_VAULT = 41, SLOT_FACILITIES = 40;
 
     private static final class Menu implements InventoryHolder {
         final String islandId;
@@ -307,6 +307,11 @@ final class IslandUpgrades implements Listener {
         int vaultLevel = is.upgrade("vault");
         inv.setItem(SLOT_VAULT, item(vaultLevel > 0 ? Material.ENDER_CHEST : Material.CHEST, m.rawMsg("manage-vault"),
                 List.of(m.rawMsg(vaultLevel > 0 ? "manage-vault-open" : "manage-vault-locked", "slots", vaultSize(is)))));
+        if (m.facilities() != null && m.facilities().enabled()) {
+            inv.setItem(SLOT_FACILITIES, item(Material.BRICKS, m.rawMsg("manage-facilities"),
+                    List.of(m.rawMsg("manage-facilities-hint", "count", is.facilities.size(),
+                            "max", m.config().getInt("facilities.max-per-island", 8)), m.rawMsg("manage-facilities-click"))));
+        }
         inv.setItem(SLOT_ACCESS, item(is.officersOnly ? Material.IRON_DOOR : Material.OAK_DOOR,
                 m.rawMsg(is.officersOnly ? "manage-access-officers" : "manage-access-all"),
                 List.of(m.rawMsg("manage-access-hint"), m.rawMsg("manage-access-click"))));
@@ -340,6 +345,14 @@ final class IslandUpgrades implements Listener {
         IslandImpl is = m.islandImpl(menu.islandId);
         if (is == null) {
             p.closeInventory();
+            return;
+        }
+        if (event.getSlot() == SLOT_FACILITIES && m.facilities() != null && m.facilities().enabled()) {
+            try {
+                m.facilities().open(p, is);
+            } catch (CommandFail fail) {
+                p.sendMessage(m.plugin().prefix().append(fail.component()));
+            }
             return;
         }
         if (event.getSlot() == SLOT_VAULT) {

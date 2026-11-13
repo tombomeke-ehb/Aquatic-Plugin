@@ -93,6 +93,7 @@ public final class IslandsModule extends AquaticModule implements IslandService,
     private int jobTicks;
     private String spawnIslandId;
     private IslandUpgrades upgrades;
+    private IslandFacilities facilities;
     private TidewatchGarrison garrison;
     /** Exact spawn point set with /island admin setspawn ("world;x;y;z;yaw;pitch"), or null. */
     private String spawnPoint;
@@ -136,6 +137,10 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         registerListener(new IslandProtectionListener(this));
         upgrades = new IslandUpgrades(this);
         registerListener(upgrades);
+        facilities = new IslandFacilities(this);
+        registerListener(facilities);
+        runTimer(facilities::tick, 10L, 10L);
+        runTimer(facilities::tickJobs, 1L, 1L);
         garrison = new TidewatchGarrison(this);
         garrison.load();
         registerListener(garrison);
@@ -176,6 +181,9 @@ public final class IslandsModule extends AquaticModule implements IslandService,
 
     @Override
     protected void onDisable() {
+        if (facilities != null) {
+            facilities.clear();
+        }
         if (garrison != null) {
             garrison.shutdown();
         }
@@ -1102,6 +1110,20 @@ public final class IslandsModule extends AquaticModule implements IslandService,
             addMissing(file, defaults, "generation.island-type-weights.VILLAGE");
             addMissing(file, defaults, "island-names.VILLAGE");
         }
+        if (from < 6) {
+            // 2.13.0: facilities (buildings placed with a preview)
+            addMissing(file, defaults, "facilities");
+            addMissing(file, defaults, "facilities.build-seconds");
+            addMissing(file, defaults, "facilities.animate");
+            org.bukkit.configuration.ConfigurationSection msgs = defaults.getConfigurationSection("messages");
+            if (msgs != null) {
+                for (String key : msgs.getKeys(false)) {
+                    if (key.startsWith("facility-") || key.startsWith("manage-facilities")) {
+                        addMissing(file, defaults, "messages." + key);
+                    }
+                }
+            }
+        }
     }
 
     // ------------------------------------------------------------------ generation jobs
@@ -1624,6 +1646,10 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         return upgrades;
     }
 
+    IslandFacilities facilities() {
+        return facilities;
+    }
+
     IslandImpl islandImpl(String id) {
         return id == null ? null : islands.get(id);
     }
@@ -1631,7 +1657,8 @@ public final class IslandsModule extends AquaticModule implements IslandService,
     /** Passive income of one island per payout (type base x treasury upgrade). */
     double incomeOf(IslandImpl is) {
         double base = config().getDouble("income.per-type." + is.type.name(), config().getDouble("income.default", 0));
-        return base * (1 + (upgrades == null ? 0 : upgrades.value(is, "treasury")));
+        return base * (1 + (upgrades == null ? 0 : upgrades.value(is, "treasury"))
+                + (facilities == null ? 0 : facilities.incomeBonus(is)));
     }
 
     void conquer(IslandImpl is, Crew winner) {

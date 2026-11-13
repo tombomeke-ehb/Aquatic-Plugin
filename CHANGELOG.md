@@ -1,5 +1,29 @@
 # Changelog
 
+## 2.13.0 (2026-11-13)
+
+### Added
+- **Facilities:** crews can build real buildings on their islands, paid from the crew bank (Captain and First Mate). There are six:
+  - **Watchtower:** a stone base, a timber shaft with windows, a lookout platform with a bell, and a hipped roof.
+  - **Forge:** an open smithy with an anvil, smithing table, blast furnace, lava, grindstone, storage and a smoking chimney.
+  - **Farm Field:** a fenced field with ripe crops, a water channel with lily pads, and a scarecrow.
+  - **Dock:** a dock out over the water on posts, with railings, lanterns and cargo.
+  - **Storehouse:** a timber-framed storehouse with barrels and chests, flower boxes and a chimney.
+  - **Lighthouse:** red and white, with a gallery and a glowing lantern room.
+- **Preview first:** pick a facility in `/island manage` (Facilities) and a ghost of it appears in front of you that only you can see.
+  - Its outline on the ground turns green when it fits and red when it doesn't.
+  - Your own blocks in the way show as red glass, and chat says what is wrong.
+  - Click [Rotate], [Move here], [Build] or [Cancel].
+- **Built with an animation:** the site is cleared, then the building rises from the ground with blocks flying into place, dust and building sounds.
+  - Crewmates nearby see a progress bar, and there's a celebration when it's done.
+  - It takes about 30 seconds (the Lighthouse 45).
+- Most facilities raise the island's income: +5% each, the Dock +10%.
+- Demolish one by standing in it and typing `/island facility remove`. Half the price comes back, chest contents drop and the ground goes back to grass.
+- Everything (prices, limits per island, build time, the animation) is under `facilities` in `islands.yml`.
+
+### Your server
+- `islands.yml` upgrades automatically (a backup is kept). The resource pack is unchanged, so players don't download it again.
+
 ## 2.12.1 (2026-11-13)
 
 ### Changed

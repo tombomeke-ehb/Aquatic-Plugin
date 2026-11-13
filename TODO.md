@@ -99,6 +99,8 @@ This file is the roadmap. Tick off items as they're finished and add new ideas u
 
 ## Island management and development
 - [x] 6 upgrades, the `/island manage` menu, build access, and losing a level on conquest.
+- [x] Facilities: buildings placed with a preview and built with an animation (done in 2.13.0).
+- [ ] More facilities (shipyard, tavern, crew hall) and upgrading a facility to a bigger version.
 - [x] Unbreakable flags (only conquest or `/island admin removeflag`), crew-only `/tpa` (done in 2.2.0).
 - [ ] **Placeable buildings:** buy a dock, market, watchtower or vault as a schematic and place it on your island with a preview outline. The building gives its bonus.
 - [x] Vault and Granary upgrades (done in 2.6.0).
