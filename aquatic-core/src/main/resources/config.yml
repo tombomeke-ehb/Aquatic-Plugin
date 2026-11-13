@@ -29,3 +29,7 @@ modules:
   smithy: true
   # Village quests: villagers on neutral village islands give quests (fish, hunt, bring materials).
   quests: true
+  # Crates: any block can be a crate, opened with keys (a spinning reel of prizes).
+  crates: true
+  # The gambling den at spawn: dice, a wheel of fortune and coin flips (Doubloons only, with limits).
+  gambling: true

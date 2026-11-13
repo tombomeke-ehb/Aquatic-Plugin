@@ -1572,7 +1572,7 @@ public final class TournamentModule extends AquaticModule implements TournamentS
                 });
         registerCommand(cmd);
 
-        AquaticCommand hallCmd = new AquaticCommand("hallofkings", "Past Conquerors of the Sea", "kings");
+        AquaticCommand hallCmd = new AquaticCommand("hallofconquerors", "Past Conquerors of the Sea", "conquerors", "hallofkings", "kings");
         hallCmd.defaultExecutor((s, a) -> {
             if (!s.hasPermission("aquatic.tournament.view") && !s.hasPermission("aquatic.admin")) {
                 throw new CommandFail("<red>You don't have permission to do that.");
@@ -1593,5 +1593,15 @@ public final class TournamentModule extends AquaticModule implements TournamentS
                     "crew", rec.getOrDefault("crew", "?"), "date", rec.getOrDefault("date", "?")));
         }
         s.sendMessage(rawMsg("hall-current", "king", kingName == null ? "-" : kingName));
+    }
+
+    @Override
+    protected void migrateConfig(org.bukkit.configuration.file.YamlConfiguration file,
+                                 org.bukkit.configuration.file.YamlConfiguration defaults, int from) {
+        if (from < 1) {
+            // 2.15.0: the Hall of Kings is the Hall of Conquerors
+            raise(file, "messages.hall-header", "<gold><bold>Hall of Kings</bold> <gray>(<count>)",
+                    defaults.getString("messages.hall-header"));
+        }
     }
 }

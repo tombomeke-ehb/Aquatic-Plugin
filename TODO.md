@@ -3,11 +3,11 @@
 **Aquatic SMP: Sail. Claim. Conquer.**
 
 This file is the roadmap. Tick off items as they're finished and add new ideas under the right heading.
-What changed in each version is in [CHANGELOG.md](CHANGELOG.md). Current version: **2.14.0**.
+What changed in each version is in [CHANGELOG.md](CHANGELOG.md). Current version: **2.15.0**.
 
 ---
 
-## Done (up to 2.14.0)
+## Done (up to 2.15.0)
 
 **World and islands**
 - Procedural islands, generated chunk by chunk without lag, in size classes (small to large).
@@ -76,6 +76,7 @@ What changed in each version is in [CHANGELOG.md](CHANGELOG.md). Current version
 - The Harbor Market (editable in-game). Players open it only at the shopkeepers at spawn; ops can still use `/shop`.
 
 **Events and community**
+- Crates with keys and a gambling den at spawn (dice, wheel of fortune, coin flips) with fair limits.
 - 7 server events with an optional auto-scheduler, and the Crown Tournament for the Conqueror of the Sea.
 - An intro, a starter kit, tips, the guide book, lore and `/discord`.
 - The sidebar, tab list, chat hover cards and clickable help.
@@ -182,16 +183,18 @@ What changed in each version is in [CHANGELOG.md](CHANGELOG.md). Current version
 - [ ] Sell island upgrades, buildings and ship blueprints in the market.
 
 ## Crates and gambling
-- [ ] **Crates:** crate blocks at spawn opened with keys, with an animated opening (a spinning row of prizes) and weighted loot tiers (common to legendary), set in a config file.
-  - Keys from votes, quests, events, level rewards, treasure and the tournament (and maybe a store, if the owner wants that).
-  - A preview menu that shows every possible prize and its chance.
-  - Prizes: Doubloons, custom items, rare fruits, cosmetics and island facility vouchers.
-  - Broadcast big wins.
-- [ ] **A gambling den at spawn** (a tavern building), using Doubloons only:
-  - Dice against the house, a coin flip between two players, and a wheel of fortune.
-  - Maybe a pirate card game later.
-- [ ] **Limits so it stays fair:** a max bet and a daily limit per player, a cooldown, and a log of big wins and losses for staff.
-  - Check how gambling for real money (a store selling keys) fits Minecraft's rules before we add it.
+- [x] **Crates** (done in 2.15.0):
+  - Sailor's, Captain's and the Kraken's Hoard, each with its own key texture.
+  - A spinning reel when opened, a prize preview with chances, holograms, and announcements for big wins.
+  - Any block can be a crate (`/crate set`), so they fit team builds and schematics.
+  - Keys come from treasure (uncommon and up), from any reward list (`key:<crate>:<n>`) and from `/crate give`/`giveall`.
+- [x] **The gambling den** (done in 2.15.0):
+  - The Dealer villager at spawn and `/gamble`, with dice against the dealer, a wheel of fortune and coin flips between players.
+  - A pasteable striped tent: `/island admin schematic preview builtin:gambling_den`.
+- [x] **Limits** (done in 2.15.0): a minimum level, min/max bet, a daily limit, a cooldown, only at the capital, and `data/gambling.log` for big results.
+- [ ] Keys from votes (needs a vote plugin hook), the tournament and server events. Cosmetic and facility-voucher prizes.
+- [ ] A pirate card game (for example blackjack against the dealer) and gambling stats on the sidebar.
+- [ ] Check how a store selling keys for real money fits Minecraft's rules before adding one.
 
 ## Villages and quests
 - [x] Neutral village islands (smithy, fishing huts, tavern, farms) with quest givers (done in 2.12.0).
@@ -213,16 +216,17 @@ What changed in each version is in [CHANGELOG.md](CHANGELOG.md). Current version
 - [x] A menu for `/crew` (done in 2.6.0).
 - [x] LuckPerms/Vault rank prefix and suffix in chat and tab (done in 2.10.0).
 - [ ] An admin config menu (`/aquatic config`) to change the main settings in-game.
-- [ ] Edit loot in-game: hold an item and run `/treasure loot add <tier> [weight]`.
+- [x] Edit loot in-game: `/treasure loot add|list|remove` (done in 2.15.0).
 
 ## Rebrand (still open)
 - [x] Rename the internal ids, with a migration (done in 2.3.1).
-- [ ] Rename `/hallofkings` → `/hallofconquerors`, keeping the old name as an alias for a while.
+- [x] Renamed `/hallofkings` → `/hallofconquerors`; the old name still works (done in 2.15.0).
 - [x] Resource pack with custom textures and models, sent by the plugin (done in 2.7.1 to 2.12.1).
 - [ ] A logo and our own colour palette in the messages.
 - [ ] More lore: the Harbor Crown, the High Warden, and the history of the Abyss.
 
 ## Technical
+- [x] Shared helpers: one reward-item parser (`ItemSpecs`) for quests, levels, crates and treasure, and one menu-icon helper (`Menus`) (done in 2.15.0).
 - [x] Release flow: build the resource pack before the jar (it bakes the pack's SHA-1 into the plugin), reproducible pack builds (done in 2.12.1).
 - [ ] Automated tests for the core, the economy and conquest.
 - [ ] Shared API: events for alliances, peace, rank changes, unclaiming and conquest starts.

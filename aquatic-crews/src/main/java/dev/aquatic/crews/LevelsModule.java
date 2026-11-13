@@ -282,19 +282,9 @@ public final class LevelsModule extends AquaticModule implements LevelService, L
         }
     }
 
-    /** "item:<custom id>[:amount]" or "MATERIAL[:amount]". */
+    /** A reward item: "MATERIAL:n", "item:<id>:n" or "key:<crate>:n" (see ItemSpecs). */
     private org.bukkit.inventory.ItemStack parseItem(String spec) {
-        String[] p = spec.trim().split(":");
-        try {
-            if (p[0].equalsIgnoreCase("item") && p.length > 1) {
-                dev.aquatic.api.ItemService items = service(dev.aquatic.api.ItemService.class);
-                return items == null ? null : items.createItem(p[1], p.length > 2 ? Integer.parseInt(p[2]) : 1);
-            }
-            org.bukkit.Material m = org.bukkit.Material.matchMaterial(p[0]);
-            return m == null || !m.isItem() ? null : new org.bukkit.inventory.ItemStack(m, p.length > 1 ? Integer.parseInt(p[1]) : 1);
-        } catch (NumberFormatException e) {
-            return null;
-        }
+        return dev.aquatic.util.ItemSpecs.parse(spec);
     }
 
     @Override

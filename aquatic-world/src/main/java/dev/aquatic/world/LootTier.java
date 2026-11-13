@@ -56,6 +56,8 @@ final class LootTier {
     static final class Entry {
         Material material;
         String customItem;
+        /** Any reward spec: "key:sailor:1", "item:rum:2", "DIAMOND:3" (see ItemSpecs). */
+        String spec;
         /** "treasure-map: rare": a sealed map that leads to a fresh treasure of that tier. */
         String treasureMap;
         /** "potion: swiftness" for POTION / SPLASH_POTION / LINGERING_POTION / TIPPED_ARROW. */
@@ -162,6 +164,9 @@ final class LootTier {
         if (raw.get("custom-item") != null) {
             e.customItem = String.valueOf(raw.get("custom-item"));
         }
+        if (raw.get("item") != null) {
+            e.spec = String.valueOf(raw.get("item"));
+        }
         if (raw.get("material") != null) {
             e.material = Material.matchMaterial(String.valueOf(raw.get("material")));
             if (e.material == null || !e.material.isItem() || e.material.isAir()) {
@@ -181,7 +186,7 @@ final class LootTier {
                 log.warning(ctx + ": unknown potion " + raw.get("potion"));
             }
         }
-        if (e.material == null && e.customItem == null && e.doubloons == null && e.treasureMap == null) {
+        if (e.material == null && e.customItem == null && e.spec == null && e.doubloons == null && e.treasureMap == null) {
             return null;
         }
         e.amount = Range.parse(raw.get("amount"), 1);
@@ -288,6 +293,9 @@ final class LootTier {
     private static ItemStack build(Entry e, Random r, Supplier<ItemService> items) {
         int amount = Math.max(1, e.amount.roll(r));
         ItemStack stack = null;
+        if (e.spec != null) {
+            return dev.aquatic.util.ItemSpecs.parse(e.spec); // null when its module is off: just skipped
+        }
         if (e.customItem != null) {
             ItemService service = items.get();
             if (service != null) {

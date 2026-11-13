@@ -228,7 +228,8 @@ final class IslandCommands {
         }).usage("<list|preview <file> [front]|rotate|move|paste [instant]|cancel|undo>")
                 .description("Preview and paste builds from plugins/AquaticSMP/schematics").permission(ADMIN).hidden()
                 .completer((s2, a2) -> a2.length == 1 ? AquaticCommand.filter(List.of("list", "preview", "rotate", "move", "paste", "cancel", "undo"), a2[0])
-                        : a2.length == 2 && a2[0].equalsIgnoreCase("preview") ? AquaticCommand.filter(m.facilities().schematicFiles(), a2[1])
+                        : a2.length == 2 && a2[0].equalsIgnoreCase("preview") ? AquaticCommand.filter(java.util.stream.Stream.concat(
+                                m.facilities().schematicFiles().stream(), IslandFacilities.BUILT_IN_PASTE.stream().map(n -> "builtin:" + n)).toList(), a2[1])
                         : a2.length == 3 && a2[0].equalsIgnoreCase("preview") ? AquaticCommand.filter(List.of("north", "east", "south", "west"), a2[2])
                         : a2.length == 2 && a2[0].equalsIgnoreCase("paste") ? AquaticCommand.filter(List.of("instant"), a2[1]) : List.of());
         cmd.sub("builds", (s2, a2) -> {

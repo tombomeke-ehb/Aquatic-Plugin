@@ -1010,6 +1010,29 @@ def shimmer(img, glow=(), band=3.2, strength=0.6):
     return frames
 
 
+def crate_key(metal, dark, gem, glow):
+    """A big ornate key for a crate: a ring bow with a gem, a long shaft and teeth (diagonal like a tool)."""
+    img = new()
+    metal, dark, gem, glow = rgb(metal), rgb(dark), rgb(gem), rgb(glow)
+    origin = (9.5, 22.5)
+    for y in range(N):
+        for x in range(N):
+            s, t = blade_frame(x, y, origin)
+            d = math.hypot(s + 4.5, t)                        # the bow: a ring
+            if 2.6 <= d <= 5.2:
+                put(img, x, y, metal if (s + t) < -4.5 else (shade(metal, -0.25) if d > 4.4 else shade(metal, 0.2)))
+            if d < 1.9:
+                put(img, x, y, glow if d < 1.0 else gem)
+            if -0.5 <= s <= 18 and abs(t) <= 1.0:              # the shaft
+                put(img, x, y, shade(metal, 0.25) if t < 0 else dark)
+            if 0.5 <= s <= 2.0 and abs(t) <= 1.8:              # collar
+                put(img, x, y, shade(metal, -0.1))
+            for (a, b_, depth) in ((12.5, 14.5, 3.6), (15.5, 17.5, 2.6), (18, 19.5, 3.2)):  # teeth
+                if a <= s <= b_ and 0.8 <= t <= depth:
+                    put(img, x, y, metal if t < depth - 0.8 else dark)
+    return outline(img, rgb("#1a1208"))
+
+
 def harpoon():
     """A whaler's harpoon: an oak shaft with a rope grip and a barbed steel head."""
     img = new()
@@ -1249,6 +1272,9 @@ def main():
                                 curve=3.0, width=2.4), glow=("#00c9a7",)), True)
     item("krakens_maul", shimmer(krakens_maul(), glow=("#c47cff",), strength=0.45), True)
     item("harpoon", shimmer(harpoon()), True)
+    item("key_sailor", shimmer(crate_key("#d7e3ea", "#7d8b96", "#3fb8c9", "#bff6ff"), glow=("#3fb8c9", "#bff6ff")), True)
+    item("key_captain", shimmer(crate_key("#f2c230", "#9c6b12", "#c0392b", "#ffb3a6"), glow=("#c0392b", "#ffb3a6")), True)
+    item("key_kraken", shimmer(crate_key("#5d4a7a", "#2b1f3d", "#43e0c8", "#c9fff5"), glow=("#43e0c8", "#c9fff5")), True)
     item("coral_scimitar", shimmer(coral_scimitar(), glow=("#fff0e0",)), True)
     item("abyssal_anchor", shimmer(abyssal_anchor(), glow=("#7dfff0",), band=4.0), True)
     item("deepcore_pickaxe", shimmer(deepcore_pickaxe(), glow=("#3fd8ff", "#c8fbff", "#9fe8de")), True)

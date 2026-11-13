@@ -56,6 +56,8 @@ final class IslandFacilities implements Listener {
 
     /** The facilities with a built-in design; more can be added in islands.yml with a "schematic". */
     static final List<String> BUILT_IN = List.of("watchtower", "forge", "farm", "dock", "storehouse", "lighthouse");
+    /** Built-in designs admins can paste: "builtin:<name>". */
+    static final List<String> BUILT_IN_PASTE = List.of("gambling_den", "watchtower", "forge", "farm", "dock", "storehouse", "lighthouse");
 
     /** A built facility: its anchor (ground level), rotation and footprint. */
     record Placed(String type, int ax, int ay, int az, int rot, int minX, int minZ, int maxX, int maxZ) {
@@ -586,11 +588,20 @@ final class IslandFacilities implements Listener {
 
     /** Shows a schematic in front of an admin (nothing is changed yet). */
     void adminPreview(Player p, String file, String front) {
-        Schematic s = schematic(file);
         Preview pv = new Preview();
         pv.admin = true;
-        pv.bp = s.toBlueprint(front, m.config().getInt("schematics.y-offset", 0), null);
-        pv.type = s.name;
+        if (file.toLowerCase(Locale.ROOT).startsWith("builtin:")) {
+            // our own designs: builtin:gambling_den, builtin:lighthouse, ...
+            pv.bp = Blueprint.of(file.substring(8).toLowerCase(Locale.ROOT));
+            if (pv.bp == null) {
+                throw new CommandFail(m.rawMsg("schematic-error", "file", file, "reason", "built-in designs: " + String.join(", ", BUILT_IN_PASTE)));
+            }
+            pv.type = file.toLowerCase(Locale.ROOT);
+        } else {
+            Schematic s = schematic(file);
+            pv.bp = s.toBlueprint(front, m.config().getInt("schematics.y-offset", 0), null);
+            pv.type = s.name;
+        }
         pv.stand = p.getLocation().getBlock().getLocation();
         pv.rot = rotationOf(p.getFacing());
         cancel(p, false);
@@ -1164,19 +1175,7 @@ final class IslandFacilities implements Listener {
     }
 
     private static ItemStack item(Material type, Component name, List<Component> lore) {
-        ItemStack it = new ItemStack(type);
-        ItemMeta meta = it.getItemMeta();
-        meta.displayName(name.decorationIfAbsent(net.kyori.adventure.text.format.TextDecoration.ITALIC,
-                net.kyori.adventure.text.format.TextDecoration.State.FALSE));
-        List<Component> clean = new ArrayList<>();
-        for (Component c : lore) {
-            clean.add(c.decorationIfAbsent(net.kyori.adventure.text.format.TextDecoration.ITALIC,
-                    net.kyori.adventure.text.format.TextDecoration.State.FALSE));
-        }
-        meta.lore(clean);
-        meta.addItemFlags(ItemFlag.values());
-        it.setItemMeta(meta);
-        return it;
+        return dev.aquatic.util.Menus.icon(type, name, lore);
     }
 
     @EventHandler

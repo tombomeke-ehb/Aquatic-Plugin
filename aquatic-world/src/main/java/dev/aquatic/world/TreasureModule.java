@@ -1309,6 +1309,50 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
                     case 2 -> dev.aquatic.command.AquaticCommand.playerNames(a[1]);
                     default -> List.of();
                 });
+        cmd.sub("loot", (sender, args) -> {
+            dev.aquatic.command.AquaticCommand.need(args, 2, "/treasure loot <add|list|remove> <tier> ...");
+            String what = args[0].toLowerCase(Locale.ROOT);
+            LootTier tier = tierArg(args[1]);
+            String path = "tiers." + tier.id + ".loot";
+            List<Map<?, ?>> loot = new java.util.ArrayList<>(config().getMapList(path));
+            switch (what) {
+                case "add" -> {
+                    Player p = dev.aquatic.command.AquaticCommand.player(sender);
+                    ItemStack hand = p.getInventory().getItemInMainHand();
+                    if (hand.getType().isAir()) {
+                        throw new dev.aquatic.command.CommandFail(rawMsg("loot-hold-item"));
+                    }
+                    double weight = args.length > 2 ? dev.aquatic.command.AquaticCommand.number(args[2]) : 5;
+                    loot.add(lootEntry(hand, weight));
+                    config().set(path, loot);
+                    saveConfig();
+                    reloadTier(tier.id);
+                    send(sender, "loot-added", "item", dev.aquatic.util.ItemSpecs.describe(hand), "tier", tier.displayName, "weight", weight);
+                }
+                case "list" -> {
+                    send(sender, "loot-list-header", "tier", tier.displayName, "count", loot.size());
+                    for (int i = 0; i < loot.size(); i++) {
+                        sender.sendMessage(rawMsg("loot-list-line", "number", i + 1, "entry", String.valueOf(loot.get(i))));
+                    }
+                }
+                case "remove" -> {
+                    dev.aquatic.command.AquaticCommand.need(args, 3, "/treasure loot remove <tier> <number>");
+                    int n = (int) dev.aquatic.command.AquaticCommand.number(args[2]);
+                    if (n < 1 || n > loot.size()) {
+                        throw new dev.aquatic.command.CommandFail(rawMsg("loot-bad-number", "max", loot.size()));
+                    }
+                    Map<?, ?> removed = loot.remove(n - 1);
+                    config().set(path, loot);
+                    saveConfig();
+                    reloadTier(tier.id);
+                    send(sender, "loot-removed", "entry", String.valueOf(removed), "tier", tier.displayName);
+                }
+                default -> throw new dev.aquatic.command.CommandFail(rawMsg("loot-usage"));
+            }
+        }).usage("<add|list|remove> <tier> [weight|number]").description("Edit a tier's loot in-game (add = the item in your hand)")
+                .permission("aquatic.treasure.admin")
+                .completer((s, a) -> a.length == 1 ? dev.aquatic.command.AquaticCommand.filter(List.of("add", "list", "remove"), a[0])
+                        : a.length == 2 ? dev.aquatic.command.AquaticCommand.filter(List.copyOf(tiers.keySet()), a[1]) : List.of());
         cmd.sub("give-loot", (sender, args) -> {
             dev.aquatic.command.AquaticCommand.need(args, 1, "/treasure give-loot <tier>");
             Player p = dev.aquatic.command.AquaticCommand.player(sender);
@@ -1345,6 +1389,31 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
     @Override
     protected void migrateConfig(org.bukkit.configuration.file.YamlConfiguration file,
                                  org.bukkit.configuration.file.YamlConfiguration defaults, int from) {
+        if (from < 4) {
+            // 2.15.0: crate keys in treasure, editing loot in-game
+            for (String tier : List.of("uncommon", "rare", "epic", "legendary")) {
+                String path = "tiers." + tier + ".loot";
+                List<Map<?, ?>> loot = new ArrayList<>(file.getMapList(path));
+                boolean hasKey = loot.stream().anyMatch(m -> String.valueOf(m.get("item")).startsWith("key:"));
+                if (!file.contains(path) || hasKey) {
+                    continue;
+                }
+                for (Map<?, ?> d : defaults.getMapList(path)) {
+                    if (String.valueOf(d.get("item")).startsWith("key:")) {
+                        loot.add(d);
+                    }
+                }
+                file.set(path, loot);
+            }
+            org.bukkit.configuration.ConfigurationSection msgs = defaults.getConfigurationSection("messages");
+            if (msgs != null) {
+                for (String key : msgs.getKeys(false)) {
+                    if (key.startsWith("loot-")) {
+                        addMissing(file, defaults, "messages." + key);
+                    }
+                }
+            }
+        }
         if (from < 1) {
             // 2.4.0: common and uncommon treasure turn up more often
             raise(file, "natural.interval-minutes", 20, 8);
@@ -1440,5 +1509,39 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
         hand.setAmount(hand.getAmount() - 1);
         give(p, createTreasureMap(t.location(), t.tier));
         send(p, "map-unsealed", "tier", tier.displayName);
+    }
+
+    /** A loot entry for the item in someone's hand: a custom item, a crate key, or a vanilla item with its enchantments. */
+    private Map<String, Object> lootEntry(ItemStack hand, double weight) {
+        Map<String, Object> e = new java.util.LinkedHashMap<>();
+        ItemService items = service(ItemService.class);
+        String custom = items == null ? null : items.idOf(hand);
+        String key = hand.hasItemMeta() ? hand.getItemMeta().getPersistentDataContainer()
+                .get(new NamespacedKey(plugin(), "crate_key"), org.bukkit.persistence.PersistentDataType.STRING) : null;
+        if (custom != null) {
+            e.put("custom-item", custom);
+            e.put("amount", String.valueOf(hand.getAmount()));
+        } else if (key != null) {
+            e.put("item", "key:" + key + ":" + hand.getAmount());
+        } else {
+            e.put("material", hand.getType().name());
+            e.put("amount", String.valueOf(hand.getAmount()));
+            List<String> enchants = new java.util.ArrayList<>();
+            java.util.Map<org.bukkit.enchantments.Enchantment, Integer> all = hand.getItemMeta() instanceof org.bukkit.inventory.meta.EnchantmentStorageMeta book
+                    ? book.getStoredEnchants() : hand.getEnchantments();
+            all.forEach((ench, lvl) -> enchants.add(ench.getKey().getKey().toUpperCase(Locale.ROOT) + ":" + lvl));
+            if (!enchants.isEmpty()) {
+                e.put("enchants", enchants);
+            }
+        }
+        e.put("weight", weight);
+        return e;
+    }
+
+    private void reloadTier(String id) {
+        ConfigurationSection s = config().getConfigurationSection("tiers." + id);
+        if (s != null) {
+            tiers.put(id, LootTier.load(id, s, logger()));
+        }
     }
 }

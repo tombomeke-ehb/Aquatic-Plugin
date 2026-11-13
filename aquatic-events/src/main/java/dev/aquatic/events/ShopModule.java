@@ -269,15 +269,7 @@ public final class ShopModule extends AquaticModule implements Listener {
     }
 
     private static ItemStack icon(Material m, Component name, List<Component> lore) {
-        ItemStack it = new ItemStack(m);
-        ItemMeta meta = it.getItemMeta();
-        meta.displayName(noItalic(name));
-        List<Component> clean = new ArrayList<>();
-        lore.forEach(c -> clean.add(noItalic(c)));
-        meta.lore(clean);
-        meta.addItemFlags(ItemFlag.values());
-        it.setItemMeta(meta);
-        return it;
+        return dev.aquatic.util.Menus.icon(m, name, lore);
     }
 
     @EventHandler

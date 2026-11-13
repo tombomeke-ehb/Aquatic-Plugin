@@ -274,6 +274,7 @@ final class Blueprint {
             case "dock" -> dock();
             case "storehouse" -> storehouse();
             case "lighthouse" -> lighthouse();
+            case "gambling_den" -> gamblingDen();
             default -> null;
         };
     }
@@ -637,6 +638,68 @@ final class Blueprint {
         b.set(0, 19, c, Material.GLOWSTONE);
         b.set(0, 22, c, Material.LIGHTNING_ROD);
         b.set(0, 7, c, hangingLantern()).set(0, 12, c, hangingLantern());
+        b.clearInside();
+        b.supportAll(Material.STONE_BRICKS);
+        return b.connect();
+    }
+
+    /**
+     * The gambling den for spawn (paste it with /island admin schematic preview builtin:gambling_den): a red and
+     * white striped tent on a dark oak floor, a dealer's counter, a dice table with stools, and three crate
+     * pedestals at the back (make them crates with /crate set sailor | captain | kraken).
+     */
+    private static Blueprint gamblingDen() {
+        Blueprint b = new Blueprint();
+        for (int x = -5; x <= 5; x++) {
+            for (int z = 0; z <= 8; z++) {
+                boolean edge = Math.abs(x) == 5 || z == 0 || z == 8;
+                b.set(x, 0, z, edge ? Material.POLISHED_ANDESITE : ((x + z) % 2 == 0 ? Material.DARK_OAK_PLANKS : Material.SPRUCE_PLANKS));
+            }
+        }
+        for (int x : new int[]{-5, 5}) {
+            for (int z : new int[]{0, 4, 8}) {
+                b.fill(x, 1, z, x, 4, z, Material.DARK_OAK_LOG);
+            }
+        }
+        for (int z = 1; z <= 7; z++) {                                    // side railings
+            if (z != 4) {
+                b.set(-5, 1, z, Material.DARK_OAK_FENCE).set(5, 1, z, Material.DARK_OAK_FENCE);
+            }
+        }
+        for (int x = -4; x <= 4; x++) {                                   // striped back curtain
+            for (int y = 1; y <= 4; y++) {
+                b.set(x, y, 8, (x & 1) == 0 ? Material.RED_WOOL : Material.WHITE_WOOL);
+            }
+        }
+        for (int x = -6; x <= 6; x++) {                                   // the striped canopy, stepped up to a ridge
+            int y = Math.abs(x) >= 5 ? 5 : Math.abs(x) >= 3 ? 6 : Math.abs(x) >= 1 ? 7 : 8;
+            for (int z = -1; z <= 9; z++) {
+                b.set(x, y, z, (z & 1) == 0 ? Material.RED_WOOL : Material.WHITE_WOOL);
+            }
+        }
+        for (int x = -4; x <= 4; x++) {                                   // gable ends under the canopy
+            int top = Math.abs(x) >= 3 ? 5 : Math.abs(x) >= 1 ? 6 : 7;
+            for (int y = 5; y <= top; y++) {
+                b.set(x, y, 8, (x & 1) == 0 ? Material.RED_WOOL : Material.WHITE_WOOL);
+            }
+        }
+        for (int x : new int[]{-3, 0, 3}) {                               // crate pedestals
+            b.set(x, 1, 7, Material.CHISELED_STONE_BRICKS);
+            b.set(x, 3, 6, hangingLantern());
+        }
+        b.set(-3, 2, 7, facing(Material.CHEST, BlockFace.NORTH));
+        b.set(0, 2, 7, facing(Material.BARREL, BlockFace.UP));
+        b.set(3, 2, 7, facing(Material.ENDER_CHEST, BlockFace.NORTH));
+        for (int x = -4; x <= -2; x++) {                                  // the dealer's counter
+            b.set(x, 1, 2, log(Material.STRIPPED_DARK_OAK_LOG, org.bukkit.Axis.X));
+            b.set(x, 2, 2, slab(Material.DARK_OAK_SLAB, false));
+        }
+        b.set(-3, 3, 2, Material.AIR);
+        b.set(2, 1, 3, Material.DARK_OAK_FENCE).set(2, 2, 3, Material.GREEN_CARPET);   // the dice table
+        b.set(2, 1, 2, facing(Material.SPRUCE_STAIRS, BlockFace.SOUTH)).set(2, 1, 4, facing(Material.SPRUCE_STAIRS, BlockFace.NORTH));
+        b.set(1, 1, 3, facing(Material.SPRUCE_STAIRS, BlockFace.EAST)).set(3, 1, 3, facing(Material.SPRUCE_STAIRS, BlockFace.WEST));
+        b.fill(0, 6, 4, 0, 7, 4, Material.CHAIN).set(0, 5, 4, hangingLantern());
+        b.set(-4, 1, 0, Material.POTTED_RED_TULIP).set(4, 1, 0, Material.POTTED_RED_TULIP);
         b.clearInside();
         b.supportAll(Material.STONE_BRICKS);
         return b.connect();

@@ -1,0 +1,119 @@
+# =====================================================================================
+#  AquaticSMP - Crates
+#  Any block can be a crate: look at it and use /crate set <crate>. That works with your own
+#  builds too: paste a schematic with a chest (or barrel, shulker box ...) and make that block a
+#  crate. /crate setup puts the default crate stands at the capital (setup-spots below).
+#
+#  Right-click a crate with its key: a reel spins and stops on a prize.
+#  Left-click (or right-click without a key): see every prize and its chance. /crate shows them too.
+#
+#  Keys: /crate give <player> <crate> [amount], /crate giveall <crate> [amount], or in any reward
+#  list as "key:<crate>:<amount>" (quests.yml, levels.yml rewards, crate prizes ...).
+#
+#  Prize fields: weight (chance, relative to the others), name, icon (an item), doubloons, xp,
+#  items (["DIAMOND:4", "item:rum:2", "key:captain:1"]), commands (run by the console, <player>),
+#  broadcast (true = the whole server hears about it).
+# =====================================================================================
+config-version: 1
+
+opening:
+  # How many items pass by before the reel stops (it slows down towards the end).
+  steps: 32
+
+# A floating sign above every crate.
+holograms: true
+hologram-height: 0.9
+hologram:
+  - "<crate>"
+  - "<gray>Right-click with a key"
+  - "<dark_gray>Left-click to see the prizes"
+
+crates:
+  sailor:
+    name: "<aqua><bold>Sailor's Crate</bold></aqua>"
+    key-name: "<aqua>Sailor's Key"
+    key-lore: ["<gray>Opens a Sailor's Crate at spawn."]
+    key-material: TRIPWIRE_HOOK
+    # The key's look with the resource pack.
+    key-model: "aquatic:key_sailor"
+    particle: END_ROD
+    prizes:
+      - {weight: 26, name: "<gold>A purse of Doubloons", icon: GOLD_NUGGET, doubloons: 300}
+      - {weight: 14, name: "<gold>A fat purse", icon: GOLD_INGOT, doubloons: 800}
+      - {weight: 14, name: "<white>Ship's rations", items: ["COOKED_COD:16", "BREAD:16"]}
+      - {weight: 12, name: "<yellow>Pirate Rum", items: ["item:rum:3"]}
+      - {weight: 10, name: "<aqua>Iron and gold", items: ["IRON_INGOT:16", "GOLD_INGOT:8"]}
+      - {weight: 8, name: "<green>Experience", icon: EXPERIENCE_BOTTLE, xp: 150}
+      - {weight: 6, name: "<light_purple>Healing Tonics", items: ["item:healing_tonic:2"]}
+      - {weight: 5, name: "<aqua>Diamonds", items: ["DIAMOND:3"]}
+      - {weight: 3, name: "<gray>Smoke bombs", items: ["item:smoke_bomb:4"]}
+      - {weight: 2, name: "<gold><bold>A Captain's Key", items: ["key:captain:1"], broadcast: true}
+  captain:
+    name: "<gold><bold>Captain's Crate</bold></gold>"
+    key-name: "<gold>Captain's Key"
+    key-lore: ["<gray>Opens a Captain's Crate at spawn."]
+    key-material: TRIPWIRE_HOOK
+    key-model: "aquatic:key_captain"
+    particle: WAX_ON
+    prizes:
+      - {weight: 22, name: "<gold>A chest of Doubloons", icon: GOLD_BLOCK, doubloons: 2000}
+      - {weight: 14, name: "<aqua>Diamonds", items: ["DIAMOND:8"]}
+      - {weight: 12, name: "<green>Experience", icon: EXPERIENCE_BOTTLE, xp: 500}
+      - {weight: 10, name: "<yellow>Gale Grog and Tonics", items: ["item:gale_grog:2", "item:healing_tonic:2"]}
+      - {weight: 9, name: "<red>Fire and frost bombs", items: ["item:fire_bomb:3", "item:frost_bomb:3"]}
+      - {weight: 8, name: "<white>Golden apples", items: ["GOLDEN_APPLE:6"]}
+      - {weight: 7, name: "<gray>A Flintlock", items: ["item:flintlock:1", "GUNPOWDER:32"]}
+      - {weight: 6, name: "<dark_aqua>Corsair gear", items: ["item:corsair_hat:1", "item:corsair_boots:1"]}
+      - {weight: 5, name: "<dark_gray>Netherite scrap", items: ["NETHERITE_SCRAP:3"]}
+      - {weight: 4, name: "<aqua>Three Sailor's Keys", items: ["key:sailor:3"]}
+      - {weight: 2, name: "<dark_purple><bold>A Kraken Key", items: ["key:kraken:1"], broadcast: true}
+      - {weight: 1, name: "<gold><bold>A random Abyss Fruit", items: ["item:fruit_random:1"], broadcast: true}
+  kraken:
+    name: "<dark_purple><bold>Kraken's Hoard</bold></dark_purple>"
+    key-name: "<dark_purple>Kraken Key"
+    key-lore: ["<gray>Opens the Kraken's Hoard at spawn.", "<dark_gray>Few have seen one."]
+    key-material: TRIPWIRE_HOOK
+    key-model: "aquatic:key_kraken"
+    particle: SOUL_FIRE_FLAME
+    prizes:
+      - {weight: 24, name: "<gold>A captain's fortune", icon: GOLD_BLOCK, doubloons: 8000}
+      - {weight: 16, name: "<aqua>A sack of diamonds", items: ["DIAMOND:16"]}
+      - {weight: 12, name: "<dark_gray>Netherite", items: ["NETHERITE_INGOT:2"]}
+      - {weight: 10, name: "<light_purple>Enchanted golden apples", items: ["ENCHANTED_GOLDEN_APPLE:2"]}
+      - {weight: 8, name: "<aqua>The Musket", items: ["item:musket:1", "GUNPOWDER:64"], broadcast: true}
+      - {weight: 8, name: "<gold>The Deepcore Pickaxe", items: ["item:deepcore_pickaxe:1"], broadcast: true}
+      - {weight: 7, name: "<aqua>The Whaler's Harpoon", items: ["item:harpoon:1"], broadcast: true}
+      - {weight: 6, name: "<red>The Coral Scimitar", items: ["item:coral_scimitar:1"], broadcast: true}
+      - {weight: 5, name: "<dark_aqua>The Abyssal Anchor", items: ["item:abyssal_anchor:1"], broadcast: true}
+      - {weight: 4, name: "<gold><bold>A random Abyss Fruit", items: ["item:fruit_random:1"], broadcast: true}
+
+# /crate setup: a crate stand per spot at the capital. offset: [x, z] from the capital's centre,
+# block: what the crate looks like. Move them later by removing (/crate remove) and setting new ones.
+setup-spots:
+  - {crate: sailor, offset: [10, 30], block: CHEST}
+  - {crate: captain, offset: [13, 30], block: BARREL}
+  - {crate: kraken, offset: [16, 30], block: ENDER_CHEST}
+
+messages:
+  unknown-crate: "<red>There is no crate called <white><crate></white>. Crates: <gray><crates>"
+  need-key: "<red>You need a <key> <red>to open the <crate><red>."
+  won: "<green>You opened the <crate><green> and got <prize><green>! <gray><details>"
+  broadcast: "<gold><player> <yellow>found <prize> <yellow>in the <crate><yellow>!"
+  preview-title: "<dark_gray>Prizes: <crate>"
+  preview-chance: "<gray>Chance: <white><chance>%"
+  preview-keys: "<gray>Your keys: <white><keys>"
+  preview-how: "<gray>Right-click the crate with a key to open it."
+  overview-title: "<dark_gray>Crates"
+  overview-click: "<yellow>Click to see the prizes"
+  protected: "<red>Crates can't be broken. Staff: /crate remove first."
+  look-at-block: "<red>Look at a block (at most 6 blocks away)."
+  not-a-crate: "<red>That block is not a crate."
+  set: "<green>The <block> is now a <crate><green>."
+  removed: "<yellow>That block is no longer a crate."
+  list-header: "<aqua>Crate blocks (<count>):"
+  list-line: " <gray>- <crate> <dark_gray>at <white><where>"
+  gave: "<green>Gave <white><player></white> <white><amount></white>x key for the <crate><green>."
+  got-keys: "<green>You got <white><amount></white>x key for the <crate><green>!"
+  giveall: "<gold>Everyone got <white><amount></white>x key for the <crate><gold>!"
+  setup-no-capital: "<red>There is no capital island yet."
+  setup-done: "<green>Placed <white><count></white> crate stands at the capital."

@@ -1,0 +1,103 @@
+# =====================================================================================
+#  AquaticSMP - The gambling den
+#  Doubloons only. Talk to the Dealer at spawn (hub.yml) or use /gamble. Games:
+#    /dice <bet>                 two dice against the dealer's two dice
+#    /wheel <bet>                spin the wheel of fortune (a multiplier on your bet)
+#    /coinflip <player> <bet>    a coin flip between two players (/coinflip accept | deny)
+#  The house keeps a small edge on every game, so the den takes Doubloons out of the economy.
+#  Big wins and losses are written to plugins/AquaticSMP/data/gambling.log.
+# =====================================================================================
+config-version: 1
+
+# Only on the capital island (where the den is). Staff with aquatic.gambling.anywhere can play anywhere.
+only-at-capital: true
+# Pirate level needed to play (keeps fresh alts from farming).
+min-level: 5
+min-bet: 10
+max-bet: 5000
+# How much one player may bet in total per day (0 = no limit).
+daily-limit: 25000
+# Seconds between bets.
+cooldown-seconds: 3
+# Wins or losses at least this big go to the log.
+log-threshold: 2000
+# A win (payout minus bet) at least this big is announced to everyone.
+broadcast-win: 10000
+# The bet buttons in the /gamble menu.
+bet-presets: [50, 100, 250, 500, 1000, 2500, 5000]
+
+dice:
+  enabled: true
+  # Higher total than the dealer: you get bet x this.
+  win-multiplier: 2.0
+  # Same total: push (bet back), half (half back) or lose.
+  tie: half
+
+wheel:
+  enabled: true
+  # How many items pass by before it stops.
+  steps: 36
+  # The house edge is the expected payout below 1.0: with these weights it pays back about 93% on average.
+  segments:
+    - {label: "<dark_gray>Nothing", multiplier: 0, weight: 45, icon: BLACK_STAINED_GLASS_PANE}
+    - {label: "<red>Half back", multiplier: 0.5, weight: 20, icon: RED_STAINED_GLASS_PANE}
+    - {label: "<yellow>x1.5", multiplier: 1.5, weight: 17, icon: YELLOW_STAINED_GLASS_PANE}
+    - {label: "<green>x2", multiplier: 2, weight: 10, icon: LIME_STAINED_GLASS_PANE}
+    - {label: "<aqua>x3", multiplier: 3, weight: 6, icon: LIGHT_BLUE_STAINED_GLASS_PANE}
+    - {label: "<gold><bold>x10 JACKPOT", multiplier: 10, weight: 2, icon: GOLD_BLOCK}
+
+coinflip:
+  enabled: true
+  # Part of the pot the house keeps.
+  house-cut: 0.05
+  # How long a challenge stays open.
+  expire-seconds: 60
+
+messages:
+  no-economy: "<red>The economy module is off."
+  only-at-capital: "<red>The gambling den is at spawn. Visit the <yellow>Dealer</yellow> there (/spawn)."
+  min-level: "<red>You need pirate level <white><level></white> to gamble."
+  bet-range: "<red>Bets are between <white><min></white> and <white><max></white>."
+  cooldown: "<red>Easy there, wait a moment between bets."
+  busy: "<red>Your last game is still going."
+  daily-limit: "<red>You can bet <white><limit></white> a day. Left today: <white><left></white>."
+  no-money: "<red>You don't have <white><bet></white>."
+  game-off: "<red>That game is closed."
+  big-win: "<gold><player> <yellow>just won <gold><amount></gold> at the <game> in the gambling den!"
+  menu-title: "<dark_gray>The Gambling Den"
+  bet-title: "<dark_gray>Your bet: <game>"
+  game-dice: "Dice"
+  game-wheel: "Wheel of Fortune"
+  menu-dice: "<white><bold>Dice"
+  menu-dice-lore: ["<gray>Two dice against the dealer's two.", "<gray>Higher wins double, a tie gives half back."]
+  menu-wheel: "<gold><bold>Wheel of Fortune"
+  menu-wheel-lore: ["<gray>Spin for a multiplier on your bet.", "<gray>Up to <gold>x10</gold>!"]
+  menu-coinflip: "<yellow><bold>Coin Flip"
+  menu-coinflip-lore: ["<gray>Against another player:", "<white>/coinflip <player> <bet>"]
+  menu-limits: "<gray>Bets: <white><min></white> - <white><max></white>  <dark_gray>|</dark_gray>  <gray>left today: <white><left>"
+  menu-back: "<yellow>Back"
+  bet-button: "<gold>Bet <bet>"
+  bet-button-lore: ["<gray>Click to play."]
+  dice-rolling: "<white>You <yellow><you></yellow>   <gray>Dealer <yellow><dealer>"
+  dice-win: "<green>You rolled <white><you></white>, the dealer <white><dealer></white>. You win <gold><amount></gold>!"
+  dice-tie: "<yellow>A tie: <white><you></white> against <white><dealer></white>. You get <gold><amount></gold> back."
+  dice-lose: "<red>You rolled <white><you></white>, the dealer <white><dealer></white>. You lose <white><bet></white>."
+  dice-win-title: "<green>You win <amount>!"
+  dice-tie-title: "<yellow>A tie"
+  dice-lose-title: "<red>The dealer wins"
+  wheel-title: "<dark_gray>Wheel of Fortune (<bet>)"
+  wheel-win: "<green>The wheel stops on <segment><green>: you win <gold><amount></gold>!"
+  wheel-some: "<yellow>The wheel stops on <segment><yellow>: you get <gold><amount></gold> back."
+  wheel-lose: "<red>The wheel stops on <segment><red>. Better luck next time."
+  coinflip-how: "<yellow>Coin flip: <white>/coinflip <player> <bet></white><gray>. They accept with /coinflip accept. The winner takes the pot (minus 5% for the house)."
+  coinflip-self: "<red>You can't flip against yourself."
+  coinflip-sent: "<green>You challenged <white><player></white> to a coin flip for <gold><bet></gold>."
+  coinflip-received: "<yellow><player> challenges you to a coin flip for <gold><bet></gold>! <click:run_command:'/coinflip accept'><green><bold>[Accept]</bold></green></click> <click:run_command:'/coinflip deny'><red><bold>[Deny]</bold></red></click>"
+  coinflip-none: "<red>You have no coin flip to answer."
+  coinflip-gone: "<red>The other player left."
+  coinflip-failed: "<red><player> can't bet any more; the flip is off and your bet is back."
+  coinflip-heads: "<gold>Heads..."
+  coinflip-tails: "<gray>Tails..."
+  coinflip-result: "<gold><winner> <yellow>wins the coin flip against <white><loser></white> and takes <gold><amount></gold>!"
+  coinflip-denied: "<gray>You turned the coin flip down."
+  coinflip-denied-by: "<gray><player> turned your coin flip down."

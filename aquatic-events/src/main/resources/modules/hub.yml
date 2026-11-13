@@ -14,7 +14,7 @@
 #    "cmd:<command>"  the player runs the command (without /)
 #    "msg:<text>"     a MiniMessage line (clickable with <click:run_command:'/...'>)
 # =====================================================================================
-config-version: 3
+config-version: 4
 
 npcs:
   blacksmith:
@@ -59,6 +59,13 @@ npcs:
     profession: mason
     offset: [17, -7]
     actions: ["cmd:shop masonry"]
+  # The gambling den's dealer (dice, wheel of fortune, coin flips: gambling.yml). Move him into your own
+  # den build with /hubadmin place dealer.
+  dealer:
+    name: "<gold><bold>Dealer</bold> <gray>(gambling den)"
+    profession: nitwit
+    offset: [6, 30]
+    actions: ["cmd:gamble"]
   # ---- the village folk: they stand around the well of every village and give quests (quests.yml)
   village_elder:
     island-type: VILLAGE

@@ -638,6 +638,10 @@ public final class HubModule extends AquaticModule implements Listener {
             raise(file, "npcs.blacksmith.name", "<gold><bold>Blacksmith</bold> <gray>(tools & weapons)",
                     "<gold><bold>Blacksmith</bold> <gray>(smithy & tools)");
         }
+        if (from < 4) {
+            // 2.15.0: the dealer of the gambling den
+            addMissing(file, defaults, "npcs.dealer");
+        }
         if (from < 3) {
             // 2.12.0: the village folk who give quests
             for (String id : List.of("village_elder", "village_fisher", "village_smith", "village_hunter")) {

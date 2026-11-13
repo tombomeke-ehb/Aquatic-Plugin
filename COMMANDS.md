@@ -272,6 +272,8 @@ Bypass all island protection: `aquatic.islands.bypass`.
 | `/treasure tp <number>` | Teleport to a treasure from the list | Admin |
 | `/treasure remove <number\|all>` | Remove treasures, chest included | Admin |
 | `/treasure give-loot <tier>` | Preview a loot roll (the items go to you) | Admin |
+| `/treasure loot add <tier> [weight]` | Add the item in your hand to a tier's loot (custom items, crate keys and enchantments are kept) | `aquatic.treasure.admin` |
+| `/treasure loot list <tier>` / `/treasure loot remove <tier> <number>` | See or remove a tier's loot entries | `aquatic.treasure.admin` |
 | `/treasure sealedmap <tier> [player]` | Hand out a sealed treasure map. The treasure is only buried when the map is opened (right-click) | Admin |
 
 Right-click a treasure map to get a "warmer / colder" hint.
@@ -322,7 +324,7 @@ Default item ids:
 | `/tournament info` | Current stage and the reigning Conqueror of the Sea | `aquatic.tournament.view` |
 | `/tournament standings` | Qualifier points | `aquatic.tournament.view` |
 | `/tournament bracket` | The elimination bracket | `aquatic.tournament.view` |
-| `/hallofkings` | Every past Conqueror of the Sea with date, crew and season (alias `/kings`) | `aquatic.tournament.view` |
+| `/hallofconquerors` | Every past Conqueror of the Sea with date, crew and season (aliases `/conquerors`, and the old `/hallofkings` and `/kings`) | `aquatic.tournament.view` |
 
 **Staff commands** (`aquatic.tournament.admin`)
 
@@ -458,6 +460,44 @@ VILLAGE islands (`/island admin spawn village <radius>`, or random spawns) are n
 | `/quests accept <quest>` | Accept a quest (on a village; the [Accept] button does this) | Everyone |
 | `/quests turnin <quest>` | Hand in a finished quest (on a village) | Everyone |
 | `/quests abandon <quest>` | Give up a quest | Everyone |
+
+## Crates (`crates`)
+
+Any block can be a crate: look at it and use `/crate set <crate>`. That works for blocks in your own builds too (a chest in a pasted schematic). `/crate setup` puts three default crate stands at the capital you stand on.
+- **Opening:** right-click a crate with its key. A reel spins and stops on a prize.
+- **Prizes:** left-click (or right-click without a key) shows every prize with its chance. `/crate` shows them for every crate.
+- **Keys:** they come from treasure (uncommon and up), from `/crate give`, and from any reward list in the configs as `key:<crate>:<amount>` (quests, level rewards, crate prizes, treasure loot).
+- **Big wins** are announced. Crates, prizes, chances and key looks are in `crates.yml`.
+
+| Command | What it does | Permission |
+| --- | --- | --- |
+| `/crate` (alias `/crates`) | See the crates and click one for its prizes | Everyone |
+| `/crate preview <crate>` | Every prize of a crate and its chance | Everyone |
+| `/crate set <crate>` / `/crate remove` | Make the block you look at a crate, or stop it being one | `aquatic.crates.admin` |
+| `/crate setup` | Default crate stands at the capital (`setup-spots` in `crates.yml`) | `aquatic.crates.admin` |
+| `/crate list` | Every crate block | `aquatic.crates.admin` |
+| `/crate give <player> <crate> [amount]` / `/crate giveall <crate> [amount]` | Give keys | `aquatic.crates.admin` |
+
+## Gambling den (`gambling`, needs `economy`)
+
+Doubloons only, and only at the capital. Talk to the **Dealer** at spawn (or use `/gamble`).
+
+**The games:**
+- **Dice:** two dice against the dealer's two. Higher wins double; a tie gives half back.
+- **Wheel of fortune:** spin for a multiplier, from nothing up to x10.
+- **Coin flip:** against another player. The house keeps 5% of the pot.
+
+**Limits** (all in `gambling.yml`): pirate level 5 or higher, bets from 10 to 5,000, 25,000 a day, and 3 seconds between bets. Big results are written to `data/gambling.log`.
+
+**A den building:** paste one with `/island admin schematic preview builtin:gambling_den`. It's a striped tent with a dealer's counter, a dice table and three crate pedestals. Make the pedestals crates with `/crate set`, and move the Dealer in with `/hubadmin place dealer`.
+
+| Command | What it does | Permission |
+| --- | --- | --- |
+| `/gamble` (aliases `/casino`, `/den`) | The den's menu: pick a game and a bet | Everyone |
+| `/dice <bet>` | Roll against the dealer | Everyone |
+| `/wheel <bet>` | Spin the wheel of fortune | Everyone |
+| `/coinflip <player> <bet>` (alias `/cf`) | Challenge a player; they answer with `/coinflip accept` or `deny` | Everyone |
+| (anywhere) | Play away from the capital | `aquatic.gambling.anywhere` |
 
 ## Harbor Market (`shop`, needs `economy`)
 

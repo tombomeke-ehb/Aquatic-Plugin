@@ -1,5 +1,34 @@
 # Changelog
 
+## 2.15.0 (2026-11-13)
+
+### Added
+- **Crates:** three crates with their own keys (new key textures in the resource pack): the Sailor's Crate, the Captain's Crate and the Kraken's Hoard.
+  - Right-click with a key and a reel of prizes spins, slows down and stops on your prize. Closing it early still gives the prize.
+  - Left-click (or right-click without a key, or `/crate`) shows every prize and its chance.
+  - A floating sign and particles above each crate, and big wins are announced.
+  - **Works with your builds:** any block can be a crate. Paste a schematic, look at its chest and use `/crate set <crate>`. `/crate setup` places three default stands at the capital you stand on.
+  - **Keys** turn up in treasure (uncommon and up), can be given with `/crate give` / `giveall`, and work in every reward list as `key:<crate>:<amount>`.
+- **The gambling den** (Doubloons only, at the capital), with a **Dealer** villager at spawn and `/gamble`:
+  - **Dice** against the dealer: higher wins double, a tie gives half back.
+  - **Wheel of fortune:** a multiplier from nothing to x10. It pays back about 93% on average.
+  - **Coin flips** between players. The house keeps 5%.
+  - **Fair limits:** level 5 or higher, bets from 10 to 5,000, 25,000 a day, a short cooldown, and a log of big results in `data/gambling.log`.
+  - A built-in **den building** to paste: `/island admin schematic preview builtin:gambling_den`. It's a striped tent with a counter, a dice table and crate pedestals. Every built-in facility can be pasted this way too (`builtin:lighthouse`, ...).
+- **`/treasure loot add <tier> [weight]`:** add the item in your hand to a treasure tier, keeping custom items, crate keys and enchantments. `/treasure loot list` and `remove` see and remove entries.
+- Treasure loot entries accept `item: "key:sailor:1"` (any reward spec).
+
+### Changed
+- `/hallofkings` is now `/hallofconquerors`. The old name still works.
+
+### Code
+- One parser for reward items everywhere (quests, level rewards, crates, treasure) and one shared menu-icon helper, replacing several copies.
+
+### Your server
+- New modules `crates` and `gambling` (on by default; switch off in `config.yml`). New files `crates.yml` and `gambling.yml`.
+- `hub.yml` (the Dealer), `treasure.yml` (crate keys in the loot) and `tournament.yml` upgrade automatically, with backups.
+- The resource pack has changed (key textures). The plugin sends the new one by itself.
+
 ## 2.14.0 (2026-11-13)
 
 ### Added

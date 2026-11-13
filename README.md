@@ -141,6 +141,8 @@ See COMMANDS.md (Schematics) for the details.
 | `fruits` | (settings in `items.yml`) | Abyss fruit powers as a separate switch: turn it off and fruits stop working without touching the other items. Needs `items` |
 | `smithy` | `smithy.yml` | Upgrade weapons, armour, tools and bows +1..+5 for Doubloons and materials (`/smithy`, or the Blacksmith at spawn) |
 | `hub` | `hub.yml` | The spawn town: shopkeeper villagers in the market stalls, crew registrar, live bounty board, founders' monument, welcome sign, timed parkour tower; also the quest villagers on village islands |
+| `crates` | `crates.yml` | Crates opened with keys (a spinning reel of prizes); any block can be a crate |
+| `gambling` | `gambling.yml` | The gambling den at spawn: dice, a wheel of fortune and coin flips, Doubloons only, with limits |
 | `quests` | `quests.yml` | Village quests: villagers on neutral village islands give quests (fish, hunt, bring materials) for Doubloons, XP and items |
 
 Modules talk to each other only through shared services, so turning one off just disables the features that need it. For example, without `crews`, islands can still be generated and discovered but not claimed.
@@ -204,7 +206,7 @@ A suggested order for a fresh ocean world:
 | 3 | `/tournament start` | The top crews go into the bracket. `/tournament next` runs each match (auto-advance is in config). |
 | 4 | — | The finale is best-of-3 by default. The winning captain is crowned Conqueror of the Sea: crown item, prize, reputation, and your own console commands (e.g. a LuckPerms group). |
 
-Other commands: `/tournament status | bracket | standings | cancel | forcewin <crew>`, `/tournament admin setking <player|none>`, `/hallofkings`.
+Other commands: `/tournament status | bracket | standings | cancel | forcewin <crew>`, `/tournament admin setking <player|none>`, `/hallofconquerors`.
 
 ## Server events
 
@@ -248,7 +250,7 @@ Players use `/seaevent info` and `/seaevent join`. Rewards, durations and minimu
 | `/island info|here|list|map|discovered|top|claim|unclaim|flag` | Islands. Claiming needs Captain or First Mate. |
 | `/treasure info` | Active treasure hints |
 | `/fruit` | Your Abyss Fruit power and cooldown |
-| `/tournament register|roster|standings|bracket|info`, `/hallofkings` | Tournament |
+| `/tournament register|roster|standings|bracket|info`, `/hallofconquerors` | Tournament |
 | `/seaevent info|join` | Events |
 
 Every player permission is `aquatic.<module>.<feature>` and granted to everyone by default. Revoke one with LuckPerms to lock that feature.

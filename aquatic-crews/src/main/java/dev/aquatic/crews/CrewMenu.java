@@ -194,16 +194,7 @@ final class CrewMenu implements Listener {
     }
 
     private static ItemStack item(ItemStack it, Component name, List<Component> lore) {
-        ItemMeta meta = it.getItemMeta();
-        meta.displayName(name.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE));
-        List<Component> clean = new ArrayList<>();
-        for (Component c : lore) {
-            clean.add(c.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE));
-        }
-        meta.lore(clean);
-        meta.addItemFlags(ItemFlag.values());
-        it.setItemMeta(meta);
-        return it;
+        return dev.aquatic.util.Menus.icon(it, name, lore);
     }
 
     @EventHandler

@@ -318,19 +318,7 @@ final class IslandUpgrades implements Listener {
     }
 
     private static ItemStack item(Material type, Component name, List<Component> lore) {
-        ItemStack it = new ItemStack(type);
-        ItemMeta meta = it.getItemMeta();
-        meta.displayName(name.decorationIfAbsent(net.kyori.adventure.text.format.TextDecoration.ITALIC,
-                net.kyori.adventure.text.format.TextDecoration.State.FALSE));
-        List<Component> clean = new ArrayList<>();
-        for (Component c : lore) {
-            clean.add(c.decorationIfAbsent(net.kyori.adventure.text.format.TextDecoration.ITALIC,
-                    net.kyori.adventure.text.format.TextDecoration.State.FALSE));
-        }
-        meta.lore(clean);
-        meta.addItemFlags(ItemFlag.values());
-        it.setItemMeta(meta);
-        return it;
+        return dev.aquatic.util.Menus.icon(type, name, lore);
     }
 
     @EventHandler

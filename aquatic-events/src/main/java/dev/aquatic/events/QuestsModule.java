@@ -437,22 +437,13 @@ public final class QuestsModule extends AquaticModule implements Listener {
 
     // ------------------------------------------------------------------ rewards
 
-    /** "item:&lt;id&gt;[:amount]" (a custom item) or "MATERIAL[:amount]". */
+    /** A reward item: "MATERIAL:n", "item:<id>:n" or "key:<crate>:n" (see ItemSpecs). */
     private ItemStack stack(String spec) {
-        String[] parts = spec.split(":");
-        try {
-            if (parts[0].equalsIgnoreCase("item") && parts.length >= 2) {
-                ItemService items = service(ItemService.class);
-                int n = parts.length >= 3 ? Integer.parseInt(parts[2]) : 1;
-                return items == null ? null : items.createItem(parts[1], n);
-            }
-            Material m = Material.matchMaterial(parts[0]);
-            int n = parts.length >= 2 ? Integer.parseInt(parts[1]) : 1;
-            return m == null ? null : new ItemStack(m, n);
-        } catch (RuntimeException e) {
+        ItemStack it = dev.aquatic.util.ItemSpecs.parse(spec);
+        if (it == null) {
             logger().warning("Quest reward item not understood: " + spec);
-            return null;
         }
+        return it;
     }
 
     private String rewardText(Quest q) {
@@ -467,22 +458,10 @@ public final class QuestsModule extends AquaticModule implements Listener {
         for (String spec : q.items) {
             ItemStack it = stack(spec);
             if (it != null) {
-                String name = it.getItemMeta() != null && it.getItemMeta().hasDisplayName()
-                        ? Text.plain(it.getItemMeta().displayName()) : pretty(it.getType());
-                parts.add(it.getAmount() + "x " + name);
+                parts.add(dev.aquatic.util.ItemSpecs.describe(it));
             }
         }
         return String.join(", ", parts);
-    }
-
-    private static String pretty(Material m) {
-        StringBuilder b = new StringBuilder();
-        for (String w : m.name().toLowerCase(Locale.ROOT).split("_")) {
-            if (!w.isEmpty()) {
-                b.append(b.isEmpty() ? "" : " ").append(Character.toUpperCase(w.charAt(0))).append(w.substring(1));
-            }
-        }
-        return b.toString();
     }
 
     private static String time(long ms) {

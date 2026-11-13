@@ -86,7 +86,7 @@ intro:
       subtitle: "<gray>Win the tournament, rule the sea"
       chat:
         - "<gold>The <bold>Conqueror of the Sea</bold> is crowned in a server-wide crew tournament."
-        - "<gray>Watch for announcements, and see past kings with <white>/hallofkings</white>."
+        - "<gray>Watch for announcements, and see past kings with <white>/hallofconquerors</white>."
       seconds: 6
 
     - title: "<aqua><bold>Good luck!"
@@ -176,7 +176,7 @@ book:
       - "<dark_aqua><bold>5. Abyss Fruits</bold>\n\n<black>Rare fruits found in treasure. Eating one gives a power, but only one per pirate.\n\nUse it: <bold>sneak + F</bold>\n\nWater takes your power away while you swim!\n\n<dark_gray>/fruit"
       - "<dark_aqua><bold>Pirate gear</bold>\n\n<black>Look out for legendary swords, flintlocks, cannons, Abyssal Iron weapons (they cancel fruit powers) and the Tide Compass, which points to the nearest island."
     conqueror:
-      - "<dark_aqua><bold>6. Conqueror of the Sea</bold>\n\n<black>Crews compete in the tournament:\n\nRegistration\nQualifiers\nBracket fights\nGrand finale\n\nThe winning captain is crowned <gold><bold>Conqueror of the Sea</bold></gold><black>!\n\n<dark_gray>/tournament info\n/hallofkings"
+      - "<dark_aqua><bold>6. Conqueror of the Sea</bold>\n\n<black>Crews compete in the tournament:\n\nRegistration\nQualifiers\nBracket fights\nGrand finale\n\nThe winning captain is crowned <gold><bold>Conqueror of the Sea</bold></gold><black>!\n\n<dark_gray>/tournament info\n/hallofconquerors"
 
 # /discord: set your invite link here.
 discord:

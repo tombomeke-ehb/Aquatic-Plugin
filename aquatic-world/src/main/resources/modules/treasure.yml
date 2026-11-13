@@ -7,6 +7,7 @@
 #    /treasure spawn rare random        bury one on a random island
 #    /treasure map epic Steve           bury an epic chest somewhere and give Steve the map
 #    /treasure list | tp <n> | remove <n|all> | give-loot <tier>
+#    /treasure loot add <tier> [weight]   (the item in your hand)  |  loot list <tier>  |  loot remove <tier> <n>
 #  Players: /treasure info, and right-click a treasure map for hot/cold hints.
 #
 #  Works without the islands module (random land inside random-area is used instead),
@@ -15,7 +16,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 3
+config-version: 4
 
 autosave-seconds: 120
 
@@ -41,6 +42,7 @@ autosave-seconds: 120
 #       random-enchant-level: 20-30   treasure-enchants: true   (enchanting-table style)
 #       name: "<gold>Cool name"   lore: ["<gray>line"]
 #       custom-item: <id>         (items module)
+#       item: "key:sailor:1"       (any reward spec: a crate key, "item:rum:2", "DIAMOND:3")
 #       doubloons: "min-max"      (entry that pays Doubloons instead of / besides an item)
 # -------------------------------------------------------------------------------------
 tiers:
@@ -124,6 +126,7 @@ tiers:
     beam: false
     unique-rolls: true
     loot:
+      - {item: "key:sailor:1", weight: 2}
       - {material: IRON_INGOT, amount: 8-16, weight: 8}
       - {material: GOLD_INGOT, amount: 4-10, weight: 7}
       - {material: DIAMOND, amount: 1-2, weight: 3}
@@ -193,6 +196,8 @@ tiers:
     beam: false
     unique-rolls: true
     loot:
+      - {item: "key:sailor:1", weight: 4}
+      - {item: "key:captain:1", weight: 1}
       - {material: GOLD_INGOT, amount: 4-10, weight: 6}
       - {material: EMERALD, amount: 4-12, weight: 6}
       - {material: DIAMOND, amount: 2-4, weight: 5}
@@ -255,6 +260,8 @@ tiers:
     beam: false
     unique-rolls: true
     loot:
+      - {item: "key:sailor:1", weight: 4}
+      - {item: "key:captain:1", weight: 3}
       - {material: DIAMOND, amount: 4-8, weight: 6}
       - {material: EMERALD_BLOCK, amount: 2-4, weight: 4}
       - {material: GOLD_BLOCK, amount: 2-4, weight: 4}
@@ -316,6 +323,8 @@ tiers:
     beam: false
     unique-rolls: true
     loot:
+      - {item: "key:captain:1", weight: 5}
+      - {item: "key:kraken:1", weight: 1.5}
       - {material: NETHERITE_SCRAP, amount: 2-4, weight: 5}
       - {material: NETHERITE_INGOT, amount: 1-2, weight: 2}
       - {material: ANCIENT_DEBRIS, amount: 2-4, weight: 3}
@@ -493,6 +502,13 @@ sealed-map-lore:
   - "<yellow>Right-click to break the seal."
 
 messages:
+  loot-hold-item: "<red>Hold the item you want to add."
+  loot-added: "<green>Added <white><item></white> to the <tier><green> loot (weight <white><weight></white>)."
+  loot-list-header: "<aqua>Loot of <tier> <gray>(<count>):"
+  loot-list-line: " <white><number>.</white> <gray><entry>"
+  loot-bad-number: "<red>Pick a number from 1 to <white><max></white> (see /treasure loot list)."
+  loot-removed: "<yellow>Removed <gray><entry></gray> from the <tier><yellow> loot."
+  loot-usage: "<red>Usage: <white>/treasure loot <add|list|remove> <tier> [weight|number]"
   sealed-map-name: "<gold>Sealed Treasure Map <dark_gray>(<tier><dark_gray>)"
   map-unsealed: "<gold>You break the seal... <gray>The map shows a <tier> <gray>treasure. Follow the red X!"
   map-seal-failed: "<red>The map is too smudged to read right now. <gray>Try again in a moment."

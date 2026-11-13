@@ -14,7 +14,7 @@
 #    /tournament register | unregister            aquatic.tournament.register (crew officers only)
 #    /tournament roster [add|remove <member>]     aquatic.tournament.register
 #    /tournament standings | bracket | info       aquatic.tournament.view
-#    /hallofkings                                 aquatic.tournament.view
+#    /hallofconquerors                                 aquatic.tournament.view
 #  Staff commands (aquatic.tournament.admin):
 #    /tournament open [minutes] | start | next | cancel | status | forcewin <crew>
 #    /tournament arena create <name> | setspawn <name> <1|2> | setspectator <name> | delete <name> | list
@@ -25,6 +25,9 @@
 #  registration, qualifiers or the bracket resumes. A match that was running at shutdown is
 #  aborted (everyone restored) and simply replayed.
 # =====================================================================================
+
+# Do not edit: used to upgrade this file when the plugin updates.
+config-version: 1
 
 teams:
   # Fighters per crew in a match.
@@ -266,7 +269,7 @@ messages:
   bracket-pending: "  <a> <gray>vs</gray> <b><gray><score>"
   no-bracket: "<red>There is no bracket yet."
   roster-show: "<aqua>Tournament roster <gray>(max <size>)</gray>: <white><roster>"
-  hall-header: "<gold><bold>Hall of Kings</bold> <gray>(<count>)"
+  hall-header: "<gold><bold>Hall of Conquerors</bold> <gray>(<count>)"
   hall-entry: " <gold>Season <season></gold> <dark_gray>-</dark_gray> <white><player></white> <gray>of <crew> <dark_gray>(<date>)"
   hall-empty: " <gray>No Conqueror of the Sea has ever been crowned."
   hall-current: "<gold>Current Conqueror of the Sea: <white><king>"
