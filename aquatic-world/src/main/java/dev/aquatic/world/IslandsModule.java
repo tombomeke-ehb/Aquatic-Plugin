@@ -1076,6 +1076,11 @@ public final class IslandsModule extends AquaticModule implements IslandService,
             addMissing(file, defaults, "island-names.TIDEWATCH");
             addMissing(file, defaults, "upgrades.types.vault");
             addMissing(file, defaults, "upgrades.types.granary");
+        }
+        if (from < 3) {
+            // 2.6.1: large islands a bit smaller
+            raise(file, "generation.island-sizes.large.min", 275, 225);
+            raise(file, "generation.island-sizes.large.max", 450, 375);
             String o = "generation.terrain.ore-veins.";
             raise(file, o + "per-1000-land", 4, 10);
             raise(file, o + "ores", List.of("COAL_ORE:6", "IRON_ORE:5", "COPPER_ORE:4", "GOLD_ORE:1.5", "REDSTONE_ORE:1.5",

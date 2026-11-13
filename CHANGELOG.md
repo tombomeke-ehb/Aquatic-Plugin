@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.6.1 (2026-11-13)
+
+### Fixed
+- **No more random shallow holes in the grass:** a cave entrance now only opens where a tunnel really continues down into the caves. In a test, an island from the previous version had 19 of these pits and a new one had none, with the same amount of caves.
+
+### Changed
+- **Large islands are smaller:** radius 225–375 (450–750 blocks across), was 275–450. Existing servers get this automatically unless you changed the sizes yourself.
+
 ## 2.6.0 (2026-11-13)
 
 ### Added

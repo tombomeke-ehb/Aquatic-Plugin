@@ -407,6 +407,7 @@ final class IslandGenerator extends AreaJob {
         double inland = smooth((tt - 0.14) / 0.3); // deeper caves further from the coast
         int low = Math.max(minY + 6, sea - (int) Math.round(terrain.caveDepth * (0.35 + 0.65 * inland)));
         int high = entrance ? topY : topY - 5;
+        int lastCarved = Integer.MIN_VALUE, runStart = Integer.MIN_VALUE;
         for (int y = low; y <= high; y++) {
             boolean open = false;
             double a = caveA.noise(wx * scale, y * scale * 1.4, wz * scale);
@@ -419,15 +420,30 @@ final class IslandGenerator extends AreaJob {
             if (!open) {
                 continue;
             }
+            // Near the surface only open a column that continues a shaft from deep below: an entrance has
+            // to lead into the caves, never a shallow random pit in the grass.
+            if (y > topY - 5 && (lastCarved != y - 1 || runStart > topY - 8)) {
+                continue;
+            }
             Block block = world.getBlockAt(wx, y, wz);
             Material type = block.getType();
             if (!type.isSolid() || type == Material.BEDROCK) {
+                if (type.isAir()) {
+                    if (lastCarved != y - 1) {
+                        runStart = y;
+                    }
+                    lastCarved = y; // already open (e.g. a cavern): the shaft continues
+                }
                 continue;
             }
             if (y <= floor + 1 && (touchesFluid(wx, y, wz) || world.getBlockAt(wx, y + 1, wz).getType().hasGravity())) {
                 continue; // under the old sea floor: never open into water or under loose sand
             }
             block.setType(y <= low + 1 && t.volcano ? Material.LAVA : Material.CAVE_AIR, false);
+            if (lastCarved != y - 1) {
+                runStart = y;
+            }
+            lastCarved = y;
         }
     }
 
