@@ -562,5 +562,15 @@ public final class ItemsModule extends AquaticModule implements ItemService {
             addMissing(file, defaults, "items.conqueror_crown.equipment-model");
             addMissing(file, defaults, "items.storm_saber.item-model");
         }
+        if (from < 3) {
+            // 2.7.2: textures for four fruits, the flintlock, the Tide Compass and the Abyssal Iron Baton
+            addMissing(file, defaults, "items.springcoil.item-model");
+            addMissing(file, defaults, "items.emberheart.item-model");
+            addMissing(file, defaults, "items.rimefrost.item-model");
+            addMissing(file, defaults, "items.thunderveil.item-model");
+            addMissing(file, defaults, "items.flintlock.item-model");
+            addMissing(file, defaults, "items.tide_compass.item-model");
+            addMissing(file, defaults, "items.abyssal_baton.item-model");
+        }
     }
 }

@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.7.2 (2026-11-13)
+
+### Added
+- **More textures in the resource pack:**
+  - **Abyss Fruits:** Springcoil (pink), Emberheart (orange), Rimefrost (icy blue) and Thunderveil (yellow with a purple swirl).
+  - **Flintlock:** a pistol with a wooden grip and brass details.
+  - **Tide Compass:** a brass compass with a sea-blue face.
+  - **Abyssal Iron Baton:** dark sea-green metal.
+- **Your server:** existing servers get the new `item-model` lines automatically. Update the resource pack link and SHA-1 in `server.properties` (see the release notes).
+
 ## 2.7.1 (2026-11-13)
 
 ### Added

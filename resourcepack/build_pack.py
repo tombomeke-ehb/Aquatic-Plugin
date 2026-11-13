@@ -139,6 +139,89 @@ def storm_saber():
     return from_rows(SABER, SABER_PALETTE)
 
 
+
+# ---------------------------------------------------------------- Abyss Fruits (one shape, own colours)
+
+FRUIT = [
+    "................",
+    ".......KK.......",
+    "......KSKKLK....",
+    ".....KKSKLLLK...",
+    "....KMMSMKKK....",
+    "...KMWMMMMMMK...",
+    "..KMWMMZMMMMMK..",
+    "..KMMMZZZMMMDK..",
+    "..KMMZMMMZMMDK..",
+    "..KMMMZZZMMMDK..",
+    "..KMMMMMZMMDDK..",
+    "...KMMMMMMDDK...",
+    "....KDMMMDDK....",
+    ".....KKKKKK.....",
+    "................",
+    "................",
+]
+
+
+def fruit(main, light, shade, swirl, leaf="#3aa13a"):
+    return {"K": "#2b1a2f", "S": "#6b4423", "L": leaf, "M": main, "W": light, "D": shade, "Z": swirl}
+
+
+FRUITS = {
+    "springcoil": fruit("#e86fb0", "#ffd1ea", "#a8306f", "#7a1f6e"),
+    "emberheart": fruit("#ff7a1a", "#ffe08a", "#b8320c", "#d1120f"),
+    "rimefrost": fruit("#9fe4ff", "#ffffff", "#3d8fd1", "#ffffff", leaf="#bde8ff"),
+    "thunderveil": fruit("#ffe14a", "#ffffff", "#c98f00", "#8a3cd6"),
+}
+
+# ---------------------------------------------------------------- Flintlock
+
+FLINTLOCK = [
+    "................",
+    "................",
+    "................",
+    "................",
+    "................",
+    "......KKKKKKKKK.",
+    "....KKGGGGGGGGLK",
+    "...KHKgggggggggK",
+    "..KWWKKKKKKKKKK.",
+    "..KWWWKAK.......",
+    ".KWWWDK.AK......",
+    ".KWWDK..KK......",
+    "KWWDK...........",
+    "KDDK............",
+    "KKK.............",
+    "................",
+]
+FLINTLOCK_PALETTE = {"K": "#1b1410", "G": "#8a8f99", "L": "#d7dbe3", "g": "#4d525c", "H": "#d4a017",
+                     "W": "#8b5a2b", "D": "#5a3418", "A": "#c9a227"}
+
+# ---------------------------------------------------------------- Tide Compass
+
+COMPASS = [
+    "................",
+    ".....KKKKKK.....",
+    "...KKAAAAAAKK...",
+    "..KAABBBBBBAAK..",
+    "..KABBBBBBRBAK..",
+    ".KABBBBBBRRBBAK.",
+    ".KABBBBBRRBBBAK.",
+    ".KABBBBWWBBBBAK.",
+    ".KABBBWWBBBBBAK.",
+    ".KABBWWBBBBBBAK.",
+    "..KABWBBBBBBAK..",
+    "..KAABBBBBBAAK..",
+    "...KKAAAAAAKK...",
+    ".....KKKKKK.....",
+    "................",
+    "................",
+]
+COMPASS_PALETTE = {"K": "#3b2a14", "A": "#d4a017", "B": "#1f6fa8", "R": "#e0312b", "W": "#f2f2f2"}
+
+# the Abyssal Iron Baton: the saber shape in dark sea-green metal
+BATON_PALETTE = {"K": "#0b1a1a", "E": "#8ff5e4", "B": "#2fb8a3", "C": "#145c55", "Y": "#0b2e2a",
+                 "G": "#3b4a4f", "g": "#1e2629", "H": "#263238", "h": "#11181b", "P": "#2fe0c8"}
+
 # ---------------------------------------------------------------- pack
 
 def item(name, image, handheld=False):
@@ -170,6 +253,11 @@ def main():
     item("conqueror_crown", from_rows(CROWN, CROWN_PALETTE))
     equipment("conqueror_crown", crown_worn())
     item("storm_saber", storm_saber(), handheld=True)
+    for name, palette in FRUITS.items():
+        item(name, from_rows(FRUIT, palette))
+    item("flintlock", from_rows(FLINTLOCK, FLINTLOCK_PALETTE))
+    item("tide_compass", from_rows(COMPASS, COMPASS_PALETTE))
+    item("abyssal_baton", from_rows(SABER, BATON_PALETTE), handheld=True)
     # pack icon: the crown, scaled up
     from_rows(CROWN, CROWN_PALETTE).resize((128, 128), Image.NEAREST).save(os.path.join(PACK, "pack.png"))
 

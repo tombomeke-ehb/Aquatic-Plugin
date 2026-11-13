@@ -3,7 +3,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 2
+config-version: 3
 #  Custom pirate items: Abyss Fruits, Abyssal Iron, legendary swords, guns,
 #  cannons, the Tide Compass, Echo Conch, rum and the Conqueror of the Sea's crown.
 #
@@ -161,6 +161,7 @@ items:
       - ""
       - "<dark_aqua>A fragment of the drowned Abyss."
       - "<red>The sea wants it back: eat it and you will never swim again."
+    item-model: "aquatic:springcoil"
     custom-model-data: 0
     glint: true
     max-stack: 1
@@ -201,6 +202,7 @@ items:
       - ""
       - "<dark_aqua>A fragment of the drowned Abyss."
       - "<red>The sea wants it back: eat it and you will never swim again."
+    item-model: "aquatic:emberheart"
     custom-model-data: 0
     glint: true
     max-stack: 1
@@ -242,6 +244,7 @@ items:
       - ""
       - "<dark_aqua>A fragment of the drowned Abyss."
       - "<red>The sea wants it back: eat it and you will never swim again."
+    item-model: "aquatic:rimefrost"
     custom-model-data: 0
     glint: true
     max-stack: 1
@@ -282,6 +285,7 @@ items:
       - ""
       - "<dark_aqua>A fragment of the drowned Abyss."
       - "<red>The sea wants it back: eat it and you will never swim again."
+    item-model: "aquatic:thunderveil"
     custom-model-data: 0
     glint: true
     max-stack: 1
@@ -529,6 +533,7 @@ items:
       - ""
       - "<aqua>Hitting an Abyss Fruit user silences"
       - "<aqua>their power for <white>6s</white>."
+    item-model: "aquatic:abyssal_baton"
     custom-model-data: 0
     abyssal:
       hit-seconds: 6
@@ -917,6 +922,7 @@ items:
       - ""
       - "<gray>Right-click to fire. Uses <white>gunpowder</white>."
       - "<gray>Headshots deal extra damage."
+    item-model: "aquatic:flintlock"
     custom-model-data: 0
     max-stack: 1
     unbreakable: true
@@ -1014,6 +1020,7 @@ items:
       - ""
       - "<gray>Right-click: <white>point to the next island"
       - "<gray>Sneak + right-click: <white>nearest island"
+    item-model: "aquatic:tide_compass"
     custom-model-data: 0
     max-stack: 1
     recipe:
