@@ -102,9 +102,60 @@ public final class GearListener implements Listener {
                     abilities.fx().burst(at, org.bukkit.Particle.LARGE_SMOKE, 2, 0.1, 0.01);
                     abilities.fx().burst(at, org.bukkit.Particle.FLAME, 1, 0.05, 0.01);
                 }
+                case "gun" -> { // a bright tracer with a thin smoke line
+                    abilities.fx().glow(at, org.bukkit.Color.fromRGB(0xFFD27A), 0.7f, 1, 0.0);
+                    abilities.fx().dust(at, org.bukkit.Color.fromRGB(0x8A8A8A), 0.5f, 1, 0.03);
+                }
                 default -> abilities.fx().dust(at, org.bukkit.Color.fromRGB(0x777777), 0.8f, 1, 0.02);
             }
         }
+    }
+
+    /**
+     * A fruit you hold (but have not eaten) gives a small preview of its power: a few particles of its
+     * first move around your hand (frost for Rimefrost, embers for Emberheart, sparks for Thunderveil, ...).
+     */
+    private void fruitAura(Player p) {
+        if (!module.config().getBoolean("effects.fruit-preview", true) || !module.fruits().isEnabled()) {
+            return;
+        }
+        ItemDef def = module.defOf(p.getInventory().getItemInMainHand());
+        if (def == null || !def.isFruit()) {
+            return;
+        }
+        ConfigurationSection a = def.ability();
+        Vector dir = p.getLocation().getDirection().setY(0);
+        if (dir.lengthSquared() < 1e-4) {
+            dir = new Vector(1, 0, 0);
+        }
+        dir.normalize();
+        Vector right = new Vector(-dir.getZ(), 0, dir.getX());
+        Location hand = p.getLocation().add(0, 1.15, 0).add(dir.clone().multiply(0.45)).add(right.multiply(0.4));
+        Fx fx = abilities.fx();
+        org.bukkit.Color c = Fx.color(a == null ? null : a.getString("color"), org.bukkit.Color.fromRGB(0xB388FF));
+        fx.glow(hand, c, 0.8f, 3, 0.18);
+        String particle = a == null ? null : a.getString("particle");
+        if (particle != null) {
+            try {
+                fx.burst(hand, org.bukkit.Particle.valueOf(particle.toUpperCase(java.util.Locale.ROOT)), 2, 0.15, 0.01);
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+    }
+
+    /** Muzzle flash, sparks and a puff of smoke in front of the barrel. */
+    private void muzzle(Player p, float size) {
+        Fx fx = abilities.fx();
+        Vector dir = p.getEyeLocation().getDirection();
+        Vector right = dir.clone().crossProduct(new Vector(0, 1, 0));
+        if (right.lengthSquared() > 1e-4) {
+            right.normalize();
+        }
+        Location m = p.getEyeLocation().add(dir.clone().multiply(1.1)).add(right.multiply(0.3)).add(0, -0.2, 0);
+        fx.flash(m, org.bukkit.Color.fromRGB(0xFFB347), 0.9f * size);
+        fx.burst(m, org.bukkit.Particle.FLAME, 4, 0.05, 0.03);
+        fx.burst(m, org.bukkit.Particle.LAVA, 1, 0.02, 0);
+        fx.burst(m.clone().add(dir.clone().multiply(0.4)), org.bukkit.Particle.CAMPFIRE_COSY_SMOKE, (int) (3 * size), 0.08, 0.01);
     }
 
     /** Throws a bomb item (type: bomb): it bursts where it lands, see bombHit. */
@@ -197,6 +248,7 @@ public final class GearListener implements Listener {
     public void tick() {
         for (Player online : Bukkit.getOnlinePlayers()) {
             tickSets(online);
+            fruitAura(online);
         }
         long now = System.currentTimeMillis();
         projectiles.entrySet().removeIf(e -> {
@@ -466,6 +518,7 @@ public final class GearListener implements Listener {
         Util.sound(p.getLocation(), g.getString("sound", def.type.equals("gun") ? "entity.firework_rocket.blast" : "entity.generic.explode"),
                 1f, (float) g.getDouble("sound-pitch", def.type.equals("gun") ? 0.6 : 1.4));
         abilities.particles(g, "SMOKE", p.getEyeLocation().add(p.getEyeLocation().getDirection()), 8, 0.1);
+        muzzle(p, def.type.equals("cannon") ? 1.6f : 1.0f);
         double recoil = g.getDouble("recoil", 0);
         if (recoil > 0) {
             p.setVelocity(p.getVelocity().add(p.getEyeLocation().getDirection().multiply(-recoil)));
@@ -550,9 +603,17 @@ public final class GearListener implements Listener {
                     if (abilities.hurt(shooter, le, dmg) && head) {
                         module.actionBar(shooter, "headshot");
                     }
+                    abilities.fx().burst(at, org.bukkit.Particle.CRIT, 10, 0.2, 0.3);
+                    abilities.fx().burst(at, org.bukkit.Particle.DAMAGE_INDICATOR, 3, 0.2, 0.1);
                 } else if (event.getHitBlock() != null) {
                     abilities.particles(t.cfg(), "SMOKE", at, 5, 0.05);
+                    abilities.fx().burst(at, org.bukkit.Particle.ELECTRIC_SPARK, 8, 0.1, 0.15); // the ball sparks off the block
+                    if (at.getWorld() != null) {
+                        at.getWorld().spawnParticle(org.bukkit.Particle.BLOCK, at, 10, 0.15, 0.15, 0.15, 0.1,
+                                event.getHitBlock().getBlockData());
+                    }
                 }
+                abilities.fx().flash(at, org.bukkit.Color.fromRGB(0xFFE0A0), 0.7f);
             }
             case "cannon" -> {
                 ConfigurationSection c = t.cfg();

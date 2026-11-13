@@ -578,6 +578,10 @@ public final class ItemsModule extends AquaticModule implements ItemService {
                 file.set("items.tide_compass.item-model", null);
             }
         }
+        if (from < 7) {
+            // 2.10.0: the Musket
+            addMissing(file, defaults, "items.musket");
+        }
         if (from < 6) {
             // 2.9.0: four new fruits and the Tidewatch uniforms
             addMissing(file, defaults, "items.tidecaller");

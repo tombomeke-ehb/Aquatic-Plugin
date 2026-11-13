@@ -774,14 +774,15 @@ tidewatch:
       damage-multiplier: 1.2
       equipment: {helmet: "item:tidewatch_hat", chestplate: "item:tidewatch_coat", leggings: "item:tidewatch_trousers",
                   boots: "item:tidewatch_boots", mainhand: IRON_SWORD}
+    # Riflemen and officers are illagers (pillagers and vindicators): they move and fight like soldiers and
+    # the resource pack dresses them in Tidewatch uniform (in an ocean world no others spawn on their own).
     rifleman:
-      type: SKELETON
+      type: PILLAGER
       name: "<blue>Tidewatch Rifleman"
-      health-multiplier: 1.5
-      equipment: {helmet: "item:tidewatch_hat", chestplate: "item:tidewatch_coat", leggings: "item:tidewatch_trousers",
-                  boots: "item:tidewatch_boots", mainhand: BOW}
+      health-multiplier: 1.6
+      equipment: {mainhand: CROSSBOW}
     lieutenant:
-      type: ZOMBIE
+      type: VINDICATOR
       name: "<dark_blue>Tidewatch Lieutenant"
       health-multiplier: 2.2
       damage-multiplier: 1.3
@@ -789,7 +790,7 @@ tidewatch:
       equipment: {helmet: "item:tidewatch_hat", chestplate: "item:tidewatch_officer_coat", leggings: "item:tidewatch_trousers",
                   boots: "item:tidewatch_boots", mainhand: IRON_AXE}
     captain:
-      type: ZOMBIE
+      type: VINDICATOR
       name: "<dark_aqua><bold>Warden Captain</bold>"
       health: 180
       damage-multiplier: 1.5

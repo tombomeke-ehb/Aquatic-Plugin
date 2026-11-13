@@ -5,6 +5,9 @@
 #  Crews are stored in plugins/AquaticSMP/data/crews/crews.yml
 # =====================================================================
 
+# Do not edit: used to upgrade this file when the plugin updates.
+config-version: 1
+
 # Maximum number of pirates in one crew (captain included).
 max-members: 6
 
@@ -214,10 +217,11 @@ chat:
   hover-cards: true
   # The whole chat line. Turn "enabled" off when another chat plugin (EssentialsX Chat, ...) formats chat;
   # the crew prefix is then put in front of that plugin's line.
-  # Tags: <level> (level badge), <prefix> (crown + crew tag), <name> (hover card), <message>
+  # Tags: <rank> (rank prefix from LuckPerms/Vault), <level> (level badge), <prefix> (crown + crew tag),
+  #       <name> (hover card), <suffix> (suffix from LuckPerms/Vault, e.g. a logo), <message>
   format:
     enabled: true
-    line: "<level><prefix><white><name><dark_gray> » <gray><message>"
+    line: "<rank><level><prefix><white><name><suffix><dark_gray> » <gray><message>"
     level-badge: "<dark_gray>[<aqua><level><dark_gray>] "
   # Mentioning an online player (with or without @) highlights the name and plays a ping for them.
   mentions:
@@ -236,8 +240,11 @@ chat:
 tablist:
   # Show the crew tag in front of names in the tab list.
   enabled: true
-  # Tags: <tag> <crew> <player> <rank_icon>
-  format: "<rank_icon> <dark_gray>[<tag><dark_gray>] <white><player>"
+  # Tags: <rank> (rank prefix from LuckPerms/Vault) <level> <tag> <crew> <player> <rank_icon> <suffix>
+  format: "<rank><level><rank_icon> <dark_gray>[<tag><dark_gray>] <white><player><suffix>"
+  # Players without a crew ("" = the plain name).
+  no-crew-format: "<rank><level><white><player><suffix>"
+  level-badge: "<dark_gray>[<aqua><level><dark_gray>] "
   # Header and footer of the tab list (turn off when you use the TAB plugin).
   # Tags: <player> <online> <max> <crew> <balance> <bounty>
   header-footer: true

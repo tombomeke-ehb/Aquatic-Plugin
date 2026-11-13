@@ -78,7 +78,7 @@ LIGHT = tuple(v / _l for v in LIGHT)
 
 # ---------------------------------------------------------------- Abyss Fruits
 
-def fruit(main, swirl, leaf="#3f9b3a", outline_col="#2a1626"):
+def fruit(main, swirl, leaf="#3f9b3a", outline_col="#2a1626", phase=0.0):
     img = new()
     main, swirl, leaf = rgb(main), rgb(swirl), rgb(leaf)
     cx, cy, R = 16.0, 18.5, 11.5
@@ -94,7 +94,7 @@ def fruit(main, swirl, leaf="#3f9b3a", outline_col="#2a1626"):
             col = shade(main, k)
             r = math.sqrt(d2)
             ang = math.atan2(dy, dx)
-            v = (r * 2.3 - ang / (2 * math.pi)) % 1.0  # the abyss swirl: a spiral over the skin
+            v = (r * 2.3 - ang / (2 * math.pi) + phase) % 1.0  # the abyss swirl: a spiral over the skin
             if 0.12 < r < 0.93 and v < 0.25:
                 col = shade(swirl, k * 0.8)
             if r > 0.9:
@@ -758,7 +758,17 @@ def write_json(path, data):
 
 def item(name, image, handheld=False):
     os.makedirs(os.path.join(PACK, "assets", "aquatic", "textures", "item"), exist_ok=True)
-    image.save(os.path.join(PACK, "assets", "aquatic", "textures", "item", name + ".png"))
+    path = os.path.join(PACK, "assets", "aquatic", "textures", "item", name + ".png")
+    if isinstance(image, list):  # an animation: frames stacked top to bottom
+        strip = Image.new("RGBA", (image[0].width, image[0].height * len(image)), (0, 0, 0, 0))
+        for i, frame in enumerate(image):
+            strip.paste(frame, (0, i * frame.height))
+        strip.save(path)
+        write_json(path + ".mcmeta", {"animation": {"frametime": 3, "interpolate": True}})
+    else:
+        image.save(path)
+        if os.path.exists(path + ".mcmeta"):
+            os.remove(path + ".mcmeta")
     write_json(os.path.join(PACK, "assets", "aquatic", "models", "item", name + ".json"), {
         "parent": "minecraft:item/handheld" if handheld else "minecraft:item/generated",
         "textures": {"layer0": "aquatic:item/" + name},
@@ -845,21 +855,192 @@ def vfx_item(name, image):
     })
 
 
+# ---------------------------------------------------------------- animated fruits (a preview of their power)
+
+FRUIT_FRAMES = 8
+
+
+def fruit_anim(main, swirl, leaf="#3f9b3a", outline_col="#2a1626", theme=None):
+    """Animation frames of a fruit: the swirl slowly turns, plus an effect that shows its power."""
+    frames = []
+    for f in range(FRUIT_FRAMES):
+        img = fruit(main, swirl, leaf, outline_col, phase=f / FRUIT_FRAMES)
+        t = f / FRUIT_FRAMES
+        if theme == "frost":  # glittering frost around it
+            for k in range(3):
+                a = 2 * math.pi * (t + k / 3)
+                x, y = int(16 + math.cos(a) * 13), int(18 + math.sin(a) * 12)
+                put(img, x, y, WHITE)
+                if (f + k) % 2 == 0:
+                    for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                        put(img, x + dx, y + dy, rgb("#bfe9ff"))
+        elif theme == "fire":  # flickering flames on top
+            for x in range(11, 21):
+                h = 1 + ((x * 7 + f * 3) % 4)
+                for k in range(h):
+                    put(img, x, 9 - k, rgb("#ffd34d") if k < h - 1 else rgb("#ff6a1a"))
+        elif theme == "thunder":  # sparks jumping around it
+            if f in (1, 2, 5, 6):
+                ox = 4 if f < 4 else 24
+                for k in range(5):
+                    put(img, ox + (k % 2), 12 + k * 2, rgb("#fff35c"))
+                    put(img, ox + 1 - (k % 2), 13 + k * 2, rgb("#fff9b0"))
+        elif theme == "light":  # pulsing glow and little rays
+            pulse = 0.12 + 0.12 * math.sin(t * 2 * math.pi)
+            px = img.load()
+            for y in range(N):
+                for x in range(N):
+                    r, g, b, a = px[x, y]
+                    if a:
+                        px[x, y] = mix((r, g, b), WHITE, pulse) + (a,)
+            for (x, y) in ((3, 18), (28, 18), (16, 30)) if f % 2 == 0 else ((5, 10), (26, 10), (16, 5)):
+                put(img, x, y, rgb("#fff6b0"))
+        elif theme == "water":  # bubbles rising
+            for k in range(3):
+                y = int(28 - ((t * 20 + k * 7) % 20))
+                x = 5 + k * 10
+                put(img, x, y, rgb("#a9dcff"))
+                put(img, x + 1, y, rgb("#ffffff"))
+        elif theme == "wind":  # streaks of wind blowing past
+            for k in range(2):
+                y = 12 + k * 9
+                x0 = int((t * 32 + k * 14) % 32)
+                for x in range(x0, min(N, x0 + 6)):
+                    if not opaque(img, x, y):
+                        put(img, x, y, rgb("#e0f7fa"))
+        elif theme == "venom":  # a drop of venom dripping
+            y = 29 + (f % 4) // 2
+            put(img, 22, y - 1, rgb("#7dcf3a"))
+            put(img, 22, y, rgb("#a6ff5c"))
+        elif theme == "sand":  # grains trickling down
+            for k in range(4):
+                y = int(20 + ((t * 12 + k * 3) % 12))
+                put(img, 5 + k * 7, y, rgb("#e2c275"))
+        elif theme == "void":  # dark wisps circling
+            for k in range(2):
+                a = 2 * math.pi * (t + k / 2)
+                x, y = int(16 + math.cos(a) * 14), int(18 + math.sin(a) * 13)
+                put(img, x, y, rgb("#9d4dff"))
+                put(img, x, y + 1, rgb("#3a2a52"))
+        frames.append(img)
+    return frames
+
+
+# ---------------------------------------------------------------- Tidewatch illagers (vindicator / pillager skin)
+
+def illager_skin(coat, trim, belts, hat_band):
+    """A 64x64 illager texture (vanilla layout) dressed in a Tidewatch uniform."""
+    img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    coat, trim, belts, band = rgb(coat), rgb(trim), rgb(belts), rgb(hat_band)
+    skin, skin_d, hair = rgb("#c99a72"), rgb("#a87a55"), rgb("#3b2a1e")
+    white, boot = rgb("#e8e4d8"), rgb("#1a1a1a")
+
+    def rect(x, y, w, h, col):
+        for yy in range(y, y + h):
+            for xx in range(x, x + w):
+                c = col(xx - x, yy - y) if callable(col) else col
+                put(img, xx, yy, c)
+
+    def cloth(base):
+        return lambda x, y: shade(base, 0.06 if (x * 7 + y * 13) % 17 == 0 else (-0.05 if (x * 5 + y * 3) % 19 == 0 else 0))
+
+    # head (8x10x8 at 0,0): a bicorne on top, a face in front, hair at the back
+    rect(8, 0, 8, 8, lambda x, y: band if x in (0, 7) or y in (0, 7) else coat)      # top of the hat
+    rect(16, 0, 8, 8, skin_d)                                                        # under the chin
+    for fx in (0, 8, 16, 24):                                                        # the four sides
+        rect(fx, 8, 8, 10, lambda x, y: coat if y < 2 else (band if y == 2 else skin))
+    rect(24, 11, 8, 7, hair)                                                         # back of the head
+    for (x, y, c) in ((9, 13, WHITE), (10, 13, rgb("#2b2b2b")), (13, 13, rgb("#2b2b2b")), (14, 13, WHITE),
+                      (9, 12, hair), (10, 12, hair), (13, 12, hair), (14, 12, hair),
+                      (10, 16, skin_d), (11, 16, skin_d), (12, 16, skin_d), (13, 16, skin_d)):
+        put(img, x, y, c)                                                            # eyes, brows, mouth
+    rect(24, 0, 8, 6, skin)                                                          # nose
+    # body (8x12x6 at 16,20): coat with crossed belts, buttons and epaulettes
+    rect(22, 20, 8, 6, lambda x, y: trim if x in (0, 7) else coat)                   # shoulders (epaulettes)
+    rect(30, 20, 8, 6, coat)
+    rect(16, 26, 6, 12, cloth(coat))
+    rect(30, 26, 6, 12, cloth(coat))
+    rect(36, 26, 8, 12, cloth(coat))
+    rect(22, 26, 8, 12, cloth(coat))
+    for k in range(8):                                                               # white cross belts
+        put(img, 22 + k, 26 + k, belts)
+        put(img, 29 - k, 26 + k, belts)
+    for y in (28, 31, 34, 37):
+        put(img, 25, y, trim)                                                        # gold buttons
+    for x in range(22, 30):
+        put(img, x, 37, trim)                                                        # belt line
+    # long coat (jacket, 8x20x6 at 0,38): coat tails with a trimmed hem
+    rect(0, 38, 28, 26, lambda x, y: (trim if y >= 24 else cloth(coat)(x, y)) if y >= 6 else coat)
+    rect(9, 56, 2, 8, white)                                                         # trousers showing between the tails
+    # legs (4x12x4 at 0,22): white trousers, black boots
+    rect(0, 22, 16, 16, lambda x, y: boot if y >= 12 else (white if y >= 4 else white))
+    rect(4, 22, 4, 4, white)
+    # arms (4x12x4 at 40,46): sleeves with a cuff and hands
+    rect(40, 46, 16, 16, lambda x, y: skin if y >= 14 else (trim if y == 13 else cloth(coat)(x, y)))
+    rect(48, 46, 4, 4, skin)
+    # crossed arms (44,22 and 40,38)
+    rect(44, 22, 16, 12, lambda x, y: skin if y >= 10 else (trim if y == 9 else cloth(coat)(x, y)))
+    rect(40, 38, 24, 8, cloth(coat))
+    rect(47, 42, 2, 4, skin)
+    rect(55, 42, 2, 4, skin)
+    return img
+
+
+# ---------------------------------------------------------------- the Musket (3D)
+
+MUSKET_DISPLAY = {  # a long gun: bigger in the hand than the pistols
+    "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.6, 0.6, 0.6]},
+    "thirdperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 3, 1], "scale": [0.85, 0.85, 0.85]},
+    "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 3.2, 1.13], "scale": [0.9, 0.9, 0.9]},
+    "fixed": {"rotation": [0, 180, 0], "scale": [1, 1, 1]},
+    "gui": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+}
+
+
+def musket_3d():
+    METAL, WOOD, BRASS, DARK = 0, 1, 2, 3
+    stock_rot = {"angle": 22.5, "axis": "z", "origin": [11, 8, 8]}
+    tex = parts_texture(["#8f96a3", "#8b5a2b", "#d9a521", "#2a2c30"])
+    tex.save(os.path.join(PACK, "assets", "aquatic", "textures", "item", "musket_parts.png"))
+    elements = [
+        cube([0, 9.5, 7.5], [11, 10.75, 8.5], METAL),           # long barrel (muzzle to the left)
+        cube([0, 9.25, 7.25], [0.75, 11, 8.75], BRASS),         # muzzle ring
+        cube([2, 8.5, 7.4], [11, 9.6, 8.6], WOOD),              # long wooden fore-stock
+        cube([4, 8.4, 7.3], [4.75, 11, 8.7], BRASS),            # barrel bands
+        cube([8, 8.4, 7.3], [8.75, 11, 8.7], BRASS),
+        cube([10, 7.5, 7], [13, 10.75, 9], WOOD),               # lock body
+        cube([10.5, 8.75, 6.8], [12.5, 10.25, 9.2], BRASS),     # lock plates
+        cube([11.5, 10.75, 7.6], [12.4, 12.5, 8.4], DARK),      # cock
+        cube([11, 3.5, 7.2], [16, 8.5, 8.8], WOOD, stock_rot),  # shoulder stock
+        cube([14.75, 3, 7], [16, 9, 9], BRASS, stock_rot),      # butt plate
+        cube([9, 6.75, 7.6], [11, 7.25, 8.4], BRASS),           # trigger guard
+        cube([10, 7.25, 7.8], [10.4, 8.5, 8.2], DARK),          # trigger
+    ]
+    write_json(os.path.join(PACK, "assets", "aquatic", "models", "item", "musket.json"), {
+        "textures": {"parts": "aquatic:item/musket_parts", "particle": "aquatic:item/musket_parts"},
+        "elements": elements,
+        "display": MUSKET_DISPLAY,
+    })
+    write_json(os.path.join(PACK, "assets", "aquatic", "items", "musket.json"), {
+        "model": {"type": "minecraft:model", "model": "aquatic:item/musket"},
+    })
+
+
 FRUITS = {
-    "ghostglass": fruit("#e8eef2", "#9aa7ad", outline_col="#3a444a"),
-    "riftshift": fruit("#ff9aa8", "#ff4f6d"),
-    "hollowvoid": fruit("#3a2a52", "#9d4dff", outline_col="#0d0714"),
-    "behemoth": fruit("#b8743a", "#5a3418"),
-    "galeborn": fruit("#c9f3f7", "#3fb8c9", outline_col="#123a40"),
-    "stoneskin": fruit("#8e9ba3", "#5c6b73", outline_col="#1f262a"),
-    "tidecaller": fruit("#2e86de", "#a9dcff", outline_col="#0b2a4a"),
-    "venomfang": fruit("#7dcf3a", "#2f5d1a", leaf="#2f5d1a", outline_col="#13260a"),
-    "dunemaw": fruit("#e2c275", "#9c7a3c", outline_col="#3d2b10"),
-    "luminara": fruit("#fff6b0", "#ffb703", outline_col="#5a4a10"),
-    "springcoil": fruit("#e86fb0", "#7a1f6e"),
-    "emberheart": fruit("#ff7a1a", "#c4100c"),
-    "rimefrost": fruit("#a7e6ff", "#ffffff", leaf="#bfe9ff", outline_col="#123247"),
-    "thunderveil": fruit("#ffe14a", "#8a3cd6", outline_col="#3a2600"),
+    "ghostglass": fruit_anim("#e8eef2", "#9aa7ad", outline_col="#3a444a"),
+    "riftshift": fruit_anim("#ff9aa8", "#ff4f6d", theme="void"),
+    "hollowvoid": fruit_anim("#3a2a52", "#9d4dff", outline_col="#0d0714", theme="void"),
+    "behemoth": fruit_anim("#b8743a", "#5a3418"),
+    "galeborn": fruit_anim("#c9f3f7", "#3fb8c9", outline_col="#123a40", theme="wind"),
+    "stoneskin": fruit_anim("#8e9ba3", "#5c6b73", outline_col="#1f262a"),
+    "tidecaller": fruit_anim("#2e86de", "#a9dcff", outline_col="#0b2a4a", theme="water"),
+    "venomfang": fruit_anim("#7dcf3a", "#2f5d1a", leaf="#2f5d1a", outline_col="#13260a", theme="venom"),
+    "dunemaw": fruit_anim("#e2c275", "#9c7a3c", outline_col="#3d2b10", theme="sand"),
+    "luminara": fruit_anim("#fff6b0", "#ffb703", outline_col="#5a4a10", theme="light"),
+    "springcoil": fruit_anim("#e86fb0", "#7a1f6e"),
+    "emberheart": fruit_anim("#ff7a1a", "#c4100c", theme="fire"),
+    "rimefrost": fruit_anim("#a7e6ff", "#ffffff", leaf="#bfe9ff", outline_col="#123247", theme="frost"),
+    "thunderveil": fruit_anim("#ffe14a", "#8a3cd6", outline_col="#3a2600", theme="thunder"),
 }
 
 
@@ -876,6 +1057,12 @@ def main():
     vfx_item("vfx_ring", vfx_ring())
     vfx_item("vfx_flash", vfx_flash())
     flintlock_3d()
+    musket_3d()
+    # the Tidewatch: pillagers (riflemen) and vindicators (officers) in uniform
+    ill = os.path.join(PACK, "assets", "minecraft", "textures", "entity", "illager")
+    os.makedirs(ill, exist_ok=True)
+    illager_skin("#14284d", "#e2b33c", "#e8e4d8", "#e2b33c").save(os.path.join(ill, "vindicator.png"))
+    illager_skin("#1d3a6b", "#e8e4d8", "#e8e4d8", "#e8e4d8").save(os.path.join(ill, "pillager.png"))
     hand_cannon_3d()
     # swords and weapons
     item("tidecleaver", blade("#ffffff", "#dfe6ea", "#aeb8bf", "#7f8a91", "#b0b7bd", "#2d4a6b", "#9fe3ff", width=2.8, tip=5), True)

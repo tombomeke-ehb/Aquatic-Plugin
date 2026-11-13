@@ -1,5 +1,31 @@
 # Changelog
 
+## 2.10.0 (2026-11-13)
+
+### Added
+- **LuckPerms/Vault ranks in chat and the tab list:**
+  - The chat line is now `[rank] [level] [crew] name [logo] » message`. The rank is your LuckPerms prefix and the logo your LuckPerms suffix.
+  - The tab list shows the same for everyone (players without a crew too) and refreshes every 30 seconds.
+  - Colour codes (`&c`, `&#ff8800`) and MiniMessage both work.
+  - The new tags are `<rank>` and `<suffix>` in `crews.yml`.
+- **The Musket:** a long gun with its own 3D model.
+  - 15 damage (double on a headshot), flies straight and far, takes 3.5 s to reload and uses 2 gunpowder per shot.
+  - Craft it or buy it in the Pirate Armory (4,500 Doubloons).
+- **Fruits preview their power:**
+  - **Animated textures:** every fruit's swirl turns, and each one shows its power: Rimefrost glitters with frost, Emberheart's flames flicker, Thunderveil sparks, Luminara pulses, Tidecaller bubbles, Galeborn has wind streaks, Venomfang drips, Dunemaw trickles sand, and Hollowvoid and Riftshift have wisps around them.
+  - **Held particles:** holding a fruit you haven't eaten gives off a few particles of its power. Turn this off with `effects.fruit-preview` in `items.yml`.
+- **Gun effects:** a muzzle flash, sparks and smoke when firing, a glowing tracer, and sparks and debris where the shot hits.
+
+### Changed
+- **The Tidewatch are illagers in uniform:**
+  - **Riflemen** are Pillagers with crossbows.
+  - **Lieutenants** and the **Warden Captain** are Vindicators. They move and fight like soldiers and still use their fruit powers.
+  - The resource pack redraws both in Tidewatch uniform. This changes how every pillager and vindicator looks, but in an ocean world the only ones are the Tidewatch and the Grand Raid's.
+
+### Your server
+- Configs upgrade automatically, with backups kept.
+- Update the resource pack link and SHA-1 in `server.properties` (see the release notes).
+
 ## 2.9.1 (2026-11-13)
 
 ### Changed

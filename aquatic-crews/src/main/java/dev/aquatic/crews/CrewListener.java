@@ -265,6 +265,8 @@ final class CrewListener implements Listener {
         UUID id = player.getUniqueId();
         Component prefix = module.chatPrefix(id);
         Component card = module.playerCard(id);
+        Component rank = module.permPrefix(player);
+        Component suffix = module.permSuffix(player);
         org.bukkit.configuration.ConfigurationSection cfg = module.config().getConfigurationSection("chat");
         boolean format = cfg != null && cfg.getBoolean("format.enabled", true);
         String line = cfg == null ? "" : cfg.getString("format.line", "<level><prefix><name><dark_gray> » <white><message>");
@@ -336,7 +338,7 @@ final class CrewListener implements Listener {
                     .clickEvent(net.kyori.adventure.text.event.ClickEvent.suggestCommand("/msg " + name + " "));
             if (format) {
                 return dev.aquatic.util.Text.mm(line, "level", badge, "prefix", prefix == null ? Component.empty() : prefix,
-                        "name", shownName, "message", msg);
+                        "name", shownName, "message", msg, "rank", rank, "suffix", suffix);
             }
             Component rendered = base.render(source, shownName, msg, viewer);
             return prefix == null ? rendered : Component.textOfChildren(prefix, rendered);

@@ -570,6 +570,20 @@ public final class ShopModule extends AquaticModule implements Listener {
                 file.set("categories.sailing.items", items);
             }
         }
+        if (from < 4) {
+            // 2.10.0: the Musket in the Pirate Armory
+            List<Map<?, ?>> items = new ArrayList<>(file.getMapList("categories.pirate.items"));
+            boolean has = items.stream().anyMatch(m -> "item:musket".equals(String.valueOf(m.get("item"))));
+            if (file.contains("categories.pirate", true) && !has) {
+                Map<String, Object> entry = new java.util.LinkedHashMap<>();
+                entry.put("item", "item:musket");
+                entry.put("amount", 1);
+                entry.put("buy", 4500);
+                entry.put("sell", 0);
+                items.add(entry);
+                file.set("categories.pirate.items", items);
+            }
+        }
         if (from < 3) {
             // 2.7.0: the Seafoam Milkshake in the Pirate Armory
             List<Map<?, ?>> items = new ArrayList<>(file.getMapList("categories.pirate.items"));

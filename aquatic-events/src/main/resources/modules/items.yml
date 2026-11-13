@@ -3,7 +3,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 6
+config-version: 7
 #  Custom pirate items: Abyss Fruits, Abyssal Iron, legendary swords, guns,
 #  cannons, the Tide Compass, Echo Conch, rum and the Conqueror of the Sea's crown.
 #
@@ -30,6 +30,8 @@ effects:
   quality: 1.0
   # Animated 3D effects (glowing slashes, shockwave rings, impact flashes). Needs resource-pack.enabled.
   animated: true
+  # Holding a fruit you have not eaten shows a little preview of its power (particles around your hand).
+  fruit-preview: true
 
 # How hard abilities hit. All "damage" numbers in this file are multiplied by these.
 abilities:
@@ -966,6 +968,48 @@ items:
         - "III"
         - " FW"
         - "  W"
+      ingredients:
+        I: IRON_INGOT
+        F: FLINT
+        W: OAK_PLANKS
+
+  # A long gun: much more damage and range than the flintlock, but slow to reload and it needs 2 powder.
+  musket:
+    type: gun
+    material: CROSSBOW
+    name: "<gradient:#8b5a2b:#d9a521><bold>Musket</bold></gradient>"
+    lore:
+      - "<gray>A long-barrelled gun for patient shooters."
+      - ""
+      - "<white>Right-click: <gray>fire (uses 2 gunpowder)"
+      - "<gray>Hits hard and flies straight and far."
+      - "<gray>Slow to reload."
+    item-model: "aquatic:musket"
+    custom-model-data: 0
+    max-stack: 1
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE]
+    gun:
+      ammo: GUNPOWDER
+      ammo-per-shot: 2
+      cooldown: 3.5
+      speed: 6.5
+      gravity: false
+      spread: 0.002
+      damage: 15
+      headshot-multiplier: 2.0
+      projectile-item: IRON_NUGGET
+      recoil: 0.3
+      particle: SMOKE
+      sound: entity.generic.explode
+      sound-pitch: 1.6
+    recipe:
+      enabled: true
+      amount: 1
+      shape:
+        - "III"
+        - "IIF"
+        - " WW"
       ingredients:
         I: IRON_INGOT
         F: FLINT

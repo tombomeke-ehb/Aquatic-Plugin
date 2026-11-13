@@ -97,6 +97,8 @@ public final class CrewsModule extends AquaticModule implements CrewService {
         kingPrefix = config().getString("chat.conqueror-prefix", "");
         tabEnabled = config().getBoolean("tablist.enabled", true);
         tabFormat = config().getString("tablist.format", "<dark_gray>[<tag><dark_gray>] <white><player>");
+        // refresh the tab list now and then: rank prefixes and levels change while players are online
+        runTimer(() -> Bukkit.getOnlinePlayers().forEach(this::updateTab), 100L, 600L);
 
         loadCrews();
         registerService(CrewService.class, this);
@@ -155,9 +157,7 @@ public final class CrewsModule extends AquaticModule implements CrewService {
         }
         if (tabEnabled) {
             for (Player p : Bukkit.getOnlinePlayers()) {
-                if (byPlayer.containsKey(p.getUniqueId())) {
-                    p.playerListName(null);
-                }
+                p.playerListName(null);
             }
         }
         dirty = true;
@@ -938,12 +938,33 @@ public final class CrewsModule extends AquaticModule implements CrewService {
             return;
         }
         CrewImpl crew = byPlayer.get(player.getUniqueId());
+        // rank prefix and suffix from LuckPerms (through Vault) and the pirate level, for everyone
+        Integer level = levelCache.get(player.getUniqueId());
+        String badge = config().getString("tablist.level-badge", "");
+        Object[] common = {"rank", PermsHook.prefix(player), "suffix", PermsHook.suffix(player), "player", player.getName(),
+                "level", level == null || badge.isEmpty() ? Component.empty() : Text.mm(badge, "level", level)};
         if (crew == null) {
-            player.playerListName(null);
+            String format = config().getString("tablist.no-crew-format", "");
+            player.playerListName(format.isEmpty() ? null : Text.mm(format, common));
         } else {
-            player.playerListName(Text.mm(tabFormat, "tag", crew.tagComponent(), "crew", crew.displayName(), "player", player.getName(),
-                    "rank_icon", Text.mm(rankIcon(crew.rankOf(player.getUniqueId())))));
+            Object[] all = java.util.Arrays.copyOf(common, common.length + 6);
+            all[common.length] = "tag";
+            all[common.length + 1] = crew.tagComponent();
+            all[common.length + 2] = "crew";
+            all[common.length + 3] = crew.displayName();
+            all[common.length + 4] = "rank_icon";
+            all[common.length + 5] = Text.mm(rankIcon(crew.rankOf(player.getUniqueId())));
+            player.playerListName(Text.mm(tabFormat, all));
         }
+    }
+
+    /** Chat: the rank prefix and suffix from the permissions plugin (LuckPerms through Vault). */
+    Component permPrefix(Player p) {
+        return PermsHook.prefix(p);
+    }
+
+    Component permSuffix(Player p) {
+        return PermsHook.suffix(p);
     }
 
     void updateTab(CrewImpl crew) {
@@ -998,5 +1019,19 @@ public final class CrewsModule extends AquaticModule implements CrewService {
         long now = System.currentTimeMillis();
         map.entrySet().removeIf(e -> e.getValue() < now || !crews.containsKey(e.getKey()));
         return map;
+    }
+
+    @Override
+    protected void migrateConfig(org.bukkit.configuration.file.YamlConfiguration file,
+                                 org.bukkit.configuration.file.YamlConfiguration defaults, int from) {
+        if (from < 1) {
+            // 2.10.0: LuckPerms/Vault rank prefix (<rank>) and suffix (<suffix>) in chat and the tab list
+            raise(file, "chat.format.line", "<level><prefix><white><name><dark_gray> » <gray><message>",
+                    defaults.getString("chat.format.line"));
+            raise(file, "tablist.format", "<rank_icon> <dark_gray>[<tag><dark_gray>] <white><player>",
+                    defaults.getString("tablist.format"));
+            addMissing(file, defaults, "tablist.no-crew-format");
+            addMissing(file, defaults, "tablist.level-badge");
+        }
     }
 }
