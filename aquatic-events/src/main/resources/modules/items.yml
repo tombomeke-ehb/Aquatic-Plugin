@@ -3,7 +3,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 1
+config-version: 2
 #  Custom pirate items: Abyss Fruits, Abyssal Iron, legendary swords, guns,
 #  cannons, the Tide Compass, Echo Conch, rum and the Conqueror of the Sea's crown.
 #
@@ -692,6 +692,7 @@ items:
       - ""
       - "<gray>On hit: <white>15% chance to call lightning (+3)"
       - "<gray>Right-click: <white>Arc Lash <dark_gray>(lightning jumps between enemies)"
+    item-model: "aquatic:storm_saber"
     custom-model-data: 0
     unbreakable: true
     flags: [HIDE_UNBREAKABLE]
@@ -1332,6 +1333,8 @@ items:
       - "<gray>Forged for whoever wins the Crown Tournament."
       - ""
       - "<gold>Only one may hold the throne of the capital."
+    item-model: "aquatic:conqueror_crown"
+    equipment-model: "aquatic:conqueror_crown"
     custom-model-data: 0
     glint: true
     unbreakable: true
@@ -1365,6 +1368,12 @@ armor-sets:
 # crafting table) and /recipes opens a menu with every recipe.
 recipes:
   unlock-in-recipe-book: true
+
+# Custom textures (the AquaticSMP resource pack, see the README). Turn this on only once your server
+# sends the pack to players (server.properties resource-pack=...), or they see a missing texture.
+# Items with "item-model" / "equipment-model" then use their own look; turning it off restores the normal look.
+resource-pack:
+  enabled: false
 
 messages:
   cleanse-done: "<aqua>The milkshake washes the power of the <white><fruit></white> away. <gray>You can eat a new fruit now."

@@ -93,6 +93,23 @@ Settings most servers change first:
 | Combat tag length, logout punishment, blocked commands | `combat.yml` | `combat-tag:` |
 | New-player PvP protection time | `combat.yml` | `new-player-protection.minutes` |
 
+## Resource pack (custom textures)
+
+The Crown of the Conqueror and the Stormcaller Saber have custom textures. To use them:
+
+1. Upload `AquaticSMP-ResourcePack.zip` (from the release, or build it with `python resourcepack/build_pack.py`) somewhere players can download it without logging in. For example https://mc-packs.net, which also shows the SHA-1.
+2. In `server.properties`, set:
+
+   ```
+   resource-pack=<the download link>
+   resource-pack-sha1=<the SHA-1>
+   require-resource-pack=true
+   ```
+
+3. Set `resource-pack.enabled: true` in `modules/items.yml` and run `/aquatic reload items`.
+
+New textures go in `resourcepack/build_pack.py`. Give the item `item-model: "aquatic:<name>"` in `items.yml`.
+
 ## Modules
 
 | Module | Config | What it does |

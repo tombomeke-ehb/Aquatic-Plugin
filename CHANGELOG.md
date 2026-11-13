@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.7.1 (2026-11-13)
+
+### Added
+- **Custom textures (resource pack):** the first two items have their own look.
+  - The **Crown of the Conqueror** has its own icon and is a real crown when worn: a gold band with spikes and gems.
+  - The **Stormcaller Saber** has an icy blue blade with a lightning stripe and a gold guard.
+- **Getting the pack:** `AquaticSMP-ResourcePack.zip` is attached to this release. The sources and the build script are in `resourcepack/` (`python resourcepack/build_pack.py`).
+- **Switching it on:** `resource-pack.enabled` in `items.yml` turns the custom looks on. Leave it off until your server sends the pack; turning it off again restores the normal look, also on items players already own.
+
+### Fixed
+- **Every door can be reached:** houses on a raised foundation (sloped ground) now get a landing and stone steps down from the door.
+- **Fewer windows beside the door:** only about 1 in 4 houses have windows right next to the door.
+
+### Changed
+- **The outer plaza is no longer empty:** a ring of tree planters, wells and small market stalls, and more crate piles.
+
 ## 2.7.0 (2026-11-13)
 
 ### Added

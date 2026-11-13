@@ -160,6 +160,7 @@ public final class ItemsModule extends AquaticModule implements ItemService {
         if (cmd > 0) {
             meta.setCustomModelData(cmd);
         }
+        applyModels(meta, cfg, material);
         if (cfg.getBoolean("glint", false)) {
             meta.setEnchantmentGlintOverride(true);
         }
@@ -333,10 +334,48 @@ public final class ItemsModule extends AquaticModule implements ItemService {
             org.bukkit.inventory.meta.ItemMeta meta = stack.getItemMeta();
             String raw = meta.getPersistentDataContainer().get(idKey, PersistentDataType.STRING);
             String now = dev.aquatic.core.LegacyNames.id(raw);
+            boolean changed = false;
             if (raw != null && !raw.equals(now)) {
                 meta.getPersistentDataContainer().set(idKey, PersistentDataType.STRING, now);
+                changed = true;
+            }
+            // keep the custom texture in line with the resource pack setting (also for items made earlier)
+            ItemDef def = now == null ? null : defs.get(now);
+            if (def != null) {
+                NamespacedKey before = meta.hasItemModel() ? meta.getItemModel() : null;
+                applyModels(meta, def.cfg, stack.getType());
+                NamespacedKey after = meta.hasItemModel() ? meta.getItemModel() : null;
+                changed |= !java.util.Objects.equals(before, after);
+            }
+            if (changed) {
                 stack.setItemMeta(meta);
             }
+        }
+    }
+
+    /**
+     * Custom textures from the resource pack: "item-model" (the item's look) and "equipment-model" (how a worn
+     * item looks). Only when resource-pack.enabled is on, otherwise players without the pack would see a
+     * missing texture; turning it off removes them again.
+     */
+    void applyModels(org.bukkit.inventory.meta.ItemMeta meta, ConfigurationSection cfg, Material material) {
+        boolean on = config().getBoolean("resource-pack.enabled", false);
+        String model = cfg.getString("item-model");
+        if (on && model != null) {
+            meta.setItemModel(NamespacedKey.fromString(model));
+        } else if (meta.hasItemModel() && "aquatic".equals(meta.getItemModel().getNamespace())) {
+            meta.setItemModel(null);
+        }
+        String worn = cfg.getString("equipment-model");
+        if (worn != null && on) {
+            org.bukkit.inventory.meta.components.EquippableComponent eq = meta.getEquippable();
+            org.bukkit.inventory.EquipmentSlot slot = material.getEquipmentSlot();
+            eq.setSlot(slot == org.bukkit.inventory.EquipmentSlot.HAND ? org.bukkit.inventory.EquipmentSlot.HEAD : slot);
+            eq.setModel(NamespacedKey.fromString(worn));
+            meta.setEquippable(eq);
+        } else if (meta.hasEquippable() && meta.getEquippable().getModel() != null
+                && "aquatic".equals(meta.getEquippable().getModel().getNamespace())) {
+            meta.setEquippable(null); // back to the item's normal worn look
         }
     }
 
@@ -515,6 +554,13 @@ public final class ItemsModule extends AquaticModule implements ItemService {
         if (from < 1) {
             // 2.7.0: the Seafoam Milkshake (removes your fruit power)
             addMissing(file, defaults, "items.seafoam_milkshake");
+        }
+        if (from < 2) {
+            // 2.7.1: custom textures (resource pack)
+            addMissing(file, defaults, "resource-pack");
+            addMissing(file, defaults, "items.conqueror_crown.item-model");
+            addMissing(file, defaults, "items.conqueror_crown.equipment-model");
+            addMissing(file, defaults, "items.storm_saber.item-model");
         }
     }
 }

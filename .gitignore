@@ -3,3 +3,5 @@ target/
 *.iml
 release/
 dependency-reduced-pom.xml
+
+resourcepack/dist/

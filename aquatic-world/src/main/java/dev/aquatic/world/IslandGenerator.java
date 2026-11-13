@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.HeightMap;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.TreeType;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -1129,6 +1130,7 @@ final class IslandGenerator extends AreaJob {
         // small cottages stay low; bigger houses often get a second floor; the tavern always does
         boolean twoStory = building == 1 || (building == 0 && w + l >= 5 && r.nextInt(5) < 2);
         int wallH = twoStory ? 7 : building == 2 ? 5 : 4;
+        boolean doorWindows = r.nextInt(4) == 0; // only some houses have windows right beside the door
         int x0 = cx + hx, z0 = cz + hz;
         for (int ox = -w; ox <= w; ox++) {
             for (int oz = -l; oz <= l; oz++) {
@@ -1146,6 +1148,11 @@ final class IslandGenerator extends AreaJob {
                     } else if (edgeX || edgeZ) {
                         int o = edgeX ? oz : ox, half = edgeX ? l : w;
                         boolean windowRow = h == 2 || (twoStory && h == 6);
+                        boolean doorWall = (edgeX && doorDx != 0 && Integer.signum(ox) == doorDx)
+                                || (edgeZ && doorDz != 0 && Integer.signum(oz) == doorDz);
+                        if (doorWall && h == 2 && Math.abs(o) == 1 && !doorWindows) {
+                            windowRow = false;
+                        }
                         if (twoStory && h == 4) {
                             m = frame;
                         } else if (windowRow && o != 0 && Math.abs(o) < half && Math.abs(o) % 2 == 1) {
@@ -1216,6 +1223,7 @@ final class IslandGenerator extends AreaJob {
         }
         world.getBlockAt(dx, base + 1, dz).setBlockData(lower, false);
         world.getBlockAt(dx, base + 2, dz).setBlockData(upper, false);
+        doorSteps(dx, dz, doorDx, doorDz, base, found);
         set(dx + doorDx, base + 3, dz + doorDz, Material.LANTERN);
         if (building == 1) {
             furnishTavern(x0, z0, base, w, l, doorDx, doorDz, used, r);
@@ -1340,6 +1348,39 @@ final class IslandGenerator extends AreaJob {
         set(x0, base + 4, z0, Material.LANTERN);
     }
 
+    /**
+     * When a house stands on a raised foundation (sloped ground), build a landing and stairs from the door
+     * down to the ground, so every door can be reached.
+     */
+    private void doorSteps(int dx, int dz, int ddx, int ddz, int base, Material found) {
+        for (int k = 1; k <= 8; k++) {
+            int sx = dx + ddx * k, sz = dz + ddz * k;
+            int ground = base - 12;
+            for (int y = base + 2; y > base - 12; y--) {
+                Material m = world.getBlockAt(sx, y, sz).getType();
+                if (m.isSolid() && !Tag.LEAVES.isTagged(m) && m != Material.SPRUCE_FENCE && m != Material.LANTERN) {
+                    ground = y;
+                    break;
+                }
+            }
+            int stepY = base - (k - 1);
+            if (stepY <= ground) {
+                return; // reached the ground
+            }
+            for (int up = 1; up <= 3; up++) {
+                set(sx, stepY + up, sz, Material.AIR);
+            }
+            if (k == 1) {
+                set(sx, stepY, sz, found);
+            } else {
+                setData(sx, stepY, sz, stairs(Material.STONE_BRICK_STAIRS, face(-ddx, -ddz)));
+            }
+            for (int y = stepY - 1; y > ground; y--) {
+                set(sx, y, sz, found);
+            }
+        }
+    }
+
     private static long key(int a, int b) {
         return ((long) a << 32) ^ (b & 0xffffffffL);
     }
@@ -1442,8 +1483,26 @@ final class IslandGenerator extends AreaJob {
                 list.add(new Feature(hx, hz, 1, () -> hedge(hx, hz, tall)));
             }
         }
+        // the outer plaza: planters with trees, wells and small market stalls
+        int outer = Math.min(34, plazaR - 8);
+        if (outer >= 28) {
+            for (int k = 0; k < 12; k++) {
+                double a = Math.toRadians(15 + 30 * k);
+                int ox = (int) Math.round(Math.cos(a) * outer), oz = (int) Math.round(Math.sin(a) * outer);
+                int type = k % 3;
+                if (type == 0 && plazaFree(ox, oz, 2)) {
+                    long ps = r.nextLong();
+                    list.add(new Feature(ox, oz, 6, () -> buildPlanter(ox, oz, new Random(ps))));
+                } else if (type == 1 && plazaFree(ox, oz, 2)) {
+                    list.add(new Feature(ox, oz, 3, () -> buildWell(ox, oz)));
+                } else if (type == 2 && plazaFree(ox, oz, 3)) {
+                    int look = k;
+                    list.add(new Feature(ox, oz, 5, () -> buildStall(ox, oz, look)));
+                }
+            }
+        }
         // crate piles and flower pots
-        for (int i = 0; i < 14; i++) {
+        for (int i = 0; i < 24; i++) {
             double a = r.nextDouble() * Math.PI * 2, d = 20 + r.nextDouble() * Math.max(1, plazaR - 26);
             int px = (int) Math.round(Math.cos(a) * d), pz = (int) Math.round(Math.sin(a) * d);
             if (plazaFree(px, pz, 1)) {
@@ -1451,6 +1510,34 @@ final class IslandGenerator extends AreaJob {
                 list.add(new Feature(px, pz, 2, () -> cratePile(px, pz, new Random(seedI))));
             }
         }
+    }
+
+    /** A small well: a stone rim around water, posts and a little roof. */
+    private void buildWell(int wx, int wz) {
+        int y = top[index(wx, wz)];
+        int x = cx + wx, z = cz + wz;
+        set(x, y - 3, z, Material.STONE);
+        for (int d = 0; d <= 2; d++) {
+            set(x, y - d, z, Material.WATER);
+        }
+        for (int ox = -1; ox <= 1; ox++) {
+            for (int oz = -1; oz <= 1; oz++) {
+                if (ox == 0 && oz == 0) {
+                    continue;
+                }
+                for (int d = 0; d <= 2; d++) {
+                    set(x + ox, y - d, z + oz, Material.STONE_BRICKS);
+                }
+                set(x + ox, y + 1, z + oz, Math.abs(ox) + Math.abs(oz) == 2 ? Material.STONE_BRICKS : Material.MOSSY_STONE_BRICKS);
+                if (Math.abs(ox) + Math.abs(oz) == 2) {
+                    set(x + ox, y + 2, z + oz, Material.SPRUCE_FENCE);
+                    set(x + ox, y + 3, z + oz, Material.SPRUCE_FENCE);
+                }
+                set(x + ox, y + 4, z + oz, Material.SPRUCE_SLAB);
+            }
+        }
+        set(x, y + 4, z, Material.SPRUCE_PLANKS);
+        set(x, y + 3, z, Material.CHAIN);
     }
 
     private void buildBench(int bx, int bz) {
