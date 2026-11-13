@@ -58,12 +58,98 @@ def scale2x(img):
     return out
 
 
-def icon(rows, palette, edits=()):
-    """A 32x32 icon from a 16x16 drawing; edits = (x, y, key) changes to the drawing (accents per weapon)."""
+def _mix(c1, c2, t):
+    return tuple(int(round(c1[i] + (c2[i] - c1[i]) * t)) for i in range(3))
+
+
+WARM, COOL = (255, 246, 214), (26, 18, 58)       # highlights lean to warm white, shadows to a cool dark violet
+BLADE, GRIP = "abcd", "hH"
+
+
+def icon(rows, palette, edits=(), tip=None, inlay=None, details=()):
+    """A 32x32 icon from a 16x16 drawing.
+
+    The drawing gives the shape and the base colours; the detail is added at 32x32:
+      - every part is bevelled: the pixels along its upper-left edge are lit (towards warm white), the ones along
+        its lower-right edge shaded (towards cool violet), so metal and cloth get volume and more colours
+      - blades get a fuller (a dark groove with a bright line beside it) and shift in colour towards "tip"
+      - grips are wrapped: two tones in bands
+      - the outline takes the colour of what it surrounds instead of being one flat dark colour
+      - "inlay" (a palette key) is set into the middle of the blade every few pixels
+      - details = extra pixels at 32x32: (x, y, key) or (x0, y0, x1, y1, key) rectangles
+    edits = (x, y, key) changes to the 16x16 drawing."""
     rows = [list(r) for r in rows]
     for x, y, ch in edits:
         rows[y][x] = ch
-    return scale2x(sprite(["".join(r) for r in rows], palette))
+    keys = sorted({ch for r in rows for ch in r if ch != "."})
+    index = {k: (i + 1, 0, 0) for i, k in enumerate(keys)}
+    big = scale2x(sprite(["".join(r) for r in rows], {k: "#%02x0000" % (i + 1) for i, k in enumerate(keys)}))
+    bp = big.load()
+    key = [[None] * 32 for _ in range(32)]
+    for y in range(32):
+        for x in range(32):
+            if bp[x, y][3]:
+                key[y][x] = keys[bp[x, y][0] - 1]
+    for d in details:
+        if len(d) == 3:
+            key[d[1]][d[0]] = d[2]
+        else:
+            for yy in range(d[1], d[3] + 1):
+                for xx in range(d[0], d[2] + 1):
+                    key[yy][xx] = d[4]
+    col = {k: _rgb(v) for k, v in palette.items()}
+    tipc = _rgb(tip) if tip else None
+
+    def k(x, y):
+        return key[y][x] if 0 <= x < 32 and 0 <= y < 32 else None
+
+    def edge(x, y):
+        v = k(x, y)
+        return v is None or v == "#"
+
+    out = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+    op = out.load()
+    for y in range(32):
+        for x in range(32):
+            v = key[y][x]
+            if v is None or v == "#":
+                continue
+            c = col[v]
+            if v in GRIP:                                             # the wrap
+                c = col["h"] if ((x - y) // 2) % 2 == 0 else col.get("H", col["h"])
+            if v in BLADE and "b" in col:
+                if v == "b" and k(x + 1, y + 1) in ("c", "d") and k(x - 1, y - 1) in ("a", "b"):
+                    c = _mix(col["b"], col.get("c", col["b"]), 0.75)   # the fuller: a groove down the middle
+                elif v == "b" and k(x - 1, y - 1) == "a":
+                    c = _mix(col["a"], col["b"], 0.35)                 # and the bright line beside it
+                if inlay and v == "b" and ((x - y) % 7 == 0) and not edge(x - 1, y) and not edge(x + 1, y):
+                    c = col[inlay]
+                elif tipc is not None:
+                    t = max(0.0, min(1.0, (x - y + 20) / 44.0))        # 0 at the guard, 1 at the point
+                    c = _mix(c, tipc, int(t * 5) / 5.0 * 0.6)          # in steps, not a smooth gradient
+            lit = edge(x, y - 1) or edge(x - 1, y)
+            dark = edge(x, y + 1) or edge(x + 1, y)
+            if lit and not dark:
+                c = _mix(c, WARM, 0.36)
+            elif dark and not lit:
+                c = _mix(c, COOL, 0.34)
+            elif not lit and not dark and (edge(x - 1, y - 1)) and v not in GRIP:
+                c = _mix(c, WARM, 0.16)                               # a soft second step of light
+            op[x, y] = c + (255,)
+    base_outline = col["#"]
+    for y in range(32):
+        for x in range(32):
+            if key[y][x] != "#":
+                continue
+            near = [op[xx, yy][:3] for xx, yy in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1), (x + 1, y + 1), (x - 1, y - 1))
+                    if 0 <= xx < 32 and 0 <= yy < 32 and op[xx, yy][3] and key[yy][xx] not in (None, "#")]
+            if near:
+                avg = tuple(sum(c[i] for c in near) // len(near) for i in range(3))
+                c = _mix(base_outline, _mix(avg, COOL, 0.72), 0.55)   # the outline picks up the colour it surrounds
+            else:
+                c = base_outline
+            op[x, y] = c + (255,)
+    return out
 
 
 # ------------------------------------------------------------------ the drawings
@@ -427,34 +513,42 @@ def pal(outline, main, guard=None, grip=None, gem=None, **extra):
     return p
 
 
-WEAPONS = {
-    "storm_saber": (SWORD, pal("#141a33", "#f4fbff #b9dcf5 #6fa3d8 #3f6aa8", "#ffe066 #c9972a", "#3d4f7a #27335a", "#ffe066 #fff7c2",
-                               x="#ffe066"), [(12, 3, "x"), (11, 4, "x"), (11, 5, "x"), (10, 6, "x"), (9, 6, "x")]),
-    "nightbloom": (SWORD, pal("#1c0b2b", "#ffd9ec #e58fc2 #a34f9c #5d2a78", "#f48fb1 #b8477e", "#3a1d52 #241135", "#ff9ec4 #ffe3f0",
-                              x="#ffe3f0"), [(12, 2, "x"), (10, 4, "x"), (8, 6, "x")]),
-    "tidecleaver": (CLEAVER, pal("#152233", "#ffffff #d5e3ec #9fb4c4 #66798c", "#8fd3ff #4a8fc2", "#2d4a6b #1b2f47", "#9fe3ff #e6f9ff"), []),
-    "leviathans_fang": (FANG, pal("#140406", "#ff8f7a #c23b32 #7a1c1c #3d0c10", "#6a6a78 #3a3a46", "#4a1414 #2a0a0a", "#ff5a44 #ffc0b0"), []),
-    "tide_rapier": (RAPIER, pal("#0e2a33", "#f0fffb #8fe6d6 #43cea2 #1f8f7a", "#f2c84b #b88a1e", "#1f5f8f #143f63", "#43cea2 #c9fff0"), []),
-    "abyss_cutlass": (CUTLASS, pal("#071c1e", "#b5fff0 #4fc7b5 #23807a #12494a", "#2fe0c0 #178f80", "#2b2f33 #17191c", "#00c9a7 #b5fff0"), []),
-    "coral_scimitar": (CUTLASS, pal("#3a1220", "#fff1e6 #ffb59e #f0706a #b83f54", "#f6d28a #c79a45", "#7a4a2e #4f2c1a", "#ff8f7a #fff1e6",
-                                    x="#fff1e6"), [(11, 3, "x"), (10, 5, "x")]),
-    "krakens_maul": (MAUL, pal("#1a0d33", "#e2c8ff #a678e0 #6b3fb0 #3d2073", "#b0b0c4 #6a6a82", "#8a6245 #55392a", x="#7dfff0"), []),
-    "harpoon": (HARPOON, pal("#24160c", "#f6fafc #c2ccd3 #8996a0 #5f6b75", "#e8d8a8 #b89e62", "#b07a45 #6e4524"), []),
-    "abyssal_anchor": (ANCHOR, pal("#06201f", "#a8fff0 #3fb8a8 #1f7a72 #0f4a48"), []),
-    "abyssal_baton": (BATON, pal("#071c1e", "#8ff5e6 #3fa79a #1c5f58 #0f3a38", "#e8f0f0 #9fb3b3", "#4a5058 #2a2e33", "#7dfff0 #e0fffb"), []),
-    "deepcore_pickaxe": (PICKAXE, pal("#0c2238", "#d6fbff #5fd3f0 #2a8fc0 #1a5a8a", None, "#9a7650 #5c432c"), []),
-    "key_sailor": (KEY, pal("#1d2a33", "#ffffff #d7e3ea #9aabb8 #6a7a88", None, None, "#3fb8c9 #bff6ff"), []),
-    "key_captain": (KEY, pal("#3a2408", "#fff3b0 #f2c230 #c98f1a #8f5f10", None, None, "#c0392b #ffb3a6"), []),
-    "key_kraken": (KEY, pal("#120a26", "#cbb8ee #8f72c8 #5a4296 #33245e", None, None, "#43e0c8 #c9fff5"), []),
-    "abyssal_shackles": (SHACKLES, pal("#06201f", "#a8fff0 #3fb8a8 #1f7a72 #0f4a48", "#d4dde3 #7d8b96"), []),
+WEAPONS = {  # name: (drawing, palette, edits at 16x16, extras for icon(): tip colour, inlay key, details at 32x32)
+    "storm_saber": (SWORD, pal("#141a33", "#f4fbff #a9cdf2 #5f8fd0 #34579a", "#ffe066 #c9972a", "#3d4f7a #27335a", "#ffe066 #fff7c2",
+                               x="#ffe066"), [], dict(tip="#fff6a8", inlay="x")),
+    "nightbloom": (SWORD, pal("#1c0b2b", "#f3b6e0 #b565b8 #6f3398 #3d1b63", "#f48fb1 #b8477e", "#3a1d52 #241135", "#ff9ec4 #ffe3f0",
+                              x="#ffe3f0"), [], dict(tip="#ffd3ea", inlay="x")),
+    "tidecleaver": (CLEAVER, pal("#152233", "#f2f8fc #b9cfdf #7d98b0 #516a85", "#8fd3ff #4a8fc2", "#2d4a6b #1b2f47", "#9fe3ff #e6f9ff",
+                                 x="#7fe3ff"), [], dict(tip="#ffffff", inlay="x")),
+    "leviathans_fang": (FANG, pal("#140406", "#e06a55 #8f2a26 #521416 #2a090c", "#77778a #3a3a46", "#4a1414 #2a0a0a", "#ff5a44 #ffc0b0"),
+                        [], dict(tip="#ff9a7a")),
+    "tide_rapier": (RAPIER, pal("#0e2a33", "#e6fff8 #86dccb #3fbf9c #1f8f7a", "#f2c84b #b88a1e", "#1f5f8f #143f63", "#43cea2 #c9fff0"),
+                    [], dict(tip="#ffffff")),
+    "abyss_cutlass": (CUTLASS, pal("#071c1e", "#9af2e2 #3fb3a3 #1f7470 #103f42", "#2fe0c0 #178f80", "#2b2f33 #17191c", "#00c9a7 #b5fff0",
+                                   x="#b5fff0"), [], dict(tip="#c8fff3", inlay="x")),
+    "coral_scimitar": (CUTLASS, pal("#3a1220", "#ffd9c7 #ff9d8a #e8625f #a83a50", "#f6d28a #c79a45", "#7a4a2e #4f2c1a", "#ff8f7a #fff1e6",
+                                    x="#fff1e6"), [], dict(tip="#fff4ea", inlay="x")),
+    "krakens_maul": (MAUL, pal("#1a0d33", "#e2c8ff #a678e0 #6b3fb0 #3d2073", "#b0b0c4 #6a6a82", "#8a6245 #55392a", x="#7dfff0"),
+                     [], dict(details=[(17, 8, 18, 9, "x"), (15, 10, 16, 11, "x"), (19, 6, 20, 7, "x")])),
+    "harpoon": (HARPOON, pal("#24160c", "#f6fafc #c2ccd3 #8996a0 #5f6b75", "#e8d8a8 #b89e62", "#b07a45 #6e4524"), [], dict()),
+    "abyssal_anchor": (ANCHOR, pal("#06201f", "#a8fff0 #3fb8a8 #1f7a72 #0f4a48", x="#e0fffb"),
+                       [], dict(details=[(11, 3, "x"), (12, 3, "x"), (14, 17, "x"), (14, 20, "x"), (14, 23, "x"), (9, 10, "x"), (22, 10, "x")])),
+    "abyssal_baton": (BATON, pal("#071c1e", "#8ff5e6 #3fa79a #1c5f58 #0f3a38", "#e8f0f0 #9fb3b3", "#4a5058 #2a2e33", "#7dfff0 #e0fffb"),
+                      [], dict(tip="#d5fff8")),
+    "deepcore_pickaxe": (PICKAXE, pal("#0c2238", "#d6fbff #5fd3f0 #2a8fc0 #1a5a8a", None, "#9a7650 #5c432c", x="#ffffff"),
+                         [], dict(details=[(9, 5, "x"), (14, 5, "x"), (19, 6, "x"), (26, 12, "x")])),
+    "key_sailor": (KEY, pal("#1d2a33", "#ffffff #d7e3ea #9aabb8 #6a7a88", None, None, "#3fb8c9 #bff6ff"), [], dict()),
+    "key_captain": (KEY, pal("#3a2408", "#fff3b0 #f2c230 #c98f1a #8f5f10", None, None, "#c0392b #ffb3a6"), [], dict()),
+    "key_kraken": (KEY, pal("#120a26", "#cbb8ee #8f72c8 #5a4296 #33245e", None, None, "#43e0c8 #c9fff5"), [], dict()),
+    "abyssal_shackles": (SHACKLES, pal("#06201f", "#a8fff0 #3fb8a8 #1f7a72 #0f4a48", "#d4dde3 #7d8b96"), [], dict()),
 }
 
 STEEL = "#e4ebf1 #a3b3c2 #6f8194 #46566c"
 ARMOUR = {
     "tidewarden_helmet": (HELMET, pal("#1a2230", STEEL, x="#d9b45a")),
     "tidewarden_chestplate": (CHESTPLATE, pal("#1a2230", STEEL, x="#d9b45a")),
-    "tidewarden_leggings": (LEGGINGS, pal("#1a2230", STEEL, x="#8a6a34", y="#d9b45a")),
-    "tidewarden_boots": (BOOTS, pal("#1a2230", STEEL, x="#d9b45a")),
+    "tidewarden_leggings": (LEGGINGS, pal("#1a2230", STEEL, x="#8a6a34", y="#d9b45a", plate="1")),
+    "tidewarden_boots": (BOOTS, pal("#1a2230", STEEL, x="#d9b45a", plate="1")),
     "corsair_hat": (TRICORN, pal("#0a0604", "#6a5040 #44322a #2c1f18 #1a120d", x="#d9b45a")),
     "corsair_coat": (COAT, pal("#2a0a0c", "#d0604e #a3332c #74201f #4a1416", x="#3a2318", l="#efe7d6", y="#e8c25a", z="#4a3020")),
     "corsair_breeches": (LEGGINGS, pal("#33230f", "#e0cba3 #bfa57a #96794f #6b5433", x="#4a3020", y="#e8c25a")),
@@ -468,6 +562,60 @@ ARMOUR = {
     "tidewatch_captain_hat": (TRICORN, pal("#3a3426", "#ffffff #ece7da #c9c2b0 #9a927d", x="#e8c25a")),
     "tidewatch_captain_coat": (COAT, pal("#3a3426", "#ffffff #ece7da #c9c2b0 #9a927d", x="#e8c25a", l="#ffffff", y="#e8c25a", z="#4a3020")),
 }
+
+
+# Details at 32x32 for the armour shapes. Keys: r = rivet / button light, R = its shadow, s = seam (dark line),
+# t = trim, e = emblem, w = white glint. They are added to every palette by armour_icon().
+PLATE_DETAILS = {
+    "helmet": [(14, 6, 17, 17, "t"), (15, 6, 15, 17, "w"),                       # the crest, with a glint
+               (6, 17, 25, 17, "s"), (6, 18, 25, 18, "t"),                       # brow band
+               (7, 14, "r"), (24, 14, "r"), (7, 15, "R"), (24, 15, "R"),         # rivets
+               (6, 21, 9, 21, "s"), (22, 21, 25, 21, "s"), (10, 10, 11, 10, "w")],
+    "chestplate": [(15, 8, 15, 23, "w"), (16, 8, 16, 23, "s"),                   # the ridge down the middle
+                   (10, 16, 21, 16, "s"), (10, 19, 21, 19, "s"), (10, 22, 21, 22, "s"),   # belly plates
+                   (4, 10, 9, 10, "t"), (22, 10, 27, 10, "t"),                   # pauldron rims
+                   (3, 7, "r"), (28, 7, "r"), (3, 8, "R"), (28, 8, "R"), (11, 9, "r"), (20, 9, "r"),
+                   (13, 11, 18, 14, "e"), (14, 12, 15, 12, "w"), (12, 6, 19, 6, "t")],
+    "leggings": [(8, 14, 13, 14, "s"), (18, 14, 23, 14, "s"),                    # thigh plates
+                 (8, 19, 13, 20, "t"), (18, 19, 23, 20, "t"),                    # knee guards
+                 (10, 19, "w"), (20, 19, "w"), (9, 24, 12, 24, "s"), (19, 24, 22, 24, "s"),
+                 (14, 6, 17, 7, "e"), (15, 6, "w")],
+    "boots": [(6, 12, 11, 12, "s"), (20, 12, 25, 12, "s"), (6, 16, 11, 16, "s"), (20, 16, 25, 16, "s"),
+              (8, 9, "r"), (22, 9, "r"), (3, 21, 5, 21, "w"), (27, 21, 28, 21, "w"),
+              (2, 26, 11, 26, "s"), (20, 26, 29, 26, "s")],
+}
+COAT_DETAILS = [(12, 12, 13, 12, "r"), (18, 12, 19, 12, "r"), (12, 16, 13, 16, "r"), (18, 16, 19, 16, "r"),   # buttons
+                (15, 18, 16, 19, "e"), (15, 18, "w"),                             # belt buckle
+                (2, 9, 7, 9, "t"), (24, 9, 29, 9, "t"),                           # cuffs
+                (4, 5, 7, 5, "e"), (24, 5, 27, 5, "e"),                           # epaulettes
+                (10, 21, 10, 22, "s"), (21, 21, 21, 22, "s"), (15, 20, 16, 23, "s")]
+CLOTH_LEG_DETAILS = [(14, 6, 17, 7, "e"), (15, 6, "w"), (10, 12, 10, 17, "s"), (21, 12, 21, 17, "s"),
+                     (8, 20, 13, 20, "s"), (18, 20, 23, 20, "s"), (9, 22, "r"), (22, 22, "r")]
+TRICORN_DETAILS = [(21, 12, 23, 14, "e"), (22, 12, "w"),                          # cockade
+                   (2, 18, 5, 18, "t"), (26, 18, 29, 18, "t"), (11, 10, 12, 10, "w")]
+BOOT_DETAILS = [(6, 14, 11, 14, "s"), (20, 14, 25, 14, "s"), (7, 10, 8, 11, "e"), (22, 10, 23, 11, "e"),
+                (3, 21, 5, 21, "w"), (27, 21, 28, 21, "w"), (2, 26, 11, 26, "s"), (20, 26, 29, 26, "s")]
+
+
+def armour_icon(rows, palette):
+    """An armour icon with the details that belong to its shape."""
+    p = dict(palette)
+    main = [_rgb(p[k]) for k in "abcd"]
+    trim = _rgb(p.get("x", p["a"]))
+    p.setdefault("t", "#%02x%02x%02x" % trim)
+    p.setdefault("e", p.get("y", p.get("x", p["a"])))
+    p.setdefault("r", "#%02x%02x%02x" % _mix(trim, WARM, 0.45))
+    p.setdefault("R", "#%02x%02x%02x" % _mix(main[3], COOL, 0.4))
+    p.setdefault("s", "#%02x%02x%02x" % _mix(main[2], COOL, 0.45))
+    p.setdefault("w", "#fffdf2")
+    details = {id(HELMET): PLATE_DETAILS["helmet"], id(CHESTPLATE): PLATE_DETAILS["chestplate"], id(COAT): COAT_DETAILS,
+               id(TRICORN): TRICORN_DETAILS}.get(id(rows))
+    if details is None and rows is LEGGINGS:
+        details = PLATE_DETAILS["leggings"] if p.get("plate") else CLOTH_LEG_DETAILS
+    if details is None and rows is BOOTS:
+        details = PLATE_DETAILS["boots"] if p.get("plate") else BOOT_DETAILS
+    p.pop("plate", None)
+    return icon(rows, p, details=details or ())
 
 
 # ------------------------------------------------------------------ effect sprites

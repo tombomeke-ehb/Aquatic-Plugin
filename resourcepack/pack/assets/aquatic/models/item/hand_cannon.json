@@ -809,13 +809,13 @@
     "thirdperson_righthand": {
       "rotation": [
         90,
-        0,
-        -165
+        -90,
+        0
       ],
       "translation": [
-        2,
-        0.1,
-        -3
+        0,
+        1.6,
+        3.6
       ],
       "scale": [
         0.7,

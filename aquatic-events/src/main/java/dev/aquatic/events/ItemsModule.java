@@ -162,6 +162,7 @@ public final class ItemsModule extends AquaticModule implements ItemService {
             meta.setCustomModelData(cmd);
         }
         applyModels(meta, cfg, material);
+        loadGun(meta, cfg);
         if (cfg.getBoolean("unbreakable", false)) {
             meta.setUnbreakable(true);
         }
@@ -344,11 +345,28 @@ public final class ItemsModule extends AquaticModule implements ItemService {
                 applyModels(meta, def.cfg, stack.getType());
                 NamespacedKey after = meta.hasItemModel() ? meta.getItemModel() : null;
                 changed |= !java.util.Objects.equals(before, after);
+                changed |= loadGun(meta, def.cfg);             // guns made before 2.22.0
             }
             if (changed) {
                 stack.setItemMeta(meta);
             }
         }
+    }
+
+    /**
+     * Guns are crossbows that always count as loaded: a loaded crossbow is held with both arms aiming forward
+     * and fires on right-click without the pulling animation (the shot itself is ours, see GearListener).
+     *
+     * @return true when the item was changed
+     */
+    boolean loadGun(org.bukkit.inventory.meta.ItemMeta meta, ConfigurationSection cfg) {
+        if (!"gun".equals(cfg.getString("type")) || !(meta instanceof org.bukkit.inventory.meta.CrossbowMeta bow)
+                || bow.hasChargedProjectiles()) {
+            return false;
+        }
+        bow.addChargedProjectile(new ItemStack(Material.ARROW));
+        meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ADDITIONAL_TOOLTIP);   // no "Projectile: Arrow" line
+        return true;
     }
 
     /**

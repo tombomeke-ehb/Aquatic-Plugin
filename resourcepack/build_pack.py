@@ -1066,8 +1066,10 @@ def plate_armor_layers(base, trim, accent, seed=11):
 GUN_DISPLAY = {  # like a normal held item (same as vanilla item/generated), but with depth
     "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.5, 0.5, 0.5]},
     "head": {"rotation": [0, 180, 0], "translation": [0, 13, 7], "scale": [1, 1, 1]},
-    # third person: the vanilla crossbow's hold, turned to the 3D gun (muzzle -x, top +y)
-    "thirdperson_righthand": {"rotation": [90, 0, -165], "translation": [2, 0.1, -3], "scale": [0.7, 0.7, 0.7]},
+    # third person: held like a loaded crossbow (both arms aim forward). In hand space the vanilla crossbow points
+    # along (0.26, 0, -0.97) with +y up; the gun's muzzle is -x and its top +y, so it turns -105 degrees about y.
+    # The translation puts the grip (not the middle of the model) in the hand.
+    "thirdperson_righthand": {"rotation": [0, -105, 0], "translation": [1.9, 2.1, -2.9], "scale": [0.7, 0.7, 0.7]},
     "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 3.2, 1.13], "scale": [0.68, 0.68, 0.68]},
     "fixed": {"rotation": [0, 180, 0], "scale": [1, 1, 1]},
 }
@@ -1093,7 +1095,12 @@ def cube(frm, to, mat, rotation=None):
     return el
 
 
-def model_3d(name, materials, elements):
+CANNON_DISPLAY = dict(GUN_DISPLAY)
+# A normal held item: +y of the hand points forward, +z up. Muzzle (-x) to +y and top (+y) to +z.
+CANNON_DISPLAY["thirdperson_righthand"] = {"rotation": [90, -90, 0], "translation": [0, 1.6, 3.6], "scale": [0.7, 0.7, 0.7]}
+
+
+def model_3d(name, materials, elements, display=None):
     """Writes a block-style 3D item model (and its texture) for an item."""
     tex = parts_texture(materials)
     os.makedirs(os.path.join(PACK, "assets", "aquatic", "textures", "item"), exist_ok=True)
@@ -1101,7 +1108,7 @@ def model_3d(name, materials, elements):
     write_json(os.path.join(PACK, "assets", "aquatic", "models", "item", name + ".json"), {
         "textures": {"parts": "aquatic:item/" + name + "_parts", "particle": "aquatic:item/" + name + "_parts"},
         "elements": elements,
-        "display": GUN_DISPLAY,
+        "display": display or GUN_DISPLAY,
     })
     write_json(os.path.join(PACK, "assets", "aquatic", "items", name + ".json"), {
         "model": {"type": "minecraft:model", "model": "aquatic:item/" + name},
@@ -1141,7 +1148,7 @@ def hand_cannon_3d():
         cube([11.25, 1.5, 6.5], [14.75, 3, 9.5], BRASS, grip_rot),    # butt cap
         cube([9, 6.5, 7.5], [11.5, 7, 8.5], BRASS),           # trigger guard
         cube([10, 7, 7.75], [10.5, 8, 8.25], DARK),           # trigger
-    ])
+    ], display=CANNON_DISPLAY)
     # an icon-style picture is not needed: the 3D model shows in the inventory too
 
 
@@ -2016,7 +2023,7 @@ def illager_hd(coat, trim, belts, hat, seed=1):
 
 MUSKET_DISPLAY = {  # a long gun: bigger in the hand than the pistols
     "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.6, 0.6, 0.6]},
-    "thirdperson_righthand": {"rotation": [90, 0, -165], "translation": [2, 0.1, -3], "scale": [0.9, 0.9, 0.9]},
+    "thirdperson_righthand": {"rotation": [0, -105, 0], "translation": [1.9, 0.9, -3.0], "scale": [0.9, 0.9, 0.9]},
     "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 3.2, 1.13], "scale": [0.9, 0.9, 0.9]},
     "fixed": {"rotation": [0, 180, 0], "scale": [1, 1, 1]},
     "gui": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
@@ -2089,8 +2096,8 @@ def main():
     illager_hd("#1d3a6b", "#e8e4d8", "#e8e4d8", "#16294a", seed=5).save(os.path.join(ill, "pillager.png"))
     hand_cannon_3d()
     # weapons, tools and keys: hand-drawn (pixelart.py), with a band of light that sweeps along them
-    for name, (rows, palette, edits) in pixelart.WEAPONS.items():
-        img = pixelart.icon(rows, palette, edits)
+    for name, (rows, palette, edits, extra) in pixelart.WEAPONS.items():
+        img = pixelart.icon(rows, palette, edits, **extra)
         glow = tuple(palette[k] for k in ("p", "P", "x") if k in palette)
         if name == "abyssal_shackles":
             item(name, img, drawn=True)
@@ -2110,7 +2117,7 @@ def main():
     item("seafoam_milkshake", milkshake())
     # armour sets: hand-drawn icons (pixelart.py) and how they look when worn
     for name, (rows, palette) in pixelart.ARMOUR.items():
-        item(name, pixelart.icon(rows, palette), drawn=True)
+        item(name, pixelart.armour_icon(rows, palette), drawn=True)
     equipment("tidewarden", *plate_armor_layers("#5c6976", "#8a7045", "#6a9e99"))
     equipment("corsair", *armor_layers("#7e2a25", "#3a2318", "#b8933f", legs="#b49a74", boots="#2a1d14", hat="#2a1d16"))
     # Tidewatch uniforms (worn by the garrison)

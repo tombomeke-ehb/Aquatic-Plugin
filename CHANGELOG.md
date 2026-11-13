@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.22.0 (2026-11-13)
+
+### Fixed
+- **Guns in third person.**
+  - The Flintlock and the Musket now count as loaded crossbows, so you hold them with both arms aiming forward, and firing no longer plays the crossbow-pulling animation. The shot itself is unchanged.
+  - The hold angle was wrong (the barrel pointed sideways). It is recalculated from the vanilla crossbow's hold, with the grip in the hand.
+  - The Hand Cannon (not a crossbow) gets its own hold: muzzle forward, top up.
+  - Guns made earlier update themselves when their owner joins or opens the inventory that holds them.
+
+### Changed
+- **More detailed item icons.** Weapons, tools, keys and armour keep their shapes but get real detail at full 32x32 resolution:
+  - **Blades:** the colour shifts towards the point, with a groove down the middle, a lit edge and a shaded edge, and inlays on some.
+  - **Grips** are wrapped in two tones; guards, pommels and tool heads are bevelled.
+  - **Armour:** trim, rivets, plate seams, a ridge and an emblem on the plate; buttons, a belt buckle, cuffs and epaulettes on the coats; a cockade on the hats.
+  - **Outlines** take the colour of what they surround instead of one flat dark colour.
+
 ## 2.21.0 (2026-11-13)
 
 ### Added
