@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.16.2 (2026-11-13)
+
+### Changed
+- **The Tidewatch look sharper** (resource pack): the Riflemen (pillagers) and the Lieutenants and Warden Captains (vindicators) have new 128x128 skins, twice the detail.
+  - A tricorn with a trim band, and a shaded face with a heavy brow, eyes and stubble.
+  - A woven uniform coat with crossed belts and a buckle, double rows of buttons, a collar, epaulettes with fringe and cuffs.
+  - A trimmed coat hem with split tails, white trousers with creases, and polished boots.
+  - Light from above: tops are brighter and sides darker, so they look rounded.
+  - Officers wear dark navy and gold; riflemen wear blue and white.
+
+### Your server
+- Only the resource pack changed. Swap the jar; the plugin sends the new pack by itself.
+
 ## 2.16.1 (2026-11-13)
 
 ### Changed

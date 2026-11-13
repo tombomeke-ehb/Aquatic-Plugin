@@ -1290,63 +1290,171 @@ def deepcore_pickaxe():
 
 # ---------------------------------------------------------------- Tidewatch illagers (vindicator / pillager skin)
 
-def illager_skin(coat, trim, belts, hat_band):
-    """A 64x64 illager texture (vanilla layout) dressed in a Tidewatch uniform."""
-    img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
-    coat, trim, belts, band = rgb(coat), rgb(trim), rgb(belts), rgb(hat_band)
-    skin, skin_d, hair = rgb("#c99a72"), rgb("#a87a55"), rgb("#3b2a1e")
-    white, boot = rgb("#e8e4d8"), rgb("#1a1a1a")
+def illager_hd(coat, trim, belts, hat, seed=1):
+    """A 128x128 (2x) illager skin in Tidewatch uniform: vanilla illager layout, every box drawn per face with
+    light from above (tops brighter, sides and backs darker), fabric texture, folds and the uniform's details."""
+    S = 2
+    img = Image.new("RGBA", (64 * S, 64 * S), (0, 0, 0, 0))
+    px = img.load()
+    coat, trim, belts, hat = rgb(coat), rgb(trim), rgb(belts), rgb(hat)
+    skin, skin_d, skin_l = rgb("#c49a74"), rgb("#9c7351"), rgb("#ddb48e")
+    hair, white, boot = rgb("#3b2a1e"), rgb("#ece8dc"), rgb("#17171a")
+    LIGHT = {"top": 0.14, "bottom": -0.3, "front": 0.0, "right": -0.1, "left": -0.1, "back": -0.18}
 
-    def rect(x, y, w, h, col):
-        for yy in range(y, y + h):
-            for xx in range(x, x + w):
-                c = col(xx - x, yy - y) if callable(col) else col
-                put(img, xx, yy, c)
+    def fabric(c, x, y, k=0.0):
+        n = _noise(x, y, seed)
+        weave = 0.035 if (x + y) % 2 == 0 else -0.02
+        return shade(c, k + weave + (n - 0.5) * 0.08)
 
-    def cloth(base):
-        return lambda x, y: shade(base, 0.06 if (x * 7 + y * 13) % 17 == 0 else (-0.05 if (x * 5 + y * 3) % 19 == 0 else 0))
+    def box(u, v, w, h, d, paint):
+        """paint(face, fx, fy, fw, fh) -> colour or None, in 2x pixels on that face."""
+        faces = {
+            "top": (u + d, v, w, d), "bottom": (u + d + w, v, w, d),
+            "right": (u, v + d, d, h), "front": (u + d, v + d, w, h),
+            "left": (u + d + w, v + d, d, h), "back": (u + d + w + d, v + d, w, h),
+        }
+        for face, (fu, fv, fw, fh) in faces.items():
+            for fy in range(fh * S):
+                for fx in range(fw * S):
+                    c = paint(face, fx, fy, fw * S, fh * S)
+                    if c is not None:
+                        c = shade(c, LIGHT[face])
+                        px[fu * S + fx, fv * S + fy] = c + (255,)
 
-    # head (8x10x8 at 0,0): a bicorne on top, a face in front, hair at the back
-    rect(8, 0, 8, 8, lambda x, y: band if x in (0, 7) or y in (0, 7) else coat)      # top of the hat
-    rect(16, 0, 8, 8, skin_d)                                                        # under the chin
-    for fx in (0, 8, 16, 24):                                                        # the four sides
-        rect(fx, 8, 8, 10, lambda x, y: coat if y < 2 else (band if y == 2 else skin))
-    rect(24, 11, 8, 7, hair)                                                         # back of the head
-    for (x, y, c) in ((9, 13, WHITE), (10, 13, rgb("#2b2b2b")), (13, 13, rgb("#2b2b2b")), (14, 13, WHITE),
-                      (9, 12, hair), (10, 12, hair), (13, 12, hair), (14, 12, hair),
-                      (10, 16, skin_d), (11, 16, skin_d), (12, 16, skin_d), (13, 16, skin_d)):
-        put(img, x, y, c)                                                            # eyes, brows, mouth
-    rect(24, 0, 8, 6, skin)                                                          # nose
-    # body (8x12x6 at 16,20): coat with crossed belts, buttons and epaulettes
-    rect(22, 20, 8, 6, lambda x, y: trim if x in (0, 7) else coat)                   # shoulders (epaulettes)
-    rect(30, 20, 8, 6, coat)
-    rect(16, 26, 6, 12, cloth(coat))
-    rect(30, 26, 6, 12, cloth(coat))
-    rect(36, 26, 8, 12, cloth(coat))
-    rect(22, 26, 8, 12, cloth(coat))
-    for k in range(8):                                                               # white cross belts
-        put(img, 22 + k, 26 + k, belts)
-        put(img, 29 - k, 26 + k, belts)
-    for y in (28, 31, 34, 37):
-        put(img, 25, y, trim)                                                        # gold buttons
-    for x in range(22, 30):
-        put(img, x, 37, trim)                                                        # belt line
-    # long coat (jacket, 8x20x6 at 0,38): coat tails with a trimmed hem
-    rect(0, 38, 28, 26, lambda x, y: (trim if y >= 24 else cloth(coat)(x, y)) if y >= 6 else coat)
-    rect(9, 56, 2, 8, white)                                                         # trousers showing between the tails
-    # legs (4x12x4 at 0,22): white trousers, black boots
-    rect(0, 22, 16, 16, lambda x, y: boot if y >= 12 else (white if y >= 4 else white))
-    rect(4, 22, 4, 4, white)
-    # arms (4x12x4 at 40,46): sleeves with a cuff and hands
-    rect(40, 46, 16, 16, lambda x, y: skin if y >= 14 else (trim if y == 13 else cloth(coat)(x, y)))
-    rect(48, 46, 4, 4, skin)
-    # crossed arms (44,22 and 40,38)
-    rect(44, 22, 16, 12, lambda x, y: skin if y >= 10 else (trim if y == 9 else cloth(coat)(x, y)))
-    rect(40, 38, 24, 8, cloth(coat))
-    rect(47, 42, 2, 4, skin)
-    rect(55, 42, 2, 4, skin)
+    # ---- head (8x10x8): tricorn at the top, a weathered face, hair at the back
+    def head(face, x, y, w, h):
+        if face == "top":
+            edge = min(x, y, w - 1 - x, h - 1 - y)
+            return trim if edge < 2 else fabric(hat, x, y, 0.05)
+        if face == "bottom":
+            return skin_d
+        if y < 5:                                          # hat crown
+            return fabric(hat, x, y)
+        if y < 7:                                          # gold (or white) hat band
+            return shade(trim, 0.15 if y == 5 else -0.1)
+        if face == "back":
+            return fabric(hair, x, y, -0.05) if y < 17 else skin_d
+        if face in ("right", "left"):
+            if y < 13 and ((face == "right" and x < 5) or (face == "left" and x > w - 6)):
+                return fabric(hair, x, y)                  # hair at the sides of the back
+            return shade(skin, -0.05 + (_noise(x, y, 7) - 0.5) * 0.06)
+        # the face
+        c = shade(skin, (_noise(x, y, 9) - 0.5) * 0.05)
+        if y in (8, 9) and 1 <= x <= 14:
+            c = hair if not (6 <= x <= 9) or y == 9 else c   # one heavy brow
+        if y in (10, 11):
+            if x in (3, 4, 11, 12):
+                c = white
+            if x in (5, 10):
+                c = rgb("#1d2e3d") if y == 11 else rgb("#33516b")
+            if x in (2, 13):
+                c = skin_d
+        if y in (12, 13) and x in (2, 3, 12, 13):
+            c = shade(skin, 0.06)                          # cheeks
+        if 14 <= y <= 15 and 4 <= x <= 11:
+            c = shade(skin, -0.12) if y == 14 else skin_d  # upper lip shadow
+        if y == 16 and 5 <= x <= 10:
+            c = rgb("#5a3a2a")                             # mouth
+        if y >= 17:
+            c = shade(skin_d, 0.05) if (x + y) % 3 else skin_d   # stubble
+        return c
+    box(0, 0, 8, 10, 8, head)
+
+    # ---- nose (2x4x2)
+    box(24, 0, 2, 4, 2, lambda f, x, y, w, h: shade(skin, 0.08 if f == "front" and y < 4 else -0.05))
+
+    # ---- body (8x12x6): the uniform jacket with crossed belts, buttons and a collar
+    def body(face, x, y, w, h):
+        if face == "top":
+            return trim if (x < 3 or x > w - 4) else fabric(coat, x, y)     # epaulettes on the shoulders
+        if face == "bottom":
+            return fabric(coat, x, y, -0.1)
+        c = fabric(coat, x, y)
+        if y < 3:
+            c = shade(white, -0.05) if face == "front" and 5 <= x <= 10 else trim   # collar
+        if face == "front":
+            d1, d2 = abs((x - 1) - y * 0.6), abs((w - 2 - x) - y * 0.6)
+            if (d1 < 1.6 or d2 < 1.6) and 3 <= y <= 19:
+                c = shade(belts, 0.08 if min(d1, d2) < 0.7 else -0.06)     # crossed belts
+            if 9 <= y <= 12 and 6 <= x <= 9:
+                c = rgb("#c9ccd1") if (x in (6, 9) or y in (9, 12)) else rgb("#8d939b")   # buckle
+            if x in (4, 11) and y % 5 == 1 and y > 3:
+                c = shade(trim, 0.3)                       # gold buttons
+            if y >= 21:
+                c = shade(rgb("#3a2414"), 0.05)            # leather belt
+                if 6 <= x <= 9:
+                    c = rgb("#c9a227")
+        if face == "back" and x in (7, 8) and y > 3:
+            c = fabric(coat, x, y, -0.1)                   # a seam
+        return c
+    box(16, 20, 8, 12, 6, body)
+
+    # ---- the long coat (8x20x6): skirts with a trimmed hem, split at the front and back
+    def jacket(face, x, y, w, h):
+        if face in ("top", "bottom"):
+            return fabric(coat, x, y, -0.05)
+        c = fabric(coat, x, y, -0.04 * (y / h))
+        if y < 24:
+            if face == "front":
+                d1, d2 = abs((x - 1) - y * 0.6), abs((w - 2 - x) - y * 0.6)
+                if (d1 < 1.6 or d2 < 1.6) and 3 <= y <= 19:
+                    c = shade(belts, 0.08)
+                if x in (4, 11) and y % 5 == 1 and y > 3:
+                    c = shade(trim, 0.3)
+            if 20 <= y <= 23:
+                c = shade(rgb("#3a2414"), 0.05)
+        if y >= 24:
+            if face in ("front", "back") and x in (7, 8):
+                c = shade(coat, -0.4)                      # the split between the coat tails
+            if (y - 24) % 9 == 4:
+                c = fabric(coat, x, y, -0.12)              # a fold
+        if y >= h - 3:
+            c = shade(trim, 0.1 if y == h - 3 else -0.05)  # trimmed hem
+        return c
+    box(0, 38, 8, 20, 6, jacket)
+
+    # ---- arms (4x12x4, when attacking) and the crossed arms
+    def arm(face, x, y, w, h):
+        if face == "top":
+            return trim                                    # epaulette
+        if face == "bottom":
+            return skin
+        if y < 4:
+            c = shade(trim, 0.15 if y < 2 else -0.05)      # epaulette
+            if y >= 2 and x % 2 == 0:
+                c = shade(trim, -0.2)                      # fringe
+            return c
+        if y >= h - 5:
+            return shade(skin, -0.05 if face != "front" else 0.03)   # hand
+        if h - 9 <= y < h - 5:
+            return shade(trim, 0.1 if y == h - 9 else -0.05)         # cuff
+        return fabric(coat, x, y)
+    box(40, 46, 4, 12, 4, arm)
+    box(44, 22, 4, 8, 4, lambda f, x, y, w, h: shade(skin, -0.03) if f == "bottom" or (y >= h - 4 and f != "top")
+        else (shade(trim, 0.05) if (y >= h - 7 and f != "top") else (trim if f == "top" else fabric(coat, x, y))))
+    box(40, 38, 8, 4, 4, lambda f, x, y, w, h: fabric(coat, x, y, -0.03))
+
+    # ---- legs (4x12x4): white trousers with creases, polished boots
+    def leg(face, x, y, w, h):
+        if face == "bottom":
+            return shade(boot, -0.1)
+        if face == "top":
+            return fabric(white, x, y)
+        if y >= h - 9:
+            c = boot
+            if face == "front" and x in (2, 3) and y < h - 4:
+                c = rgb("#4a4a52")                         # shine
+            if y >= h - 2:
+                c = rgb("#0b0b0d")                         # sole
+            if y == h - 9:
+                c = rgb("#2e2e33")                         # boot top
+            return c
+        c = fabric(white, x, y, -0.04)
+        if face == "front" and x in (3, 4):
+            c = shade(white, -0.1)                         # crease
+        return c
+    box(0, 22, 4, 12, 4, leg)
     return img
-
 
 # ---------------------------------------------------------------- the Musket (3D)
 
@@ -1423,8 +1531,9 @@ def main():
     # the Tidewatch: pillagers (riflemen) and vindicators (officers) in uniform
     ill = os.path.join(PACK, "assets", "minecraft", "textures", "entity", "illager")
     os.makedirs(ill, exist_ok=True)
-    illager_skin("#14284d", "#e2b33c", "#e8e4d8", "#e2b33c").save(os.path.join(ill, "vindicator.png"))
-    illager_skin("#1d3a6b", "#e8e4d8", "#e8e4d8", "#e8e4d8").save(os.path.join(ill, "pillager.png"))
+    # officers (vindicators): dark navy with gold; riflemen (pillagers): blue with white (128x128, twice the detail)
+    illager_hd("#14284d", "#e2b33c", "#e8e4d8", "#0f1d38", seed=3).save(os.path.join(ill, "vindicator.png"))
+    illager_hd("#1d3a6b", "#e8e4d8", "#e8e4d8", "#16294a", seed=5).save(os.path.join(ill, "pillager.png"))
     hand_cannon_3d()
     # swords and weapons
     item("tidecleaver", shimmer(blade("#ffffff", "#dfe6ea", "#aeb8bf", "#7f8a91", "#b0b7bd", "#2d4a6b", "#9fe3ff", width=2.8, tip=5), glow=("#9fe3ff",)), True)
