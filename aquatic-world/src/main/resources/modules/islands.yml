@@ -18,7 +18,7 @@
 
 # How often (seconds) changed data is written to plugins/AquaticSMP/data/islands/ (also saved on shutdown).
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 6
+config-version: 7
 
 autosave-seconds: 120
 
@@ -793,6 +793,20 @@ facilities:
   build-seconds: 30
   # Blocks fly into place (display entities, seen by everyone). false = they just appear one by one.
   animate: true
+  # Your own facilities: add a type with a "schematic" (a file in plugins/AquaticSMP/schematics). Example:
+  #   tavern:
+  #     display-name: "<gold><bold>Tavern"
+  #     icon: BREWING_STAND
+  #     description: ["<gray>Drinks for the whole crew."]
+  #     schematic: "tavern.schem"   # .schem (WorldEdit/FAWE) or .nbt (structure block)
+  #     front: north                 # the side with the entrance, as the build was saved
+  #     y-offset: 0                  # 0 = its bottom layer replaces the ground; -1 = one deeper
+  #     foundation: STONE_BRICKS     # optional: fill gaps under it down to the ground
+  #     needs-water: false           # true = like the dock, it has to reach out over the water
+  #     cost: 5000
+  #     limit: 1
+  #     income-bonus: 0.05
+  # A built-in facility can use a schematic too: give it "schematic" and your build replaces ours.
   types:
     watchtower:
       display-name: "<aqua><bold>Watchtower"
@@ -849,6 +863,38 @@ facilities:
       limit: 1
       income-bonus: 0.05
       build-seconds: 45
+
+# -------------------------------------------------------------------------------------
+# Schematics: builds from files in plugins/AquaticSMP/schematics (.schem from WorldEdit/FAWE, or .nbt from
+# a structure block). Save a build with its entrance on the NORTH side; its bottom layer replaces the ground.
+# Only blocks are copied (not chest contents or sign text yet). Structure void is skipped, air clears.
+#   /island admin schematic list                      the files
+#   /island admin schematic preview <file> [front]    a ghost of it in front of you (only you see it)
+#   /island admin schematic rotate | move | cancel
+#   /island admin schematic paste [instant]           build it (rising with the animation, or at once)
+#   /island admin schematic undo                      put back what your last paste replaced
+# -------------------------------------------------------------------------------------
+schematics:
+  # Bigger files are refused (previews of huge builds are heavy for the player's client).
+  max-blocks: 250000
+  # How long an animated paste takes.
+  paste-seconds: 40
+  # Builds with more blocks than this rise layer by layer without flying blocks.
+  animate-max-blocks: 6000
+  # Default height for admin pastes (0 = the bottom layer replaces the ground).
+  y-offset: 0
+
+# Builds placed automatically on every new island of a type when it is generated (and on an existing
+# island with /island admin builds <island>). offset: [x, z] or [x, y, z] from the island centre
+# (y = up/down from the ground there). facing: where the entrance points (north/east/south/west).
+# front: the entrance side as the build was saved. foundation: optional block to fill gaps under it.
+# Example, for the spawn town on the capital:
+#   CAPITAL:
+#     - {schematic: "town_hall.schem", offset: [0, 30], facing: north}
+#     - {schematic: "fountain.nbt", offset: [0, -18]}
+builds:
+  CAPITAL: []
+  VILLAGE: []
 
 # -------------------------------------------------------------------------------------
 # Tidewatch outposts (island type TIDEWATCH): a garrison defends the fort while players are on the
@@ -1014,6 +1060,20 @@ bluemap:
 #  Messages
 # =====================================================================================
 messages:
+  schematic-list-header: "<aqua>Schematics <gray>(<count>) in plugins/AquaticSMP/schematics <dark_gray>(click one to preview)"
+  schematic-list-line: " <gray>- <white><file>"
+  schematic-list-empty: " <gray>None yet. Put .schem (WorldEdit) or .nbt (structure block) files in that folder."
+  schematic-error: "<red>Can't use the schematic <white><file></white>: <gray><reason>"
+  schematic-preview: "<gold>Preview: <white><file></white> <gray>(<w> x <l>, <h> high, <blocks> blocks; only you can see it)"
+  schematic-buttons: "<click:run_command:'/island admin schematic paste'><hover:show_text:'<gray>Build it here (with the animation)'><green><bold>[Paste]</bold></green></hover></click> <click:run_command:'/island admin schematic paste instant'><hover:show_text:'<gray>Build it here at once'><dark_green><bold>[Paste now]</bold></dark_green></hover></click> <click:run_command:'/island admin schematic rotate'><hover:show_text:'<gray>Turn it a quarter'><yellow><bold>[Rotate]</bold></yellow></hover></click> <click:run_command:'/island admin schematic move'><hover:show_text:'<gray>Put it in front of where you stand now'><aqua><bold>[Move here]</bold></aqua></hover></click> <click:run_command:'/island admin schematic cancel'><hover:show_text:'<gray>Remove the preview'><red><bold>[Cancel]</bold></red></hover></click>"
+  schematic-pasting: "<green>Building <white><file></white> <gray>(<blocks> blocks, about <seconds> seconds). <click:run_command:'/island admin schematic undo'><hover:show_text:'<gray>Put everything back'><red>[Undo]</red></hover></click>"
+  schematic-pasted-now: "<green>Pasted <white><file></white> <gray>(<blocks> blocks). <click:run_command:'/island admin schematic undo'><hover:show_text:'<gray>Put everything back'><red>[Undo]</red></hover></click>"
+  schematic-finished: "<green><white><file></white> is finished."
+  schematic-undone: "<yellow>Undone: <white><blocks></white> blocks are back as they were."
+  schematic-nothing-to-undo: "<red>Nothing to undo."
+  schematic-usage: "<red>Usage: <white>/island admin schematic <list|preview <file> [front]|rotate|move|paste [instant]|cancel|undo>"
+  builds-applied: "<green>Placed <white><count></white> build(s) on <white><island></white>."
+  builds-none: "<red>No builds for <white><type></white> islands. Add them under builds.<type> in islands.yml."
   manage-facilities: "<gold><bold>Facilities"
   manage-facilities-hint: "<gray>Buildings on this island: <white><count>/<max>"
   manage-facilities-click: "<yellow>Click to build one (with a preview first)"

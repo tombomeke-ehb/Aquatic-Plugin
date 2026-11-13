@@ -109,6 +109,18 @@ Building it yourself: run `python resourcepack/build_pack.py <version>` **before
 
 New textures go in `resourcepack/build_pack.py`. Give the item `item-model: "aquatic:<name>"` in `items.yml`.
 
+## Your own builds (schematics)
+
+Builders can make builds in-game and save them with WorldEdit/FAWE (`.schem`) or a structure block (`.nbt`). Then:
+
+1. Put the files in `plugins/AquaticSMP/schematics`, with the entrance on the north side.
+2. Do one of these:
+   - Paste them at spawn with a preview and undo: `/island admin schematic preview <file>`.
+   - List them per island type under `builds` in `islands.yml`, so every new capital or village gets them.
+   - Make them into facilities crews can buy (`facilities.types.<id>.schematic`).
+
+See COMMANDS.md (Schematics) for the details.
+
 ## Modules
 
 | Module | Config | What it does |

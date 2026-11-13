@@ -92,7 +92,7 @@ final class IslandCommands {
             switch (what) {
                 case "menu" -> f.open(p, standingOn(p));
                 case "preview" -> {
-                    AquaticCommand.need(a, 2, "/island facility preview <" + String.join("|", IslandFacilities.TYPES) + ">");
+                    AquaticCommand.need(a, 2, "/island facility preview <" + String.join("|", m.facilities().types()) + ">");
                     f.preview(p, standingOn(p), a[1]);
                 }
                 case "build" -> f.build(p);
@@ -110,7 +110,7 @@ final class IslandCommands {
         }).usage("[preview <type>|build|rotate|move|cancel|remove|list]").description("Place buildings on your island (with a preview first)")
                 .playerOnly().playerPermission("aquatic.islands.manage")
                 .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(List.of("preview", "build", "rotate", "move", "cancel", "remove", "list"), a[0])
-                        : a.length == 2 && a[0].equalsIgnoreCase("preview") ? AquaticCommand.filter(IslandFacilities.TYPES, a[1]) : List.of());
+                        : a.length == 2 && a[0].equalsIgnoreCase("preview") ? AquaticCommand.filter(m.facilities().types(), a[1]) : List.of());
         cmd.sub("upgrade", (s, a) -> {
             AquaticCommand.need(a, 1, "/island upgrade <" + String.join("|", IslandUpgrades.TYPES) + ">");
             Player p = AquaticCommand.player(s);
@@ -195,6 +195,51 @@ final class IslandCommands {
                 .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(List.of("1500", "3000", "5000"), a[0]) : List.of());
         cmd.sub("cancel", this::cancel).usage("[island]").description("Stop island generation (also a running spawnrandom)")
                 .permission(ADMIN).hidden().completer((s, a) -> a.length == 1 ? islandNames(a[0]) : List.of());
+        cmd.sub("schematic", (s2, a2) -> {
+            IslandFacilities f = m.facilities();
+            String what = a2.length == 0 ? "list" : a2[0].toLowerCase(Locale.ROOT);
+            switch (what) {
+                case "list" -> {
+                    List<String> files = f.schematicFiles();
+                    m.send(s2, "schematic-list-header", "count", files.size());
+                    if (files.isEmpty()) {
+                        s2.sendMessage(m.rawMsg("schematic-list-empty"));
+                    }
+                    for (String file : files) {
+                        s2.sendMessage(m.rawMsg("schematic-list-line", "file", file).clickEvent(
+                                net.kyori.adventure.text.event.ClickEvent.runCommand("/island admin schematic preview " + file)));
+                    }
+                }
+                case "preview" -> {
+                    AquaticCommand.need(a2, 2, "/island admin schematic preview <file> [north|east|south|west]");
+                    f.adminPreview(AquaticCommand.player(s2), a2[1], a2.length > 2 ? a2[2] : "north");
+                }
+                case "rotate" -> f.rotate(AquaticCommand.player(s2));
+                case "move" -> f.move(AquaticCommand.player(s2));
+                case "paste" -> f.adminPaste(AquaticCommand.player(s2), a2.length > 1 && a2[1].equalsIgnoreCase("instant"));
+                case "cancel" -> {
+                    if (!f.cancel(AquaticCommand.player(s2), true)) {
+                        throw new CommandFail(m.rawMsg("facility-no-preview"));
+                    }
+                }
+                case "undo" -> f.adminUndo(AquaticCommand.player(s2));
+                default -> throw new CommandFail(m.rawMsg("schematic-usage"));
+            }
+        }).usage("<list|preview <file> [front]|rotate|move|paste [instant]|cancel|undo>")
+                .description("Preview and paste builds from plugins/AquaticSMP/schematics").permission(ADMIN).hidden()
+                .completer((s2, a2) -> a2.length == 1 ? AquaticCommand.filter(List.of("list", "preview", "rotate", "move", "paste", "cancel", "undo"), a2[0])
+                        : a2.length == 2 && a2[0].equalsIgnoreCase("preview") ? AquaticCommand.filter(m.facilities().schematicFiles(), a2[1])
+                        : a2.length == 3 && a2[0].equalsIgnoreCase("preview") ? AquaticCommand.filter(List.of("north", "east", "south", "west"), a2[2])
+                        : a2.length == 2 && a2[0].equalsIgnoreCase("paste") ? AquaticCommand.filter(List.of("instant"), a2[1]) : List.of());
+        cmd.sub("builds", (s2, a2) -> {
+            AquaticCommand.need(a2, 1, "/island admin builds <island>");
+            IslandImpl is = island(String.join(" ", a2));
+            if (m.config().getMapList("builds." + is.type.name()).isEmpty()) {
+                throw new CommandFail(m.rawMsg("builds-none", "type", is.type.name()));
+            }
+            m.facilities().applyBuilds(is, s2);
+        }).usage("<island>").description("Place the builds from islands.yml (builds.<TYPE>) on an island")
+                .permission(ADMIN).hidden().completer((s2, a2) -> a2.length == 1 ? islandNames(a2[0]) : List.of());
         cmd.sub("shield", this::shield).usage("<island> <minutes>").description("Protect an island from conquest for a while")
                 .permission(ADMIN).hidden().completer((s, a) -> a.length == 1 ? islandNames(a[0]) : List.of());
         return cmd;

@@ -36,6 +36,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,7 +54,8 @@ import java.util.UUID;
  */
 final class IslandFacilities implements Listener {
 
-    static final List<String> TYPES = List.of("watchtower", "forge", "farm", "dock", "storehouse", "lighthouse");
+    /** The facilities with a built-in design; more can be added in islands.yml with a "schematic". */
+    static final List<String> BUILT_IN = List.of("watchtower", "forge", "farm", "dock", "storehouse", "lighthouse");
 
     /** A built facility: its anchor (ground level), rotation and footprint. */
     record Placed(String type, int ax, int ay, int az, int rot, int minX, int minZ, int maxX, int maxZ) {
@@ -92,6 +94,9 @@ final class IslandFacilities implements Listener {
     }
 
     private static final class Preview {
+        /** An admin previewing a schematic file (no island rules, pasted for free). */
+        boolean admin;
+        Blueprint bp;
         String type;
         String islandId;
         Location stand;
@@ -115,7 +120,7 @@ final class IslandFacilities implements Listener {
         }
     }
 
-    private static final int[] MENU_SLOTS = {10, 12, 14, 16, 28, 30, 32, 34};
+    private static final int[] MENU_SLOTS = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34};
     private static final int SLOT_BACK = 49;
 
     private final IslandsModule m;
@@ -159,12 +164,120 @@ final class IslandFacilities implements Listener {
         return eco == null ? Text.number(amount) : eco.format(amount);
     }
 
+    /** Every facility players can build: the built-in ones and those with a "schematic" in islands.yml. */
+    List<String> types() {
+        List<String> out = new ArrayList<>();
+        ConfigurationSection all = m.config().getConfigurationSection("facilities.types");
+        if (all == null) {
+            return out;
+        }
+        for (String id : all.getKeys(false)) {
+            ConfigurationSection d = all.getConfigurationSection(id);
+            if (d != null && d.getBoolean("enabled", true) && (d.contains("schematic") || BUILT_IN.contains(id))) {
+                out.add(id);
+            }
+        }
+        return out;
+    }
+
     private String type(String raw) {
         String t = raw.toLowerCase(Locale.ROOT);
-        if (!TYPES.contains(t) || def(t) == null || !def(t).getBoolean("enabled", true)) {
-            throw new CommandFail(m.rawMsg("facility-unknown", "type", raw, "types", String.join(", ", TYPES)));
+        if (!types().contains(t)) {
+            throw new CommandFail(m.rawMsg("facility-unknown", "type", raw, "types", String.join(", ", types())));
         }
         return t;
+    }
+
+    // ------------------------------------------------------------------ schematic files
+
+    private final Map<String, Schematic> schematicCache = new HashMap<>();
+    private final Map<String, Long> schematicStamp = new HashMap<>();
+
+    File schematicFolder() {
+        File folder = new File(m.plugin().getDataFolder(), "schematics");
+        if (!folder.isDirectory() && folder.mkdirs()) {
+            try {
+                java.nio.file.Files.writeString(new File(folder, "README.txt").toPath(), String.join(System.lineSeparator(),
+                        "Put builds here: WorldEdit/FAWE .schem files or vanilla structure-block .nbt files.",
+                        "Save them with the entrance on the NORTH side (or set front: south/east/west where you use them).",
+                        "Use them as facilities (islands.yml facilities.types.<id>.schematic), as automatic builds on",
+                        "islands (islands.yml builds), or paste them by hand: /island admin schematic preview <file>."));
+            } catch (java.io.IOException ignored) {
+            }
+        }
+        return folder;
+    }
+
+    List<String> schematicFiles() {
+        String[] names = schematicFolder().list((dir, n) -> n.endsWith(".schem") || n.endsWith(".nbt"));
+        List<String> out = new ArrayList<>(names == null ? List.of() : List.of(names));
+        java.util.Collections.sort(out);
+        return out;
+    }
+
+    /** A schematic by file name (".schem" or ".nbt" may be left out); read again when the file changed. */
+    Schematic schematic(String name) {
+        if (name == null || name.isBlank() || name.contains("..") || name.contains("/") || name.contains("\\")) {
+            throw new CommandFail(m.rawMsg("schematic-error", "file", String.valueOf(name), "reason", "bad file name"));
+        }
+        File folder = schematicFolder();
+        File file = new File(folder, name);
+        if (!file.isFile()) {
+            for (String ext : List.of(".schem", ".nbt")) {
+                if (new File(folder, name + ext).isFile()) {
+                    file = new File(folder, name + ext);
+                    break;
+                }
+            }
+        }
+        if (!file.isFile()) {
+            throw new CommandFail(m.rawMsg("schematic-error", "file", name, "reason", "no such file in plugins/AquaticSMP/schematics"));
+        }
+        String key = file.getName();
+        Schematic cached = schematicCache.get(key);
+        if (cached != null && schematicStamp.getOrDefault(key, -1L) == file.lastModified()) {
+            return cached;
+        }
+        try {
+            Schematic s = Schematic.load(file);
+            int max = m.config().getInt("schematics.max-blocks", 250000);
+            if (s.cells.size() > max) {
+                throw new CommandFail(m.rawMsg("schematic-error", "file", key, "reason",
+                        s.cells.size() + " blocks, more than schematics.max-blocks (" + max + ")"));
+            }
+            if (s.skipped > 0) {
+                m.logger().warning("Schematic " + key + ": " + s.skipped + " blocks of an unknown type were left out.");
+            }
+            schematicCache.put(key, s);
+            schematicStamp.put(key, file.lastModified());
+            return s;
+        } catch (java.io.IOException | RuntimeException e) {
+            if (e instanceof CommandFail cf) {
+                throw cf;
+            }
+            throw new CommandFail(m.rawMsg("schematic-error", "file", key, "reason", String.valueOf(e.getMessage())));
+        }
+    }
+
+    private static Material material(String name) {
+        Material mat = name == null ? null : Material.matchMaterial(name);
+        return mat != null && mat.isBlock() ? mat : null;
+    }
+
+    /** The design of a facility: its schematic file if it has one, otherwise the built-in design. */
+    Blueprint blueprint(String type) {
+        ConfigurationSection d = def(type);
+        if (d != null && d.contains("schematic")) {
+            Blueprint bp = schematic(d.getString("schematic")).toBlueprint(d.getString("front", "north"),
+                    d.getInt("y-offset", 0), material(d.getString("foundation")));
+            bp.needsWater = d.getBoolean("needs-water", false);
+            return bp;
+        }
+        Blueprint bp = Blueprint.of(type);
+        if (bp == null) {
+            throw new CommandFail(m.rawMsg("facility-unknown", "type", type, "types", String.join(", ", types())));
+        }
+        return bp;
     }
 
     private Crew ownCrew(Player p, IslandImpl is) {
@@ -237,11 +350,22 @@ final class IslandFacilities implements Listener {
 
     /** The anchor is 2 blocks in front of where the player stands, at ground level there. */
     Plan plan(IslandImpl is, String type, Location stand, int rot) {
-        Blueprint bp = Blueprint.of(type);
-        World w = stand.getWorld();
         int[] f = turn(0, 1, rot); // the local front direction (+z) in the world
-        int ax = stand.getBlockX() + f[0] * 2, az = stand.getBlockZ() + f[1] * 2;
-        int ay = w.getHighestBlockYAt(ax, az, HeightMap.MOTION_BLOCKING_NO_LEAVES);
+        return planAt(is, type, blueprint(type), stand.getWorld(), stand.getBlockX() + f[0] * 2, stand.getBlockZ() + f[1] * 2, rot, 0);
+    }
+
+    /** A build without rules (no island checks): admins pasting a schematic. */
+    Plan planFree(String label, Blueprint bp, Location stand, int rot) {
+        int[] f = turn(0, 1, rot);
+        return planAt(null, label, bp, stand.getWorld(), stand.getBlockX() + f[0] * 2, stand.getBlockZ() + f[1] * 2, rot, 0);
+    }
+
+    /**
+     * Where the blocks of a blueprint go with its anchor at (ax, az) on the ground (+ yShift). With an island,
+     * the facility rules are checked too (on the island, nothing in the way, no overlap, limits).
+     */
+    Plan planAt(IslandImpl is, String type, Blueprint bp, World w, int ax, int az, int rot, int yShift) {
+        int ay = w.getHighestBlockYAt(ax, az, HeightMap.MOTION_BLOCKING_NO_LEAVES) + yShift;
         StructureRotation sr = rotation(rot);
         List<Spot> spots = new ArrayList<>();
         Set<Location> conflicts = new HashSet<>();
@@ -275,6 +399,12 @@ final class IslandFacilities implements Listener {
         }
         // what is wrong with this spot
         List<Component> problems = new ArrayList<>();
+        if (is == null) {
+            if (ay + bp.maxY >= w.getMaxHeight() - 1) {
+                problems.add(m.rawMsg("facility-problem-height"));
+            }
+            return new Plan(type, w, ax, ay, az, rot, spots, conflicts, problems, minX, minZ, maxX, maxZ, bp.maxY);
+        }
         int outside = 0, water = 0, columns = 0;
         Set<Long> seen = new HashSet<>();
         for (Spot s : spots) {
@@ -317,7 +447,7 @@ final class IslandFacilities implements Listener {
         if (is.hasFlag && is.flagX >= minX - 2 && is.flagX <= maxX + 2 && is.flagZ >= minZ - 2 && is.flagZ <= maxZ + 2) {
             problems.add(m.rawMsg("facility-problem-flag"));
         }
-        int limit = def(type).getInt("limit", 1);
+        int limit = def(type) == null ? 1 : def(type).getInt("limit", 1);
         long same = is.facilities.stream().filter(p -> p.type.equals(type)).count();
         if (same >= limit) {
             problems.add(m.rawMsg("facility-problem-limit", "max", limit, "name", name(type)));
@@ -349,23 +479,31 @@ final class IslandFacilities implements Listener {
 
     private void refresh(Player p, Preview pv, IslandImpl is) {
         hide(p, pv);
-        pv.plan = plan(is, pv.type, pv.stand, pv.rot);
+        pv.plan = pv.admin ? planFree(pv.type, pv.bp, pv.stand, pv.rot) : plan(is, pv.type, pv.stand, pv.rot);
         pv.expires = System.currentTimeMillis() + Math.max(15, m.config().getLong("facilities.preview-seconds", 120)) * 1000L;
+        Map<io.papermc.paper.math.Position, BlockData> fake = new HashMap<>();
         for (Spot s : pv.plan.spots) {
             BlockData now = s.loc.getBlock().getBlockData();
             BlockData show = pv.plan.conflicts.contains(s.loc) ? redGlass : s.data;
             if (now.matches(show)) {
                 continue;
             }
-            p.sendBlockChange(s.loc, show);
+            fake.put(io.papermc.paper.math.Position.block(s.loc), show);
             pv.shown.add(s.loc);
         }
+        p.sendMultiBlockChange(fake);
         report(p, pv);
     }
 
     private void report(Player p, Preview pv) {
         Plan plan = pv.plan;
         p.sendMessage(Component.empty());
+        if (pv.admin) {
+            p.sendMessage(m.msg("schematic-preview", "file", pv.type, "blocks", plan.spots.size(),
+                    "w", plan.maxX - plan.minX + 1, "l", plan.maxZ - plan.minZ + 1, "h", plan.maxY + 1));
+            p.sendMessage(Text.mm(m.config().getString("messages.schematic-buttons", "")));
+            return;
+        }
         p.sendMessage(m.msg("facility-preview", "name", name(pv.type)));
         if (plan.ok()) {
             p.sendMessage(m.rawMsg("facility-preview-ok", "cost", money(cost(pv.type))));
@@ -380,10 +518,14 @@ final class IslandFacilities implements Listener {
     }
 
     private void hide(Player p, Preview pv) {
+        Map<io.papermc.paper.math.Position, BlockData> real = new HashMap<>();
         for (Location l : pv.shown) {
             if (p.getWorld().equals(l.getWorld())) {
-                p.sendBlockChange(l, l.getBlock().getBlockData());
+                real.put(io.papermc.paper.math.Position.block(l), l.getBlock().getBlockData());
             }
+        }
+        if (!real.isEmpty()) {
+            p.sendMultiBlockChange(real);
         }
         pv.shown.clear();
     }
@@ -420,11 +562,17 @@ final class IslandFacilities implements Listener {
     void rotate(Player p) {
         Preview pv = current(p);
         pv.rot = (pv.rot + 1) & 3;
-        refresh(p, pv, islandOf(p, pv));
+        refresh(p, pv, pv.admin ? null : islandOf(p, pv));
     }
 
     void move(Player p) {
         Preview pv = current(p);
+        if (pv.admin) {
+            pv.stand = p.getLocation().getBlock().getLocation();
+            pv.rot = rotationOf(p.getFacing());
+            refresh(p, pv, null);
+            return;
+        }
         IslandImpl is = islandOf(p, pv);
         if (m.at(p.getLocation()) != is) {
             throw new CommandFail(m.rawMsg("facility-move-off-island", "island", is.name));
@@ -434,8 +582,122 @@ final class IslandFacilities implements Listener {
         refresh(p, pv, is);
     }
 
+    // ------------------------------------------------------------------ admins: schematics by hand, automatic island builds
+
+    /** Shows a schematic in front of an admin (nothing is changed yet). */
+    void adminPreview(Player p, String file, String front) {
+        Schematic s = schematic(file);
+        Preview pv = new Preview();
+        pv.admin = true;
+        pv.bp = s.toBlueprint(front, m.config().getInt("schematics.y-offset", 0), null);
+        pv.type = s.name;
+        pv.stand = p.getLocation().getBlock().getLocation();
+        pv.rot = rotationOf(p.getFacing());
+        cancel(p, false);
+        refresh(p, pv, null);
+        previews.put(p.getUniqueId(), pv);
+    }
+
+    /** Last paste per admin, so it can be undone: every changed block as it was before. */
+    private final Map<UUID, List<BlockState>> undo = new HashMap<>();
+
+    void adminPaste(Player p, boolean instant) {
+        Preview pv = current(p);
+        if (!pv.admin) {
+            throw new CommandFail(m.rawMsg("facility-no-preview"));
+        }
+        Plan plan = planFree(pv.type, pv.bp, pv.stand, pv.rot);
+        List<BlockState> before = new ArrayList<>(plan.spots.size());
+        for (Spot s : plan.spots) {
+            before.add(s.loc.getBlock().getState());
+        }
+        undo.put(p.getUniqueId(), before);
+        hide(p, pv);
+        previews.remove(p.getUniqueId());
+        if (instant) {
+            placeNow(plan);
+            p.sendMessage(m.msg("schematic-pasted-now", "file", pv.type, "blocks", plan.spots.size()));
+            return;
+        }
+        Job job = new Job(plan, null, null, null, p.getUniqueId());
+        jobs.add(job);
+        p.sendMessage(m.msg("schematic-pasting", "file", pv.type, "blocks", plan.spots.size(), "seconds", job.seconds));
+    }
+
+    void adminUndo(Player p) {
+        List<BlockState> before = undo.remove(p.getUniqueId());
+        if (before == null) {
+            throw new CommandFail(m.rawMsg("schematic-nothing-to-undo"));
+        }
+        for (java.util.Iterator<Job> it = jobs.iterator(); it.hasNext(); ) {
+            Job job = it.next();
+            if (p.getUniqueId().equals(job.owner)) {
+                job.abort();
+                it.remove();
+            }
+        }
+        for (int i = before.size() - 1; i >= 0; i--) {
+            before.get(i).update(true, false);
+        }
+        p.sendMessage(m.msg("schematic-undone", "blocks", before.size()));
+    }
+
+    /** Places a plan right away (bottom to top), without animation. */
+    private void placeNow(Plan plan) {
+        List<Spot> order = new ArrayList<>(plan.spots);
+        order.sort((a, b) -> Integer.compare(a.loc.getBlockY(), b.loc.getBlockY()));
+        for (Spot s : order) {
+            s.loc.getBlock().setBlockData(s.data, false);
+        }
+    }
+
+    /**
+     * The builds from "builds.&lt;TYPE&gt;" in islands.yml, placed on an island (after it is generated, or with
+     * /island admin builds). Returns how many were placed.
+     */
+    int applyBuilds(IslandImpl is, org.bukkit.command.CommandSender feedback) {
+        World w = is.bukkitWorld();
+        List<Map<?, ?>> list = m.config().getMapList("builds." + is.type.name());
+        if (w == null || list.isEmpty()) {
+            return 0;
+        }
+        int placed = 0;
+        for (Map<?, ?> raw : list) {
+            String file = String.valueOf(raw.get("schematic"));
+            try {
+                List<?> off = raw.get("offset") instanceof List<?> l ? l : List.of(0, 0);
+                int ox = off.size() > 0 ? ((Number) off.get(0)).intValue() : 0;
+                int oy = off.size() == 3 ? ((Number) off.get(1)).intValue() : 0;
+                int oz = off.size() == 3 ? ((Number) off.get(2)).intValue() : off.size() > 1 ? ((Number) off.get(1)).intValue() : 0;
+                Object facing = raw.get("facing");
+                // "facing" is where the entrance points; unturned, a build's entrance points north
+                int rot = facing == null ? 0 : rotationOf(BlockFace.valueOf(String.valueOf(facing).toUpperCase(Locale.ROOT)).getOppositeFace());
+                Object front = raw.get("front");
+                Blueprint bp = schematic(file).toBlueprint(front == null ? "north" : String.valueOf(front), 0,
+                        material(raw.get("foundation") == null ? null : String.valueOf(raw.get("foundation"))));
+                placeNow(planAt(null, file, bp, w, is.x + ox, is.z + oz, rot, oy));
+                placed++;
+            } catch (CommandFail fail) {
+                m.logger().warning("Island build " + file + " on " + is.name + ": " + Text.plain(fail.component()));
+                if (feedback != null) {
+                    feedback.sendMessage(m.plugin().prefix().append(fail.component()));
+                }
+            } catch (RuntimeException e) {
+                m.logger().warning("Island build " + file + " on " + is.name + ": " + e);
+            }
+        }
+        if (feedback != null) {
+            m.send(feedback, "builds-applied", "count", placed, "island", is.name);
+        }
+        return placed;
+    }
+
     void build(Player p) {
         Preview pv = current(p);
+        if (pv.admin) {
+            adminPaste(p, false);
+            return;
+        }
         IslandImpl is = islandOf(p, pv);
         Crew crew = officer(p, is);
         Plan plan = plan(is, pv.type, pv.stand, pv.rot); // the world may have changed since the preview
@@ -453,7 +715,7 @@ final class IslandFacilities implements Listener {
         Placed placed = new Placed(plan.type, plan.ax, plan.ay, plan.az, plan.rot, plan.minX, plan.minZ, plan.maxX, plan.maxZ);
         is.facilities.add(placed);
         m.markDirty();
-        Job job = new Job(plan, placed, is, crew.id());
+        Job job = new Job(plan, placed, is, crew.id(), p.getUniqueId());
         jobs.add(job);
         crew.broadcast(m.msg("facility-started", "player", p.getName(), "name", name(plan.type), "island", is.name,
                 "cost", money(cost), "seconds", job.seconds));
@@ -471,6 +733,7 @@ final class IslandFacilities implements Listener {
         final Plan plan;
         final Placed placed;
         final String islandId, crewId;
+        final UUID owner;
         final List<Spot> clearing = new ArrayList<>(), building = new ArrayList<>();
         final List<Flying> flying = new ArrayList<>();
         final net.kyori.adventure.bossbar.BossBar bar;
@@ -480,11 +743,12 @@ final class IslandFacilities implements Listener {
         final Location middle;
         int tick, cleared, built;
 
-        Job(Plan plan, Placed placed, IslandImpl is, String crewId) {
+        Job(Plan plan, Placed placed, IslandImpl is, String crewId, UUID owner) {
             this.plan = plan;
             this.placed = placed;
-            this.islandId = is.id;
+            this.islandId = is == null ? null : is.id;
             this.crewId = crewId;
+            this.owner = owner;
             for (Spot s : plan.spots) {
                 if (s.data.getMaterial().isAir()) {
                     if (!s.loc.getBlock().getType().isAir()) {
@@ -505,13 +769,16 @@ final class IslandFacilities implements Listener {
                 double db = Math.hypot(b.loc.getX() + 0.5 - cx, b.loc.getZ() + 0.5 - cz);
                 return Double.compare(da, db);
             });
-            ConfigurationSection d = def(plan.type);
+            ConfigurationSection d = placed == null ? null : def(plan.type);
             int secs = d != null && d.contains("build-seconds") ? d.getInt("build-seconds")
+                    : placed == null ? m.config().getInt("schematics.paste-seconds", 40)
                     : m.config().getInt("facilities.build-seconds", 30);
             this.seconds = Math.max(3, Math.min(600, secs));
             this.clearPerTick = Math.max(1, (int) Math.ceil(clearing.size() / 40.0));
             this.buildPerTick = Math.max(1, (int) Math.ceil(building.size() / (seconds * 20.0 - 40)));
-            this.animate = m.config().getBoolean("facilities.animate", true);
+            // blocks only fly in for normal sizes; huge spawn builds just rise layer by layer
+            this.animate = m.config().getBoolean("facilities.animate", true)
+                    && building.size() <= m.config().getInt("schematics.animate-max-blocks", 6000);
             this.middle = new Location(plan.world, cx, plan.ay + 1, cz);
             this.bar = net.kyori.adventure.bossbar.BossBar.bossBar(m.rawMsg("facility-bar", "name", name(plan.type), "percent", 0),
                     0f, net.kyori.adventure.bossbar.BossBar.Color.YELLOW, net.kyori.adventure.bossbar.BossBar.Overlay.NOTCHED_10);
@@ -611,8 +878,8 @@ final class IslandFacilities implements Listener {
                 if (p.getLocation().distanceSquared(middle) > 96 * 96) {
                     continue;
                 }
-                Crew c = crews == null ? null : crews.crewOf(p.getUniqueId());
-                if (c != null && c.id().equals(crewId)) {
+                Crew c = crewId == null || crews == null ? null : crews.crewOf(p.getUniqueId());
+                if (crewId == null || (c != null && c.id().equals(crewId))) {
                     now.add(p.getUniqueId());
                 }
             }
@@ -697,6 +964,13 @@ final class IslandFacilities implements Listener {
                 it.remove();
                 job.hideBar();
                 job.celebrate();
+                if (job.crewId == null) {
+                    Player owner = job.owner == null ? null : Bukkit.getPlayer(job.owner);
+                    if (owner != null) {
+                        owner.sendMessage(m.msg("schematic-finished", "file", job.plan.type));
+                    }
+                    continue;
+                }
                 IslandImpl is = m.islandImpl(job.islandId);
                 CrewService crews = m.service(CrewService.class);
                 Crew crew = crews == null ? null : crews.crewById(job.crewId);
@@ -710,7 +984,7 @@ final class IslandFacilities implements Listener {
     private void stopJob(Placed placed) {
         for (java.util.Iterator<Job> it = jobs.iterator(); it.hasNext(); ) {
             Job job = it.next();
-            if (job.placed.equals(placed)) {
+            if (placed.equals(job.placed)) {
                 job.abort();
                 it.remove();
             }
@@ -732,7 +1006,12 @@ final class IslandFacilities implements Listener {
         }
         stopJob(found);
         World w = p.getWorld();
-        Blueprint bp = Blueprint.of(found.type);
+        Blueprint bp;
+        try {
+            bp = blueprint(found.type);
+        } catch (CommandFail fail) {
+            bp = null; // its schematic is gone: just forget the facility
+        }
         if (bp != null) {
             StructureRotation sr = rotation(found.rot);
             for (Blueprint.Cell c : bp.cells()) {
@@ -847,13 +1126,19 @@ final class IslandFacilities implements Listener {
             inv.setItem(i, glass);
         }
         int total = m.config().getInt("facilities.max-per-island", 8);
-        for (int i = 0; i < TYPES.size() && i < MENU_SLOTS.length; i++) {
-            String type = TYPES.get(i);
+        List<String> types = types();
+        for (int i = 0; i < types.size() && i < MENU_SLOTS.length; i++) {
+            String type = types.get(i);
             ConfigurationSection d = def(type);
             if (d == null || !d.getBoolean("enabled", true)) {
                 continue;
             }
-            Blueprint bp = Blueprint.of(type);
+            Blueprint bp;
+            try {
+                bp = blueprint(type);
+            } catch (CommandFail fail) {
+                continue; // a broken schematic: leave it out of the menu (the error is in chat when previewed)
+            }
             List<Component> lore = new ArrayList<>();
             for (String line : d.getStringList("description")) {
                 lore.add(Text.item(line));
@@ -912,14 +1197,15 @@ final class IslandFacilities implements Listener {
             m.upgrades().open(p, is);
             return;
         }
-        for (int i = 0; i < TYPES.size() && i < MENU_SLOTS.length; i++) {
+        List<String> types = types();
+        for (int i = 0; i < types.size() && i < MENU_SLOTS.length; i++) {
             if (event.getSlot() == MENU_SLOTS[i]) {
                 p.closeInventory();
                 try {
                     if (m.at(p.getLocation()) != is) {
                         throw new CommandFail(m.rawMsg("facility-move-off-island", "island", is.name));
                     }
-                    preview(p, is, TYPES.get(i));
+                    preview(p, is, types.get(i));
                 } catch (CommandFail fail) {
                     p.sendMessage(m.plugin().prefix().append(fail.component()));
                 }

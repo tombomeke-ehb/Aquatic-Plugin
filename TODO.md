@@ -3,11 +3,11 @@
 **Aquatic SMP: Sail. Claim. Conquer.**
 
 This file is the roadmap. Tick off items as they're finished and add new ideas under the right heading.
-What changed in each version is in [CHANGELOG.md](CHANGELOG.md). Current version: **2.13.0**.
+What changed in each version is in [CHANGELOG.md](CHANGELOG.md). Current version: **2.14.0**.
 
 ---
 
-## Done (up to 2.13.0)
+## Done (up to 2.14.0)
 
 **World and islands**
 - Procedural islands, generated chunk by chunk without lag, in size classes (small to large).
@@ -40,6 +40,10 @@ What changed in each version is in [CHANGELOG.md](CHANGELOG.md). Current version
   - A ghost preview first, then [Rotate] / [Move here] / [Build].
   - Built with an animation and a progress bar.
   - Most give an income bonus. Demolishing gives a refund.
+- **Schematics:** builds from `.schem` (WorldEdit/FAWE) and `.nbt` (structure block) files:
+  - Admins can preview, paste (animated or at once) and undo them.
+  - They can be placed automatically on every new island of a type (the spawn town on the capital).
+  - Crews can buy them as their own facilities.
 
 **Powers and combat**
 - 14 Abyss Fruits, each with 2–3 moves (sneak + scroll).
@@ -156,7 +160,10 @@ What changed in each version is in [CHANGELOG.md](CHANGELOG.md). Current version
 - [ ] More facilities (shipyard, tavern, crew hall) and upgrading a facility to a bigger version.
 - [x] Unbreakable flags (only conquest or `/island admin removeflag`), crew-only `/tpa` (done in 2.2.0).
 - [x] Placeable buildings with a preview and a bonus: done as facilities in 2.13.0.
-- [ ] Facilities from schematic files, so builders can design new ones without code.
+- [x] Builds from schematic files (.schem and .nbt): admin preview/paste/undo, automatic builds per island type, and facilities from schematics (done in 2.14.0).
+- [ ] Schematics: copy chest contents, sign text and banners (block entities), and entities (item frames, armour stands).
+- [ ] Schematics: replace parts of the generated capital (turn off the market, monument or parkour tower per build) so a team build can take their place.
+- [ ] Schematics: an in-game save command (select two corners, save to the folder) for servers without WorldEdit.
 - [ ] Link facilities to upgrades (for example the Vault upgrade needs a Storehouse), if we want that.
 - [x] Vault and Granary upgrades (done in 2.6.0).
 - [ ] Shipyard upgrade (ships).

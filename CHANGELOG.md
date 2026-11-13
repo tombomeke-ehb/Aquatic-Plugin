@@ -1,5 +1,29 @@
 # Changelog
 
+## 2.14.0 (2026-11-13)
+
+### Added
+- **Your own builds from schematic files.** Put them in `plugins/AquaticSMP/schematics`:
+  - `.schem` files from WorldEdit or FastAsyncWorldEdit (versions 2 and 3), or `.nbt` files from a structure block.
+  - Save a build with its entrance on the north side, or say which side it was on with `front`.
+- **Paste builds by hand** (for the spawn town):
+  - `/island admin schematic preview <file>` shows a ghost of the build in front of you that only you can see.
+  - Then [Paste] (it rises with the build animation), [Paste now], [Rotate], [Move here] or [Cancel].
+  - [Undo] puts back everything your last paste replaced, chest contents included.
+- **Automatic builds per island type:** list schematics under `builds` in `islands.yml`.
+  - For example `CAPITAL: [{schematic: town_hall.schem, offset: [0, 30], facing: north}]`.
+  - They are placed every time such an island is generated. `/island admin builds <island>` adds them to an existing island.
+- **Facilities from schematics:** give a facility type a `schematic` in `islands.yml`. It can replace a built-in design or add a completely new facility with its own price, limit and income bonus. Crews place it with the usual preview and animation.
+- The facilities menu now has room for 21 facilities.
+
+### Not yet
+- Only blocks are copied: chest contents, sign text, banners and entities (item frames, armour stands) are not copied yet.
+
+### Your server
+- `islands.yml` upgrades automatically (a backup is kept): new `schematics` and `builds` sections.
+- The `plugins/AquaticSMP/schematics` folder is created on start, with a short README.
+- The resource pack is unchanged.
+
 ## 2.13.0 (2026-11-13)
 
 ### Added

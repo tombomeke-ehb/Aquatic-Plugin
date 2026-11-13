@@ -138,6 +138,7 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         upgrades = new IslandUpgrades(this);
         registerListener(upgrades);
         facilities = new IslandFacilities(this);
+        facilities.schematicFolder();
         registerListener(facilities);
         runTimer(facilities::tick, 10L, 10L);
         runTimer(facilities::tickJobs, 1L, 1L);
@@ -1110,6 +1111,19 @@ public final class IslandsModule extends AquaticModule implements IslandService,
             addMissing(file, defaults, "generation.island-type-weights.VILLAGE");
             addMissing(file, defaults, "island-names.VILLAGE");
         }
+        if (from < 7) {
+            // 2.14.0: builds from schematic files
+            addMissing(file, defaults, "schematics");
+            addMissing(file, defaults, "builds");
+            org.bukkit.configuration.ConfigurationSection msgs7 = defaults.getConfigurationSection("messages");
+            if (msgs7 != null) {
+                for (String key : msgs7.getKeys(false)) {
+                    if (key.startsWith("schematic-") || key.startsWith("builds-")) {
+                        addMissing(file, defaults, "messages." + key);
+                    }
+                }
+            }
+        }
         if (from < 6) {
             // 2.13.0: facilities (buildings placed with a preview)
             addMissing(file, defaults, "facilities");
@@ -1143,6 +1157,9 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         gen.terrain(IslandGenerator.TerrainOptions.load(config().getConfigurationSection("generation.terrain"), logger()));
         enqueue(gen, is.id, feedback, () -> {
             is.y = gen.centerSurfaceY();
+            if (facilities != null) {
+                facilities.applyBuilds(is, null); // the team's own builds for this island type (islands.yml builds)
+            }
             if (is.status == IslandStatus.OCCUPIED && is.ownerCrewId != null) {
                 int fx = is.hasFlag ? is.flagX : is.x, fz = is.hasFlag ? is.flagZ : is.z;
                 is.hasFlag = false;

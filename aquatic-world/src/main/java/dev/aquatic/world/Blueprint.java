@@ -35,6 +35,8 @@ final class Blueprint {
     int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, maxY, minZ = Integer.MAX_VALUE, maxZ = Integer.MIN_VALUE;
     /** A dock must reach out over the water. */
     boolean needsWater;
+    /** Loaded from a schematic file (block states are used as saved). */
+    boolean fromFile;
 
     private static long key(int x, int y, int z) {
         return ((long) (x + 512) << 40) | ((long) (y + 512) << 20) | (z + 512);

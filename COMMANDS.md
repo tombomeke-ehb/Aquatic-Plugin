@@ -404,6 +404,35 @@ TIDEWATCH islands (`/island admin spawn tidewatch <radius>`, or random spawns) h
 - **Claiming:** a crew can claim the island for 12 hours afterwards. Unclaimed forts get a new garrison after that.
 - **Settings:** everything is under `tidewatch` in `islands.yml`.
 
+## Schematics: your own builds
+
+Put builds in `plugins/AquaticSMP/schematics`: **`.schem`** files from WorldEdit or FastAsyncWorldEdit, or **`.nbt`** files saved with a structure block.
+- Save a build with its **entrance on the north side**. If it faces another way, say so with `front: south` (or `east`/`west`) where you use it.
+- Its bottom layer replaces the ground. Use `y-offset: -1` to sink it one block.
+- Only the blocks are copied. Chest contents and sign text are not copied yet.
+
+There are three ways to use a build:
+
+1. **By hand (spawn builds):** `/island admin schematic preview <file>` shows a ghost of it in front of you. Then click:
+   - [Paste]: rises with the build animation.
+   - [Paste now]: placed at once.
+   - [Rotate], [Move here] or [Cancel].
+   - [Undo] puts back everything your last paste replaced.
+2. **Automatically on islands:** list builds per island type under `builds` in `islands.yml`, for example on the `CAPITAL`.
+   - They are placed every time an island of that type is generated.
+   - `/island admin builds <island>` places them on an existing island.
+3. **As facilities:** give a facility type a `schematic` in `islands.yml`.
+   - It replaces our built-in design, or adds a brand-new facility (with its own price, limit and income bonus) that crews can buy and place with the usual preview.
+
+| Command | What it does | Permission |
+| --- | --- | --- |
+| `/island admin schematic list` | The files in the schematics folder (click one to preview it) | Admin |
+| `/island admin schematic preview <file> [north\|east\|south\|west]` | A ghost of the build in front of you; the last word is the side its entrance was on when saved | Admin |
+| `/island admin schematic rotate\|move\|cancel` | Turn it, move it to where you stand, or remove the preview | Admin |
+| `/island admin schematic paste [instant]` | Build it (with the animation, or at once with `instant`) | Admin |
+| `/island admin schematic undo` | Put back what your last paste replaced | Admin |
+| `/island admin builds <island>` | Place the `builds` from `islands.yml` for that island's type | Admin |
+
 ## Facilities
 
 Crews can build real buildings on their islands: a **Watchtower**, a **Forge** (anvil, smithing table, blast furnace, grindstone), a **Farm Field**, a **Dock**, a **Storehouse** and a **Lighthouse**.
