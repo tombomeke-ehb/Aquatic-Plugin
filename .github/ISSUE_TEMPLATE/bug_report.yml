@@ -1,0 +1,57 @@
+name: Bug report
+description: Report a reproducible problem with AquaticSMP.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. Please remove private server data such as IP addresses, tokens, and player information before submitting.
+  - type: input
+    id: version
+    attributes:
+      label: AquaticSMP version
+      description: Which plugin version are you running?
+      placeholder: "2.13.0"
+    validations:
+      required: true
+  - type: input
+    id: server
+    attributes:
+      label: Server software and version
+      description: Include the server software and Minecraft version.
+      placeholder: "Paper 1.21.4"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the problem clearly and include the expected behavior.
+      placeholder: Tell us what you expected and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Give the smallest reliable sequence of steps.
+      placeholder: |
+        1. Enable ...
+        2. Run ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or configuration
+      description: Paste relevant log lines or sanitized configuration. Do not include secrets or private server data.
+      render: text
+  - type: textarea
+    id: plugins
+    attributes:
+      label: Other plugins and context
+      description: List related plugins, integrations, and anything else that may affect the issue.
+      placeholder: Vault, PlaceholderAPI, BlueMap, ...

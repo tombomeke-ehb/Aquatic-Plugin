@@ -1,0 +1,32 @@
+name: Support question
+description: Ask for help configuring or using AquaticSMP.
+title: "[Support]: "
+labels:
+  - question
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For bugs, use the Bug report form. Please sanitize logs and configuration before posting them.
+  - type: input
+    id: version
+    attributes:
+      label: AquaticSMP version
+      placeholder: "2.13.0"
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: What are you trying to do?
+      description: Describe the result you want and the commands or configuration you tried.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Server context
+      description: Include Minecraft/server version, related plugins, and sanitized errors or configuration.
+      render: text
+    validations:
+      required: true
