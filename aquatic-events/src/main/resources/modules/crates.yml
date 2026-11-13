@@ -1,8 +1,9 @@
 # =====================================================================================
 #  AquaticSMP - Crates
-#  Any block can be a crate: look at it and use /crate set <crate>. That works with your own
-#  builds too: paste a schematic with a chest (or barrel, shulker box ...) and make that block a
-#  crate. /crate setup puts the default crate stands at the capital (setup-spots below).
+#  Every crate has its own block (block: below): nether blocks nobody can get with the Nether off,
+#  which the resource pack turns into 3D crates. /crate item <crate> gives staff that block: place
+#  it and it is a crate. Any other block can be a crate too: look at it and use /crate set <crate>
+#  (a chest in a pasted schematic, for example). /crate setup puts default stands at the capital.
 #
 #  Right-click a crate with its key: a reel spins and stops on a prize.
 #  Left-click (or right-click without a key): see every prize and its chance. /crate shows them too.
@@ -14,7 +15,7 @@
 #  items (["DIAMOND:4", "item:rum:2", "key:captain:1"]), commands (run by the console, <player>),
 #  broadcast (true = the whole server hears about it).
 # =====================================================================================
-config-version: 1
+config-version: 2
 
 opening:
   # How many items pass by before the reel stops (it slows down towards the end).
@@ -30,6 +31,8 @@ hologram:
 
 crates:
   sailor:
+    # The crate block (with the resource pack it looks like a crate).
+    block: NETHER_QUARTZ_ORE
     name: "<aqua><bold>Sailor's Crate</bold></aqua>"
     key-name: "<aqua>Sailor's Key"
     key-lore: ["<gray>Opens a Sailor's Crate at spawn."]
@@ -49,6 +52,8 @@ crates:
       - {weight: 3, name: "<gray>Smoke bombs", items: ["item:smoke_bomb:4"]}
       - {weight: 2, name: "<gold><bold>A Captain's Key", items: ["key:captain:1"], broadcast: true}
   captain:
+    # The crate block (with the resource pack it looks like a crate).
+    block: NETHER_GOLD_ORE
     name: "<gold><bold>Captain's Crate</bold></gold>"
     key-name: "<gold>Captain's Key"
     key-lore: ["<gray>Opens a Captain's Crate at spawn."]
@@ -69,6 +74,8 @@ crates:
       - {weight: 2, name: "<dark_purple><bold>A Kraken Key", items: ["key:kraken:1"], broadcast: true}
       - {weight: 1, name: "<gold><bold>A random Abyss Fruit", items: ["item:fruit_random:1"], broadcast: true}
   kraken:
+    # The crate block (with the resource pack it looks like a crate).
+    block: SHROOMLIGHT
     name: "<dark_purple><bold>Kraken's Hoard</bold></dark_purple>"
     key-name: "<dark_purple>Kraken Key"
     key-lore: ["<gray>Opens the Kraken's Hoard at spawn.", "<dark_gray>Few have seen one."]
@@ -88,11 +95,11 @@ crates:
       - {weight: 4, name: "<gold><bold>A random Abyss Fruit", items: ["item:fruit_random:1"], broadcast: true}
 
 # /crate setup: a crate stand per spot at the capital. offset: [x, z] from the capital's centre,
-# block: what the crate looks like. Move them later by removing (/crate remove) and setting new ones.
+# block: optional, another block than the crate's own. Move them later by removing (/crate remove) and setting new ones.
 setup-spots:
-  - {crate: sailor, offset: [10, 30], block: CHEST}
-  - {crate: captain, offset: [13, 30], block: BARREL}
-  - {crate: kraken, offset: [16, 30], block: ENDER_CHEST}
+  - {crate: sailor, offset: [10, 30]}
+  - {crate: captain, offset: [13, 30]}
+  - {crate: kraken, offset: [16, 30]}
 
 messages:
   unknown-crate: "<red>There is no crate called <white><crate></white>. Crates: <gray><crates>"
@@ -117,3 +124,6 @@ messages:
   giveall: "<gold>Everyone got <white><amount></white>x key for the <crate><gold>!"
   setup-no-capital: "<red>There is no capital island yet."
   setup-done: "<green>Placed <white><count></white> crate stands at the capital."
+  got-block: "<green>Place this block anywhere to make a <crate><green> there."
+  placed: "<green>The <crate><green> is ready."
+  place-no-permission: "<red>Only staff can place crates."

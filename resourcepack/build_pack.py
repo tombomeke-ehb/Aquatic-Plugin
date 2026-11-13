@@ -1033,6 +1033,82 @@ def crate_key(metal, dark, gem, glow):
     return outline(img, rgb("#1a1208"))
 
 
+# ---------------------------------------------------------------- crate blocks (nether blocks retextured: the Nether is off)
+
+CRATE_BLOCKS = {  # vanilla block -> crate look; these blocks can't be found without the Nether
+    "nether_quartz_ore": ("sailor", "#8a6a43", "#5a4128", "#aeb8bf", "#5f6a72", "#3fb8c9", "#bff6ff"),
+    "nether_gold_ore": ("captain", "#5a3a22", "#38220f", "#f2c230", "#9c6b12", "#c0392b", "#ffb3a6"),
+    "shroomlight": ("kraken", "#3a2a52", "#21162f", "#43e0c8", "#1c6b61", "#c47cff", "#f0d9ff"),
+}
+
+
+def crate_textures(wood, wood_d, band, band_d, gem, glow):
+    """32x32 textures for a crate: side (planks with metal bands and rivets), top, corner post and the lock."""
+    wood, wood_d, band, band_d, gem, glow = (rgb(c) for c in (wood, wood_d, band, band_d, gem, glow))
+    side, top, post, lock = new(), new(), new(), new()
+    for y in range(N):
+        for x in range(N):
+            plank = y // 6
+            grain = shade(wood, 0.12 if (x * 7 + plank * 13) % 11 < 2 else (-0.08 if (x + plank * 5) % 9 == 0 else 0))
+            c = wood_d if y % 6 == 5 else grain                     # gaps between planks
+            if 5 <= y <= 8 or 23 <= y <= 26:                       # two metal bands
+                c = band_d if y in (5, 8, 23, 26) else band
+                if x % 8 == 3 and y in (6, 7, 24, 25):
+                    c = shade(band, 0.45)                          # rivets
+            put(side, x, y, c)
+            # top: planks the other way, a metal rim and a cross of bands
+            g2 = shade(wood, 0.1 if (y * 7 + (x // 6) * 13) % 11 < 2 else 0)
+            t = wood_d if x % 6 == 5 else g2
+            if x < 2 or y < 2 or x > 29 or y > 29:
+                t = band_d if (x in (0, 31) or y in (0, 31)) else band
+            elif 14 <= x <= 17 or 14 <= y <= 17:
+                t = band if not (14 <= x <= 17 and 14 <= y <= 17) else gem
+                if 15 <= x <= 16 and 15 <= y <= 16:
+                    t = glow
+            put(top, x, y, t)
+            # corner post: a metal-capped beam
+            p = shade(band, 0.25 if x < 10 else (-0.2 if x > 22 else 0))
+            if y < 3 or y > 28 or (y % 10 == 6):
+                p = band_d
+            if x % 16 == 8 and y % 10 == 2:
+                p = shade(band, 0.5)
+            put(post, x, y, p)
+            # lock plate with a gem keyhole
+            d = math.hypot(x - 15.5, y - 13.5)
+            lc = band if not (x < 2 or y < 2 or x > 29 or y > 29) else band_d
+            if d < 7:
+                lc = gem if d > 3.2 else glow
+            if 14 <= x <= 17 and 17 <= y <= 24:
+                lc = band_d                                          # the keyhole slot
+            put(lock, x, y, lc)
+    return side, top, post, lock
+
+
+def crate_blocks():
+    tex = os.path.join(PACK, "assets", "aquatic", "textures", "block")
+    os.makedirs(tex, exist_ok=True)
+    for block, (tier, *cols) in CRATE_BLOCKS.items():
+        names = ("side", "top", "post", "lock")
+        for name, img in zip(names, crate_textures(*cols)):
+            img.save(os.path.join(tex, "crate_%s_%s.png" % (tier, name)))
+        t = lambda n: "aquatic:block/crate_%s_%s" % (tier, n)
+        faces = lambda key, sides=("north", "south", "east", "west", "up", "down"): {f: {"texture": "#" + key} for f in sides}
+        elements = [
+            {"from": [1, 0, 1], "to": [15, 13, 15], "faces": dict(faces("side", ("north", "south", "east", "west")), **faces("top", ("up", "down")))},
+            {"from": [0.5, 13, 0.5], "to": [15.5, 16, 15.5], "faces": dict(faces("post", ("north", "south", "east", "west")), **faces("top", ("up", "down")))},
+        ]
+        for x0 in (0, 13):
+            for z0 in (0, 13):
+                elements.append({"from": [x0, 0, z0], "to": [x0 + 3, 13, z0 + 3], "faces": faces("post")})
+        for z0, z1 in ((15, 16), (0, 1)):  # a lock on the front and the back
+            elements.append({"from": [5.5, 6, z0], "to": [10.5, 12, z1], "faces": faces("lock")})
+        write_json(os.path.join(PACK, "assets", "minecraft", "models", "block", block + ".json"), {
+            "parent": "minecraft:block/block",
+            "textures": {"particle": t("side"), "side": t("side"), "top": t("top"), "post": t("post"), "lock": t("lock")},
+            "elements": elements,
+        })
+
+
 def harpoon():
     """A whaler's harpoon: an oak shaft with a rope grip and a barbed steel head."""
     img = new()
@@ -1272,6 +1348,7 @@ def main():
                                 curve=3.0, width=2.4), glow=("#00c9a7",)), True)
     item("krakens_maul", shimmer(krakens_maul(), glow=("#c47cff",), strength=0.45), True)
     item("harpoon", shimmer(harpoon()), True)
+    crate_blocks()
     item("key_sailor", shimmer(crate_key("#d7e3ea", "#7d8b96", "#3fb8c9", "#bff6ff"), glow=("#3fb8c9", "#bff6ff")), True)
     item("key_captain", shimmer(crate_key("#f2c230", "#9c6b12", "#c0392b", "#ffb3a6"), glow=("#c0392b", "#ffb3a6")), True)
     item("key_kraken", shimmer(crate_key("#5d4a7a", "#2b1f3d", "#43e0c8", "#c9fff5"), glow=("#43e0c8", "#c9fff5")), True)

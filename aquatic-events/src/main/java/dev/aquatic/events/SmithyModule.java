@@ -227,7 +227,11 @@ public final class SmithyModule extends AquaticModule implements Listener {
         }
         if (event.getSlot() == SLOT_SHOP) {
             p.closeInventory();
-            p.performCommand(config().getString("shop-command", "shop tools"));
+            // the smithy's button opens the market's tools page directly (players have no /shop)
+            String[] parts = config().getString("shop-command", "shop tools").trim().split("\\s+");
+            if (plugin().module("shop") instanceof ShopModule shop && shop.isEnabled()) {
+                shop.openFor(p, parts.length > 1 ? parts[1] : null);
+            }
             return;
         }
         if (event.getSlot() == SLOT_UPGRADE) {

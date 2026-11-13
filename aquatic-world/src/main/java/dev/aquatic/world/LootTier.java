@@ -92,6 +92,10 @@ final class LootTier {
     boolean uniqueRolls = true;
     /** A small chance at one extra standout item. */
     double jackpotChance;
+    /** How many jackpot items when it hits ("2-3"). */
+    Range jackpotRolls = new Range(1, 1);
+    /** A firework show and a server-wide fanfare when it is found. */
+    boolean celebrate;
     final List<Entry> jackpot = new ArrayList<>();
     private double jackpotWeight;
     List<String> jackpotLore = List.of();
@@ -137,6 +141,8 @@ final class LootTier {
         }
         t.uniqueRolls = s.getBoolean("unique-rolls", true);
         t.jackpotChance = Math.max(0, Math.min(1, s.getDouble("jackpot.chance", 0)));
+        t.jackpotRolls = Range.parse(s.get("jackpot.rolls"), 1);
+        t.celebrate = s.getBoolean("celebrate", false);
         t.jackpotLore = s.getStringList("jackpot.lore");
         for (Map<?, ?> raw : s.getMapList("jackpot.loot")) {
             Entry e = parseEntry(raw, log, ctx + ".jackpot");
@@ -259,7 +265,8 @@ final class LootTier {
             money += add(e, r, items, out, maps);
         }
         boolean hit = !jackpot.isEmpty() && r.nextDouble() < jackpotChance;
-        if (hit) {
+        int jackpots = hit ? Math.max(1, jackpotRolls.roll(r)) : 0;
+        for (int j = 0; j < jackpots; j++) {
             Entry e = pick(r, jackpot, jackpotWeight);
             int before = out.size();
             money += add(e, r, items, out, maps);

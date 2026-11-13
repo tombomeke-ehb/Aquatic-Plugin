@@ -1024,6 +1024,17 @@ public final class CrewsModule extends AquaticModule implements CrewService {
     @Override
     protected void migrateConfig(org.bukkit.configuration.file.YamlConfiguration file,
                                  org.bukkit.configuration.file.YamlConfiguration defaults, int from) {
+        if (from < 2) {
+            // 2.16.0: the crew menu runs everything (member pages, bank, invites, diplomacy)
+            org.bukkit.configuration.ConfigurationSection msgs = defaults.getConfigurationSection("messages");
+            if (msgs != null) {
+                for (String key : msgs.getKeys(false)) {
+                    if (key.startsWith("gui-")) {
+                        addMissing(file, defaults, "messages." + key);
+                    }
+                }
+            }
+        }
         if (from < 1) {
             // 2.10.0: LuckPerms/Vault rank prefix (<rank>) and suffix (<suffix>) in chat and the tab list
             raise(file, "chat.format.line", "<level><prefix><white><name><dark_gray> » <gray><message>",

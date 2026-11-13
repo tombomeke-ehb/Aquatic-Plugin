@@ -1,13 +1,14 @@
 # =====================================================================================
 #  AquaticSMP - The gambling den
-#  Doubloons only. Talk to the Dealer at spawn (hub.yml) or use /gamble. Games:
-#    /dice <bet>                 two dice against the dealer's two dice
-#    /wheel <bet>                spin the wheel of fortune (a multiplier on your bet)
-#    /coinflip <player> <bet>    a coin flip between two players (/coinflip accept | deny)
+#  Doubloons only. Players talk to the Dealer at spawn (hub.yml); there are no player commands.
+#  Staff can open the den anywhere with /gamble. Games (all in the Dealer's menu):
+#    Dice            two dice against the dealer's two dice
+#    Wheel           spin the wheel of fortune (a multiplier on your bet)
+#    Coin flip       pick a player and a bet; they accept or deny at the Dealer
 #  The house keeps a small edge on every game, so the den takes Doubloons out of the economy.
 #  Big wins and losses are written to plugins/AquaticSMP/data/gambling.log.
 # =====================================================================================
-config-version: 1
+config-version: 2
 
 # Only on the capital island (where the den is). Staff with aquatic.gambling.anywhere can play anywhere.
 only-at-capital: true
@@ -73,7 +74,14 @@ messages:
   menu-wheel: "<gold><bold>Wheel of Fortune"
   menu-wheel-lore: ["<gray>Spin for a multiplier on your bet.", "<gray>Up to <gold>x10</gold>!"]
   menu-coinflip: "<yellow><bold>Coin Flip"
-  menu-coinflip-lore: ["<gray>Against another player:", "<white>/coinflip <player> <bet>"]
+  menu-coinflip-lore: ["<gray>Challenge another player.", "<gray>They accept at the Dealer."]
+  menu-accept: "<green><bold>Accept: <player>'s coin flip"
+  menu-accept-lore: ["<gray>For <gold><bet></gold> each. Winner takes the pot."]
+  menu-deny: "<red><bold>Turn down <player>'s coin flip"
+  pick-title: "<dark_gray>Coin flip: pick a player"
+  pick-player-lore: ["<yellow>Click to challenge"]
+  pick-nobody: "<gray>Nobody else is online"
+  game-coinflip: "Coin Flip"
   menu-limits: "<gray>Bets: <white><min></white> - <white><max></white>  <dark_gray>|</dark_gray>  <gray>left today: <white><left>"
   menu-back: "<yellow>Back"
   bet-button: "<gold>Bet <bet>"
@@ -89,10 +97,9 @@ messages:
   wheel-win: "<green>The wheel stops on <segment><green>: you win <gold><amount></gold>!"
   wheel-some: "<yellow>The wheel stops on <segment><yellow>: you get <gold><amount></gold> back."
   wheel-lose: "<red>The wheel stops on <segment><red>. Better luck next time."
-  coinflip-how: "<yellow>Coin flip: <white>/coinflip <player> <bet></white><gray>. They accept with /coinflip accept. The winner takes the pot (minus 5% for the house)."
   coinflip-self: "<red>You can't flip against yourself."
   coinflip-sent: "<green>You challenged <white><player></white> to a coin flip for <gold><bet></gold>."
-  coinflip-received: "<yellow><player> challenges you to a coin flip for <gold><bet></gold>! <click:run_command:'/coinflip accept'><green><bold>[Accept]</bold></green></click> <click:run_command:'/coinflip deny'><red><bold>[Deny]</bold></red></click>"
+  coinflip-received: "<yellow><player> challenges you to a coin flip for <gold><bet></gold>! Talk to the <gold>Dealer</gold> to accept or turn it down."
   coinflip-none: "<red>You have no coin flip to answer."
   coinflip-gone: "<red>The other player left."
   coinflip-failed: "<red><player> can't bet any more; the flip is off and your bet is back."

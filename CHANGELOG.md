@@ -1,5 +1,41 @@
 # Changelog
 
+## 2.16.0 (2026-11-13)
+
+### Added
+- **Crate blocks:** every crate has its own block, nether blocks nobody can get with the Nether off.
+  - The Sailor's Crate is Nether Quartz Ore, the Captain's Crate is Nether Gold Ore, and the Kraken's Hoard is Shroomlight (it glows).
+  - The resource pack turns them into 3D crates with corner posts, a lid, metal bands and a gem lock, in each crate's colours.
+  - `/crate item <crate>` gives staff the block: place it anywhere and it is a crate. `/crate setup` uses these blocks too.
+- **The crew menu runs the whole crew** (`/crew`), by clicking:
+  - Member pages: promote, demote, any rank, make captain, kick.
+  - A bank page with 100 / 1,000 / 10,000 / everything, and inviting from a list of players.
+  - Diplomacy with every crew (alliance, neutral, rivals, war, peace).
+  - The flag designer, friendly fire, crew home (right-click sets it), and leaving or disbanding.
+  - A confirmation page for anything that can't be undone. Without a crew: browse all crews and click an invite to join.
+- **MEGA legendary treasure:**
+  - 14–18 items instead of 7–9, plus 2–3 guaranteed jackpot items (Kraken keys, fruits, netherite, diamond blocks).
+  - 15,000–25,000 Doubloons.
+  - The new weapons in the loot.
+  - A light beam over the chest, and a firework show, a title and a fanfare for everyone when it's found.
+
+### Changed
+- **The shop and the gambling den are only reached through the villagers.** Players have no `/shop`, `/gamble`, `/dice`, `/wheel` or `/coinflip` commands any more.
+  - The shopkeepers open their market pages directly (the Blacksmith's tools button too), and the Dealer opens the den.
+  - Coin flips are started in the Dealer's menu: pick a player and a bet. They accept or turn it down at the Dealer.
+  - Staff keep `/shop` and `/gamble`.
+- **A prettier town** (new capitals and villages):
+  - **Houses:** a stone plinth, timber beams, shutters by every window, flower boxes under the ground-floor windows, a door awning with two lanterns, and two new house styles.
+  - **Piers:** log-edged decks with mixed planks, continuous railings, lantern posts, and a wide end with cargo, a bell and a ladder down to the water.
+  - **The parkour tower:** a weathered pillar with sea-lantern rings, jumps in prismarine and quartz, a railed platform on top, and lamp posts at the start.
+  - **The lighthouse:** the tall striped octagonal lighthouse with a gallery and a lantern room, its door facing the town.
+  - The market stalls are unchanged.
+
+### Your server
+- Configs upgrade automatically, with backups: `crates.yml`, `treasure.yml` (if the legendary tier was never edited), `hub.yml` (the villagers open the menus directly), `gambling.yml` and `crews.yml`.
+- Existing towns are not rebuilt. New capitals and villages get the new buildings (`/island admin regen <island>` rebuilds one).
+- The resource pack has changed (the crate blocks). The plugin sends the new one by itself.
+
 ## 2.15.0 (2026-11-13)
 
 ### Added

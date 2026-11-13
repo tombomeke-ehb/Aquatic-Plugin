@@ -951,6 +951,9 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
                 crew.broadcast(msg("found-reputation", "player", player.getName(), "reputation", tier.reputation, "tier", tierName));
             }
         }
+        if (tier != null && tier.celebrate) {
+            celebrate(player, loc);
+        }
         if (tier != null && tier.broadcast) {
             Bukkit.broadcast(msg("found-broadcast", "player", player.getName(), "tier", tierName, "island", island));
         } else {
@@ -1389,6 +1392,15 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
     @Override
     protected void migrateConfig(org.bukkit.configuration.file.YamlConfiguration file,
                                  org.bukkit.configuration.file.YamlConfiguration defaults, int from) {
+        if (from < 5) {
+            // 2.16.0: MEGA legendary treasure (only if the legendary tier was never edited)
+            String p = "tiers.legendary.";
+            if ("7-9".equals(file.getString(p + "rolls")) && "1500-3000".equals(file.getString(p + "doubloons"))) {
+                file.set("tiers.legendary", defaults.get("tiers.legendary"));
+            }
+            addMissing(file, defaults, "messages.mega-title");
+            addMissing(file, defaults, "messages.mega-subtitle");
+        }
         if (from < 4) {
             // 2.15.0: crate keys in treasure, editing loot in-game
             for (String tier : List.of("uncommon", "rare", "epic", "legendary")) {
@@ -1542,6 +1554,45 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
         ConfigurationSection s = config().getConfigurationSection("tiers." + id);
         if (s != null) {
             tiers.put(id, LootTier.load(id, s, logger()));
+        }
+    }
+
+    /** MEGA finds: fireworks over the chest, a fanfare for everyone and a title for the finder. */
+    private void celebrate(Player player, Location loc) {
+        org.bukkit.World w = loc.getWorld();
+        if (w == null) {
+            return;
+        }
+        org.bukkit.Color[] colors = {org.bukkit.Color.fromRGB(0xFFCC00), org.bukkit.Color.fromRGB(0xFF6A00), org.bukkit.Color.fromRGB(0x3FD8FF),
+                org.bukkit.Color.fromRGB(0xFFFFFF)};
+        for (int i = 0; i < 6; i++) {
+            int n = i;
+            runLater(() -> {
+                Location at = loc.clone().add(0.5 + (Math.random() - 0.5) * 6, 2, 0.5 + (Math.random() - 0.5) * 6);
+                w.spawn(at, org.bukkit.entity.Firework.class, fw -> {
+                    org.bukkit.inventory.meta.FireworkMeta meta = fw.getFireworkMeta();
+                    meta.addEffect(org.bukkit.FireworkEffect.builder().with(n % 2 == 0 ? org.bukkit.FireworkEffect.Type.BALL_LARGE
+                                    : org.bukkit.FireworkEffect.Type.STAR).withColor(colors[n % colors.length], colors[(n + 1) % colors.length])
+                            .withFade(org.bukkit.Color.WHITE).trail(true).flicker(true).build());
+                    meta.setPower(1);
+                    fw.setFireworkMeta(meta);
+                    fw.getPersistentDataContainer().set(new NamespacedKey(plugin(), "harmless"), org.bukkit.persistence.PersistentDataType.BYTE, (byte) 1);
+                });
+            }, i * 8L);
+        }
+        w.spawnParticle(org.bukkit.Particle.TOTEM_OF_UNDYING, loc.clone().add(0.5, 1, 0.5), 120, 0.6, 1.2, 0.6, 0.4);
+        player.showTitle(net.kyori.adventure.title.Title.title(rawMsg("mega-title"), rawMsg("mega-subtitle")));
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            p.playSound(p.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.7f, 0.8f);
+        }
+    }
+
+    /** Celebration fireworks never hurt anyone. */
+    @org.bukkit.event.EventHandler(ignoreCancelled = true)
+    public void onFireworkDamage(org.bukkit.event.entity.EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof org.bukkit.entity.Firework fw
+                && fw.getPersistentDataContainer().has(new NamespacedKey(plugin(), "harmless"), org.bukkit.persistence.PersistentDataType.BYTE)) {
+            event.setCancelled(true);
         }
     }
 }

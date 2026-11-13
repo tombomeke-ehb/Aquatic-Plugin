@@ -16,7 +16,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 4
+config-version: 5
 
 autosave-seconds: 120
 
@@ -311,8 +311,9 @@ tiers:
   legendary:
     display-name: "<gradient:#ffcc00:#ff6a00><bold>Legendary</bold></gradient>"
     chest: CHEST
-    rolls: 7-9
-    doubloons: 1500-3000
+    # MEGA: a chest stuffed to the brim, a fortune in Doubloons, always a jackpot, fireworks and a light beam.
+    rolls: 14-18
+    doubloons: 15000-25000
     depth: 4
     marker: true
     weight: 0.5
@@ -320,13 +321,19 @@ tiers:
     reputation: 25
     vanish: empty
     particles: WAX_ON
-    beam: false
+    beam: true
+    celebrate: true
     unique-rolls: true
     loot:
-      - {item: "key:captain:1", weight: 5}
-      - {item: "key:kraken:1", weight: 1.5}
-      - {material: NETHERITE_SCRAP, amount: 2-4, weight: 5}
-      - {material: NETHERITE_INGOT, amount: 1-2, weight: 2}
+      - {item: "key:captain:2", weight: 5}
+      - {item: "key:kraken:1", weight: 4}
+      - {material: NETHERITE_SCRAP, amount: 4-8, weight: 5}
+      - {material: NETHERITE_INGOT, amount: 2-4, weight: 3}
+      - {custom-item: musket, weight: 1.5}
+      - {custom-item: harpoon, weight: 1.5}
+      - {custom-item: deepcore_pickaxe, weight: 1.2}
+      - {custom-item: abyssal_anchor, weight: 1}
+      - {custom-item: coral_scimitar, weight: 1.2}
       - {material: ANCIENT_DEBRIS, amount: 2-4, weight: 3}
       - {material: DIAMOND_BLOCK, amount: 2-4, weight: 4}
       - {material: HEART_OF_THE_SEA, amount: 1-2, weight: 3}
@@ -353,17 +360,22 @@ tiers:
       - {custom-item: tidewarden_boots, weight: 1}
       - {custom-item: healing_tonic, amount: 2-3, weight: 1.5}
       - {custom-item: fire_bomb, amount: 3-5, weight: 1.5}
-      - {custom-item: fruit_random, weight: 2.5}
-      - {doubloons: 1000-2000, weight: 4}
+      - {custom-item: fruit_random, weight: 4}
+      - {doubloons: 5000-10000, weight: 4}
     jackpot:
-      chance: 0.12
-      lore: ["", "<gold>★ Jackpot find!"]
+      # Always: 2-3 extra standout items on top of the rest.
+      chance: 1.0
+      rolls: 2-3
+      lore: ["", "<gold>★ MEGA find!"]
       loot:
-        - {material: NETHERITE_INGOT, amount: 2-3, weight: 2}
-        - {custom-item: fruit_random, weight: 2}
+        - {material: NETHERITE_INGOT, amount: 4-6, weight: 2}
+        - {custom-item: fruit_random, weight: 3}
         - {custom-item: leviathans_fang, weight: 1}
-        - {material: ENCHANTED_GOLDEN_APPLE, amount: 3, weight: 1}
-        - {doubloons: 3000-6000, weight: 3}
+        - {custom-item: captains_coat, weight: 1}
+        - {material: ENCHANTED_GOLDEN_APPLE, amount: 4-6, weight: 1.5}
+        - {item: "key:kraken:3", weight: 2}
+        - {material: DIAMOND_BLOCK, amount: 8-16, weight: 1.5}
+        - {doubloons: 10000-20000, weight: 3}
 
 placement:
   # Search radius around the requested spot for dry, solid ground.
@@ -502,6 +514,8 @@ sealed-map-lore:
   - "<yellow>Right-click to break the seal."
 
 messages:
+  mega-title: "<gradient:#ffcc00:#ff6a00><bold>MEGA TREASURE!</bold></gradient>"
+  mega-subtitle: "<yellow>A legendary hoard is yours"
   loot-hold-item: "<red>Hold the item you want to add."
   loot-added: "<green>Added <white><item></white> to the <tier><green> loot (weight <white><weight></white>)."
   loot-list-header: "<aqua>Loot of <tier> <gray>(<count>):"

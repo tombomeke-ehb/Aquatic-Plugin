@@ -19,8 +19,8 @@ title: "<dark_aqua><bold>Harbor Market"
 config-version: 5
 
 command:
-  # false: players can't open the shop with /shop (or /shop sell) anywhere; they talk to the shopkeeper
-  # villagers at spawn instead. Players with the permission aquatic.shop.anywhere (ops) always can.
+  # false: players have no /shop command at all; the shopkeeper villagers at spawn open the market.
+  # Staff (aquatic.shop.admin) keep /shop. true: everyone can use /shop again.
   players-can-open: false
 
 categories:

@@ -32,6 +32,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -110,7 +111,7 @@ public final class CratesModule extends AquaticModule implements Listener, Crate
     private final Map<String, String> blocks = new LinkedHashMap<>();
     private final Map<String, UUID> holograms = new HashMap<>();
     private final Set<UUID> opening = new LinkedHashSet<>();
-    private NamespacedKey keyTag, holoTag;
+    private NamespacedKey keyTag, holoTag, blockTag;
     private int ticks;
 
     @Override
@@ -122,6 +123,7 @@ public final class CratesModule extends AquaticModule implements Listener, Crate
     protected void onEnable() {
         keyTag = new NamespacedKey(plugin(), "crate_key");
         holoTag = new NamespacedKey(plugin(), "crate_hologram");
+        blockTag = new NamespacedKey(plugin(), "crate_block");
         loadCrates();
         loadBlocks();
         registerService(CrateService.class, this);
@@ -315,6 +317,41 @@ public final class CratesModule extends AquaticModule implements Listener, Crate
     }
 
     // ------------------------------------------------------------------ the crate blocks
+
+    /** The crate's own block (crates.<id>.block), default a chest. */
+    private Material blockOf(Crate c) {
+        Material m = Material.matchMaterial(config().getString("crates." + c.id + ".block", "CHEST"));
+        return m == null || !m.isBlock() ? Material.CHEST : m;
+    }
+
+    /** A placeable crate for staff: placing it makes a crate there. */
+    private ItemStack crateItem(Crate c) {
+        ItemStack it = new ItemStack(blockOf(c));
+        ItemMeta meta = it.getItemMeta();
+        meta.displayName(Text.item(c.name));
+        meta.lore(List.of(Text.item("<gray>Place it to make a crate here.")));
+        meta.getPersistentDataContainer().set(blockTag, PersistentDataType.STRING, c.id);
+        it.setItemMeta(meta);
+        return it;
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPlace(BlockPlaceEvent event) {
+        ItemStack it = event.getItemInHand();
+        String id = it.hasItemMeta() ? it.getItemMeta().getPersistentDataContainer().get(blockTag, PersistentDataType.STRING) : null;
+        if (id == null) {
+            return;
+        }
+        Crate c = crates.get(id);
+        if (c == null || !event.getPlayer().hasPermission("aquatic.crates.admin")) {
+            event.setCancelled(true);
+            send(event.getPlayer(), "place-no-permission");
+            return;
+        }
+        blocks.put(key(event.getBlockPlaced()), c.id);
+        saveBlocks();
+        send(event.getPlayer(), "placed", "crate", Text.mm(c.name));
+    }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onInteract(PlayerInteractEvent event) {
@@ -619,6 +656,14 @@ public final class CratesModule extends AquaticModule implements Listener, Crate
             Bukkit.broadcast(msg("giveall", "amount", amount, "crate", Text.mm(c.name)));
         }).usage("<crate> [amount]").description("Give every online player crate keys").permission("aquatic.crates.admin").hidden()
                 .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(new ArrayList<>(crates.keySet()), a[0]) : List.of());
+        cmd.sub("item", (s, a) -> {
+            AquaticCommand.need(a, 1, "/crate item <crate>");
+            Player p = AquaticCommand.player(s);
+            Crate c = crate(a[0]);
+            p.getInventory().addItem(crateItem(c));
+            send(p, "got-block", "crate", Text.mm(c.name));
+        }).usage("<crate>").description("Get the crate's block: place it to make a crate").permission("aquatic.crates.admin").playerOnly().hidden()
+                .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(new ArrayList<>(crates.keySet()), a[0]) : List.of());
         cmd.sub("setup", (s, a) -> setup(AquaticCommand.player(s)))
                 .description("Put the default crate stands at the capital (setup-spots in crates.yml)")
                 .permission("aquatic.crates.admin").playerOnly().hidden();
@@ -689,9 +734,9 @@ public final class CratesModule extends AquaticModule implements Listener, Crate
             int x = capital.center().getBlockX() + ((Number) off.get(0)).intValue();
             int z = capital.center().getBlockZ() + ((Number) off.get(1)).intValue();
             int y = w.getHighestBlockYAt(x, z, org.bukkit.HeightMap.MOTION_BLOCKING_NO_LEAVES) + 1;
-            Material m = Material.matchMaterial(String.valueOf(raw.get("block") == null ? "CHEST" : raw.get("block")));
+            Material m = raw.get("block") == null ? blockOf(c) : Material.matchMaterial(String.valueOf(raw.get("block")));
             Block b = w.getBlockAt(x, y, z);
-            b.setType(m == null || !m.isBlock() ? Material.CHEST : m, false);
+            b.setType(m == null || !m.isBlock() ? blockOf(c) : m, false);
             blocks.put(key(b), c.id);
             placed++;
         }
@@ -701,6 +746,21 @@ public final class CratesModule extends AquaticModule implements Listener, Crate
 
     @Override
     protected void migrateConfig(YamlConfiguration file, YamlConfiguration defaults, int from) {
-        // config-version 1 is the first version of crates.yml
+        if (from < 2) {
+            // 2.16.0: every crate has its own (nether) block, with a 3D crate look from the resource pack
+            for (String id : List.of("sailor", "captain", "kraken")) {
+                if (file.contains("crates." + id)) {
+                    addMissing(file, defaults, "crates." + id + ".block");
+                }
+            }
+            List<Map<?, ?>> spots = file.getMapList("setup-spots");
+            boolean old = spots.size() == 3 && "CHEST".equals(String.valueOf(spots.get(0).get("block")));
+            if (old) {
+                file.set("setup-spots", defaults.getList("setup-spots"));
+            }
+            for (String key : List.of("got-block", "placed", "place-no-permission")) {
+                addMissing(file, defaults, "messages." + key);
+            }
+        }
     }
 }

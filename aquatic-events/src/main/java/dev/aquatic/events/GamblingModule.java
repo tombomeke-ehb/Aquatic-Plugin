@@ -50,6 +50,8 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public final class GamblingModule extends AquaticModule implements Listener {
 
+    private static final String ADMIN = "aquatic.gambling.admin";
+
     private record Segment(String label, double multiplier, double weight, Material icon) {
     }
 
@@ -57,10 +59,13 @@ public final class GamblingModule extends AquaticModule implements Listener {
     }
 
     private static final class Menu implements InventoryHolder {
-        /** null = the main menu, "dice" / "wheel" = choosing a bet. */
+        /** null = the main menu, "dice" / "wheel" / "coinflip" = choosing a bet, "players" = picking an opponent. */
         final String game;
         Inventory inventory;
         final Map<Integer, Double> bets = new HashMap<>();
+        final Map<Integer, UUID> players = new HashMap<>();
+        /** The opponent when the game is "coinflip". */
+        UUID opponent;
 
         Menu(String game) {
             this.game = game;
@@ -173,7 +178,7 @@ public final class GamblingModule extends AquaticModule implements Listener {
 
     /** Checks the den's rules and takes the bet. */
     private void takeBet(Player p, double bet) {
-        if (!p.hasPermission("aquatic.gambling.anywhere") && config().getBoolean("only-at-capital", true)) {
+        if (!p.hasPermission("aquatic.gambling.anywhere") && !p.hasPermission(ADMIN) && config().getBoolean("only-at-capital", true)) {
             IslandService islands = service(IslandService.class);
             Island is = islands == null ? null : islands.islandAt(p.getLocation());
             if (islands != null && (is == null || is.type() != IslandType.CAPITAL)) {
@@ -356,7 +361,7 @@ public final class GamblingModule extends AquaticModule implements Listener {
         long expires = System.currentTimeMillis() + Math.max(10, config().getLong("coinflip.expire-seconds", 60)) * 1000L;
         challenges.put(target.getUniqueId(), new Challenge(p.getUniqueId(), target.getUniqueId(), bet, expires));
         send(p, "coinflip-sent", "player", target.getName(), "bet", money(bet));
-        target.sendMessage(Text.mm(config().getString("messages.coinflip-received", ""), "player", p.getName(), "bet", money(bet)));
+        send(target, "coinflip-received", "player", p.getName(), "bet", money(bet));
     }
 
     void accept(Player target) {
@@ -408,8 +413,8 @@ public final class GamblingModule extends AquaticModule implements Listener {
 
     void openMenu(Player p, String game) {
         Menu holder = new Menu(game);
-        Inventory inv = Bukkit.createInventory(holder, 27, rawMsg(game == null ? "menu-title" : "bet-title",
-                "game", rawMsg("game-" + (game == null ? "dice" : game))));
+        Inventory inv = Bukkit.createInventory(holder, 27, rawMsg(game == null ? "menu-title" : game.equals("players") ? "pick-title" : "bet-title",
+                "game", rawMsg("game-" + (game == null || game.equals("players") ? "dice" : game))));
         holder.inventory = inv;
         ItemStack glass = Reel.pane(Material.GREEN_STAINED_GLASS_PANE);
         for (int i = 0; i < 27; i++) {
@@ -419,10 +424,36 @@ public final class GamblingModule extends AquaticModule implements Listener {
             inv.setItem(11, button(Material.BONE_BLOCK, "menu-dice", "menu-dice-lore"));
             inv.setItem(13, button(Material.CLOCK, "menu-wheel", "menu-wheel-lore"));
             inv.setItem(15, button(Material.SUNFLOWER, "menu-coinflip", "menu-coinflip-lore"));
+            Challenge pending = challenges.get(p.getUniqueId());
+            if (pending != null && pending.expires >= System.currentTimeMillis()) {
+                Player from = Bukkit.getPlayer(pending.from);
+                Object[] ph = {"player", from == null ? "?" : from.getName(), "bet", money(pending.bet)};
+                inv.setItem(20, button(Material.LIME_DYE, "menu-accept", "menu-accept-lore", ph));
+                inv.setItem(24, button(Material.RED_DYE, "menu-deny", null, ph));
+            }
             double limit = config().getDouble("daily-limit", 25000);
             inv.setItem(22, button(Material.PAPER, "menu-limits", null, "min", money(config().getDouble("min-bet", 10)),
                     "max", money(config().getDouble("max-bet", 5000)),
                     "left", limit > 0 ? money(Math.max(0, limit - wageredToday(p.getUniqueId()))) : "-"));
+        } else if (game.equals("players")) {
+            int slot = 0;
+            for (Player other : Bukkit.getOnlinePlayers()) {
+                if (other.equals(p) || slot >= 18) {
+                    continue;
+                }
+                ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+                if (head.getItemMeta() instanceof org.bukkit.inventory.meta.SkullMeta sm) {
+                    sm.setOwningPlayer(other);
+                    head.setItemMeta(sm);
+                }
+                inv.setItem(slot, dev.aquatic.util.Menus.icon(head, Text.mm("<white>" + other.getName()),
+                        List.of(rawMsg("pick-player-lore"))));
+                holder.players.put(slot++, other.getUniqueId());
+            }
+            if (slot == 0) {
+                inv.setItem(13, button(Material.BARRIER, "pick-nobody", null));
+            }
+            inv.setItem(22, button(Material.ARROW, "menu-back", null));
         } else {
             List<Double> presets = config().getDoubleList("bet-presets");
             Material[] icons = {Material.GOLD_NUGGET, Material.GOLD_INGOT, Material.RAW_GOLD, Material.GOLD_BLOCK, Material.RAW_GOLD_BLOCK,
@@ -437,6 +468,23 @@ public final class GamblingModule extends AquaticModule implements Listener {
             inv.setItem(22, button(Material.ARROW, "menu-back", null));
         }
         p.openInventory(inv);
+    }
+
+    private Menu openBetMenu(Player p, String game) {
+        openMenu(p, game);
+        return (Menu) p.getOpenInventory().getTopInventory().getHolder();
+    }
+
+    void deny(Player p) {
+        Challenge c = challenges.remove(p.getUniqueId());
+        if (c == null) {
+            throw new CommandFail(rawMsg("coinflip-none"));
+        }
+        send(p, "coinflip-denied");
+        Player from = Bukkit.getPlayer(c.from);
+        if (from != null) {
+            send(from, "coinflip-denied-by", "player", p.getName());
+        }
     }
 
     private ItemStack button(Material m, String nameKey, String loreKey, Object... ph) {
@@ -475,12 +523,27 @@ public final class GamblingModule extends AquaticModule implements Listener {
                 switch (slot) {
                     case 11 -> openMenu(p, "dice");
                     case 13 -> openMenu(p, "wheel");
-                    case 15 -> {
+                    case 15 -> openMenu(p, "players");
+                    case 20 -> {
                         p.closeInventory();
-                        send(p, "coinflip-how");
+                        accept(p);
+                    }
+                    case 24 -> {
+                        p.closeInventory();
+                        deny(p);
                     }
                     default -> {
                     }
+                }
+                return;
+            }
+            if (menu.game.equals("players")) {
+                UUID target = menu.players.get(slot);
+                if (slot == 22) {
+                    openMenu(p, null);
+                } else if (target != null) {
+                    Menu next = openBetMenu(p, "coinflip");
+                    next.opponent = target;
                 }
                 return;
             }
@@ -495,6 +558,13 @@ public final class GamblingModule extends AquaticModule implements Listener {
             if (menu.game.equals("dice")) {
                 p.closeInventory();
                 dice(p, bet);
+            } else if (menu.game.equals("coinflip")) {
+                p.closeInventory();
+                Player target = menu.opponent == null ? null : Bukkit.getPlayer(menu.opponent);
+                if (target == null) {
+                    throw new CommandFail(rawMsg("coinflip-gone"));
+                }
+                challenge(p, target, bet);
             } else {
                 wheel(p, bet);
             }
@@ -527,43 +597,23 @@ public final class GamblingModule extends AquaticModule implements Listener {
     }
 
     private void registerCommands() {
-        AquaticCommand gamble = new AquaticCommand("gamble", "The gambling den at spawn (Doubloons only)", "casino", "den");
+        // Players play through the Dealer's menu only. Staff keep commands to test the den anywhere.
+        AquaticCommand gamble = new AquaticCommand("gamble", "The gambling den's menu (staff; players talk to the Dealer)", "casino");
         gamble.defaultExecutor((s, a) -> openMenu(AquaticCommand.player(s), null));
+        gamble.permission(ADMIN);
         registerCommand(gamble);
-        AquaticCommand dice = new AquaticCommand("dice", "Roll two dice against the dealer");
-        dice.defaultExecutor((s, a) -> {
-            AquaticCommand.need(a, 1, "/dice <bet>");
-            dice(AquaticCommand.player(s), bet(a[0]));
-        });
-        registerCommand(dice);
-        AquaticCommand wheelCmd = new AquaticCommand("wheel", "Spin the wheel of fortune");
-        wheelCmd.defaultExecutor((s, a) -> {
-            AquaticCommand.need(a, 1, "/wheel <bet>");
-            wheel(AquaticCommand.player(s), bet(a[0]));
-        });
-        registerCommand(wheelCmd);
-        AquaticCommand flip = new AquaticCommand("coinflip", "Flip a coin against another player", "cf");
-        flip.defaultExecutor((s, a) -> {
-            AquaticCommand.need(a, 2, "/coinflip <player> <bet>");
-            challenge(AquaticCommand.player(s), AquaticCommand.onlinePlayer(a[0]), bet(a[1]));
-        });
-        flip.sub("accept", (s, a) -> accept(AquaticCommand.player(s))).description("Accept a coin flip").playerOnly();
-        flip.sub("deny", (s, a) -> {
-            Challenge c = challenges.remove(AquaticCommand.player(s).getUniqueId());
-            if (c == null) {
-                throw new CommandFail(rawMsg("coinflip-none"));
-            }
-            send(s, "coinflip-denied");
-            Player from = Bukkit.getPlayer(c.from);
-            if (from != null) {
-                send(from, "coinflip-denied-by", "player", s.getName());
-            }
-        }).description("Turn down a coin flip").playerOnly();
-        registerCommand(flip);
     }
 
     @Override
     protected void migrateConfig(YamlConfiguration file, YamlConfiguration defaults, int from) {
-        // config-version 1 is the first version of gambling.yml
+        if (from < 2) {
+            // 2.16.0: everything through the Dealer's menu (no player commands)
+            raise(file, "messages.menu-coinflip-lore", List.of("<gray>Against another player:", "<white>/coinflip <player> <bet>"),
+                    defaults.getStringList("messages.menu-coinflip-lore"));
+            file.set("messages.coinflip-received", defaults.getString("messages.coinflip-received"));
+            for (String key : List.of("menu-accept", "menu-accept-lore", "menu-deny", "pick-title", "pick-player-lore", "pick-nobody", "game-coinflip")) {
+                addMissing(file, defaults, "messages." + key);
+            }
+        }
     }
 }

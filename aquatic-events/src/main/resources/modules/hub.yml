@@ -11,10 +11,12 @@
 #  NPCs with "island-type: VILLAGE" stand on every village island instead (offsets from the well).
 #
 #  NPC actions (run when a player right-clicks it):
+#    "shop:<category>"  open the market (players have no /shop: the shopkeepers are the way in)
+#    "gamble"           open the gambling den (dice, wheel, coin flips)
 #    "cmd:<command>"  the player runs the command (without /)
 #    "msg:<text>"     a MiniMessage line (clickable with <click:run_command:'/...'>)
 # =====================================================================================
-config-version: 4
+config-version: 5
 
 npcs:
   blacksmith:
@@ -26,27 +28,27 @@ npcs:
     name: "<green><bold>Provisioner</bold> <gray>(food & drinks)"
     profession: farmer
     offset: [7, 17]
-    actions: ["cmd:shop food"]
+    actions: ["shop:food"]
   shipwright:
     name: "<aqua><bold>Shipwright</bold> <gray>(sailing)"
     profession: fisherman
     offset: [-7, 17]
-    actions: ["cmd:shop sailing"]
+    actions: ["shop:sailing"]
   merchant:
     name: "<yellow><bold>Merchant</bold> <gray>(sell your loot)"
     profession: cartographer
     offset: [-17, 7]
-    actions: ["cmd:shop trade"]
+    actions: ["shop:trade"]
   carpenter:
     name: "<#c8a165><bold>Carpenter</bold> <gray>(wood & decor)"
     profession: fletcher
     offset: [-17, -7]
-    actions: ["cmd:shop decor"]
+    actions: ["shop:decor"]
   quartermaster:
     name: "<red><bold>Quartermaster</bold> <gray>(pirate gear)"
     profession: armorer
     offset: [-7, -17]
-    actions: ["cmd:shop pirate"]
+    actions: ["shop:pirate"]
   registrar:
     name: "<blue><bold>Crew Registrar"
     profession: librarian
@@ -58,14 +60,14 @@ npcs:
     name: "<gray><bold>Stonemason</bold> <gray>(building blocks)"
     profession: mason
     offset: [17, -7]
-    actions: ["cmd:shop masonry"]
+    actions: ["shop:masonry"]
   # The gambling den's dealer (dice, wheel of fortune, coin flips: gambling.yml). Move him into your own
   # den build with /hubadmin place dealer.
   dealer:
     name: "<gold><bold>Dealer</bold> <gray>(gambling den)"
     profession: nitwit
     offset: [6, 30]
-    actions: ["cmd:gamble"]
+    actions: ["gamble"]
   # ---- the village folk: they stand around the well of every village and give quests (quests.yml)
   village_elder:
     island-type: VILLAGE

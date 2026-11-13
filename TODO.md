@@ -3,11 +3,11 @@
 **Aquatic SMP: Sail. Claim. Conquer.**
 
 This file is the roadmap. Tick off items as they're finished and add new ideas under the right heading.
-What changed in each version is in [CHANGELOG.md](CHANGELOG.md). Current version: **2.15.0**.
+What changed in each version is in [CHANGELOG.md](CHANGELOG.md). Current version: **2.16.0**.
 
 ---
 
-## Done (up to 2.15.0)
+## Done (up to 2.16.0)
 
 **World and islands**
 - Procedural islands, generated chunk by chunk without lag, in size classes (small to large).
@@ -145,6 +145,8 @@ What changed in each version is in [CHANGELOG.md](CHANGELOG.md). Current version
 
 ## World and islands
 - [x] Rarity, Forest, mountains, caves, ore veins, reefs, lakes, shipwrecks, the capital town, and lava streams.
+- [x] MEGA legendary treasure: 14-18 items, 15,000-25,000 Doubloons, always 2-3 jackpot items, a beam and fireworks (done in 2.16.0).
+- [x] Prettier town: houses with plinths, beams, shutters, flower boxes and awnings; new piers, parkour tower and lighthouse (done in 2.16.0).
 - [ ] **Rarer islands have better rewards:** more and better treasure, rare ores, and more income.
 - [x] Tidewatch outposts: fort islands with a garrison and a Warden Captain (done in 2.6.0).
 - [x] Real caves and ores on every island, bigger islands, better spawn town (done in 2.4.0 to 2.7.1).
@@ -192,6 +194,8 @@ What changed in each version is in [CHANGELOG.md](CHANGELOG.md). Current version
   - The Dealer villager at spawn and `/gamble`, with dice against the dealer, a wheel of fortune and coin flips between players.
   - A pasteable striped tent: `/island admin schematic preview builtin:gambling_den`.
 - [x] **Limits** (done in 2.15.0): a minimum level, min/max bet, a daily limit, a cooldown, only at the capital, and `data/gambling.log` for big results.
+- [x] Crates are their own nether blocks (unobtainable with the Nether off) with 3D crate models (done in 2.16.0).
+- [x] Shop and gambling only through the villagers: no player commands (done in 2.16.0).
 - [ ] Keys from votes (needs a vote plugin hook), the tournament and server events. Cosmetic and facility-voucher prizes.
 - [ ] A pirate card game (for example blackjack against the dealer) and gambling stats on the sidebar.
 - [ ] Check how a store selling keys for real money fits Minecraft's rules before adding one.
@@ -213,7 +217,7 @@ What changed in each version is in [CHANGELOG.md](CHANGELOG.md). Current version
 - [x] `/spawn` with warmup; chat with level badge, @mentions and `[item]`; economy commands win over EssentialsX (done in 2.1.0).
 - [x] Expanded sidebar: XP bar, bounty title, crew online, island rarity, combat tag (done in 2.3.0).
 - [ ] Tidewill energy on the sidebar.
-- [x] A menu for `/crew` (done in 2.6.0).
+- [x] A menu for `/crew` (done in 2.6.0), and the whole crew managed by clicking: member pages, bank, invites, diplomacy, confirmations (done in 2.16.0).
 - [x] LuckPerms/Vault rank prefix and suffix in chat and tab (done in 2.10.0).
 - [ ] An admin config menu (`/aquatic config`) to change the main settings in-game.
 - [x] Edit loot in-game: `/treasure loot add|list|remove` (done in 2.15.0).

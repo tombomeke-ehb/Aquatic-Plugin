@@ -911,7 +911,7 @@ final class IslandGenerator extends AreaJob {
                 lighthouse = true;
                 int lx = lastX + d[1] * 6, lz = lastZ + d[0] * 6;
                 if (kindAt(lx, lz) == LAND || kindAt(lx, lz) == BEACH) {
-                    list.add(new Feature(lx, lz, 4, () -> buildLighthouse(lx, lz)));
+                    list.add(new Feature(lx, lz, 5, () -> buildLighthouse(lx, lz)));
                 }
             }
         }
@@ -1095,36 +1095,84 @@ final class IslandGenerator extends AreaJob {
      * A pier that starts at the end of the boardwalk (on top of the beach, never buried in sand) and steps
      * down to just above the water.
      */
+    /** A fence that runs along the pier (joined front and back). */
+    private static BlockData railing(Material m, int[] d) {
+        BlockData f = Bukkit.createBlockData(m);
+        if (f instanceof org.bukkit.block.data.MultipleFacing mf) {
+            mf.setFace(face(d[0], d[1]), true);
+            mf.setFace(face(-d[0], -d[1]), true);
+        }
+        return f;
+    }
+
+    /**
+     * A pier: a deck with stripped-log edges and two kinds of planks on log posts, fence railings with a gap for
+     * boats, lantern posts, and a wide head at the end with cargo, a bell and a ladder down to the water.
+     */
     private void buildPier(int px, int pz, int[] d, int startY) {
         int prev = Math.max(sea, startY);
         BlockFace up = face(-d[0], -d[1]);
-        for (int i = 0; i < 20; i++) {
+        int length = 22, headFrom = length - 4;
+        org.bukkit.Axis axis = d[0] != 0 ? org.bukkit.Axis.X : org.bukkit.Axis.Z;
+        int endDeck = sea;
+        for (int i = 0; i < length; i++) {
             int deck = Math.max(sea, Math.max(sea, startY) - i);
             boolean step = deck < prev;
             int x = cx + px + d[0] * i, z = cz + pz + d[1] * i;
-            for (int w = -1; w <= 1; w++) {
+            boolean head = i >= headFrom;
+            int half = head ? 2 : 1;
+            for (int w = -half; w <= half; w++) {
                 int wx = x + (d[1] != 0 ? w : 0), wz = z + (d[0] != 0 ? w : 0);
-                if (step) {
+                boolean edge = Math.abs(w) == half;
+                if (step && !head) {
                     setData(wx, deck, wz, stairs(Material.SPRUCE_STAIRS, up));
+                } else if (edge) {
+                    BlockData log = Bukkit.createBlockData(Material.STRIPPED_SPRUCE_LOG);
+                    if (log instanceof org.bukkit.block.data.Orientable o) {
+                        o.setAxis(axis);
+                    }
+                    setData(wx, deck, wz, log);
                 } else {
-                    set(wx, deck, wz, Material.SPRUCE_PLANKS);
+                    set(wx, deck, wz, (i + w) % 3 == 0 ? Material.DARK_OAK_PLANKS : Material.SPRUCE_PLANKS);
                 }
                 for (int yy = deck + 1; yy <= deck + 3; yy++) {
                     Block b = world.getBlockAt(wx, yy, wz);
-                    if (!b.isEmpty() && !(Math.abs(w) == 1 && i % 4 == 0)) {
+                    if (!b.isEmpty()) {
                         b.setType(Material.AIR, false); // dig the walkway through the beach sand
                     }
                 }
-                if (Math.abs(w) == 1 && i % 4 == 0) {
-                    // posts down to the sea floor
+                boolean post = edge && (i % 4 == 0 || i == length - 1 || i == headFrom);
+                if (post) {
                     for (int yy = deck - 1; yy > minY && !world.getBlockAt(wx, yy, wz).getType().isSolid(); yy--) {
                         world.getBlockAt(wx, yy, wz).setType(Material.SPRUCE_LOG, false);
                     }
-                    set(wx, deck + 1, wz, Material.SPRUCE_FENCE);
-                    set(wx, deck + 2, wz, i % 8 == 0 ? Material.LANTERN : Material.AIR);
+                    set(wx, deck + 1, wz, Material.SPRUCE_LOG);
+                    if (i % 8 == 0 || i == length - 1) {
+                        set(wx, deck + 2, wz, Material.LANTERN);
+                    }
+                } else if (edge && !step && i % 8 != 6 && !(head && i == length - 1)) {
+                    setData(wx, deck + 1, wz, railing(Material.SPRUCE_FENCE, d));
                 }
             }
             prev = deck;
+            endDeck = deck;
+        }
+        // the head: cargo, a bell on a post and a ladder down to the water
+        int ex = cx + px + d[0] * (length - 2), ez = cz + pz + d[1] * (length - 2);
+        int sx = d[1] != 0 ? 1 : 0, sz = d[0] != 0 ? 1 : 0;
+        set(ex - sx, endDeck + 1, ez - sz, Material.BARREL);
+        set(ex - sx, endDeck + 2, ez - sz, Material.BARREL);
+        set(ex - sx - d[0], endDeck + 1, ez - sz - d[1], Material.BARREL);
+        set(ex + sx, endDeck + 1, ez + sz, Material.SPRUCE_FENCE);
+        BlockData bell = Bukkit.createBlockData(Material.BELL);
+        if (bell instanceof org.bukkit.block.data.type.Bell b) {
+            b.setAttachment(org.bukkit.block.data.type.Bell.Attachment.FLOOR);
+            b.setFacing(face(d[1], d[0]));
+        }
+        setData(ex + sx, endDeck + 2, ez + sz, bell);
+        int lx = cx + px + d[0] * length, lz = cz + pz + d[1] * length;
+        for (int yy = endDeck; yy >= sea - 2; yy--) {
+            setData(lx, yy, lz, stairs(Material.LADDER, face(d[0], d[1])));
         }
     }
 
@@ -1134,7 +1182,77 @@ final class IslandGenerator extends AreaJob {
             {Material.SPRUCE_PLANKS, Material.STRIPPED_SPRUCE_LOG, Material.SPRUCE_STAIRS, Material.SPRUCE_PLANKS, Material.STONE_BRICKS, Material.OAK_PLANKS},
             {Material.BIRCH_PLANKS, Material.STRIPPED_OAK_LOG, Material.MANGROVE_STAIRS, Material.MANGROVE_PLANKS, Material.MOSSY_COBBLESTONE, Material.BIRCH_PLANKS},
             {Material.STONE_BRICKS, Material.SPRUCE_LOG, Material.DEEPSLATE_TILE_STAIRS, Material.DEEPSLATE_TILES, Material.COBBLED_DEEPSLATE, Material.DARK_OAK_PLANKS},
+            {Material.SMOOTH_SANDSTONE, Material.STRIPPED_DARK_OAK_LOG, Material.BRICK_STAIRS, Material.BRICKS, Material.STONE_BRICKS, Material.SPRUCE_PLANKS},
+            {Material.WHITE_TERRACOTTA, Material.STRIPPED_SPRUCE_LOG, Material.SPRUCE_STAIRS, Material.SPRUCE_PLANKS, Material.MOSSY_STONE_BRICKS, Material.OAK_PLANKS},
     };
+    /** Shutters and flower boxes per style (same order as HOUSE_STYLES). */
+    private static final Material[] HOUSE_TRAPDOORS = {Material.DARK_OAK_TRAPDOOR, Material.SPRUCE_TRAPDOOR, Material.MANGROVE_TRAPDOOR,
+            Material.SPRUCE_TRAPDOOR, Material.DARK_OAK_TRAPDOOR, Material.SPRUCE_TRAPDOOR};
+    private static final Material[] BOX_FLOWERS = {Material.POPPY, Material.DANDELION, Material.CORNFLOWER, Material.ALLIUM,
+            Material.AZURE_BLUET, Material.RED_TULIP, Material.OXEYE_DAISY};
+    /** A log lying along a wall (x walls run along z and the other way round); planks stay planks. */
+    private static BlockData beam(Material frame, boolean alongZ) {
+        BlockData d = Bukkit.createBlockData(frame);
+        if (d instanceof org.bukkit.block.data.Orientable o) {
+            o.setAxis(alongZ ? org.bukkit.Axis.Z : org.bukkit.Axis.X);
+        }
+        return d;
+    }
+
+    private boolean freeAt(int x, int y, int z) {
+        Material m = world.getBlockAt(x, y, z).getType();
+        return m.isAir() || org.bukkit.Tag.REPLACEABLE.isTagged(m);
+    }
+
+    /**
+     * Outside details: shutters beside every window, flower boxes under the ground floor windows, and a little
+     * awning with two lanterns over the door.
+     */
+    private void decorateHouse(List<int[]> windows, int dx, int dz, int doorDx, int doorDz, int base, Material trapdoor,
+                               Material awning, Random r) {
+        for (int[] win : windows) {
+            int x = win[0], y = win[1], z = win[2], ox = win[3], oz = win[4];
+            int ax = oz != 0 ? 1 : 0, az = ox != 0 ? 1 : 0; // along the wall
+            BlockFace out = face(ox, oz);
+            for (int side = -1; side <= 1; side += 2) {
+                int sx = x + ox + ax * side, sz = z + oz + az * side;
+                if (freeAt(sx, y, sz)) {
+                    BlockData shutter = Bukkit.createBlockData(trapdoor);
+                    if (shutter instanceof org.bukkit.block.data.type.TrapDoor t) {
+                        t.setFacing(out);
+                        t.setOpen(true);
+                    }
+                    setData(sx, y, sz, shutter);
+                }
+            }
+            if (y == base + 2 && freeAt(x + ox, y - 1, z + oz) && freeAt(x + ox, y, z + oz)) {
+                BlockData box = Bukkit.createBlockData(trapdoor);
+                if (box instanceof org.bukkit.block.data.type.TrapDoor t) {
+                    t.setFacing(out);
+                    t.setHalf(Bisected.Half.TOP);
+                }
+                setData(x + ox, y - 1, z + oz, box);
+                set(x + ox, y, z + oz, BOX_FLOWERS[r.nextInt(BOX_FLOWERS.length)]);
+            }
+        }
+        // awning over the door: stairs sloping away from the wall, lanterns hanging under its sides
+        int ax = doorDz != 0 ? 1 : 0, az = doorDx != 0 ? 1 : 0;
+        BlockFace toWall = face(-doorDx, -doorDz);
+        for (int side = -1; side <= 1; side++) {
+            int sx = dx + doorDx + ax * side, sz = dz + doorDz + az * side;
+            if (side != 0 && freeAt(sx, base + 3, sz)) {
+                setData(sx, base + 3, sz, stairs(awning, toWall));
+                if (freeAt(sx, base + 2, sz)) {
+                    BlockData lantern = Bukkit.createBlockData(Material.LANTERN);
+                    if (lantern instanceof org.bukkit.block.data.type.Lantern l) {
+                        l.setHanging(true);
+                    }
+                    setData(sx, base + 2, sz, lantern);
+                }
+            }
+        }
+    }
+
     private static final Material[] BEDS = {Material.RED_BED, Material.BLUE_BED, Material.GREEN_BED, Material.YELLOW_BED, Material.CYAN_BED};
 
     /** A timber-framed house with a gabled roof, chimney, windows and a small interior (some have two floors). */
@@ -1145,8 +1263,10 @@ final class IslandGenerator extends AreaJob {
                 base = Math.max(base, top[index(hx + ox, hz + oz)]);
             }
         }
-        Material[] st = building == 2 ? HOUSE_STYLES[1] : HOUSE_STYLES[r.nextInt(HOUSE_STYLES.length)];
+        int style = building == 2 ? 1 : r.nextInt(HOUSE_STYLES.length);
+        Material[] st = HOUSE_STYLES[style];
         Material wall = st[0], frame = st[1], roofStair = st[2], roofBlock = st[3], found = st[4], floor = st[5];
+        List<int[]> windows = new ArrayList<>(); // {x, y, z, outward dx, outward dz}
         // small cottages stay low; bigger houses often get a second floor; the tavern always does
         boolean twoStory = building == 1 || (building == 0 && w + l >= 5 && r.nextInt(5) < 2);
         int wallH = twoStory ? 7 : building == 2 ? 5 : 4;
@@ -1173,10 +1293,15 @@ final class IslandGenerator extends AreaJob {
                         if (doorWall && h == 2 && Math.abs(o) == 1 && !doorWindows) {
                             windowRow = false;
                         }
-                        if (twoStory && h == 4) {
-                            m = frame;
+                        if ((twoStory && h == 4) || h == wallH) {
+                            // timber beams along the wall at the floor line and under the roof
+                            setData(x, y, z, beam(frame, edgeX));
+                            continue;
                         } else if (windowRow && o != 0 && Math.abs(o) < half && Math.abs(o) % 2 == 1) {
                             m = Material.GLASS_PANE;
+                            windows.add(new int[]{x, y, z, edgeX ? Integer.signum(ox) : 0, edgeZ ? Integer.signum(oz) : 0});
+                        } else if (h == 1) {
+                            m = found; // a stone plinth all around
                         } else {
                             m = wall;
                         }
@@ -1245,6 +1370,7 @@ final class IslandGenerator extends AreaJob {
         world.getBlockAt(dx, base + 2, dz).setBlockData(upper, false);
         doorSteps(dx, dz, doorDx, doorDz, base, found);
         set(dx + doorDx, base + 3, dz + doorDz, Material.LANTERN);
+        decorateHouse(windows, dx, dz, doorDx, doorDz, base, HOUSE_TRAPDOORS[style], roofStair, r);
         if (building == 1) {
             furnishTavern(x0, z0, base, w, l, doorDx, doorDz, used, r);
             return;
@@ -1927,57 +2053,127 @@ final class IslandGenerator extends AreaJob {
      * A parkour tower: a spiral of jumps around a pillar. Start on the light (gold) pressure plate at its
      * foot, finish on the heavy (iron) plate on top; the hub module times the run.
      */
+    /**
+     * The parkour tower: a weathered 3x3 pillar with trim bands and glowing sea-lantern rings, a spiral of jumps
+     * around it, and a railed platform on top with the finish plate. The start plate (light) is in front of it,
+     * between two lamp posts; the finish plate (heavy) is on top. Plate types and spots match the hub module.
+     */
     private void buildParkour(int px, int pz) {
         int y = top[index(px, pz)];
         int x = cx + px, z = cz + pz;
-        int steps = 16;
-        for (int up = 1; up <= steps + 1; up++) {
+        int steps = 16, topY = y + steps + 1;
+        for (int ox = -2; ox <= 2; ox++) {                                // the footing
+            for (int oz = -2; oz <= 2; oz++) {
+                set(x + ox, y, z + oz, (ox + oz) % 2 == 0 ? Material.POLISHED_ANDESITE : Material.STONE_BRICKS);
+            }
+        }
+        for (int up = 1; up <= steps; up++) {                             // the pillar
             for (int ox = -1; ox <= 1; ox++) {
                 for (int oz = -1; oz <= 1; oz++) {
-                    set(x + ox, y + up, z + oz, up % 5 == 0 ? Material.SEA_LANTERN : Material.STONE_BRICKS);
+                    boolean corner = Math.abs(ox) == 1 && Math.abs(oz) == 1;
+                    Material m;
+                    if (up % 4 == 0) {
+                        m = corner ? Material.CHISELED_STONE_BRICKS : Material.POLISHED_ANDESITE;
+                    } else if (up % 4 == 2 && !corner && (ox == 0 || oz == 0)) {
+                        m = Material.SEA_LANTERN;
+                    } else {
+                        int h = (ox * 31 + oz * 17 + up * 7) & 7;
+                        m = h == 0 ? Material.MOSSY_STONE_BRICKS : h == 1 ? Material.CRACKED_STONE_BRICKS : Material.STONE_BRICKS;
+                    }
+                    set(x + ox, y + up, z + oz, m);
                 }
             }
         }
-        set(x, y + steps + 1, z, Material.GOLD_BLOCK);
-        set(x, y + steps + 2, z, Material.HEAVY_WEIGHTED_PRESSURE_PLATE);
-        for (int i = 0; i < steps; i++) {
+        for (int ox = -2; ox <= 2; ox++) {                                // the top platform with a railing
+            for (int oz = -2; oz <= 2; oz++) {
+                set(x + ox, topY, z + oz, Math.abs(ox) == 2 || Math.abs(oz) == 2 ? Material.POLISHED_ANDESITE : Material.SMOOTH_STONE);
+                boolean edge = Math.abs(ox) == 2 || Math.abs(oz) == 2;
+                boolean landing = ox >= 1 && oz >= 1; // open where the last jump lands
+                if (edge && !landing) {
+                    set(x + ox, topY + 1, z + oz, Material.DARK_OAK_FENCE);
+                    if (Math.abs(ox) == 2 && Math.abs(oz) == 2) {
+                        set(x + ox, topY + 2, z + oz, Material.LANTERN);
+                    }
+                }
+            }
+        }
+        set(x, topY, z, Material.GOLD_BLOCK);
+        set(x, topY + 1, z, Material.HEAVY_WEIGHTED_PRESSURE_PLATE);
+        Material[] jumps = {Material.PRISMARINE_BRICKS, Material.QUARTZ_BLOCK, Material.DARK_PRISMARINE, Material.SEA_LANTERN};
+        for (int i = 0; i < steps; i++) {                                 // the spiral
             double a = Math.toRadians(90 + 45 * i);
             int jx = x + (int) Math.round(Math.cos(a) * 4), jz = z + (int) Math.round(Math.sin(a) * 4);
-            Material m = i % 4 == 3 ? Material.SEA_LANTERN : i % 2 == 0 ? Material.QUARTZ_BLOCK : Material.PRISMARINE_BRICKS;
-            set(jx, y + 1 + i, jz, m);
+            set(jx, y + 1 + i, jz, jumps[i % jumps.length]);
             for (int up = 2; up <= 3; up++) {
                 set(jx, y + up + i, jz, Material.AIR);
             }
         }
-        set(x, y, z + 6, Material.EMERALD_BLOCK);
+        set(x, y, z + 6, Material.EMERALD_BLOCK);                         // the start, between two lamp posts
         set(x, y + 1, z + 6, Material.LIGHT_WEIGHTED_PRESSURE_PLATE);
+        for (int side = -2; side <= 2; side += 4) {
+            set(x + side, y + 1, z + 6, Material.DARK_OAK_FENCE);
+            set(x + side, y + 2, z + 6, Material.DARK_OAK_FENCE);
+            set(x + side, y + 3, z + 6, Material.LANTERN);
+        }
     }
 
 
+    /** The town's lighthouse: the striped octagonal tower (the Lighthouse facility), its door facing the town. */
     private void buildLighthouse(int lx, int lz) {
-        int base = top[index(lx, lz)];
-        int height = 20;
-        for (int y = 0; y <= height; y++) {
-            Material ring = (y / 4) % 2 == 0 ? Material.WHITE_CONCRETE : Material.RED_CONCRETE;
-            for (int ox = -2; ox <= 2; ox++) {
-                for (int oz = -2; oz <= 2; oz++) {
-                    boolean corner = Math.abs(ox) == 2 && Math.abs(oz) == 2;
-                    boolean wall = Math.abs(ox) == 2 || Math.abs(oz) == 2;
-                    if (corner) {
-                        continue;
-                    }
-                    set(cx + lx + ox, base + y, cz + lz + oz, wall ? ring : (y == 0 ? Material.STONE_BRICKS : Material.AIR));
+        BlockFace door = Math.abs(lx) >= Math.abs(lz) ? (lx > 0 ? BlockFace.WEST : BlockFace.EAST)
+                : (lz > 0 ? BlockFace.NORTH : BlockFace.SOUTH);
+        placeBlueprint(Blueprint.of("lighthouse"), lx, lz, top[index(lx, lz)], door);
+    }
+
+    /**
+     * Places a blueprint centred on (dx, dz) with its ground layer at baseY and its entrance facing the given way.
+     * Foundation supports are filled down to solid ground.
+     */
+    private void placeBlueprint(Blueprint bp, int dx, int dz, int baseY, BlockFace entrance) {
+        if (bp == null) {
+            return;
+        }
+        int rot = switch (entrance) {
+            case EAST -> 1;
+            case SOUTH -> 2;
+            case WEST -> 3;
+            default -> 0;
+        };
+        org.bukkit.block.structure.StructureRotation sr = switch (rot) {
+            case 1 -> org.bukkit.block.structure.StructureRotation.CLOCKWISE_90;
+            case 2 -> org.bukkit.block.structure.StructureRotation.CLOCKWISE_180;
+            case 3 -> org.bukkit.block.structure.StructureRotation.COUNTERCLOCKWISE_90;
+            default -> org.bukkit.block.structure.StructureRotation.NONE;
+        };
+        int midZ = (bp.minZ + bp.maxZ) / 2;
+        int[] c = turnLocal(0, midZ, rot);
+        int ax = cx + dx - c[0], az = cz + dz - c[1];
+        for (Blueprint.Cell cell : bp.cells()) {
+            int[] p = turnLocal(cell.x(), cell.z(), rot);
+            BlockData data = cell.data().clone();
+            data.rotate(sr);
+            setData(ax + p[0], baseY + cell.y(), az + p[1], data);
+        }
+        for (Blueprint.Support s : bp.supports) {
+            int[] p = turnLocal(s.x(), s.z(), rot);
+            for (int y = baseY - 1; y > baseY - 14 && y > minY; y--) {
+                Block b = world.getBlockAt(ax + p[0], y, az + p[1]);
+                if (b.getType().isSolid()) {
+                    break;
                 }
+                b.setType(s.material(), false);
             }
         }
-        for (int ox = -1; ox <= 1; ox++) {
-            for (int oz = -1; oz <= 1; oz++) {
-                set(cx + lx + ox, base + height + 1, cz + lz + oz, Material.GLASS);
-            }
+    }
+
+    /** (x, z) turned clockwise (seen from above) rot quarter turns. */
+    private static int[] turnLocal(int x, int z, int rot) {
+        for (int i = 0; i < (rot & 3); i++) {
+            int t = x;
+            x = -z;
+            z = t;
         }
-        set(cx + lx, base + height + 1, cz + lz, Material.SEA_LANTERN);
-        set(cx + lx, base + height + 2, cz + lz, Material.SEA_LANTERN);
-        set(cx + lx, base + height + 3, cz + lz, Material.DARK_OAK_SLAB);
+        return new int[]{x, z};
     }
 
     /** A blob of ore inside the island's rock or the rock below it (never in the open air or the sea). */

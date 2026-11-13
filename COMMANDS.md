@@ -64,7 +64,15 @@ Amounts accept `k`, `m` and `b`, e.g. `/pay Zoro 2.5k`.
 
 ## Crews (`crews`)
 
-**`/crew` on its own opens the crew menu.** It shows your crew's info and members. Officers can promote (left-click), demote (right-click) or kick (shift + right-click) members there. There are buttons for the bank (deposit or withdraw 100, or 1,000 with shift), crew home, island home, diplomacy, crew chat, inviting and leaving. Without a crew, it shows buttons to found a crew, browse crews and accept invites. `/crew help` lists every command.
+**`/crew` opens the crew menu: you can run your whole crew by clicking.** The commands below still work, but you don't need them.
+- **Overview:** your crew's info and members.
+- **Members:** officers click a member to promote, demote, give any rank, make them captain (captain only) or kick them.
+- **Bank:** deposit or withdraw 100, 1,000 or 10,000, or deposit everything.
+- **Invite:** pick a pirate without a crew from a list.
+- **Diplomacy:** every other crew with your relation. Click one to ask for an alliance, go neutral, mark them as rivals, declare war or offer peace.
+- **Other buttons:** crew home (right-click to set it), your islands, the flag designer, crew chat, friendly fire, and leaving or disbanding.
+- **Confirmation:** anything that can't be undone (kick, war, giving away the captaincy, leaving, disbanding) asks first.
+- **Without a crew:** found one, browse all crews, or click an invite to join.
 
 `/crew` (alias `/c`)
 
@@ -463,7 +471,11 @@ VILLAGE islands (`/island admin spawn village <radius>`, or random spawns) are n
 
 ## Crates (`crates`)
 
-Any block can be a crate: look at it and use `/crate set <crate>`. That works for blocks in your own builds too (a chest in a pasted schematic). `/crate setup` puts three default crate stands at the capital you stand on.
+Every crate has its own block: nether blocks nobody can get with the Nether off.
+- The Sailor's Crate is Nether Quartz Ore, the Captain's is Nether Gold Ore, and the Kraken's Hoard is Shroomlight (it glows).
+- The resource pack turns them into 3D crates.
+- **Placing one:** `/crate item <crate>` gives staff the block; place it and it is a crate. `/crate setup` places three stands at the capital you stand on.
+- **Any other block** can be a crate too (`/crate set <crate>` while looking at it), for example a chest in a pasted schematic.
 - **Opening:** right-click a crate with its key. A reel spins and stops on a prize.
 - **Prizes:** left-click (or right-click without a key) shows every prize with its chance. `/crate` shows them for every crate.
 - **Keys:** they come from treasure (uncommon and up), from `/crate give`, and from any reward list in the configs as `key:<crate>:<amount>` (quests, level rewards, crate prizes, treasure loot).
@@ -473,6 +485,7 @@ Any block can be a crate: look at it and use `/crate set <crate>`. That works fo
 | --- | --- | --- |
 | `/crate` (alias `/crates`) | See the crates and click one for its prizes | Everyone |
 | `/crate preview <crate>` | Every prize of a crate and its chance | Everyone |
+| `/crate item <crate>` | Get the crate's block; placing it makes a crate | `aquatic.crates.admin` |
 | `/crate set <crate>` / `/crate remove` | Make the block you look at a crate, or stop it being one | `aquatic.crates.admin` |
 | `/crate setup` | Default crate stands at the capital (`setup-spots` in `crates.yml`) | `aquatic.crates.admin` |
 | `/crate list` | Every crate block | `aquatic.crates.admin` |
@@ -480,7 +493,7 @@ Any block can be a crate: look at it and use `/crate set <crate>`. That works fo
 
 ## Gambling den (`gambling`, needs `economy`)
 
-Doubloons only, and only at the capital. Talk to the **Dealer** at spawn (or use `/gamble`).
+Doubloons only, and only at the capital. Players have **no gambling commands**: they talk to the **Dealer** at spawn and play from his menu. A coin flip is started by picking a player and a bet; the other player accepts or turns it down at the Dealer.
 
 **The games:**
 - **Dice:** two dice against the dealer's two. Higher wins double; a tie gives half back.
@@ -489,19 +502,18 @@ Doubloons only, and only at the capital. Talk to the **Dealer** at spawn (or use
 
 **Limits** (all in `gambling.yml`): pirate level 5 or higher, bets from 10 to 5,000, 25,000 a day, and 3 seconds between bets. Big results are written to `data/gambling.log`.
 
+| Command | What it does | Permission |
+| --- | --- | --- |
+| `/gamble` (alias `/casino`) | The den's menu, anywhere (for testing) | `aquatic.gambling.admin` |
+
 **A den building:** paste one with `/island admin schematic preview builtin:gambling_den`. It's a striped tent with a dealer's counter, a dice table and three crate pedestals. Make the pedestals crates with `/crate set`, and move the Dealer in with `/hubadmin place dealer`.
 
 | Command | What it does | Permission |
 | --- | --- | --- |
-| `/gamble` (aliases `/casino`, `/den`) | The den's menu: pick a game and a bet | Everyone |
-| `/dice <bet>` | Roll against the dealer | Everyone |
-| `/wheel <bet>` | Spin the wheel of fortune | Everyone |
-| `/coinflip <player> <bet>` (alias `/cf`) | Challenge a player; they answer with `/coinflip accept` or `deny` | Everyone |
-| (anywhere) | Play away from the capital | `aquatic.gambling.anywhere` |
 
 ## Harbor Market (`shop`, needs `economy`)
 
-**Only at the shopkeepers:** players open the market by talking to the shopkeeper villagers at spawn. Typing `/shop` anywhere else is refused. Ops (or anyone with `aquatic.shop.anywhere`) can still use `/shop`, and `command.players-can-open: true` in `shop.yml` turns the command back on for everyone.
+**Only through the shopkeepers:** players have **no `/shop` command**. They talk to the shopkeeper villagers at spawn, and each one opens its own market page (the Blacksmith's tools button too). Staff keep `/shop`. `command.players-can-open: true` in `shop.yml` gives everyone the command back.
 
 **Treasure maps** (Sailing category): a Treasure Map (common to rare), an Epic and a Legendary Treasure Map.
 - Each one leads to a treasure that already exists. Each treasure's map is sold to 2–3 different players, so it's a race.
@@ -509,8 +521,8 @@ Doubloons only, and only at the capital. Talk to the **Dealer** at spawn (or use
 
 | Command | What it does | Permission |
 | --- | --- | --- |
-| `/shop [category]` | Open the market (alias `/market`). Left-click buy, shift-left buy a stack, right-click sell, shift-right sell all. Players: only right after talking to a shopkeeper | Admin: `aquatic.shop.anywhere` |
-| `/shop sell` | Sell everything like the item in your hand | Player: `aquatic.shop.sell` |
+| `/shop [category]` | Open the market (alias `/market`). Left-click buy, shift-left buy a stack, right-click sell, shift-right sell all | `aquatic.shop.admin` |
+| `/shop sell` | Sell everything like the item in your hand | `aquatic.shop.admin` |
 | `/shop admin add <category> <buy> [sell] [amount]` | Add the item in your hand to a category | Admin: `aquatic.shop.admin` |
 | `/shop admin list <category>` | List a category's items with their numbers | Admin |
 | `/shop admin price <category> <number> <buy> <sell>` | Change a price (0 = not bought / not sold) | Admin |

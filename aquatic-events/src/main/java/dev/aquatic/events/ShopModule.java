@@ -169,23 +169,13 @@ public final class ShopModule extends AquaticModule implements Listener {
         }
     }
 
-    /** Players who just talked to a hub villager: they may open the shop for a minute. */
-    private static final Map<java.util.UUID, Long> NPC_PASS = new java.util.concurrent.ConcurrentHashMap<>();
-
-    static void npcPass(java.util.UUID player) {
-        NPC_PASS.put(player, System.currentTimeMillis() + 60_000L);
-    }
-
-    /** /shop typed anywhere is refused (unless allowed in shop.yml): players use the shopkeepers at spawn. */
-    private void checkAccess(Player p) {
-        if (config().getBoolean("command.players-can-open", false) || p.hasPermission("aquatic.shop.anywhere")) {
-            return;
+    /** Opens the market from a shopkeeper villager (players have no /shop command): a category or the main page. */
+    void openFor(Player p, String category) {
+        if (category != null && categoryIds().contains(category.toLowerCase(Locale.ROOT))) {
+            openCategory(p, category.toLowerCase(Locale.ROOT), 0);
+        } else {
+            openMain(p);
         }
-        Long until = NPC_PASS.get(p.getUniqueId());
-        if (until != null && until >= System.currentTimeMillis()) {
-            return;
-        }
-        throw new CommandFail(rawMsg("use-shopkeepers"));
     }
 
     void openMain(Player p) {
@@ -492,7 +482,6 @@ public final class ShopModule extends AquaticModule implements Listener {
         AquaticCommand cmd = new AquaticCommand("shop", "The Harbor Market: buy and sell for Doubloons", "market");
         cmd.defaultExecutor((s, a) -> {
             Player p = AquaticCommand.player(s);
-            checkAccess(p);
             if (a.length > 0 && categoryIds().contains(a[0].toLowerCase(Locale.ROOT))) {
                 openCategory(p, a[0].toLowerCase(Locale.ROOT), 0);
             } else {
@@ -500,9 +489,7 @@ public final class ShopModule extends AquaticModule implements Listener {
             }
         }).defaultCompleter((s, a) -> AquaticCommand.filter(categoryIds(), a.length == 0 ? "" : a[0]));
         cmd.sub("sell", (s, a) -> {
-                    Player p = AquaticCommand.player(s);
-                    checkAccess(p);
-                    sellHand(p);
+                    sellHand(AquaticCommand.player(s));
                 })
                 .description("Sell everything like the item in your hand").playerOnly().playerPermission("aquatic.shop.sell");
 
@@ -558,6 +545,10 @@ public final class ShopModule extends AquaticModule implements Listener {
                 .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(List.of("add", "remove", "price", "list", "category"), a[0])
                         : a.length == 2 && a[0].equalsIgnoreCase("category") ? AquaticCommand.filter(List.of("create", "delete"), a[1])
                         : cats.complete(s, a));
+        if (!config().getBoolean("command.players-can-open", false)) {
+            // the market is opened by talking to the shopkeepers; /shop is for staff only
+            cmd.permission(ADMIN);
+        }
         registerCommand(cmd);
     }
 

@@ -409,12 +409,14 @@ public final class HubModule extends AquaticModule implements Listener {
             return;
         }
         clickCooldown.put(p.getUniqueId(), now);
-        ShopModule.npcPass(p.getUniqueId()); // talking to a shopkeeper (or the smithy) opens the market
         for (Spot s : spots) {
             if (!s.id.equals(id)) {
                 continue;
             }
             for (String action : s.cfg.getStringList("actions")) {
+                if (openMenu(p, action)) {
+                    continue;
+                }
                 if (action.startsWith("cmd:")) {
                     p.performCommand(action.substring(4).trim().replace("<player>", p.getName()));
                 } else if (action.startsWith("msg:")) {
@@ -422,6 +424,33 @@ public final class HubModule extends AquaticModule implements Listener {
                 }
             }
         }
+    }
+
+    /**
+     * Menus a villager opens directly, so players need no command for them: "shop:&lt;category&gt;" (or "shop"),
+     * "gamble". The old "cmd:shop ..." and "cmd:gamble" actions are understood too.
+     */
+    private boolean openMenu(Player p, String action) {
+        String a = action.trim();
+        if (a.startsWith("cmd:shop") || a.startsWith("cmd:market")) {
+            String[] parts = a.substring(4).trim().split("\\s+");
+            a = "shop:" + (parts.length > 1 ? parts[1] : "");
+        } else if (a.equals("cmd:gamble") || a.equals("cmd:casino")) {
+            a = "gamble";
+        }
+        if (a.equals("shop") || a.startsWith("shop:")) {
+            if (plugin().module("shop") instanceof ShopModule shop && shop.isEnabled()) {
+                shop.openFor(p, a.startsWith("shop:") ? a.substring(5) : null);
+            }
+            return true;
+        }
+        if (a.equals("gamble")) {
+            if (plugin().module("gambling") instanceof GamblingModule den && den.isEnabled()) {
+                den.openMenu(p, null);
+            }
+            return true;
+        }
+        return false;
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -637,6 +666,23 @@ public final class HubModule extends AquaticModule implements Listener {
             raise(file, "npcs.blacksmith.actions", List.of("cmd:shop tools"), List.of("cmd:smithy"));
             raise(file, "npcs.blacksmith.name", "<gold><bold>Blacksmith</bold> <gray>(tools & weapons)",
                     "<gold><bold>Blacksmith</bold> <gray>(smithy & tools)");
+        }
+        if (from < 5) {
+            // 2.16.0: the shopkeepers and the dealer open their menus directly (players have no /shop or /gamble)
+            org.bukkit.configuration.ConfigurationSection npcs = file.getConfigurationSection("npcs");
+            if (npcs != null) {
+                for (String id : npcs.getKeys(false)) {
+                    List<String> actions = npcs.getStringList(id + ".actions");
+                    List<String> fixed = new ArrayList<>();
+                    for (String act : actions) {
+                        fixed.add(act.startsWith("cmd:shop ") ? "shop:" + act.substring(9).trim()
+                                : act.equals("cmd:gamble") ? "gamble" : act);
+                    }
+                    if (!fixed.equals(actions)) {
+                        npcs.set(id + ".actions", fixed);
+                    }
+                }
+            }
         }
         if (from < 4) {
             // 2.15.0: the dealer of the gambling den
