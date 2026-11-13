@@ -15,6 +15,9 @@
 # =====================================================================================
 title: "<dark_aqua><bold>Harbor Market"
 
+# Do not edit: used to upgrade this file when the plugin updates.
+config-version: 1
+
 categories:
   tools:
     name: "<gold><bold>Tools & Weapons"
@@ -104,6 +107,92 @@ categories:
       - {item: HEART_OF_THE_SEA, amount: 1, buy: 0, sell: 600}
       - {item: PRISMARINE_SHARD, amount: 8, buy: 0, sell: 10}
 
+  masonry:
+    name: "<gray><bold>Stone & Masonry"
+    icon: STONE_BRICKS
+    slot: 28
+    description: ["<gray>Stone, bricks, quartz and concrete for bases."]
+    items:
+      - {item: STONE, amount: 64, buy: 80, sell: 5}
+      - {item: COBBLESTONE, amount: 64, buy: 48, sell: 3}
+      - {item: SMOOTH_STONE, amount: 64, buy: 96, sell: 6}
+      - {item: STONE_BRICKS, amount: 64, buy: 96, sell: 6}
+      - {item: MOSSY_STONE_BRICKS, amount: 64, buy: 120, sell: 7}
+      - {item: CRACKED_STONE_BRICKS, amount: 64, buy: 110, sell: 6}
+      - {item: CHISELED_STONE_BRICKS, amount: 32, buy: 80, sell: 4}
+      - {item: POLISHED_ANDESITE, amount: 64, buy: 96, sell: 6}
+      - {item: POLISHED_DIORITE, amount: 64, buy: 96, sell: 6}
+      - {item: POLISHED_GRANITE, amount: 64, buy: 96, sell: 6}
+      - {item: COBBLED_DEEPSLATE, amount: 64, buy: 72, sell: 4}
+      - {item: POLISHED_DEEPSLATE, amount: 64, buy: 120, sell: 7}
+      - {item: DEEPSLATE_BRICKS, amount: 64, buy: 128, sell: 8}
+      - {item: DEEPSLATE_TILES, amount: 64, buy: 128, sell: 8}
+      - {item: TUFF_BRICKS, amount: 64, buy: 120, sell: 7}
+      - {item: CALCITE, amount: 64, buy: 96, sell: 6}
+      - {item: BRICKS, amount: 64, buy: 160, sell: 10}
+      - {item: MUD_BRICKS, amount: 64, buy: 120, sell: 7}
+      - {item: SANDSTONE, amount: 64, buy: 80, sell: 5}
+      - {item: SMOOTH_SANDSTONE, amount: 64, buy: 96, sell: 6}
+      - {item: CUT_SANDSTONE, amount: 64, buy: 96, sell: 6}
+      - {item: RED_SANDSTONE, amount: 64, buy: 96, sell: 6}
+      - {item: BLACKSTONE, amount: 64, buy: 96, sell: 6}
+      - {item: POLISHED_BLACKSTONE_BRICKS, amount: 64, buy: 140, sell: 8}
+      - {item: PRISMARINE_BRICKS, amount: 32, buy: 160, sell: 10}
+      - {item: DARK_PRISMARINE, amount: 32, buy: 180, sell: 11}
+      - {item: QUARTZ_BLOCK, amount: 32, buy: 220, sell: 14}
+      - {item: QUARTZ_PILLAR, amount: 16, buy: 120, sell: 7}
+      - {item: TERRACOTTA, amount: 64, buy: 96, sell: 6}
+      - {item: WHITE_CONCRETE, amount: 64, buy: 120, sell: 7}
+      - {item: LIGHT_GRAY_CONCRETE, amount: 64, buy: 120, sell: 7}
+      - {item: GRAY_CONCRETE, amount: 64, buy: 120, sell: 7}
+      - {item: BLACK_CONCRETE, amount: 64, buy: 120, sell: 7}
+      - {item: LIGHT_BLUE_CONCRETE, amount: 64, buy: 120, sell: 7}
+      - {item: CYAN_CONCRETE, amount: 64, buy: 120, sell: 7}
+      - {item: SAND, amount: 64, buy: 40, sell: 2}
+      - {item: GRAVEL, amount: 64, buy: 40, sell: 2}
+  decor:
+    name: "<#c8a165><bold>Wood & Decor"
+    icon: SPRUCE_PLANKS
+    slot: 34
+    description: ["<gray>Planks, logs, glass, fences and furnishings."]
+    items:
+      - {item: OAK_PLANKS, amount: 64, buy: 64, sell: 4}
+      - {item: SPRUCE_PLANKS, amount: 64, buy: 64, sell: 4}
+      - {item: BIRCH_PLANKS, amount: 64, buy: 64, sell: 4}
+      - {item: DARK_OAK_PLANKS, amount: 64, buy: 64, sell: 4}
+      - {item: JUNGLE_PLANKS, amount: 64, buy: 64, sell: 4}
+      - {item: ACACIA_PLANKS, amount: 64, buy: 64, sell: 4}
+      - {item: MANGROVE_PLANKS, amount: 64, buy: 72, sell: 4}
+      - {item: CHERRY_PLANKS, amount: 64, buy: 72, sell: 4}
+      - {item: BAMBOO_PLANKS, amount: 64, buy: 72, sell: 4}
+      - {item: DARK_OAK_LOG, amount: 32, buy: 64, sell: 4}
+      - {item: BIRCH_LOG, amount: 32, buy: 64, sell: 4}
+      - {item: STRIPPED_OAK_LOG, amount: 32, buy: 72, sell: 4}
+      - {item: STRIPPED_SPRUCE_LOG, amount: 32, buy: 72, sell: 4}
+      - {item: STRIPPED_DARK_OAK_LOG, amount: 32, buy: 72, sell: 4}
+      - {item: GLASS_PANE, amount: 32, buy: 48, sell: 2}
+      - {item: WHITE_STAINED_GLASS, amount: 32, buy: 72, sell: 4}
+      - {item: LIGHT_BLUE_STAINED_GLASS, amount: 32, buy: 72, sell: 4}
+      - {item: OAK_FENCE, amount: 32, buy: 48, sell: 2}
+      - {item: SPRUCE_FENCE, amount: 32, buy: 48, sell: 2}
+      - {item: OAK_TRAPDOOR, amount: 16, buy: 48, sell: 2}
+      - {item: SPRUCE_DOOR, amount: 4, buy: 40, sell: 2}
+      - {item: LADDER, amount: 32, buy: 40, sell: 2}
+      - {item: CHAIN, amount: 16, buy: 80, sell: 4}
+      - {item: SEA_LANTERN, amount: 16, buy: 160, sell: 8}
+      - {item: BOOKSHELF, amount: 8, buy: 120, sell: 6}
+      - {item: RED_WOOL, amount: 32, buy: 64, sell: 4}
+      - {item: BLUE_WOOL, amount: 32, buy: 64, sell: 4}
+      - {item: BLACK_WOOL, amount: 32, buy: 64, sell: 4}
+      - {item: WHITE_CARPET, amount: 32, buy: 48, sell: 2}
+      - {item: RED_CARPET, amount: 32, buy: 48, sell: 2}
+      - {item: FLOWER_POT, amount: 8, buy: 24, sell: 1}
+      - {item: BARREL, amount: 8, buy: 64, sell: 4}
+      - {item: CHEST, amount: 8, buy: 64, sell: 4}
+      - {item: CRAFTING_TABLE, amount: 4, buy: 24, sell: 1}
+      - {item: SCAFFOLDING, amount: 32, buy: 64, sell: 2}
+      - {item: TORCH, amount: 64, buy: 32, sell: 0}
+      - {item: WHITE_BANNER, amount: 4, buy: 60, sell: 3}
 messages:
   menu-items: "<gray><count> item(s)"
   menu-open: "<yellow>Click to open"

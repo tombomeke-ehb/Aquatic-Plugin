@@ -1,0 +1,123 @@
+# =====================================================================================
+#  AquaticSMP - Harbour hub (the spawn town on the capital)
+#  Shopkeepers in the market stalls, the crew registrar, the bounty board, the founders'
+#  monument, a welcome sign and the parkour tower timer.
+#
+#  Positions are offsets [x, z] from the capital's centre and match the generated town.
+#  Built your own spawn? Stand somewhere and use /hubadmin place <id> to move an NPC or sign
+#  there (/hubadmin reset <id> puts it back, /hubadmin list shows them all).
+#  NPCs and signs are not saved in the world: they appear while players are nearby.
+#
+#  NPC actions (run when a player right-clicks it):
+#    "cmd:<command>"  the player runs the command (without /)
+#    "msg:<text>"     a MiniMessage line (clickable with <click:run_command:'/...'>)
+# =====================================================================================
+config-version: 1
+
+npcs:
+  blacksmith:
+    name: "<gold><bold>Blacksmith</bold> <gray>(tools & weapons)"
+    profession: weaponsmith
+    offset: [17, 7]
+    actions: ["cmd:shop tools"]
+  provisioner:
+    name: "<green><bold>Provisioner</bold> <gray>(food & drinks)"
+    profession: farmer
+    offset: [7, 17]
+    actions: ["cmd:shop food"]
+  shipwright:
+    name: "<aqua><bold>Shipwright</bold> <gray>(sailing)"
+    profession: fisherman
+    offset: [-7, 17]
+    actions: ["cmd:shop sailing"]
+  merchant:
+    name: "<yellow><bold>Merchant</bold> <gray>(sell your loot)"
+    profession: cartographer
+    offset: [-17, 7]
+    actions: ["cmd:shop trade"]
+  carpenter:
+    name: "<#c8a165><bold>Carpenter</bold> <gray>(wood & decor)"
+    profession: fletcher
+    offset: [-17, -7]
+    actions: ["cmd:shop decor"]
+  quartermaster:
+    name: "<red><bold>Quartermaster</bold> <gray>(pirate gear)"
+    profession: armorer
+    offset: [-7, -17]
+    actions: ["cmd:shop pirate"]
+  registrar:
+    name: "<blue><bold>Crew Registrar"
+    profession: librarian
+    offset: [7, -17]
+    actions:
+      - "msg:<aqua>Ahoy! Every pirate needs a crew. Founding one costs <yellow>1,000 Doubloons</yellow>."
+      - "msg:<click:suggest_command:'/crew create '><hover:show_text:'<gray>Click, then type a name'><green><bold>[Found a crew]</bold></hover></click>  <click:run_command:'/crew list'><hover:show_text:'<gray>All crews'><yellow><bold>[Browse crews]</bold></hover></click>  <click:run_command:'/crew info'><hover:show_text:'<gray>Your crew'><aqua><bold>[My crew]</bold></hover></click>"
+  stonemason:
+    name: "<gray><bold>Stonemason</bold> <gray>(building blocks)"
+    profession: mason
+    offset: [17, -7]
+    actions: ["cmd:shop masonry"]
+
+# Floating signs. type: text (fixed lines), bounties (most wanted) or parkour (best times).
+# height = blocks above the ground at that spot.
+displays:
+  welcome:
+    offset: [0, 16]
+    height: 2.4
+    type: text
+    text:
+      - "<gradient:#1fa2ff:#12d8fa><bold>AQUATIC SMP</bold></gradient>"
+      - "<white>Sail. Claim. Conquer."
+      - "<gray>Shops in the stalls · <white>/guide</white> for help"
+  bounty-board:
+    offset: [-26, 0]
+    height: 2.6
+    type: bounties
+    lines: 5
+    header: ["<red><bold>☠ WANTED ☠</bold>", "<gray>Dead or alive"]
+    line: "<white><rank>. <yellow><player></yellow> <dark_gray>-</dark_gray> <red><bounty>"
+    empty: "<gray>No bounties yet. Be the first!"
+  founders:
+    offset: [27, 0]
+    height: 1.4
+    type: text
+    text:
+      - "<gold><bold>Founders of Aquatic SMP</bold>"
+      - "<white>Owner & idea: <yellow>(your names here)"
+      - "<white>Developed by <aqua>tombomeke"
+      - "<gray>Thank you to everyone who helped build this sea!"
+  parkour:
+    offset: [0, -25]
+    height: 2.2
+    type: parkour
+    lines: 3
+    header: ["<green><bold>Parkour Tower</bold>", "<gray>Step on the gold plate to start"]
+    line: "<white><rank>. <yellow><player></yellow> <gray><time>"
+    empty: "<gray>No times yet!"
+
+parkour:
+  enabled: true
+  # Doubloons for finishing, at most once per reward-cooldown-hours per player.
+  reward: 250
+  reward-cooldown-hours: 20
+  # A run is cancelled after this long, when you leave the capital or when you teleport.
+  max-seconds: 600
+  # Faster than this is not a real run.
+  min-seconds: 6
+
+messages:
+  parkour-start: "<green>Parkour started! <gray>Reach the iron plate on top."
+  parkour-timer: "<green>Parkour <white><time>"
+  parkour-cancelled: "<red>Parkour run cancelled."
+  parkour-no-record: "<yellow>Finished, but that run doesn't count (flying, creative or too fast)."
+  parkour-finish: "<green>Finished in <white><time></white>! <gray>(best <white><best></white>)"
+  parkour-finish-best: "<gold><bold>New best!</bold> <green>Finished in <white><time></white>."
+  parkour-reward: "<gold>+<amount> <gray>for finishing the parkour."
+  parkour-best: "<aqua>Your best parkour time: <white><time>"
+  parkour-top-line: "<gray><rank>. <white><player></white> <dark_gray>-</dark_gray> <yellow><time>"
+  admin-capital: "<aqua>Capital: <white><capital>"
+  admin-line: "<gray>- <white><id></white> <dark_gray>(<where>, spawned: <alive>)"
+  admin-placed: "<green>Moved <white><id></white> to where you stand."
+  admin-reset: "<green><white><id></white> is back at its default spot."
+  admin-refreshed: "<green>All hub NPCs and signs respawn now."
+  admin-unknown: "<red>Unknown NPC or sign: <white><id>"

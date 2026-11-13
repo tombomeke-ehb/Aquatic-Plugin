@@ -17,6 +17,9 @@
 # =====================================================================================
 
 # How often (seconds) changed data is written to plugins/AquaticSMP/data/islands/ (also saved on shutdown).
+# Do not edit: used to upgrade this file when the plugin updates.
+config-version: 1
+
 autosave-seconds: 120
 
 # -------------------------------------------------------------------------------------
@@ -52,17 +55,17 @@ generation:
   land-fraction: 0.72
   # Allowed radius for /island admin spawn and spawnrandom (in blocks from the centre to the edge).
   # Islands are built chunk by chunk without lag (about 40 seconds for radius 400).
-  # radius-limit: the biggest island an admin can place by hand (750 = 1500 blocks across).
+  # radius-limit: the biggest island an admin can place by hand (1000 = 2000 blocks across).
   min-radius: 16
-  radius-limit: 750
+  radius-limit: 1000
   # Island sizes for "/island admin spawnrandom <type> <count>" (when no min/max radius is given):
   # a size is picked by weight, then a radius within its range.
   # (radius = centre to edge; the island is twice as wide: radius 50 = 100 blocks across)
   island-sizes:
-    small:  {min: 50,  max: 100, weight: 5}   # 100-200 blocks across
-    medium: {min: 100, max: 175, weight: 4}   # 200-350 across
-    large:  {min: 175, max: 300, weight: 2}   # 350-600 across
-    huge:   {min: 300, max: 500, weight: 1}   # 600-1000 across (rare)
+    small:  {min: 60,  max: 150, weight: 5}   # 120-300 blocks across
+    medium: {min: 150, max: 275, weight: 4}   # 300-550 across
+    large:  {min: 275, max: 450, weight: 2}   # 550-900 across
+    huge:   {min: 450, max: 750, weight: 1}   # 900-1500 across (rare)
   # Bigger islands get taller land: radius 70 uses the heights below, larger islands grow up to
   # max-height-boost times taller. height-scaling 0 = same heights for every size.
   height-scaling: 1.0
@@ -83,18 +86,23 @@ generation:
     caves:
       enabled: true
       # Only islands at least this big get caves.
-      min-island-radius: 60
+      min-island-radius: 40
       # Tunnel width (0.5 = narrow, 1 = normal, 2 = wide).
-      size: 1.0
-      # How far below sea level caves may reach.
-      depth: 14
+      size: 1.4
+      # How far below sea level caves may reach (they dig into the rock under the island; caves never
+      # open into the sea: blocks next to water stay solid).
+      depth: 40
       # Some tunnels open up to the surface.
       entrances: true
+      # Big open caverns deep down.
+      caverns: true
     ore-veins:
       enabled: true
-      # Veins per 1000 land blocks (on top of the scattered ores of each type).
-      per-1000-land: 4
-      ores: [COAL_ORE:6, IRON_ORE:5, COPPER_ORE:4, GOLD_ORE:1.5, REDSTONE_ORE:1.5, LAPIS_ORE:1, DIAMOND_ORE:0.25, EMERALD_ORE:0.2]
+      # Veins per 1000 land blocks, on every island (on top of the scattered ores of each type).
+      # Each ore has its own depth: coal/iron/copper near the surface, gold/redstone/lapis lower,
+      # diamonds deep below sea level (the caves lead there), emeralds high in the mountains.
+      per-1000-land: 10
+      ores: [COAL_ORE:6, IRON_ORE:6, COPPER_ORE:4, GOLD_ORE:2.5, REDSTONE_ORE:2, LAPIS_ORE:1.5, DIAMOND_ORE:0.6, EMERALD_ORE:0.3]
   # Maximum islands per /island spawnrandom call.
   max-spawnrandom: 30
   # Chance weights of each type for "/island spawnrandom random ...".
@@ -750,6 +758,11 @@ messages:
   spawn-warmup: "<aqua>Setting sail for spawn in <white><seconds></white>s... <gray>Don't move."
   spawn-cancelled: "<red>Trip cancelled: you moved or got hurt."
   spawn-arrived: "<green>Welcome back to port."
+  travel-combat: "<red>You can't sail away in the middle of a fight."
+  home-no-crew: "<red>You need a crew first. <gray>(/crew create <name>)"
+  home-no-island: "<red>Your crew doesn't own an island yet. <gray>Claim one with /island claim."
+  home-unknown: "<red>Your crew doesn't own <white><island></white>."
+  home-arrived: "<green>Welcome home to <yellow><island></yellow>."
   spawn-already: "<gray>You're already on your way."
   spawn-cooldown: "<red>Wait <white><seconds></white>s before using /spawn again."
   spawn-sent: "<green>Sent <white><player></white> to spawn."

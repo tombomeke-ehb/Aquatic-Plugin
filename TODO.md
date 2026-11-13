@@ -49,8 +49,13 @@ This file is the roadmap. Tick off items as they're finished and add new ideas u
 1. [ ] **Test 2.0.0 in-game and balance it.** Fruit damage ×1.5 plus mastery, bounty power and levels all stack. Measure the time-to-kill in practice and adjust `abilities.fruit-damage-multiplier`, the mastery values and `power-perks`.
 2. [ ] **Tidewill** (our version of the inner-power idea): Ironwill, Seasight and Stormcrown. Details below.
 3. [ ] **Elemental passive:** Elemental fruit users phase through normal hits. Only Ironwill or Abyssal Iron gets through. This makes Tidewill matter.
-4. [ ] **Rename the internal ids, with a migration:** `springcoil` → `springcoil`, `tide_compass` → `tide_compass`, `conqueror_crown` → `conqueror_crown`, ... An alias table converts existing items and fruit data automatically.
-5. [ ] **Config versions:** improved messages and loot should also reach existing servers automatically, without a manual `resetconfig`.
+4. [x] Rename the internal ids, with a migration (done in 2.3.1).
+5. [x] Config versions: new defaults reach existing servers automatically (done in 2.4.0).
+6. [ ] **Owner's wishlist:**
+   - Weapons named after each of the team (we need the names and who wants what kind of weapon).
+   - A weekly event and a monthly Conqueror of the Sea event, run automatically by the scheduler.
+   - Builds: a tournament colosseum island, a duel colosseum, and a Christmas island for December.
+   - Decide what the world map should show (BlueMap: all islands, or only discovered ones, crew colours, ...).
 
 ---
 
@@ -103,7 +108,8 @@ This file is the roadmap. Tick off items as they're finished and add new ideas u
 
 ## Economy and shop
 - [x] Harbor Market with in-game editing.
-- [ ] A shop NPC or sign on the capital's market square, plus limited stock and daily deals.
+- [x] Shopkeeper villagers in market stalls on the capital (done in 2.4.0).
+- [ ] Limited stock and daily deals.
 - [ ] Player shops and trading posts on neutral islands.
 - [ ] Sell island upgrades, buildings and ship blueprints in the market.
 
@@ -123,8 +129,8 @@ This file is the roadmap. Tick off items as they're finished and add new ideas u
 - [ ] Edit loot in-game: hold an item and run `/treasure loot add <tier> [weight]`.
 
 ## Rebrand (still open)
-- [ ] Rename the internal ids, with a migration (see "Next up").
-- [ ] Rename the code itself: `PirateKingCrownedEvent` → `ConquerorCrownedEvent`, `/hallofkings` → `/hallofconquerors`, keeping the old names as aliases for a while.
+- [x] Rename the internal ids, with a migration (done in 2.3.1).
+- [ ] Rename `/hallofkings` → `/hallofconquerors`, keeping the old name as an alias for a while.
 - [ ] A logo, our own colour palette in the messages, and a resource pack (custom model data is already ready).
 - [ ] More lore: the Harbor Crown, the High Warden, and the history of the Abyss.
 

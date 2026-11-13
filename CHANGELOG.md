@@ -1,5 +1,61 @@
 # Changelog
 
+## 2.4.0 (2026-11-13)
+
+### Added
+- **The spawn town comes alive (new `hub` module):**
+  - Eight market stalls with striped awnings around the throne, each with a shopkeeper villager. Right-click one to open its shop: Blacksmith, Provisioner, Shipwright, Merchant, Carpenter, Quartermaster and Stonemason.
+  - A **Crew Registrar** with clickable buttons to found or browse crews.
+  - A live **WANTED** board with the top 5 bounties.
+  - A **founders' monument**: edit the names in `hub.yml`.
+  - A welcome sign.
+  - A **parkour tower** with a timer:
+    - Start on the gold plate and finish on the iron plate on top.
+    - Teleporting, flying or creative mode doesn't count.
+    - Pays 250 Doubloons once per 20 hours.
+    - `/parkour` shows your best time and the top 5.
+  - Built your own spawn? `/hubadmin place <id>` moves an NPC or sign to where you stand.
+- **New capital look:**
+  - A decorated ring and flower planters around the throne.
+  - Proper timber-framed houses in four styles, with gabled roofs, chimneys with smoke, windows, beds and some two-storey houses.
+  - Palm trees along the beach.
+  - `/spawn` puts you in front of the throne instead of on top of it.
+- **`/island home [island]`:** crew members sail to an island their crew owns. It has the same warmup and cooldown as `/spawn` and doesn't work in combat.
+- **`/discord`:** set the link in `guide.yml`.
+- **Two new shop categories:** Stone & Masonry (37 blocks) and Wood & Decor (37 blocks).
+- **Fruits are their own module (`fruits`):** turn them off without touching the other items. Who ate what and the mastery are kept.
+
+### Changed
+- **Real caves on every island** (radius 40+):
+  - wider tunnels, and big caverns deep down
+  - more entrances from the surface
+  - they reach about 40 blocks below sea level into the rock under the island
+  - blocks next to water stay solid, so caves never flood
+  - lake beds are sealed
+- **Ores on every island**, each at its own depth:
+  - coal, iron and copper near the surface
+  - gold, redstone and lapis lower down
+  - diamonds deep (reached through the caves)
+  - emeralds in the mountains
+  - 10 veins per 1000 land blocks (was 4)
+- **Bigger islands:**
+  - small 60–150, medium 150–275, large 275–450, huge 450–750 (radius)
+  - the admin limit is 1000 (was 750)
+- **Docks fixed:** the road now crosses the beach as a boardwalk and steps down onto the pier. It is no longer buried under sand.
+- **Common and uncommon treasure appear more often:** every 8 minutes (was 20), up to 16 at once (was 8), with higher common and uncommon weights.
+- **No travelling in combat:** `/spawn` and `/island home` don't work while you're tagged.
+- **Config versions:** existing servers get these new defaults automatically.
+  - Only values you never changed are raised.
+  - New sections (like the shop categories) are added.
+  - A backup `<file>.v0.bak` is kept.
+
+### Updating
+- Replace the jar and restart.
+- The capital you already have keeps its old look. To get the new town:
+  - **Regenerate it** with `/island admin regen <capital>`. This replaces everything on it.
+  - **Or keep your own build** and move the NPCs and signs onto it with `/hubadmin place <id>`.
+- New caves and ores only appear on islands generated from now on (or regenerated).
+
 ## 2.3.1 (2026-11-13)
 
 ### Fixed

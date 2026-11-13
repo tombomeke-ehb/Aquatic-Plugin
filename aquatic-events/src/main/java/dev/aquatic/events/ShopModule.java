@@ -502,4 +502,14 @@ public final class ShopModule extends AquaticModule implements Listener {
                         : cats.complete(s, a));
         registerCommand(cmd);
     }
+
+    @Override
+    protected void migrateConfig(org.bukkit.configuration.file.YamlConfiguration file,
+                                 org.bukkit.configuration.file.YamlConfiguration defaults, int from) {
+        if (from < 1) {
+            // 2.4.0: building block categories
+            addMissing(file, defaults, "categories.masonry");
+            addMissing(file, defaults, "categories.decor");
+        }
+    }
 }

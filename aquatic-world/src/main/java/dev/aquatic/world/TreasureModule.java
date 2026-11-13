@@ -1224,4 +1224,16 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
         }
         return dev.aquatic.command.AquaticCommand.filter(out, prefix);
     }
+
+    @Override
+    protected void migrateConfig(org.bukkit.configuration.file.YamlConfiguration file,
+                                 org.bukkit.configuration.file.YamlConfiguration defaults, int from) {
+        if (from < 1) {
+            // 2.4.0: common and uncommon treasure turn up more often
+            raise(file, "natural.interval-minutes", 20, 8);
+            raise(file, "natural.max-active", 8, 16);
+            raise(file, "natural.tier-weights.common", 10, 16);
+            raise(file, "natural.tier-weights.uncommon", 7, 11);
+        }
+    }
 }

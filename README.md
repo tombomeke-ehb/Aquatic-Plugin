@@ -109,7 +109,9 @@ Settings most servers change first:
 | `combat` | `combat.yml` | Combat tag (no logging out or teleporting away mid-fight), respawn protection, new-player PvP protection |
 | `shop` | `shop.yml` | Harbor Market: buy and sell for Doubloons, editable in-game with `/shop admin` |
 | `sidebar` | `sidebar.yml` | Stats sidebar: Doubloons, bounty, crew, island, fruit power, events (`/sidebar` to hide) |
-| `guide` | `guide.yml` | Welcome intro, starter kit with a treasure map, tips for new players, the `/guide` book |
+| `guide` | `guide.yml` | Welcome intro, starter kit with a treasure map, tips for new players, the `/guide` book, `/discord` |
+| `fruits` | (settings in `items.yml`) | Abyss fruit powers as a separate switch: turn it off and fruits stop working without touching the other items. Needs `items` |
+| `hub` | `hub.yml` | The spawn town: shopkeeper villagers in the market stalls, crew registrar, live bounty board, founders' monument, welcome sign, timed parkour tower |
 
 Modules talk to each other only through shared services, so turning one off just disables the features that need it. For example, without `crews`, islands can still be generated and discovered but not claimed.
 

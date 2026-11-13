@@ -26,11 +26,13 @@ public final class AquaticPlugin extends JavaPlugin {
             {"islands", "dev.aquatic.world.IslandsModule"},
             {"treasure", "dev.aquatic.world.TreasureModule"},
             {"items", "dev.aquatic.events.ItemsModule"},
+            {"fruits", "dev.aquatic.events.FruitsModule"},
             {"tournament", "dev.aquatic.events.TournamentModule"},
             {"events", "dev.aquatic.events.EventsModule"},
             {"guide", "dev.aquatic.events.GuideModule"},
             {"sidebar", "dev.aquatic.events.SidebarModule"},
             {"shop", "dev.aquatic.events.ShopModule"},
+            {"hub", "dev.aquatic.events.HubModule"},
     };
 
     /** Credit shown on startup and in /aquatic about. */

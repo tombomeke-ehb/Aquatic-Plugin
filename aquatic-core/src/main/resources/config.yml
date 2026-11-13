@@ -13,6 +13,8 @@ modules:
   islands: true
   treasure: true
   items: true
+  # Abyss fruits (powers from eating a fruit). Off = no fruit powers; the other custom items keep working.
+  fruits: true
   tournament: true
   events: true
   # Welcome intro for new players + the /guide book.
@@ -21,3 +23,5 @@ modules:
   sidebar: true
   # The Harbor Market (/shop). Turn off if you use another shop plugin.
   shop: true
+  # The spawn town hub: shopkeeper villagers, crew registrar, bounty board, founders' monument, parkour.
+  hub: true

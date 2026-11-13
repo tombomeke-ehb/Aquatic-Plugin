@@ -71,6 +71,7 @@ public final class GuideModule extends AquaticModule implements Listener {
         readUuids(data.getStringList("kit-given"), kitGiven);
         readUuids(data.getStringList("tips-off"), tipsOff);
         registerListener(this);
+        registerDiscord();
         registerCommands();
         long tipTicks = Math.max(1, config().getLong("tips.interval-minutes", 10)) * 60L * 20L;
         runTimer(this::broadcastTips, tipTicks, tipTicks);
@@ -386,6 +387,22 @@ public final class GuideModule extends AquaticModule implements Listener {
                     names.addAll(AquaticCommand.filter(List.of("all"), a[0]));
                     return names;
                 });
+        registerCommand(cmd);
+    }
+
+    /** /discord: the invite link from guide.yml. */
+    private void registerDiscord() {
+        if (!config().getBoolean("discord.enabled", true)) {
+            return;
+        }
+        AquaticCommand cmd = new AquaticCommand("discord", "Our Discord server");
+        cmd.defaultExecutor((s, a) -> {
+            String link = config().getString("discord.link", "");
+            for (String line : config().getStringList("discord.message")) {
+                s.sendMessage(Text.mm(line.replace("<link>", link)));
+            }
+        });
+        cmd.takeOver(true);
         registerCommand(cmd);
     }
 }

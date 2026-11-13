@@ -120,6 +120,7 @@ public abstract class AquaticModule {
         try (InputStream in = plugin.getResource(resource)) {
             if (in != null) {
                 YamlConfiguration defaults = YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8));
+                upgradeConfig(file, defaults);
                 config.setDefaults(defaults);
                 // A top-level section added in a newer version (e.g. "flag:" in crews.yml) does not exist in a
                 // config file written by an older version. Bukkit's defaults do not cover whole missing
@@ -132,6 +133,47 @@ public abstract class AquaticModule {
                 }
             }
         } catch (IOException ignored) {
+        }
+    }
+
+    /**
+     * Bundled configs carry "config-version". When the file on disk is older, {@link #migrateConfig} raises
+     * the values the owner never changed to the new defaults and adds new sections; the old file is kept as
+     * &lt;file&gt;.v&lt;old&gt;.bak.
+     */
+    private void upgradeConfig(File file, YamlConfiguration defaults) {
+        int want = defaults.getInt("config-version", 0);
+        int have = config.getInt("config-version", 0);
+        if (want <= have || !file.isFile()) {
+            return;
+        }
+        File backup = new File(file.getParentFile(), file.getName() + ".v" + have + ".bak");
+        try {
+            java.nio.file.Files.copy(file.toPath(), backup.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            migrateConfig(config, defaults, have);
+            config.set("config-version", want);
+            config.save(file);
+            logger().info("Updated " + file.getName() + " to config version " + want + " (backup: " + backup.getName() + ")");
+        } catch (IOException | RuntimeException e) {
+            logger().log(Level.WARNING, "Could not upgrade " + file.getName(), e);
+        }
+    }
+
+    /** Override to upgrade an older config file (see {@link #raise} and {@link #addMissing}). */
+    protected void migrateConfig(YamlConfiguration file, YamlConfiguration defaults, int fromVersion) {
+    }
+
+    /** Sets path to newValue, but only when the file still has the old default (the owner did not change it). */
+    protected static void raise(YamlConfiguration file, String path, Object oldValue, Object newValue) {
+        if (file.contains(path, true) && String.valueOf(file.get(path)).equals(String.valueOf(oldValue))) {
+            file.set(path, newValue);
+        }
+    }
+
+    /** Copies a section/value from the bundled defaults when the file does not have it. */
+    protected static void addMissing(YamlConfiguration file, YamlConfiguration defaults, String path) {
+        if (!file.contains(path, true) && defaults.contains(path, true)) {
+            file.set(path, defaults.get(path));
         }
     }
 

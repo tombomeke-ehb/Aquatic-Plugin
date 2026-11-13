@@ -1332,6 +1332,7 @@ armor-sets:
 #  Messages (MiniMessage). Placeholders are written as <name>.
 # -------------------------------------------------------------------------------------
 messages:
+  fruits-disabled: "<gray>Abyss fruits are switched off on this server."
   mastery-title: "<light_purple><bold>MASTERY <level>"
   mastery-subtitle: "<fruit> <gray>grows stronger"
   mastery-levelup: "<light_purple>Fruit mastery <white><level></white>! <gray>Moves now hit <white>+<damage>%</white>, power gives <white>+<hearts></white> hearts."

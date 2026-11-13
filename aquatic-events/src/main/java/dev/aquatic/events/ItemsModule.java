@@ -71,6 +71,8 @@ public final class ItemsModule extends AquaticModule implements ItemService {
         loadDefinitions();
         fruits = new FruitManager(this);
         fruits.load();
+        // the "fruits" module switches them on right after this module (see FruitsModule)
+        fruits.setEnabled(plugin().module("fruits") != null && plugin().module("fruits").isEnabled());
         gear = new GearListener(this);
         registerListener(fruits);
         registerListener(gear);
@@ -290,6 +292,9 @@ public final class ItemsModule extends AquaticModule implements ItemService {
     @Override
     public ItemStack createItem(String id, int amount) {
         if (id != null && id.equalsIgnoreCase(RANDOM_FRUIT)) {
+            if (fruits == null || !fruits.isEnabled()) {
+                return null; // fruits are switched off
+            }
             java.util.List<ItemDef> fruits = defs.values().stream().filter(ItemDef::isFruit).toList();
             return fruits.isEmpty() ? null
                     : fruits.get(java.util.concurrent.ThreadLocalRandom.current().nextInt(fruits.size())).create(amount);

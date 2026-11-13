@@ -741,6 +741,9 @@ public final class GearListener implements Listener {
     public void onJoinUpgrade(org.bukkit.event.player.PlayerJoinEvent event) {
         module.upgradeIds(event.getPlayer().getInventory());
         module.upgradeIds(event.getPlayer().getEnderChest());
+        if (!module.fruits().isEnabled()) {
+            dev.aquatic.util.Stats.clear(event.getPlayer(), "fruit");
+        }
     }
 
     @EventHandler

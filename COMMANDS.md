@@ -182,6 +182,20 @@ Killing a pirate with a bounty pays you the full amount. Crewmates and allies of
 | --- | --- | --- |
 | `/spawn` | Back to spawn (the point from `/island admin setspawn`, otherwise the capital). 3 s warmup, cancelled if you move or get hurt; not in combat | Everyone |
 | `/spawn <player>` | Send someone to spawn right away | Admin: `aquatic.islands.admin` |
+| `/island home [island]` | Sail to an island your crew owns (next to its flag). Same warmup and cooldown as `/spawn`; not in combat | Crew members |
+| `/discord` | The server's Discord invite (set the link in `guide.yml` under `discord.link`) | Everyone |
+
+## Spawn town hub (`hub`)
+
+The capital's plaza has eight market stalls with shopkeeper villagers (right-click to open that shop), a Crew Registrar, a live **WANTED** bounty board, the founders' monument (edit the names in `hub.yml`), a welcome sign and a parkour tower.
+
+| Command | What it does | Permission |
+| --- | --- | --- |
+| `/parkour` | Your best parkour time and the top 5. Start on the gold plate at the foot of the tower, finish on the iron plate on top (250 Doubloons once per 20 hours) | Everyone |
+| `/hubadmin list` | All NPCs and signs, and whether they are placed by hand | `aquatic.hub.admin` |
+| `/hubadmin place <id>` | Move an NPC or sign to where you stand (for your own spawn build) | `aquatic.hub.admin` |
+| `/hubadmin reset <id>` | Put it back at its default spot in the generated town | `aquatic.hub.admin` |
+| `/hubadmin refresh` | Respawn all NPCs and signs | `aquatic.hub.admin` |
 
 ---
 
@@ -255,7 +269,10 @@ Right-click a treasure map to get a "warmer / colder" hint.
 
 ---
 
-## Items and Abyss Fruits (`items`)
+## Items and Abyss Fruits (`items`, fruits: `fruits`)
+
+Fruits are their own module: `/aquatic disable fruits` (or `fruits: false` in `config.yml`) switches all fruit powers off. Nobody can eat a fruit, the bonus hearts go away and treasure stops dropping random fruits. Who ate what and the mastery are kept, so `/aquatic enable fruits` brings everything back.
+
 
 | Command | What it does | Permission |
 | --- | --- | --- |

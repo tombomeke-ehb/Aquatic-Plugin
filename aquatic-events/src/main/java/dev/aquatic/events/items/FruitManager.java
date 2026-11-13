@@ -69,6 +69,9 @@ public final class FruitManager implements Listener {
     /** Sneak + scroll the hotbar (with an empty hand) switches between a fruit's moves. */
     @EventHandler(ignoreCancelled = true)
     public void onScroll(org.bukkit.event.player.PlayerItemHeldEvent event) {
+        if (!enabled) {
+            return;
+        }
         Player p = event.getPlayer();
         if (!p.isSneaking() || !module.config().getBoolean("fruits.switch-with-sneak-scroll", true)) {
             return;
@@ -93,6 +96,9 @@ public final class FruitManager implements Listener {
     /** Mastery XP per player per fruit: "uuid|fruit" -> xp. */
     private final Map<String, Long> mastery = new HashMap<>();
     private boolean masteryDirty;
+    /** False while the "fruits" module is off: no eating, no powers, no bonus hearts (data is kept). */
+    private boolean enabled = true;
+    private Boolean appliedEnabled;
     private long lastSave = System.currentTimeMillis();
     private java.util.Set<ConfigurationSection> fruitMoves;
 
@@ -253,7 +259,16 @@ public final class FruitManager implements Listener {
     // ------------------------------------------------------------------ state
 
     public String fruitOf(UUID player) {
-        return fruitOf.get(player);
+        return enabled ? fruitOf.get(player) : null;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    /** Turned on/off by the "fruits" module; the bonus hearts follow on the next tick. */
+    public void setEnabled(boolean on) {
+        enabled = on;
     }
 
     public void setFruit(UUID player, String fruitId) {
@@ -270,6 +285,9 @@ public final class FruitManager implements Listener {
     }
 
     private ItemDef fruitDef(Player p) {
+        if (!enabled) {
+            return null;
+        }
         String id = fruitOf.get(p.getUniqueId());
         ItemDef def = id == null ? null : module.def(id);
         return def != null && def.isFruit() ? def : null;
@@ -320,6 +338,19 @@ public final class FruitManager implements Listener {
     public void tick(long interval) {
         long now = System.currentTimeMillis();
         cooldowns.values().removeIf(until -> until < now);
+        if (appliedEnabled == null || appliedEnabled != enabled) {
+            appliedEnabled = enabled; // fruits module switched: add or remove the fruit hearts
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                if (enabled) {
+                    dev.aquatic.util.Stats.health(p, "fruit", bonusHealth(p.getUniqueId()));
+                } else {
+                    dev.aquatic.util.Stats.clear(p, "fruit");
+                }
+            }
+        }
+        if (!enabled) {
+            return;
+        }
         sealed.values().removeIf(until -> until < now);
         if (masteryDirty && now - lastSave >= 60_000) {
             save(); // mastery XP, once a minute
@@ -413,6 +444,11 @@ public final class FruitManager implements Listener {
         if (def == null || !def.isFruit()) {
             return;
         }
+        if (!enabled) {
+            event.setCancelled(true);
+            module.actionBar(event.getPlayer(), "fruits-disabled");
+            return;
+        }
         Player p = event.getPlayer();
         ConfigurationSection cfg = module.config().getConfigurationSection("fruits");
         String current = fruitOf.get(p.getUniqueId());
@@ -453,6 +489,9 @@ public final class FruitManager implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onDeath(PlayerDeathEvent event) {
+        if (!enabled) {
+            return;
+        }
         Player p = event.getEntity();
         inSea.remove(p.getUniqueId());
         ItemDef def = fruitDef(p);
@@ -474,6 +513,9 @@ public final class FruitManager implements Listener {
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onDamage(EntityDamageEvent event) {
+        if (!enabled) {
+            return;
+        }
         if (!(event.getEntity() instanceof Player p)) {
             return;
         }
@@ -499,6 +541,9 @@ public final class FruitManager implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onSwim(EntityToggleSwimEvent event) {
+        if (!enabled) {
+            return;
+        }
         if (event.isSwimming() && event.getEntity() instanceof Player p && inSea.contains(p.getUniqueId())
                 && module.config().getBoolean("fruits.sea-weakness.sink", true)) {
             event.setCancelled(true);
@@ -508,6 +553,9 @@ public final class FruitManager implements Listener {
     /** Ice-type fruits freeze the water they walk on. */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
+        if (!enabled) {
+            return;
+        }
         if (fruitOf.isEmpty() || !event.hasChangedBlock()) {
             return;
         }
@@ -548,6 +596,9 @@ public final class FruitManager implements Listener {
 
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
+        if (!enabled) {
+            return;
+        }
         if (event.getHand() != EquipmentSlot.HAND || event.getAction() == Action.PHYSICAL) {
             return;
         }
@@ -564,6 +615,9 @@ public final class FruitManager implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onSwap(PlayerSwapHandItemsEvent event) {
+        if (!enabled) {
+            return;
+        }
         Player p = event.getPlayer();
         if (!fruitOf.containsKey(p.getUniqueId())) {
             return;

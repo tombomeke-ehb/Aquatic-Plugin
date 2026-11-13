@@ -54,6 +54,10 @@ final class IslandCommands {
                 .playerPermission("aquatic.islands.info").playerOnly();
         cmd.sub("list", this::list).usage("[page]").description("List all islands")
                 .playerPermission("aquatic.islands.list").completer((s, a) -> List.of());
+        cmd.sub("home", (s, a) -> m.islandHome(AquaticCommand.player(s), a)).usage("[island]")
+                .description("Sail to an island your crew owns (3 s warmup, not in combat)").playerOnly()
+                .completer((s, a) -> s instanceof org.bukkit.entity.Player p
+                        ? AquaticCommand.filter(m.ownIslandNames(p), a.length == 0 ? "" : a[0]) : java.util.List.of());
         cmd.sub("map", this::near).aliases("near").description("Nearest islands with direction and distance")
                 .playerPermission("aquatic.islands.map").playerOnly();
         cmd.sub("discovered", this::discovered).usage("[player]").description("Islands you have discovered")

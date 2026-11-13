@@ -849,12 +849,76 @@ public final class IslandsModule extends AquaticModule implements IslandService,
     }
 
     private void startSpawnWarmup(Player p) {
-        Location to = spawnDestination();
+        startTravel(p, this::spawnDestination, "spawn-arrived");
+    }
+
+    /** /island home [island]: to an island your crew owns (next to its flag), with the same warmup as /spawn. */
+    void islandHome(Player p, String[] args) {
+        CrewService crews = service(CrewService.class);
+        Crew crew = crews == null ? null : crews.crewOf(p.getUniqueId());
+        if (crew == null) {
+            throw new dev.aquatic.command.CommandFail(rawMsg("home-no-crew"));
+        }
+        List<IslandImpl> owned = new ArrayList<>();
+        for (Island is : islandsOwnedBy(crew.id())) {
+            IslandImpl impl = islands.get(is.id());
+            if (impl != null) {
+                owned.add(impl);
+            }
+        }
+        if (owned.isEmpty()) {
+            throw new dev.aquatic.command.CommandFail(rawMsg("home-no-island"));
+        }
+        IslandImpl target = owned.get(0);
+        if (args.length > 0) {
+            String want = String.join(" ", args);
+            target = null;
+            for (IslandImpl is : owned) {
+                if (is.id.equalsIgnoreCase(want) || is.name.equalsIgnoreCase(want)) {
+                    target = is;
+                }
+            }
+            if (target == null) {
+                throw new dev.aquatic.command.CommandFail(rawMsg("home-unknown", "island", want));
+            }
+        }
+        IslandImpl home = target;
+        startTravel(p, () -> homeSpot(home), "home-arrived", "island", home.name);
+    }
+
+    List<String> ownIslandNames(Player p) {
+        CrewService crews = service(CrewService.class);
+        Crew crew = crews == null ? null : crews.crewOf(p.getUniqueId());
+        List<String> out = new ArrayList<>();
+        if (crew != null) {
+            for (Island is : islandsOwnedBy(crew.id())) {
+                out.add(is.name());
+            }
+        }
+        return out;
+    }
+
+    private Location homeSpot(IslandImpl is) {
+        Location flag = is.flagLocation();
+        if (flag != null && flag.getWorld() != null) {
+            int x = flag.getBlockX() + 2, z = flag.getBlockZ();
+            int y = flag.getWorld().getHighestBlockYAt(x, z, HeightMap.MOTION_BLOCKING) + 1;
+            return new Location(flag.getWorld(), x + 0.5, y, z + 0.5);
+        }
+        return teleportSpot(is);
+    }
+
+    private void startTravel(Player p, java.util.function.Supplier<Location> dest, String arrivedKey, Object... ph) {
+        Location to = dest.get();
         if (to == null) {
             throw new dev.aquatic.command.CommandFail(rawMsg("spawn-none"));
         }
         UUID id = p.getUniqueId();
         boolean bypass = p.hasPermission("aquatic.islands.admin");
+        dev.aquatic.api.CombatService combat = service(dev.aquatic.api.CombatService.class);
+        if (!bypass && combat != null && combat.inCombat(id)) {
+            throw new dev.aquatic.command.CommandFail(rawMsg("travel-combat"));
+        }
         long cooldown = Math.max(0, config().getLong("spawn.command.cooldown-seconds", 30)) * 1000L;
         Long last = spawnCooldowns.get(id);
         if (!bypass && last != null && System.currentTimeMillis() - last < cooldown) {
@@ -868,7 +932,7 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         if (warmup == 0) {
             p.teleportAsync(to);
             spawnCooldowns.put(id, System.currentTimeMillis());
-            send(p, "spawn-arrived");
+            send(p, arrivedKey, ph);
             return;
         }
         Location start = p.getLocation();
@@ -895,9 +959,10 @@ public final class IslandsModule extends AquaticModule implements IslandService,
                 if (task != null) {
                     task.cancel();
                 }
-                p.teleportAsync(spawnDestination() != null ? spawnDestination() : to);
+                Location now = dest.get();
+                p.teleportAsync(now != null ? now : to);
                 spawnCooldowns.put(id, System.currentTimeMillis());
-                send(p, "spawn-arrived");
+                send(p, arrivedKey, ph);
             }
         }, 5L, 5L));
     }
@@ -955,8 +1020,40 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         if (world == null) {
             return null;
         }
+        if (is.type == IslandType.CAPITAL) {
+            // in front of the throne, looking at it (not on top of it)
+            int y = world.getHighestBlockYAt(is.x, is.z + 12, HeightMap.MOTION_BLOCKING) + 1;
+            return new Location(world, is.x + 0.5, y, is.z + 12.5, 180f, 0f);
+        }
         int y = world.getHighestBlockYAt(is.x, is.z, HeightMap.MOTION_BLOCKING) + 1;
         return new Location(world, is.x + 0.5, y, is.z + 0.5);
+    }
+
+    @Override
+    protected void migrateConfig(org.bukkit.configuration.file.YamlConfiguration file,
+                                 org.bukkit.configuration.file.YamlConfiguration defaults, int from) {
+        if (from < 1) {
+            // 2.4.0: bigger islands, deeper caves, ores on every island
+            raise(file, "generation.radius-limit", 750, 1000);
+            String s = "generation.island-sizes.";
+            raise(file, s + "small.min", 50, 60);
+            raise(file, s + "small.max", 100, 150);
+            raise(file, s + "medium.min", 100, 150);
+            raise(file, s + "medium.max", 175, 275);
+            raise(file, s + "large.min", 175, 275);
+            raise(file, s + "large.max", 300, 450);
+            raise(file, s + "huge.min", 300, 450);
+            raise(file, s + "huge.max", 500, 750);
+            String c = "generation.terrain.caves.";
+            raise(file, c + "min-island-radius", 60, 40);
+            raise(file, c + "size", 1.0, 1.4);
+            raise(file, c + "depth", 14, 40);
+            addMissing(file, defaults, c + "caverns");
+            String o = "generation.terrain.ore-veins.";
+            raise(file, o + "per-1000-land", 4, 10);
+            raise(file, o + "ores", List.of("COAL_ORE:6", "IRON_ORE:5", "COPPER_ORE:4", "GOLD_ORE:1.5", "REDSTONE_ORE:1.5",
+                    "LAPIS_ORE:1", "DIAMOND_ORE:0.25", "EMERALD_ORE:0.2"), defaults.getStringList(o + "ores"));
+        }
     }
 
     // ------------------------------------------------------------------ generation jobs
