@@ -143,6 +143,42 @@ public final class GearListener implements Listener {
         }
     }
 
+    /** The weapon's colour: "vfx-color", else its ability's colour, else steel. */
+    private org.bukkit.Color weaponColor(ItemDef def) {
+        String raw = def.cfg.getString("vfx-color");
+        ConfigurationSection a = def.ability();
+        if (raw == null && a != null) {
+            raw = a.getString("color");
+        }
+        return Fx.color(raw, org.bukkit.Color.fromRGB(0xDDE8F0));
+    }
+
+    /**
+     * A fully charged hit with a custom weapon: a glowing slash arc in the weapon's colour, a spark of light on
+     * the target and coloured dust; a proc (on-hit effect) adds a shockwave and a bigger flash.
+     */
+    private void swingFx(Player p, LivingEntity victim, ItemDef def, boolean proc) {
+        Fx fx = abilities.fx();
+        org.bukkit.Color c = weaponColor(def);
+        Location eye = p.getEyeLocation();
+        fx.slash(eye, eye.getDirection(), proc ? 3.5 : 2.2, c);
+        fx.crescent(eye, eye.getDirection(), proc ? 2.4 : 1.8, c);
+        Location hit = victim.getLocation().add(0, victim.getHeight() * 0.6, 0);
+        fx.flash(hit, c, proc ? 1.6f : 0.8f);
+        fx.glow(hit, c, 1.0f, proc ? 14 : 6, 0.35);
+        if (proc) {
+            fx.shockwave(victim.getLocation().add(0, 0.1, 0), 1.8, 7, c);
+        }
+    }
+
+    /** A weapon ability starts with a swing: a crescent of light and a quick ring at the feet. */
+    void castFx(Player p, ItemDef def) {
+        Fx fx = abilities.fx();
+        org.bukkit.Color c = weaponColor(def);
+        fx.crescent(p.getEyeLocation(), p.getEyeLocation().getDirection(), 2.2, c);
+        fx.shockwave(p.getLocation().add(0, 0.1, 0), 1.4, 5, c);
+    }
+
     /** Muzzle flash, sparks and a puff of smoke in front of the barrel. */
     private void muzzle(Player p, float size) {
         Fx fx = abilities.fx();
@@ -322,6 +358,9 @@ public final class GearListener implements Listener {
             module.actionBar(p, "abyssal-hit", "player", target.getName(), "seconds", Text.number(seconds));
             Util.sound(target.getLocation(), "block.beacon.deactivate", 1f, 1.6f);
         }
+        if (p.getAttackCooldown() >= 0.9f && (def.type.equals("sword") || def.type.equals("abyssal"))) {
+            swingFx(p, victim, def, false);
+        }
         ConfigurationSection onHit = def.cfg.getConfigurationSection("on-hit");
         if (onHit == null || p.getAttackCooldown() < 0.9f || !abilities.canHurt(p, victim)) {
             return;
@@ -356,6 +395,7 @@ public final class GearListener implements Listener {
             victim.getWorld().strikeLightningEffect(victim.getLocation());
         }
         abilities.particles(onHit, "CRIT", victim.getLocation().add(0, 1, 0), 15, 0.4);
+        swingFx(p, victim, def, true);
         String sound = onHit.getString("sound");
         if (sound != null) {
             Util.sound(victim.getLocation(), sound, 1f, 1f);
@@ -438,6 +478,7 @@ public final class GearListener implements Listener {
                     return;
                 }
                 if (abilities.execute(p, a)) {
+                    castFx(p, def);
                     module.fruits().setCooldown(p.getUniqueId(), key, a.getDouble("cooldown", 15));
                     module.actionBar(p, "ability-used", "ability", name);
                 } else {

@@ -687,9 +687,9 @@ final class Blueprint {
             b.set(x, 1, 7, Material.CHISELED_STONE_BRICKS);
             b.set(x, 3, 6, hangingLantern());
         }
-        b.set(-3, 2, 7, facing(Material.CHEST, BlockFace.NORTH));
-        b.set(0, 2, 7, facing(Material.BARREL, BlockFace.UP));
-        b.set(3, 2, 7, facing(Material.ENDER_CHEST, BlockFace.NORTH));
+        b.set(-3, 2, 7, Material.NETHER_QUARTZ_ORE);   // the Sailor's, Captain's and Kraken's crates (crates.yml blocks)
+        b.set(0, 2, 7, Material.NETHER_GOLD_ORE);
+        b.set(3, 2, 7, Material.SHROOMLIGHT);
         for (int x = -4; x <= -2; x++) {                                  // the dealer's counter
             b.set(x, 1, 2, log(Material.STRIPPED_DARK_OAK_LOG, org.bukkit.Axis.X));
             b.set(x, 2, 2, slab(Material.DARK_OAK_SLAB, false));

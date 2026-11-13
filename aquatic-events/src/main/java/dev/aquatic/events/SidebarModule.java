@@ -350,6 +350,17 @@ public final class SidebarModule extends AquaticModule implements Listener {
 
     @Override
     protected void migrateConfig(YamlConfiguration file, YamlConfiguration defaults, int from) {
+        if (from < 2) {
+            // 2.17.0: the level sits next to the XP bar (a narrower sidebar)
+            List<String> layout = new ArrayList<>(file.getStringList("layout"));
+            int name = layout.indexOf("<white><bold><player></bold> <gray>Lv <aqua><level> <level_title>");
+            int bar = layout.indexOf("<xp_bar> <dark_gray><xp_percent>%");
+            if (name >= 0 && bar >= 0) {
+                layout.set(name, "<white><bold><player></bold> <level_title>");
+                layout.set(bar, "<gray>Lv <aqua><level></aqua> <xp_bar> <dark_gray><xp_percent>%");
+                file.set("layout", layout);
+            }
+        }
         if (from < 1) {
             // 2.6.0: level titles next to the level
             List<String> layout = new ArrayList<>(file.getStringList("layout"));

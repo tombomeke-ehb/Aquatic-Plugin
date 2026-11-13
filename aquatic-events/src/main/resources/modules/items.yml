@@ -3,7 +3,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 9
+config-version: 10
 #  Custom pirate items: Abyss Fruits, Abyssal Iron, legendary swords, guns,
 #  cannons, the Tide Compass, Echo Conch, rum and the Conqueror of the Sea's crown.
 #
@@ -54,7 +54,8 @@ fruits:
     curve-base: 60
     curve-exponent: 1.5
     damage-per-level: 0.04
-    range-per-level: 0.02
+    # Range, radius and width of every move grow with mastery: +5% a level (level 20 = almost twice as big).
+    range-per-level: 0.05
     cooldown-per-level: 0.015
     # Cooldowns never drop below this part of the base cooldown.
     min-cooldown: 0.6

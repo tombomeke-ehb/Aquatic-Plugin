@@ -460,6 +460,14 @@ public final class HubModule extends AquaticModule implements Listener {
         }
     }
 
+    /** Zombies (and every other mob) leave the hub's villagers alone. */
+    @EventHandler(ignoreCancelled = true)
+    public void onTarget(org.bukkit.event.entity.EntityTargetLivingEntityEvent event) {
+        if (event.getTarget() != null && event.getTarget().getPersistentDataContainer().has(tagKey, PersistentDataType.STRING)) {
+            event.setCancelled(true);
+        }
+    }
+
     @EventHandler(ignoreCancelled = true)
     public void onTransform(EntityTransformEvent event) {
         if (event.getEntity().getPersistentDataContainer().has(tagKey, PersistentDataType.STRING)) {
@@ -666,6 +674,10 @@ public final class HubModule extends AquaticModule implements Listener {
             raise(file, "npcs.blacksmith.actions", List.of("cmd:shop tools"), List.of("cmd:smithy"));
             raise(file, "npcs.blacksmith.name", "<gold><bold>Blacksmith</bold> <gray>(tools & weapons)",
                     "<gold><bold>Blacksmith</bold> <gray>(smithy & tools)");
+        }
+        if (from < 6) {
+            // 2.17.0: the dealer stands behind the counter of the generated gambling den
+            raise(file, "npcs.dealer.offset", List.of(6, 30), List.of(6, 32));
         }
         if (from < 5) {
             // 2.16.0: the shopkeepers and the dealer open their menus directly (players have no /shop or /gamble)

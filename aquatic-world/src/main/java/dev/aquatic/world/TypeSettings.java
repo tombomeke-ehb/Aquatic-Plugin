@@ -85,6 +85,8 @@ final class TypeSettings {
     int townHouses = 30;
     /** A village town: a well instead of the market, with a smithy, fishing huts, a tavern and farm fields. */
     boolean village;
+    /** A capital town gets the gambling den on its plaza (hub.yml: the Dealer; crates.yml: the crates). */
+    boolean gamblingDen;
     final WeightedList<Material> roadBlocks = new WeightedList<>();
     Material throneBase = Material.POLISHED_ANDESITE;
     Material throneAccent = Material.GOLD_BLOCK;
@@ -156,6 +158,7 @@ final class TypeSettings {
         t.town = s.getBoolean("town.enabled", t.type == IslandType.CAPITAL);
         t.townHouses = Math.max(0, s.getInt("town.houses", 30));
         t.village = s.getBoolean("town.village", t.type == IslandType.VILLAGE);
+        t.gamblingDen = s.getBoolean("town.gambling-den", t.type == IslandType.CAPITAL);
         blocks(t.roadBlocks, s.getStringList("town.road"), Material.STONE_BRICKS, log, ctx + ".town.road");
         t.mountainScale = Math.max(0, s.getDouble("mountains", t.type == IslandType.CAPITAL ? 0.4 : 1.0));
         t.beachHeight = Math.max(0, s.getInt("beach-height", 2));

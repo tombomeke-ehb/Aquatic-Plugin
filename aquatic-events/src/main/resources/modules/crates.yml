@@ -15,11 +15,16 @@
 #  items (["DIAMOND:4", "item:rum:2", "key:captain:1"]), commands (run by the console, <player>),
 #  broadcast (true = the whole server hears about it).
 # =====================================================================================
-config-version: 2
+config-version: 3
 
 opening:
   # How many items pass by before the reel stops (it slows down towards the end).
   steps: 32
+
+# Crate blocks at a capital (like the three in the gambling den the capital builds) become crates by
+# themselves, within this many blocks of its centre.
+auto-register: true
+auto-register-radius: 48
 
 # A floating sign above every crate.
 holograms: true
@@ -124,6 +129,7 @@ messages:
   giveall: "<gold>Everyone got <white><amount></white>x key for the <crate><gold>!"
   setup-no-capital: "<red>There is no capital island yet."
   setup-done: "<green>Placed <white><count></white> crate stands at the capital."
+  setup-found: "<green>The capital's crates are ready (<white><count></white> new)."
   got-block: "<green>Place this block anywhere to make a <crate><green> there."
   placed: "<green>The <crate><green> is ready."
   place-no-permission: "<red>Only staff can place crates."

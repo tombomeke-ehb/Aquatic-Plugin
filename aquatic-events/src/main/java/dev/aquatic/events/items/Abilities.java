@@ -457,7 +457,7 @@ public final class Abilities {
                 Set<UUID> hit = new HashSet<>();
                 Location start = p.getLocation().add(0, 0.2, 0);
                 int steps = Math.max(2, (int) range);
-                double width = a.getDouble("width", 1.6);
+                double width = a.getDouble("width", 1.6) * Math.sqrt(castRangeScale); // wider with mastery
                 double knock = a.getDouble("knockback", 0.6);
                 org.bukkit.Color c = colorOf(a, type);
                 String block = a.getString("path-block");

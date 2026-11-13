@@ -665,12 +665,167 @@ def armor_layers(base, trim, accent, scale=2, legs=None, boots=None):
     return layer1, layer2
 
 
+
+def plate_armor_layers(base, trim, accent, seed=11):
+    """Worn plate armour at 4x (256x128 per layer, vanilla humanoid layout): bevelled plates with a metal sheen,
+    rivets and a glowing accent; a helmet with a crest and a face opening, a breastplate with a ridge and
+    segmented belly plates, layered pauldrons and bracers, a belt with tassets, knee guards, greaves, sabatons."""
+    S = 4
+    W, H = 64 * S, 32 * S
+    l1 = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    l2 = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    base, trim, accent = rgb(base), rgb(trim), rgb(accent)
+    dark = shade(trim, -0.25)
+    LIGHT = {"top": 0.18, "bottom": -0.3, "front": 0.05, "right": -0.08, "left": -0.08, "back": -0.16}
+
+    def metal(c, x, y, h):
+        sheen = 0.16 * math.sin(y / max(1, h) * math.pi * 1.1 + 0.4) + 0.05 * math.sin(x * 0.35 + y * 0.12)
+        return shade(c, sheen + (_noise(x, y, seed) - 0.5) * 0.06)
+
+    def box(img, u, v, w, h, d, paint):
+        faces = {"top": (u + d, v, w, d), "bottom": (u + d + w, v, w, d), "right": (u, v + d, d, h),
+                 "front": (u + d, v + d, w, h), "left": (u + d + w, v + d, d, h), "back": (u + d + w + d, v + d, w, h)}
+        px = img.load()
+        for face, (fu, fv, fw, fh) in faces.items():
+            for fy in range(fh * S):
+                for fx in range(fw * S):
+                    c = paint(face, fx, fy, fw * S, fh * S)
+                    if c is None:
+                        continue
+                    px[fu * S + fx, fv * S + fy] = shade(c, LIGHT[face]) + (255,)
+
+    def plate(x, y, w, h, top, bottom, col=None):
+        """A horizontal plate between rows top..bottom: bevel light on top, shadow at the bottom, dark seam."""
+        c = metal(col or base, x, y, h)
+        if y == top:
+            return shade(c, 0.3)
+        if y == top + 1:
+            return shade(c, 0.15)
+        if y == bottom:
+            return dark
+        if y == bottom - 1:
+            return shade(c, -0.18)
+        return c
+
+    def rivet(x, y, every=10, row=None):
+        return (x % every in (3, 4)) and (row is None or y in row)
+
+    # ---- helmet (8x8x8): a crest down the middle, a face opening with cheek guards on the front
+    def helmet(face, x, y, w, h):
+        if face == "top":
+            if abs(x - w / 2) < 3:
+                return shade(accent, 0.1) if abs(x - w / 2) < 1.5 else trim       # glowing crest
+            return metal(base, x, y, h) if (x + y) % 9 else shade(base, 0.2)
+        if face == "bottom":
+            return None
+        if face == "front":
+            if y >= 12 and 6 <= x < w - 6 and y < h - 2:
+                return None                                                     # the face opening
+            if y >= 12 and (x < 6 or x >= w - 6):
+                return plate(x, y, w, h, 12, h - 1, shade(base, -0.08))          # cheek guards
+            if 10 <= y < 12:
+                return shade(trim, 0.1)                                         # brow band
+        if y >= h - 3:
+            return dark                                                         # rim
+        if face != "front" and y in (14, 15) and rivet(x, y, 8):
+            return shade(trim, 0.45)
+        if abs(x - w / 2) < 2 and face in ("front", "back") and y < 10:
+            return shade(accent, 0.05)                                          # the crest runs down front and back
+        return plate(x, y, w, h, 0, h - 1)
+    box(l1, 0, 0, 8, 8, 8, helmet)
+
+    # ---- chest (8x12x4): ridge, pectorals, belly plates, a glowing wave emblem
+    def chest(face, x, y, w, h):
+        if face in ("top", "bottom"):
+            return metal(trim, x, y, h)
+        if face == "front":
+            cx = w / 2
+            if 6 <= y <= 18 and abs(x - cx) <= 6 - (y - 6) * 0.25:
+                emblem = abs(math.sin((x - cx) * 0.6) * 3 + 11 - y) < 1.4 or (y > 13 and abs(x - cx) < 1.2)
+                if emblem:
+                    return shade(accent, 0.15 if (x + y) % 3 else 0.35)          # the wave and trident
+            if abs(x - cx) < 1:
+                return shade(base, 0.22)                                        # the ridge
+            if y < 22:
+                return plate(x, y, w, h, 0, 21)                                 # breastplate
+            seg = 22 + ((y - 22) // 6) * 6
+            return plate(x, y, w, h, seg, seg + 5, shade(base, -0.05))          # belly plates
+        if face == "back":
+            seg = (y // 8) * 8
+            return plate(x, y, w, h, seg, seg + 7, shade(base, -0.05))
+        seg = (y // 12) * 12
+        return plate(x, y, w, h, seg, seg + 11, shade(base, -0.05))
+    box(l1, 16, 16, 8, 12, 4, chest)
+
+    # ---- arms (4x12x4): layered pauldrons and bracers, cloth between
+    def arm(face, x, y, w, h):
+        if face == "top":
+            return metal(trim, x, y, h)
+        if face == "bottom":
+            return None
+        if y < 18:
+            seg = (y // 6) * 6
+            c = plate(x, y, w, h, seg, seg + 5, trim if seg == 0 else base)
+            return shade(accent, 0.1) if y == 16 else c                         # accent edge on the pauldron
+        if y < 26:
+            return shade(rgb("#2a3140"), (_noise(x, y, 4) - 0.5) * 0.1)          # padded sleeve
+        if y >= h - 10:
+            c = plate(x, y, w, h, h - 10, h - 1)
+            return shade(trim, 0.4) if rivet(x, y, 6, (h - 6,)) else c          # bracer
+        return shade(rgb("#2a3140"), -0.05)
+    box(l1, 40, 16, 4, 12, 4, arm)
+
+    # ---- boots (layer 1, 4x12x4): greaves and sabatons with a toe cap
+    def boot(face, x, y, w, h):
+        if face == "top":
+            return None
+        if face == "bottom":
+            return dark
+        if y < 20:
+            return None                                                         # (the leggings cover the thighs)
+        if y < 34:
+            c = plate(x, y, w, h, 20, 33)
+            return shade(accent, 0.05) if face == "front" and abs(x - w / 2) < 1 else c
+        seg = 34 + ((y - 34) // 7) * 7
+        c = plate(x, y, w, h, seg, seg + 6, shade(base, -0.08))
+        if face == "front" and y >= h - 5:
+            return shade(trim, 0.1)                                             # toe cap
+        return c
+    box(l1, 0, 16, 4, 12, 4, boot)
+
+    # ---- leggings (layer 2): a belt with a buckle, tassets, knee guards
+    def waist(face, x, y, w, h):
+        if face in ("top", "bottom"):
+            return None
+        if 28 <= y < 36:
+            c = shade(rgb("#3a2414"), 0.05 if y in (28, 29) else -0.05)          # belt
+            if face == "front" and abs(x - w / 2) < 4 and 29 <= y <= 34:
+                return shade(trim, 0.35) if (abs(x - w / 2) > 2.5 or y in (29, 34)) else accent   # buckle
+            return c
+        if y >= 36:
+            return plate(x, y, w, h, 36, h - 1, shade(base, -0.05))             # tassets
+        return None
+    box(l2, 16, 16, 8, 12, 4, waist)
+
+    def legging(face, x, y, w, h):
+        if face in ("top", "bottom"):
+            return None
+        if y < 20:
+            return plate(x, y, w, h, 0, 19)                                     # thigh plate
+        if y < 28:
+            c = plate(x, y, w, h, 20, 27, trim)                                 # knee guard
+            return shade(accent, 0.1) if face == "front" and 22 <= y <= 25 and abs(x - w / 2) < 2 else c
+        return plate(x, y, w, h, 28, h - 1, shade(base, -0.06))
+    box(l2, 0, 16, 4, 12, 4, legging)
+    return l1, l2
+
 # ---------------------------------------------------------------- 3D models
 
 GUN_DISPLAY = {  # like a normal held item (same as vanilla item/generated), but with depth
     "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.5, 0.5, 0.5]},
     "head": {"rotation": [0, 180, 0], "translation": [0, 13, 7], "scale": [1, 1, 1]},
-    "thirdperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 3, 1], "scale": [0.55, 0.55, 0.55]},
+    # third person: the vanilla crossbow's hold, turned to the 3D gun (muzzle -x, top +y)
+    "thirdperson_righthand": {"rotation": [90, 0, -165], "translation": [2, 0.1, -3], "scale": [0.7, 0.7, 0.7]},
     "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 3.2, 1.13], "scale": [0.68, 0.68, 0.68]},
     "fixed": {"rotation": [0, 180, 0], "scale": [1, 1, 1]},
 }
@@ -1158,29 +1313,28 @@ def crate_blocks():
                 f[side] = spec
             return {"from": frm, "to": to, "faces": f}
 
+        # The body fills the whole block footprint: the block is solid to the game, so the faces of the blocks
+        # touching it are not drawn; anything smaller than a full side would leave a see-through gap there.
         el = []
-        el.append(box([1, 1, 1.5], [15, 10, 14.5], "wood"))                        # body
+        el.append(box([0, 0, 0], [16, 10, 16], "wood"))                             # body
         el[-1]["faces"]["up"]["texture"] = "#inner"
         el[-1]["faces"]["down"]["texture"] = "#inner"
-        for x0 in (1, 13.5):                                                        # feet
-            for z0 in (1.5, 13):
-                el.append(box([x0, 0, z0], [x0 + 1.5, 1, z0 + 1.5], "trim"))
-        el.append(box([0.75, 1, 1.25], [15.25, 2, 14.75], "trim"))                  # bottom rim
-        el.append(box([0.75, 9.5, 1.25], [15.25, 10.5, 14.75], "trim"))             # top rim of the body
-        el.append(box([1, 10.5, 1.5], [15, 13, 14.5], "lid"))                       # lid, three steps for a rounded top
-        el.append(box([1, 13, 2.5], [15, 14.5, 13.5], "lid"))
-        el.append(box([1, 14.5, 4.5], [15, 15.5, 11.5], "lid"))
+        el.append(box([-0.2, 0, -0.2], [16.2, 1.2, 16.2], "trim"))                  # bottom rim
+        el.append(box([-0.2, 9.2, -0.2], [16.2, 10.4, 16.2], "trim"))               # top rim of the body
+        el.append(box([0, 10.4, 0], [16, 13, 16], "lid"))                           # lid, three steps for a rounded top
+        el.append(box([0, 13, 1.5], [16, 14.5, 14.5], "lid"))
+        el.append(box([0, 14.5, 4], [16, 15.6, 12], "lid"))
         for x0 in (2.5, 11.5):                                                      # two metal bands over lid and body
             x1 = x0 + 2
-            el.append(box([x0, 1, 1.25], [x1, 10.5, 14.75], "metal"))
-            el.append(box([x0, 10.5, 1.25], [x1, 13.25, 14.75], "metal"))
-            el.append(box([x0, 13, 2.25], [x1, 14.75, 13.75], "metal"))
-            el.append(box([x0, 14.5, 4.25], [x1, 15.75, 11.75], "metal"))
-        for x0 in (0.6, 13.9):                                                      # corner guards
-            for z0 in (1.1, 13.4):
-                el.append(box([x0, 1, z0], [x0 + 1.5, 10.5, z0 + 1.5], "trim"))
-        el.append(box([6, 6.5, 0.6], [10, 12, 1.5], "lock", uv=[0, 0, 16, 16]))     # locks, front and back
-        el.append(box([6, 6.5, 14.5], [10, 12, 15.4], "lock", uv=[0, 0, 16, 16]))
+            el.append(box([x0, 0, -0.3], [x1, 10.6, 16.3], "metal"))
+            el.append(box([x0, 10.4, -0.3], [x1, 13.3, 16.3], "metal"))
+            el.append(box([x0, 13, 1.2], [x1, 14.8, 14.8], "metal"))
+            el.append(box([x0, 14.5, 3.7], [x1, 15.9, 12.3], "metal"))
+        for x0 in (-0.3, 14.8):                                                     # corner guards
+            for z0 in (-0.3, 14.8):
+                el.append(box([x0, 0, z0], [x0 + 1.5, 10.4, z0 + 1.5], "trim"))
+        el.append(box([6, 6, -0.8], [10, 11.5, 0], "lock", uv=[0, 0, 16, 16]))      # locks, front and back
+        el.append(box([6, 6, 16], [10, 11.5, 16.8], "lock", uv=[0, 0, 16, 16]))
         t = lambda n: "aquatic:block/chest_%s_%s" % (tier, n)
         write_json(os.path.join(PACK, "assets", "minecraft", "models", "block", block + ".json"), {
             "parent": "minecraft:block/block",
@@ -1608,7 +1762,7 @@ def illager_hd(coat, trim, belts, hat, seed=1):
 
 MUSKET_DISPLAY = {  # a long gun: bigger in the hand than the pistols
     "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.6, 0.6, 0.6]},
-    "thirdperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 3, 1], "scale": [0.85, 0.85, 0.85]},
+    "thirdperson_righthand": {"rotation": [90, 0, -165], "translation": [2, 0.1, -3], "scale": [0.9, 0.9, 0.9]},
     "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 3.2, 1.13], "scale": [0.9, 0.9, 0.9]},
     "fixed": {"rotation": [0, 180, 0], "scale": [1, 1, 1]},
     "gui": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
@@ -1718,7 +1872,7 @@ def main():
     # armour sets: icons and how they look when worn
     for piece in ("helmet", "chestplate", "leggings", "boots"):
         item("tidewarden_" + piece, armor_icon(piece, "#2a6fb5", "#123a66", "#5ff3ff"))
-    equipment("tidewarden", *armor_layers("#2a6fb5", "#123a66", "#5ff3ff"))
+    equipment("tidewarden", *plate_armor_layers("#2a6fb5", "#7d93a8", "#5ff3ff"))
     item("corsair_hat", armor_icon("helmet", "#2a1d16", "#120c09", "#e2b33c", style="tricorn"))
     item("corsair_coat", armor_icon("chestplate", "#9b2c2c", "#3a1a12", "#e2b33c"))
     item("corsair_breeches", armor_icon("leggings", "#c9a77a", "#5a4026", "#3a1a12"))

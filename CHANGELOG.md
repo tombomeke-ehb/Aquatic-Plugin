@@ -1,5 +1,39 @@
 # Changelog
 
+## 2.17.0 (2026-11-13)
+
+### Added
+- **The gambling den is built at spawn:** every new capital gets the striped den on its plaza, in the spot where one of the small outer market stalls used to stand.
+  - The Dealer stands behind its counter.
+  - The Sailor's, Captain's and Kraken's crates sit on its pedestals and become crates by themselves (no `/crate set` needed).
+- **Crates register themselves:** crate blocks near a capital's centre become crates automatically (`auto-register` in `crates.yml`). `/crate setup` finds them first, and only places new stands when there are none.
+- **Beaches are no longer empty:** parasols with towels, driftwood, washed-up cargo, upturned rowboats and campfires.
+- **Weapon effects everywhere:**
+  - Every fully charged hit with a custom weapon leaves a glowing slash arc in the weapon's colour, with a flash on the target.
+  - On-hit procs add a shockwave.
+  - Every weapon ability starts with a crescent swing.
+
+### Changed
+- **Fruit moves grow with mastery:** range, radius and width grow 5% per mastery level (was 2%), so a level 20 move is almost twice as big.
+- **No enchant glint over animated textures:** fruits and other items with their own texture no longer glow, so their animation is visible. Without the resource pack they still glint.
+- **Piers are wider:** a 3-block walkway between the railings, and 5 at the end. The harbour bell hangs from a post and arm now, not on a fence.
+- **Tidewarden armour redrawn** as proper plate armour at 4x resolution: a crested helmet with a face opening, a breastplate with a ridge, belly plates and a glowing emblem, layered pauldrons, bracers, knee guards, greaves and sabatons.
+- **Guns in third person** are held like a crossbow, pointing forward (they were held sideways).
+- **Sidebar:** the level is shown next to the XP bar, so the sidebar is narrower.
+
+### Fixed
+- **Doors:** window shutters and flower boxes are never placed in front of a door any more (some houses couldn't be entered).
+- **Windows:** glass panes join the walls they sit in.
+- **Crates:** they no longer leave see-through holes in the blocks next to and under them (the chest now fills its whole block footprint).
+- **The lighthouse** always finds a spot near a road end again.
+- **Villagers:** zombies and other mobs no longer go after the spawn villagers and the village quest givers.
+- **Fort strongbox:** the treasure from a liberated Tidewatch fort is buried next to the crew flag, not on top of it.
+
+### Your server
+- Configs upgrade automatically, with backups.
+- Existing capitals don't get the den by themselves. Paste one with `/island admin schematic preview builtin:gambling_den`; its crates register themselves. Then move the Dealer in with `/hubadmin place dealer`, or regenerate the capital.
+- The resource pack has changed; the plugin sends it by itself.
+
 ## 2.16.3 (2026-11-13)
 
 ### Changed

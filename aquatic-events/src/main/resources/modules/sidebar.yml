@@ -17,12 +17,12 @@ title: "<gradient:#1fa2ff:#12d8fa><bold>AQUATIC SMP</bold></gradient>"
 # Start a line with "?<condition>:" to only show it when that applies:
 #   crew, nocrew, island, sea, fruit, nofruit, event, bounty, conqueror, combat
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 1
+config-version: 2
 
 layout:
   - "<dark_gray><strikethrough>                         "
-  - "<white><bold><player></bold> <gray>Lv <aqua><level> <level_title>"
-  - "<xp_bar> <dark_gray><xp_percent>%"
+  - "<white><bold><player></bold> <level_title>"
+  - "<gray>Lv <aqua><level></aqua> <xp_bar> <dark_gray><xp_percent>%"
   - "<gray>Doubloons: <yellow><balance>"
   - "?bounty:<gray>Bounty: <red><bounty>"
   - "?bounty:<dark_gray>» <bounty_title>"

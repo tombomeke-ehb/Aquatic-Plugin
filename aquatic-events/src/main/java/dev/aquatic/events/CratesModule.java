@@ -528,8 +528,63 @@ public final class CratesModule extends AquaticModule implements Listener, Crate
 
     // ------------------------------------------------------------------ holograms and particles
 
+    /** Capitals already searched for crate blocks this session. */
+    private final Set<String> scanned = new java.util.HashSet<>();
+
+    /**
+     * Crate blocks (crates.&lt;id&gt;.block) that stand at a capital, like the ones in the generated gambling den,
+     * become crates by themselves: these nether blocks are never found naturally with the Nether off.
+     */
+    private int scanCapital(Island capital) {
+        Location c = capital.center();
+        if (c == null || c.getWorld() == null) {
+            return 0;
+        }
+        Map<Material, String> byBlock = new HashMap<>();
+        for (Crate crate : crates.values()) {
+            byBlock.putIfAbsent(blockOf(crate), crate.id);
+        }
+        World w = c.getWorld();
+        int r = Math.max(8, config().getInt("auto-register-radius", 48)), found = 0;
+        int cy = c.getBlockY();
+        for (int x = c.getBlockX() - r; x <= c.getBlockX() + r; x++) {
+            for (int z = c.getBlockZ() - r; z <= c.getBlockZ() + r; z++) {
+                if (!w.isChunkLoaded(x >> 4, z >> 4)) {
+                    continue;
+                }
+                for (int y = Math.max(w.getMinHeight(), cy - 12); y <= Math.min(w.getMaxHeight() - 1, cy + 16); y++) {
+                    Block b = w.getBlockAt(x, y, z);
+                    String id = byBlock.get(b.getType());
+                    if (id != null && !blocks.containsKey(key(b))) {
+                        blocks.put(key(b), id);
+                        found++;
+                    }
+                }
+            }
+        }
+        if (found > 0) {
+            saveBlocks();
+            logger().info("Crates: " + found + " crate block(s) at " + capital.name() + " registered.");
+        }
+        return found;
+    }
+
     private void tick() {
         ticks++;
+        if (ticks % 15 == 1 && config().getBoolean("auto-register", true)) {
+            IslandService islands = service(IslandService.class);
+            if (islands != null) {
+                for (Island is : islands.islands()) {
+                    Location c = is.center();
+                    if (is.type() == IslandType.CAPITAL && c != null && c.getWorld() != null && !scanned.contains(is.id())
+                            && c.getWorld().isChunkLoaded(c.getBlockX() >> 4, c.getBlockZ() >> 4)
+                            && !c.getWorld().getPlayers().isEmpty()) {
+                        scanned.add(is.id());
+                        scanCapital(is);
+                    }
+                }
+            }
+        }
         Set<String> wanted = new java.util.HashSet<>();
         for (Map.Entry<String, String> e : blocks.entrySet()) {
             Location l = location(e.getKey());
@@ -723,6 +778,11 @@ public final class CratesModule extends AquaticModule implements Listener, Crate
         if (capital == null) {
             throw new CommandFail(rawMsg("setup-no-capital"));
         }
+        int found = scanCapital(capital);   // crates that are already there (the gambling den)
+        if (found > 0 || blocks.values().stream().distinct().count() >= crates.size() && !blocks.isEmpty()) {
+            send(p, "setup-found", "count", found);
+            return;
+        }
         World w = capital.center().getWorld();
         int placed = 0;
         for (Map<?, ?> raw : config().getMapList("setup-spots")) {
@@ -761,6 +821,12 @@ public final class CratesModule extends AquaticModule implements Listener, Crate
             for (String key : List.of("got-block", "placed", "place-no-permission")) {
                 addMissing(file, defaults, "messages." + key);
             }
+        }
+        if (from < 3) {
+            // 2.17.0: the gambling den's crates register by themselves
+            addMissing(file, defaults, "auto-register");
+            addMissing(file, defaults, "auto-register-radius");
+            addMissing(file, defaults, "messages.setup-found");
         }
     }
 }

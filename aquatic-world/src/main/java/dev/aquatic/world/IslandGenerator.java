@@ -853,6 +853,11 @@ final class IslandGenerator extends AreaJob {
         if (fancyR >= 24 && kindAt(0, -18) == PLAZA) {
             list.add(new Feature(0, -18, 6, () -> buildFountain(0, -18)));
         }
+        if (fancyR >= 40 && t.gamblingDen && kindAt(DEN_X, DEN_Z) == PLAZA) {
+            den = true; // reserved before the plaza decoration is planned, so nothing else lands there
+            list.add(new Feature(DEN_X, DEN_Z, 8, () -> placeBlueprint(Blueprint.of("gambling_den"), DEN_X, DEN_Z,
+                    top[index(DEN_X, DEN_Z)], BlockFace.NORTH)));
+        }
         if (fancyR >= 24) {
             planPlazaDecor(new Random(seed * 113 + 9), list, plazaR);
         }
@@ -907,10 +912,20 @@ final class IslandGenerator extends AreaJob {
             int startY = inGrid(lastX, lastZ) ? top[index(lastX, lastZ)] : sea;
             int[] dir = d;
             list.add(new Feature(px + d[0] * 10, pz + d[1] * 10, 13, () -> buildPier(px, pz, dir, startY)));
-            if (!lighthouse) {
-                lighthouse = true;
-                int lx = lastX + d[1] * 6, lz = lastZ + d[0] * 6;
-                if (kindAt(lx, lz) == LAND || kindAt(lx, lz) == BEACH) {
+            for (int sideOff : new int[]{6, -6, 8, -8}) {
+                if (lighthouse) {
+                    break;
+                }
+                int lx = lastX - d[0] * 4 + d[1] * sideOff, lz = lastZ - d[1] * 4 + d[0] * sideOff; // a little inland
+                if (lighthouseFits(lx, lz)) {
+                    lighthouse = true;
+                    for (int ox = -4; ox <= 4; ox++) {
+                        for (int oz = -4; oz <= 4; oz++) {
+                            if (inGrid(lx + ox, lz + oz)) {
+                                kind[index(lx + ox, lz + oz)] = BUILT;
+                            }
+                        }
+                    }
                     list.add(new Feature(lx, lz, 5, () -> buildLighthouse(lx, lz)));
                 }
             }
@@ -1009,6 +1024,106 @@ final class IslandGenerator extends AreaJob {
                 if (kindAt(dx, dz) == NONE || kindAt(dx, dz) == SLOPE) {
                     break;
                 }
+            }
+        }
+        planBeachDecor(new Random(seed * 131 + 7), list);
+    }
+
+    /** Things on the town's beach: parasols with towels, driftwood, cargo, upturned rowboats and campfires. */
+    private void planBeachDecor(Random r, List<Feature> list) {
+        int props = Math.max(6, (int) Math.round(2 * Math.PI * landR / 16.0));
+        for (int i = 0; i < props; i++) {
+            double a = r.nextDouble() * Math.PI * 2;
+            for (int dist = (int) (landR * 0.75); dist < radius; dist++) {
+                int bx = (int) Math.round(Math.cos(a) * dist), bz = (int) Math.round(Math.sin(a) * dist);
+                byte k = kindAt(bx, bz);
+                if (k == NONE || k == SLOPE || k == BUILT) {
+                    break;
+                }
+                if (k == BEACH && top[index(bx, bz)] >= sea && beachFree(bx, bz)) {
+                    for (int ox = -2; ox <= 2; ox++) {
+                        for (int oz = -2; oz <= 2; oz++) {
+                            if (inGrid(bx + ox, bz + oz)) {
+                                kind[index(bx + ox, bz + oz)] = BUILT;
+                            }
+                        }
+                    }
+                    int type = r.nextInt(5);
+                    long ps = r.nextLong();
+                    list.add(new Feature(bx, bz, 3, () -> beachProp(bx, bz, type, new Random(ps))));
+                    break;
+                }
+            }
+        }
+    }
+
+    private boolean beachFree(int bx, int bz) {
+        for (int ox = -2; ox <= 2; ox++) {
+            for (int oz = -2; oz <= 2; oz++) {
+                if (!inGrid(bx + ox, bz + oz) || kind[index(bx + ox, bz + oz)] == BUILT) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static final Material[][] PARASOLS = {{Material.RED_WOOL, Material.WHITE_WOOL}, {Material.LIGHT_BLUE_WOOL, Material.WHITE_WOOL},
+            {Material.YELLOW_WOOL, Material.ORANGE_WOOL}, {Material.LIME_WOOL, Material.WHITE_WOOL}};
+
+    private void beachProp(int bx, int bz, int type, Random r) {
+        int y = top[index(bx, bz)] + 1;
+        int x = cx + bx, z = cz + bz;
+        if (!world.getBlockAt(x, y, z).isEmpty() && !org.bukkit.Tag.REPLACEABLE.isTagged(world.getBlockAt(x, y, z).getType())) {
+            return;
+        }
+        switch (type) {
+            case 0 -> { // a parasol with two towels
+                Material[] c = PARASOLS[r.nextInt(PARASOLS.length)];
+                for (int h = 0; h < 3; h++) {
+                    set(x, y + h, z, Material.SPRUCE_FENCE);
+                }
+                for (int ox = -1; ox <= 1; ox++) {
+                    for (int oz = -1; oz <= 1; oz++) {
+                        set(x + ox, y + 3, z + oz, (ox + oz + 2) % 2 == 0 ? c[0] : c[1]);
+                    }
+                }
+                set(x + 1, y, z, r.nextBoolean() ? Material.RED_CARPET : Material.BLUE_CARPET);
+                set(x + 1, y, z + 1, r.nextBoolean() ? Material.YELLOW_CARPET : Material.WHITE_CARPET);
+            }
+            case 1 -> { // driftwood with a bit of dead bush
+                boolean alongX = r.nextBoolean();
+                BlockData log = Bukkit.createBlockData(Material.STRIPPED_OAK_LOG);
+                if (log instanceof org.bukkit.block.data.Orientable o) {
+                    o.setAxis(alongX ? org.bukkit.Axis.X : org.bukkit.Axis.Z);
+                }
+                for (int i = -1; i <= 1; i++) {
+                    setData(x + (alongX ? i : 0), y, z + (alongX ? 0 : i), log);
+                }
+                set(x + (alongX ? 0 : 1), y, z + (alongX ? 1 : 0), Material.DEAD_BUSH);
+            }
+            case 2 -> { // washed-up cargo
+                set(x, y, z, Material.BARREL);
+                set(x + 1, y, z, Material.BARREL);
+                set(x, y + 1, z, Material.BARREL);
+                set(x, y, z + 1, Material.HAY_BLOCK);
+                set(x - 1, y, z, Material.OAK_TRAPDOOR);
+            }
+            case 3 -> { // an upturned rowboat
+                boolean alongX = r.nextBoolean();
+                for (int i = -1; i <= 1; i++) {
+                    int px = x + (alongX ? i : 0), pz = z + (alongX ? 0 : i);
+                    set(px, y, pz, Material.SPRUCE_PLANKS);
+                    BlockData side = stairs(Material.SPRUCE_STAIRS, alongX ? BlockFace.SOUTH : BlockFace.EAST);
+                    setData(px + (alongX ? 0 : 1), y, pz + (alongX ? 1 : 0), side);
+                }
+                set(x + (alongX ? 2 : 0), y, z + (alongX ? 0 : 2), Material.SPRUCE_SLAB);
+            }
+            default -> { // a campfire with log seats
+                set(x, y, z, Material.CAMPFIRE);
+                set(x + 2, y, z, Material.STRIPPED_SPRUCE_LOG);
+                set(x - 2, y, z, Material.STRIPPED_SPRUCE_LOG);
+                set(x, y, z + 2, Material.SPRUCE_SLAB);
             }
         }
     }
@@ -1120,7 +1235,7 @@ final class IslandGenerator extends AreaJob {
             boolean step = deck < prev;
             int x = cx + px + d[0] * i, z = cz + pz + d[1] * i;
             boolean head = i >= headFrom;
-            int half = head ? 2 : 1;
+            int half = head ? 3 : 2; // a 3 block wide walkway between the railings, wider at the end
             for (int w = -half; w <= half; w++) {
                 int wx = x + (d[1] != 0 ? w : 0), wz = z + (d[0] != 0 ? w : 0);
                 boolean edge = Math.abs(w) == half;
@@ -1157,19 +1272,28 @@ final class IslandGenerator extends AreaJob {
             prev = deck;
             endDeck = deck;
         }
-        // the head: cargo, a bell on a post and a ladder down to the water
+        // the head: cargo in one corner, a harbour bell hanging from a post in the other, a ladder to the water
         int ex = cx + px + d[0] * (length - 2), ez = cz + pz + d[1] * (length - 2);
         int sx = d[1] != 0 ? 1 : 0, sz = d[0] != 0 ? 1 : 0;
-        set(ex - sx, endDeck + 1, ez - sz, Material.BARREL);
-        set(ex - sx, endDeck + 2, ez - sz, Material.BARREL);
-        set(ex - sx - d[0], endDeck + 1, ez - sz - d[1], Material.BARREL);
-        set(ex + sx, endDeck + 1, ez + sz, Material.SPRUCE_FENCE);
+        set(ex - sx * 2, endDeck + 1, ez - sz * 2, Material.BARREL);
+        set(ex - sx * 2, endDeck + 2, ez - sz * 2, Material.BARREL);
+        set(ex - sx * 2 - d[0], endDeck + 1, ez - sz * 2 - d[1], Material.BARREL);
+        set(ex - sx * 2 + d[0], endDeck + 1, ez - sz * 2 + d[1], Material.HAY_BLOCK);
+        int postX = ex + sx * 3, postZ = ez + sz * 3;          // the railing post at the edge
+        for (int y = endDeck + 1; y <= endDeck + 3; y++) {
+            set(postX, y, postZ, Material.SPRUCE_LOG);
+        }
+        BlockData arm = Bukkit.createBlockData(Material.STRIPPED_SPRUCE_LOG);
+        if (arm instanceof org.bukkit.block.data.Orientable o) {
+            o.setAxis(sx != 0 ? org.bukkit.Axis.X : org.bukkit.Axis.Z);
+        }
+        setData(ex + sx * 2, endDeck + 3, ez + sz * 2, arm);   // an arm out over the deck
         BlockData bell = Bukkit.createBlockData(Material.BELL);
         if (bell instanceof org.bukkit.block.data.type.Bell b) {
-            b.setAttachment(org.bukkit.block.data.type.Bell.Attachment.FLOOR);
-            b.setFacing(face(d[1], d[0]));
+            b.setAttachment(org.bukkit.block.data.type.Bell.Attachment.CEILING);
+            b.setFacing(face(d[0], d[1]));
         }
-        setData(ex + sx, endDeck + 2, ez + sz, bell);
+        setData(ex + sx * 2, endDeck + 2, ez + sz * 2, bell);  // the bell hangs from the arm
         int lx = cx + px + d[0] * length, lz = cz + pz + d[1] * length;
         for (int yy = endDeck; yy >= sea - 2; yy--) {
             setData(lx, yy, lz, stairs(Material.LADDER, face(d[0], d[1])));
@@ -1199,6 +1323,16 @@ final class IslandGenerator extends AreaJob {
         return d;
     }
 
+    /** A glass pane joined along its wall (x walls run along z). */
+    private static BlockData pane(boolean alongZ) {
+        BlockData d = Bukkit.createBlockData(Material.GLASS_PANE);
+        if (d instanceof org.bukkit.block.data.MultipleFacing f) {
+            f.setFace(alongZ ? BlockFace.NORTH : BlockFace.EAST, true);
+            f.setFace(alongZ ? BlockFace.SOUTH : BlockFace.WEST, true);
+        }
+        return d;
+    }
+
     private boolean freeAt(int x, int y, int z) {
         Material m = world.getBlockAt(x, y, z).getType();
         return m.isAir() || org.bukkit.Tag.REPLACEABLE.isTagged(m);
@@ -1210,12 +1344,16 @@ final class IslandGenerator extends AreaJob {
      */
     private void decorateHouse(List<int[]> windows, int dx, int dz, int doorDx, int doorDz, int base, Material trapdoor,
                                Material awning, Random r) {
+        int doorX = dx + doorDx, doorZ = dz + doorDz; // the doorstep: always kept clear
         for (int[] win : windows) {
             int x = win[0], y = win[1], z = win[2], ox = win[3], oz = win[4];
             int ax = oz != 0 ? 1 : 0, az = ox != 0 ? 1 : 0; // along the wall
             BlockFace out = face(ox, oz);
             for (int side = -1; side <= 1; side += 2) {
                 int sx = x + ox + ax * side, sz = z + oz + az * side;
+                if (sx == doorX && sz == doorZ) {
+                    continue;
+                }
                 if (freeAt(sx, y, sz)) {
                     BlockData shutter = Bukkit.createBlockData(trapdoor);
                     if (shutter instanceof org.bukkit.block.data.type.TrapDoor t) {
@@ -1225,7 +1363,8 @@ final class IslandGenerator extends AreaJob {
                     setData(sx, y, sz, shutter);
                 }
             }
-            if (y == base + 2 && freeAt(x + ox, y - 1, z + oz) && freeAt(x + ox, y, z + oz)) {
+            boolean byDoor = Math.abs(x + ox - doorX) + Math.abs(z + oz - doorZ) <= 1;
+            if (y == base + 2 && !byDoor && freeAt(x + ox, y - 1, z + oz) && freeAt(x + ox, y, z + oz)) {
                 BlockData box = Bukkit.createBlockData(trapdoor);
                 if (box instanceof org.bukkit.block.data.type.TrapDoor t) {
                     t.setFacing(out);
@@ -1298,8 +1437,9 @@ final class IslandGenerator extends AreaJob {
                             setData(x, y, z, beam(frame, edgeX));
                             continue;
                         } else if (windowRow && o != 0 && Math.abs(o) < half && Math.abs(o) % 2 == 1) {
-                            m = Material.GLASS_PANE;
                             windows.add(new int[]{x, y, z, edgeX ? Integer.signum(ox) : 0, edgeZ ? Integer.signum(oz) : 0});
+                            setData(x, y, z, pane(edgeX)); // joined to the wall on both sides
+                            continue;
                         } else if (h == 1) {
                             m = found; // a stone plinth all around
                         } else {
@@ -1652,6 +1792,10 @@ final class IslandGenerator extends AreaJob {
     // ------------------------------------------------------------------ plaza decoration
 
     /** True where plaza decoration must not go: the throne, stalls, fountain, parkour, signs and the paths. */
+    /** The gambling den's spot on a capital (hub.yml has the Dealer behind its counter, crates on its pedestals). */
+    static final int DEN_X = 9, DEN_Z = 33;
+    private boolean den;
+
     private boolean plazaReserved(int dx, int dz) {
         if (Math.abs(dx) <= 2 || Math.abs(dz) <= 2) {
             return true; // the four paths from the throne to the roads
@@ -1659,7 +1803,8 @@ final class IslandGenerator extends AreaJob {
         if (dx * dx + dz * dz < 13 * 13) {
             return true; // throne, ring and planters
         }
-        int[][] spots = {{0, -18, 6}, {0, -31, 9}, {-27, 0, 5}, {27, 0, 5}};
+        int[][] spots = den ? new int[][]{{0, -18, 6}, {0, -31, 9}, {-27, 0, 5}, {27, 0, 5}, {DEN_X, DEN_Z, 9}}
+                : new int[][]{{0, -18, 6}, {0, -31, 9}, {-27, 0, 5}, {27, 0, 5}};
         for (int[] s : spots) {
             if ((dx - s[0]) * (dx - s[0]) + (dz - s[1]) * (dz - s[1]) < s[2] * s[2]) {
                 return true;
@@ -2117,6 +2262,27 @@ final class IslandGenerator extends AreaJob {
         }
     }
 
+
+    /** Room for the lighthouse: dry land or beach under its whole footprint, nothing built there yet. */
+    private boolean lighthouseFits(int lx, int lz) {
+        byte centre = kindAt(lx, lz);
+        if (centre != LAND && centre != BEACH) {
+            return false;
+        }
+        int dry = 0;
+        for (int ox = -3; ox <= 3; ox++) {
+            for (int oz = -3; oz <= 3; oz++) {
+                byte k = kindAt(lx + ox, lz + oz);
+                if (k == BUILT || k == PLAZA) {
+                    return false; // a road or something built is in the way
+                }
+                if (k == LAND || k == BEACH || k == MOUNTAIN) {
+                    dry++;
+                }
+            }
+        }
+        return dry >= 36; // mostly on dry ground (its foundation fills the rest)
+    }
 
     /** The town's lighthouse: the striped octagonal tower (the Lighthouse facility), its door facing the town. */
     private void buildLighthouse(int lx, int lz) {

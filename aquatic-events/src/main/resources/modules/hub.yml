@@ -16,7 +16,7 @@
 #    "cmd:<command>"  the player runs the command (without /)
 #    "msg:<text>"     a MiniMessage line (clickable with <click:run_command:'/...'>)
 # =====================================================================================
-config-version: 5
+config-version: 6
 
 npcs:
   blacksmith:
@@ -66,7 +66,8 @@ npcs:
   dealer:
     name: "<gold><bold>Dealer</bold> <gray>(gambling den)"
     profession: nitwit
-    offset: [6, 30]
+    # Behind the counter of the gambling den the capital builds on its plaza.
+    offset: [6, 32]
     actions: ["gamble"]
   # ---- the village folk: they stand around the well of every village and give quests (quests.yml)
   village_elder:

@@ -162,9 +162,6 @@ public final class ItemsModule extends AquaticModule implements ItemService {
             meta.setCustomModelData(cmd);
         }
         applyModels(meta, cfg, material);
-        if (cfg.getBoolean("glint", false)) {
-            meta.setEnchantmentGlintOverride(true);
-        }
         if (cfg.getBoolean("unbreakable", false)) {
             meta.setUnbreakable(true);
         }
@@ -366,6 +363,10 @@ public final class ItemsModule extends AquaticModule implements ItemService {
             meta.setItemModel(NamespacedKey.fromString(model));
         } else if (meta.hasItemModel() && "aquatic".equals(meta.getItemModel().getNamespace())) {
             meta.setItemModel(null);
+        }
+        // the enchant glint would hide the custom (animated) textures, so it is only used without the pack
+        if (cfg.getBoolean("glint", false)) {
+            meta.setEnchantmentGlintOverride(!(on && model != null));
         }
         String worn = cfg.getString("equipment-model");
         if (worn != null && on) {
@@ -578,6 +579,10 @@ public final class ItemsModule extends AquaticModule implements ItemService {
             if ("aquatic:tide_compass".equals(file.getString("items.tide_compass.item-model"))) {
                 file.set("items.tide_compass.item-model", null);
             }
+        }
+        if (from < 10) {
+            // 2.17.0: fruit moves grow much more with mastery
+            raise(file, "fruits.mastery.range-per-level", 0.02, 0.05);
         }
         if (from < 9) {
             // 2.12.1: the plugin sends the resource pack itself (no server.properties lines needed)
