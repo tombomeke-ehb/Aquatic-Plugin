@@ -21,9 +21,11 @@ modules:
   guide: true
   # Stats sidebar on the right side of the screen (/sidebar to hide it).
   sidebar: true
-  # The Harbor Market (/shop). Turn off if you use another shop plugin.
+  # The Harbor Market (opened at the shopkeepers at spawn). Turn off if you use another shop plugin.
   shop: true
   # The spawn town hub: shopkeeper villagers, crew registrar, bounty board, founders' monument, parkour.
   hub: true
   # The smithy: upgrade weapons, armour, tools and bows (+1 .. +5) with /smithy or at the Blacksmith.
   smithy: true
+  # Village quests: villagers on neutral village islands give quests (fish, hunt, bring materials).
+  quests: true

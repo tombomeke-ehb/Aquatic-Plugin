@@ -83,6 +83,8 @@ final class TypeSettings {
     /** Tidewatch outpost: a fort on the plaza. */
     boolean fort;
     int townHouses = 30;
+    /** A village town: a well instead of the market, with a smithy, fishing huts, a tavern and farm fields. */
+    boolean village;
     final WeightedList<Material> roadBlocks = new WeightedList<>();
     Material throneBase = Material.POLISHED_ANDESITE;
     Material throneAccent = Material.GOLD_BLOCK;
@@ -131,12 +133,13 @@ final class TypeSettings {
         t.maxHeight = Math.max(1, s.getInt("max-height", 12));
         t.rarity = s.getString("rarity", switch (t.type) {
             case PLAINS, FOREST -> "common";
-            case JUNGLE, SNOWY, DESERT -> "uncommon";
+            case JUNGLE, SNOWY, DESERT, VILLAGE -> "uncommon";
             case TROPICAL, TIDEWATCH -> "rare";
             case VOLCANIC, ANCIENT -> "epic";
             case CAPITAL -> "legendary";
         }).toLowerCase(java.util.Locale.ROOT);
-        t.shipwreckChance = Math.max(0, Math.min(1, s.getDouble("shipwreck-chance", t.type == IslandType.CAPITAL ? 0 : 0.6)));
+        t.shipwreckChance = Math.max(0, Math.min(1, s.getDouble("shipwreck-chance",
+                t.type == IslandType.CAPITAL || t.type == IslandType.VILLAGE ? 0 : 0.6)));
         t.lakeDensity = Math.max(0, s.getDouble("lakes", switch (t.type) {
             case PLAINS, JUNGLE -> 2.5;
             case FOREST -> 1.5;
@@ -152,6 +155,7 @@ final class TypeSettings {
         t.kelp = Math.max(0, s.getDouble("sea-life.kelp", warm ? 0.01 : frozen ? 0 : 0.05));
         t.town = s.getBoolean("town.enabled", t.type == IslandType.CAPITAL);
         t.townHouses = Math.max(0, s.getInt("town.houses", 30));
+        t.village = s.getBoolean("town.village", t.type == IslandType.VILLAGE);
         blocks(t.roadBlocks, s.getStringList("town.road"), Material.STONE_BRICKS, log, ctx + ".town.road");
         t.mountainScale = Math.max(0, s.getDouble("mountains", t.type == IslandType.CAPITAL ? 0.4 : 1.0));
         t.beachHeight = Math.max(0, s.getInt("beach-height", 2));

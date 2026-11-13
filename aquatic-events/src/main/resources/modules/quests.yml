@@ -1,0 +1,197 @@
+# =====================================================================================
+#  AquaticSMP - Village quests
+#  Neutral village islands (type VILLAGE, see islands.yml) have villagers around their well
+#  (set up in hub.yml). Right-click one to see their quests; click [Accept] or [Turn in].
+#  /quests shows what you are working on.
+#
+#  Quest types:
+#    collect  bring "amount" of the material "target" (taken from your inventory on turn-in)
+#    kill     kill "amount" mobs of the type "target" (an entity type, or ANY)
+#    fish     catch "amount" fish of the type "target" (COD, SALMON, PUFFERFISH, TROPICAL_FISH or ANY)
+#  Rewards: doubloons, xp (pirate XP) and items ("MATERIAL:amount" or "item:<custom id>:amount").
+#  A finished quest can be done again after "cooldown-hours".
+# =====================================================================================
+config-version: 1
+
+# How many quests a player can work on at once.
+max-active: 3
+# Quests can only be accepted and turned in while standing on a village island.
+require-village: true
+
+# The villagers who give quests ("giver" in a quest). Their NPCs are in hub.yml (actions: "cmd:quests talk <id>").
+givers:
+  elder:
+    name: "<gold><bold>Village Elder</bold></gold>"
+    greeting: "Welcome, traveller. Our village could use a capable pair of hands."
+  fisher:
+    name: "<aqua><bold>Old Fisher</bold></aqua>"
+    greeting: "The sea gives, the sea takes. Bring me a good catch and I'll make it worth your while."
+  smith:
+    name: "<#e67e22><bold>Village Smith</bold></#e67e22>"
+    greeting: "The forge is hungry. Ore and ingots, that's what I need."
+  hunter:
+    name: "<red><bold>Hunter</bold></red>"
+    greeting: "Things crawl out of the dark at night. Thin them out and I'll pay you for it."
+
+quests:
+  # ---- the Village Elder
+  bread_for_the_village:
+    giver: elder
+    name: "<gold>Bread for the Village"
+    description: "Bring 32 bread for the village stores."
+    type: collect
+    target: BREAD
+    amount: 32
+    cooldown-hours: 20
+    rewards: {doubloons: 300, xp: 50}
+  stone_for_the_walls:
+    giver: elder
+    name: "<gold>Stone for the Walls"
+    description: "Bring 192 cobblestone to repair the sea wall."
+    type: collect
+    target: COBBLESTONE
+    amount: 192
+    cooldown-hours: 20
+    rewards: {doubloons: 350, xp: 60}
+  drowned_at_the_docks:
+    giver: elder
+    name: "<gold>Drowned at the Docks"
+    description: "Kill 10 drowned that haunt the waters."
+    type: kill
+    target: DROWNED
+    amount: 10
+    cooldown-hours: 24
+    rewards: {doubloons: 500, xp: 110, items: ["item:rum:2"]}
+  # ---- the Old Fisher
+  fresh_catch:
+    giver: fisher
+    name: "<aqua>Fresh Catch"
+    description: "Catch 16 fish with a fishing rod."
+    type: fish
+    target: ANY
+    amount: 16
+    cooldown-hours: 20
+    rewards: {doubloons: 300, xp: 70}
+  salmon_run:
+    giver: fisher
+    name: "<aqua>Salmon Run"
+    description: "Catch 8 salmon."
+    type: fish
+    target: SALMON
+    amount: 8
+    cooldown-hours: 24
+    rewards: {doubloons: 400, xp: 90}
+  puffer_trouble:
+    giver: fisher
+    name: "<aqua>Puffer Trouble"
+    description: "Catch 3 pufferfish (carefully)."
+    type: fish
+    target: PUFFERFISH
+    amount: 3
+    cooldown-hours: 24
+    rewards: {doubloons: 450, xp: 100, items: ["item:healing_tonic:1"]}
+  ink_for_the_charts:
+    giver: fisher
+    name: "<aqua>Ink for the Charts"
+    description: "Bring 16 ink sacs for the cartographer's maps."
+    type: collect
+    target: INK_SAC
+    amount: 16
+    cooldown-hours: 24
+    rewards: {doubloons: 350, xp: 70}
+  # ---- the Village Smith
+  fuel_for_the_forge:
+    giver: smith
+    name: "<#e67e22>Fuel for the Forge"
+    description: "Bring 64 coal."
+    type: collect
+    target: COAL
+    amount: 64
+    cooldown-hours: 20
+    rewards: {doubloons: 300, xp: 60}
+  iron_order:
+    giver: smith
+    name: "<#e67e22>An Iron Order"
+    description: "Bring 32 iron ingots."
+    type: collect
+    target: IRON_INGOT
+    amount: 32
+    cooldown-hours: 24
+    rewards: {doubloons: 600, xp: 120}
+  gold_trim:
+    giver: smith
+    name: "<#e67e22>Gold Trim"
+    description: "Bring 16 gold ingots for a captain's sword."
+    type: collect
+    target: GOLD_INGOT
+    amount: 16
+    cooldown-hours: 24
+    rewards: {doubloons: 700, xp: 130}
+  diamond_commission:
+    giver: smith
+    name: "<#e67e22>The Diamond Commission"
+    description: "Bring 4 diamonds for a very special order."
+    type: collect
+    target: DIAMOND
+    amount: 4
+    cooldown-hours: 48
+    rewards: {doubloons: 1500, xp: 250, items: ["item:cannonball:4"]}
+  # ---- the Hunter
+  night_watch:
+    giver: hunter
+    name: "<red>Night Watch"
+    description: "Kill 20 zombies."
+    type: kill
+    target: ZOMBIE
+    amount: 20
+    cooldown-hours: 20
+    rewards: {doubloons: 400, xp: 90}
+  rattling_bones:
+    giver: hunter
+    name: "<red>Rattling Bones"
+    description: "Kill 15 skeletons."
+    type: kill
+    target: SKELETON
+    amount: 15
+    cooldown-hours: 20
+    rewards: {doubloons: 400, xp: 90}
+  creeping_danger:
+    giver: hunter
+    name: "<red>Creeping Danger"
+    description: "Kill 10 creepers before they reach the houses."
+    type: kill
+    target: CREEPER
+    amount: 10
+    cooldown-hours: 24
+    rewards: {doubloons: 450, xp: 100, items: ["item:smoke_bomb:2"]}
+  bluecoat_bounty:
+    giver: hunter
+    name: "<red>Bluecoat Bounty"
+    description: "Defeat 8 Tidewatch riflemen (pillagers) at a Tidewatch outpost."
+    type: kill
+    target: PILLAGER
+    amount: 8
+    cooldown-hours: 48
+    rewards: {doubloons: 1200, xp: 250}
+
+messages:
+  greeting-line: "<name> <dark_gray>» <gray><greeting>"
+  line-available: " <aqua>●</aqua> <name> <dark_gray>- <gray><description> <gold>(<reward>)</gold> <click:run_command:'/quests accept <id>'><hover:show_text:'<gray>Accept this quest'><green><bold>[Accept]</bold></green></hover></click>"
+  line-active: " <yellow>●</yellow> <name> <dark_gray>- <yellow><progress>/<amount></yellow> <gray><description> <click:run_command:'/quests abandon <id>'><hover:show_text:'<gray>Give up this quest'><dark_gray>[Abandon]</dark_gray></hover></click>"
+  line-ready: " <green>✔</green> <name> <dark_gray>- <green>done!</green> <gray>Hand it in to the <giver><gray>. <click:run_command:'/quests turnin <id>'><hover:show_text:'<gray>Hand in this quest'><green><bold>[Turn in]</bold></green></hover></click>"
+  line-cooldown: " <dark_gray>● <name> <dark_gray>- <gray>come back in <white><time></white>."
+  no-quests-here: " <gray>I have nothing for you right now."
+  list-header: "<aqua>Your quests <gray>(<count>/<max>):"
+  none-active: "<gray>You have no quests. Visit a <gold>village</gold> island and talk to the villagers by the well."
+  not-at-village: "<red>Quests are taken and handed in on a village island. Talk to the villagers by the well."
+  unknown-quest: "<red>There is no quest called <white><quest></white>."
+  already-active: "<red>You are already doing <quest><red>."
+  on-cooldown: "<red>You did <quest><red> recently. Come back in <white><time></white>."
+  too-many: "<red>You can only do <white><max></white> quests at once. Finish or abandon one first (/quests)."
+  not-active: "<red>You are not doing <quest><red>."
+  not-done: "<red><quest> <red>is not done yet <gray>(<progress>/<amount>)."
+  accepted: "<green>Quest accepted: <quest><green>! <gray><description>"
+  abandoned: "<gray>You gave up <quest><gray>."
+  progress: "<quest> <gray>» <yellow><progress>/<amount>"
+  ready: "<green>Quest done: <quest><green>! Return to the <giver> <green>to hand it in."
+  completed: "<green>Quest complete: <quest><green>! <gray>Reward: <gold><reward>"

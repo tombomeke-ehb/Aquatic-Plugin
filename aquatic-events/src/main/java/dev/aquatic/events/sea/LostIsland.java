@@ -42,9 +42,10 @@ public final class LostIsland extends SeaEvent {
         int radius = Math.max(10, cfg.getInt("radius", 35));
         keep = cfg.getBoolean("keep-island", false);
         IslandType type = IslandType.parse(cfg.getString("island-type", "random"));
-        if (type == null || type == IslandType.CAPITAL) {
+        if (type == null || type == IslandType.CAPITAL || type == IslandType.VILLAGE) {
             List<IslandType> options = new ArrayList<>(List.of(IslandType.values()));
             options.remove(IslandType.CAPITAL);
+            options.remove(IslandType.VILLAGE);
             type = options.get(ThreadLocalRandom.current().nextInt(options.size()));
         }
         Location spot = islands.findFreeOceanSpot(radius);

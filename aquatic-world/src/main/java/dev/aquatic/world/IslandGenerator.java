@@ -533,6 +533,9 @@ final class IslandGenerator extends AreaJob {
             int craterR = (int) Math.ceil(t.craterSize * landR);
             list.add(new Feature(0, 0, craterR + 4, () -> fillCrater(craterR, new Random(seed * 53 + 7))));
         }
+        if (t.plaza && t.village) {
+            list.add(new Feature(0, 0, 3, () -> buildWell(0, 0))); // the village well in the middle of the square
+        }
         if (t.plaza && t.town) {
             planTown(new Random(seed * 41 + 5), list); // before trees: roads and houses reserve their ground
         }
@@ -813,6 +816,7 @@ final class IslandGenerator extends AreaJob {
      */
     private void planTown(Random r, List<Feature> list) {
         int plazaR = (int) Math.round(Math.min(0.62, t.plazaSize) * landR);
+        int fancyR = t.village ? 0 : plazaR; // villages have a plain square with a well, no market
         // lamp posts around the plaza
         for (int i = 0; i < 8; i++) {
             double a = Math.PI / 4 * i + Math.PI / 8;
@@ -821,7 +825,7 @@ final class IslandGenerator extends AreaJob {
                 list.add(new Feature(lx, lz, 1, () -> lamp(lx, lz)));
             }
         }
-        if (plazaR >= 24) {
+        if (fancyR >= 24) {
             list.add(new Feature(0, 0, 12, this::buildPlazaRing));
             int[][] planters = {{9, 9}, {-9, 9}, {9, -9}, {-9, -9}};
             for (int[] p : planters) {
@@ -838,7 +842,7 @@ final class IslandGenerator extends AreaJob {
                 }
             }
         }
-        if (plazaR >= 31) {
+        if (fancyR >= 31) {
             if (kindAt(-27, 0) == PLAZA) {
                 list.add(new Feature(-27, 0, 6, () -> buildBountyBoard(-27, 0)));
             }
@@ -846,13 +850,13 @@ final class IslandGenerator extends AreaJob {
                 list.add(new Feature(27, 0, 6, () -> buildMonument(27, 0)));
             }
         }
-        if (plazaR >= 24 && kindAt(0, -18) == PLAZA) {
+        if (fancyR >= 24 && kindAt(0, -18) == PLAZA) {
             list.add(new Feature(0, -18, 6, () -> buildFountain(0, -18)));
         }
-        if (plazaR >= 24) {
+        if (fancyR >= 24) {
             planPlazaDecor(new Random(seed * 113 + 9), list, plazaR);
         }
-        if (plazaR >= 38 && kindAt(0, -31) == PLAZA) {
+        if (fancyR >= 38 && kindAt(0, -31) == PLAZA) {
             list.add(new Feature(0, -31, 8, () -> buildParkour(0, -31)));
         }
 
@@ -912,7 +916,7 @@ final class IslandGenerator extends AreaJob {
             }
         }
         java.util.Collections.shuffle(houseSpots, r);
-        int built = 0, taverns = 0, warehouses = 0;
+        int built = 0, taverns = 0, warehouses = 0, huts = 0, smiths = 0;
         for (int[] h : houseSpots) {
             if (built >= t.townHouses) {
                 break;
@@ -920,7 +924,12 @@ final class IslandGenerator extends AreaJob {
             // size: small cottages, normal houses and big buildings (some are a tavern or a warehouse)
             double roll = r.nextDouble();
             int along, across, building = 0;
-            if (roll < 0.3) {
+            if (t.village) {
+                // a village: first the smithy, then fishing huts and a tavern, and farm fields between the cottages
+                building = smiths == 0 ? 4 : huts < 2 ? 3 : taverns == 0 ? 1 : r.nextInt(3) == 0 ? 5 : 0;
+                along = building == 4 || building == 1 || building == 5 ? 3 : 2;
+                across = building == 5 ? 2 + r.nextInt(2) : along;
+            } else if (roll < 0.3) {
                 along = 2;
                 across = 2;
             } else if (roll < 0.75) {
@@ -933,6 +942,9 @@ final class IslandGenerator extends AreaJob {
             }
             int[] spot = place(h, along, across);
             if (!footprintFree(spot[0], spot[1], spot[2], spot[3])) {
+                if (t.village && building != 0) {
+                    continue; // try the special building on the next spot
+                }
                 along = 2;
                 across = 2;
                 building = 0;
@@ -960,9 +972,17 @@ final class IslandGenerator extends AreaJob {
                 taverns++;
             } else if (building == 2) {
                 warehouses++;
+            } else if (building == 3) {
+                huts++;
+            } else if (building == 4) {
+                smiths++;
             }
             int kindOfBuilding = building;
-            list.add(new Feature(hx, hz, 8, () -> buildHouse(hx, hz, w, l, doorDx, doorDz, kindOfBuilding, new Random(houseSeed))));
+            if (building == 5) {
+                list.add(new Feature(hx, hz, 8, () -> buildFarm(hx, hz, w, l, doorDx, doorDz, new Random(houseSeed))));
+            } else {
+                list.add(new Feature(hx, hz, 8, () -> buildHouse(hx, hz, w, l, doorDx, doorDz, kindOfBuilding, new Random(houseSeed))));
+            }
             built++;
         }
         // palms along the beach
@@ -1233,6 +1253,11 @@ final class IslandGenerator extends AreaJob {
             furnishWarehouse(x0, z0, base, w, l, doorDx, doorDz, used);
             return;
         }
+        if (building == 3 || building == 4) {
+            furnishWorkshop(x0, z0, base, w, l, building == 4 ? SMITHY_ITEMS : FISHER_ITEMS, used);
+            set(x0, base + 3, z0, Material.LANTERN);
+            return;
+        }
         // interior: a bed, a crafting table with a lantern, a barrel
         int[][] corners = {{w - 1, l - 1}, {w - 1, -(l - 1)}, {-(w - 1), l - 1}, {-(w - 1), -(l - 1)}};
         boolean bed = false, table = false, barrel = false;
@@ -1270,6 +1295,97 @@ final class IslandGenerator extends AreaJob {
         if (!used.contains(key(0, 0))) {
             set(x0, base + 1, z0, Material.RED_CARPET);
         }
+    }
+
+    private static final Material[] SMITHY_ITEMS = {Material.ANVIL, Material.BLAST_FURNACE, Material.SMITHING_TABLE,
+            Material.GRINDSTONE, Material.LAVA_CAULDRON, Material.CHEST, Material.BARREL};
+    private static final Material[] FISHER_ITEMS = {Material.BARREL, Material.SMOKER, Material.WATER_CAULDRON,
+            Material.BARREL, Material.COMPOSTER, Material.CHEST};
+
+    /** A village workshop (smithy or fishing hut): its work blocks stand along the walls. */
+    private void furnishWorkshop(int x0, int z0, int base, int w, int l, Material[] items, java.util.Set<Long> used) {
+        int i = 0;
+        for (int ox = -(w - 1); ox <= w - 1 && i < items.length; ox++) {
+            for (int oz = -(l - 1); oz <= l - 1 && i < items.length; oz++) {
+                boolean byWall = Math.abs(ox) == w - 1 || Math.abs(oz) == l - 1;
+                if (!byWall || ((ox + oz) & 1) != 0 || used.contains(key(ox, oz))) {
+                    continue;
+                }
+                set(x0 + ox, base + 1, z0 + oz, items[i++]);
+                used.add(key(ox, oz));
+            }
+        }
+    }
+
+    private static final Material[] CROPS = {Material.WHEAT, Material.CARROTS, Material.POTATOES, Material.BEETROOTS};
+
+    /** A village farm field: crops on farmland around a water channel, a fence with a gate to the road. */
+    private void buildFarm(int hx, int hz, int w, int l, int doorDx, int doorDz, Random r) {
+        int base = Integer.MIN_VALUE;
+        for (int ox = -w; ox <= w; ox++) {
+            for (int oz = -l; oz <= l; oz++) {
+                base = Math.max(base, top[index(hx + ox, hz + oz)]);
+            }
+        }
+        int x0 = cx + hx, z0 = cz + hz;
+        Material crop = CROPS[r.nextInt(CROPS.length)];
+        boolean channelAlongX = w >= l;
+        int gx = doorDx * w, gz = doorDz * l;
+        for (int ox = -w; ox <= w; ox++) {
+            for (int oz = -l; oz <= l; oz++) {
+                int x = x0 + ox, z = z0 + oz;
+                for (int y = top[index(hx + ox, hz + oz)]; y < base; y++) {
+                    set(x, y, z, Material.DIRT);
+                }
+                for (int y = base + 1; y <= base + 4; y++) {
+                    set(x, y, z, Material.AIR);
+                }
+                boolean edge = Math.abs(ox) == w || Math.abs(oz) == l;
+                if (edge) {
+                    set(x, base, z, Material.DIRT);
+                    if (ox == gx && oz == gz) {
+                        BlockData gate = Bukkit.createBlockData(Material.OAK_FENCE_GATE);
+                        if (gate instanceof Directional d) {
+                            d.setFacing(face(doorDx, doorDz));
+                        }
+                        setData(x, base + 1, z, gate);
+                        continue;
+                    }
+                    BlockData fence = Bukkit.createBlockData(Material.OAK_FENCE);
+                    if (fence instanceof org.bukkit.block.data.MultipleFacing f) {
+                        int[][] nb = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+                        for (int[] n : nb) {
+                            int nx = ox + n[0], nz = oz + n[1];
+                            if (Math.abs(nx) <= w && Math.abs(nz) <= l && (Math.abs(nx) == w || Math.abs(nz) == l)) {
+                                f.setFace(face(n[0], n[1]), true);
+                            }
+                        }
+                    }
+                    setData(x, base + 1, z, fence);
+                    if (Math.abs(ox) == w && Math.abs(oz) == l) {
+                        set(x, base + 2, z, Material.LANTERN);
+                    }
+                } else if ((channelAlongX ? oz : ox) == 0) {
+                    set(x, base, z, Material.WATER);
+                } else {
+                    BlockData soil = Bukkit.createBlockData(Material.FARMLAND);
+                    if (soil instanceof org.bukkit.block.data.type.Farmland f) {
+                        f.setMoisture(f.getMaximumMoisture());
+                    }
+                    setData(x, base, z, soil);
+                    BlockData plant = Bukkit.createBlockData(crop);
+                    if (plant instanceof org.bukkit.block.data.Ageable ag) {
+                        ag.setAge(r.nextInt(ag.getMaximumAge() + 1));
+                    }
+                    setData(x, base + 1, z, plant);
+                }
+            }
+        }
+        // a scarecrow-ish post with a hay bale and a pumpkin head in one corner
+        int sx = x0 + (w - 1), sz = z0 + (l - 1);
+        set(sx, base, sz, Material.DIRT);
+        set(sx, base + 1, sz, Material.HAY_BLOCK);
+        set(sx, base + 2, sz, Material.CARVED_PUMPKIN);
     }
 
     /** Tavern: a bar along the back wall with barrels, tables with chairs, lanterns, a sign by the door. */

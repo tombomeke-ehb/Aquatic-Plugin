@@ -228,7 +228,7 @@ Run `/island admin` for this list in-game. The short form without `admin` (e.g. 
 
 | Command | What it does |
 | --- | --- |
-| `/island admin spawn <type> <radius> [name]` | Generate an island at your position. Types: `plains`, `forest`, `tropical`, `jungle`, `volcanic`, `snowy`, `desert`, `ancient`, `capital` |
+| `/island admin spawn <type> <radius> [name]` | Generate an island at your position. Types: `plains`, `forest`, `tropical`, `jungle`, `volcanic`, `snowy`, `desert`, `ancient`, `tidewatch`, `village`, `capital` |
 | `/island admin spawnrandom <type\|random> <count> [minRadius] [maxRadius]` | Scatter many islands over the ocean area, auto-named and spaced apart |
 | `/island admin area <radius> [spacing]` | Set the ocean area for random islands and treasure, centred on you |
 | `/island admin register <name> <type> <radius>` | Turn terrain you already built into an island (no generation) |
@@ -399,7 +399,24 @@ TIDEWATCH islands (`/island admin spawn tidewatch <radius>`, or random spawns) h
 - **Claiming:** a crew can claim the island for 12 hours afterwards. Unclaimed forts get a new garrison after that.
 - **Settings:** everything is under `tidewatch` in `islands.yml`.
 
+## Villages and quests (`quests`, needs `economy`)
+
+VILLAGE islands (`/island admin spawn village <radius>`, or random spawns) are neutral: they are already lived in, so nobody can claim them, build there or fight there.
+- **The village:** cottages, a smithy, two fishing huts, a tavern and fenced farm fields along dirt roads to the coast, with a well in the middle and piers at the ends of the roads.
+- **The villagers:** four quest givers stand around the well: the Village Elder, the Old Fisher, the Village Smith and the Hunter. Right-click one to see their quests.
+- **Quests:** catch fish, hunt mobs or bring materials. Rewards are Doubloons, pirate XP and sometimes items. Each quest can be done again after a cooldown (usually 20–48 hours). You can work on 3 at once.
+- **Settings:** quests and givers are in `quests.yml`; the villagers' names, looks and spots are in `hub.yml` (`island-type: VILLAGE`).
+
+| Command | What it does | Permission |
+| --- | --- | --- |
+| `/quests` (alias `/quest`) | Your quests and how far along you are | Everyone |
+| `/quests accept <quest>` | Accept a quest (on a village; the [Accept] button does this) | Everyone |
+| `/quests turnin <quest>` | Hand in a finished quest (on a village) | Everyone |
+| `/quests abandon <quest>` | Give up a quest | Everyone |
+
 ## Harbor Market (`shop`, needs `economy`)
+
+**Only at the shopkeepers:** players open the market by talking to the shopkeeper villagers at spawn. Typing `/shop` anywhere else is refused. Ops (or anyone with `aquatic.shop.anywhere`) can still use `/shop`, and `command.players-can-open: true` in `shop.yml` turns the command back on for everyone.
 
 **Treasure maps** (Sailing category): a Treasure Map (common to rare), an Epic and a Legendary Treasure Map.
 - Each one leads to a treasure that already exists. Each treasure's map is sold to 2–3 different players, so it's a race.
@@ -407,7 +424,7 @@ TIDEWATCH islands (`/island admin spawn tidewatch <radius>`, or random spawns) h
 
 | Command | What it does | Permission |
 | --- | --- | --- |
-| `/shop [category]` | Open the market (alias `/market`). Left-click buy, shift-left buy a stack, right-click sell, shift-right sell all | Everyone |
+| `/shop [category]` | Open the market (alias `/market`). Left-click buy, shift-left buy a stack, right-click sell, shift-right sell all. Players: only right after talking to a shopkeeper | Admin: `aquatic.shop.anywhere` |
 | `/shop sell` | Sell everything like the item in your hand | Player: `aquatic.shop.sell` |
 | `/shop admin add <category> <buy> [sell] [amount]` | Add the item in your hand to a category | Admin: `aquatic.shop.admin` |
 | `/shop admin list <category>` | List a category's items with their numbers | Admin |

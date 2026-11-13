@@ -18,7 +18,7 @@
 
 # How often (seconds) changed data is written to plugins/AquaticSMP/data/islands/ (also saved on shutdown).
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 4
+config-version: 5
 
 autosave-seconds: 120
 
@@ -118,6 +118,7 @@ generation:
     VOLCANIC: 1
     ANCIENT: 1
     TIDEWATCH: 1.5
+    VILLAGE: 1.5
     CAPITAL: 0
 
 # What /island delete <island> restore and /island regen turn the area back into.
@@ -433,6 +434,48 @@ types:
         enabled: false
     fort:
       enabled: true
+  VILLAGE:
+    display-name: "<gradient:#f7c873:#c98b3b>Village</gradient>"
+    rarity: uncommon
+    # A neutral village: already lived in, so it can never be claimed (no building, no PvP). Cottages,
+    # a smithy, fishing huts, a tavern and farm fields along roads to the coast, with a well in the
+    # middle. Villagers around the well give quests (modules/quests.yml, NPCs in hub.yml).
+    status: NEUTRAL
+    town:
+      enabled: true
+      village: true
+      houses: 12
+      road: [DIRT_PATH:5, GRAVEL:1, COARSE_DIRT:1]
+    biome: plains
+    max-height: 7
+    beach-height: 2
+    roughness: 0.6
+    coast-variation: 0.15
+    mountains: 0.3
+    surface: [GRASS_BLOCK]
+    subsurface: [DIRT]
+    core: [STONE:5, ANDESITE:1]
+    beach: [SAND:3, GRAVEL:1]
+    underwater: [SAND:3, GRAVEL:1, CLAY:0.5]
+    ores:
+      chance: 0.01
+      blocks: [COAL_ORE:3, IRON_ORE:2, COPPER_ORE:2]
+    trees:
+      density: 0.3
+      types: [TREE:4, BIRCH:2, CHERRY:0.5]
+      palms-on-beach: false
+    decorations:
+      SHORT_GRASS: 0.2
+      POPPY: 0.012
+      DANDELION: 0.012
+      CORNFLOWER: 0.006
+    plaza:
+      enabled: true
+      size: 0.22
+      height: 3
+      blocks: [COBBLESTONE:3, MOSSY_COBBLESTONE:1, GRAVEL:1]
+      throne:
+        enabled: false
   CAPITAL:
     display-name: "<gold>Capital</gold>"
     # A harbour town around the plaza: paved roads to the coast with lamps, houses, piers, a lighthouse.
@@ -479,6 +522,10 @@ types:
 # "<first> <second>", picked at random per island type, never used twice.
 # Add or remove words freely. "fixed" names are used first (one each) if you want hand-picked ones.
 island-names:
+  VILLAGE:
+    fixed: []
+    first: [Willow, Saltmarsh, Brightwell, Mossford, Netmend, Haybrook, Lanternfield, Oakbridge, Ferryside, Kettle, Millbrook, Tarrow]
+    second: [Village, Hamlet, Haven, Landing, Green, Cove, Rest, Harbour, Crossing, End]
   TIDEWATCH:
     fixed: []
     first: [Warden's, Ironwall, Bastion, Bluecoat, Seawall, Crown's, Anchorwatch, Gallows, Stormgate, Lantern, Cannon, Saltgate]

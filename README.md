@@ -48,7 +48,8 @@ plugins/AquaticSMP/
 │   ├── events.yml      each server event, rewards, auto-scheduler
 │   ├── guide.yml       new-player intro, starter kit, tips and the /guide book
 │   ├── sidebar.yml     the stats sidebar lines
-│   └── shop.yml        Harbor Market categories, items and prices
+│   ├── shop.yml        Harbor Market categories, items and prices
+│   └── quests.yml      village quests, quest givers and rewards
 └── data/               saved game state (don't edit while the server runs)
 ```
 
@@ -124,12 +125,13 @@ New textures go in `resourcepack/build_pack.py`. Give the item `item-model: "aqu
 | `events` | `events.yml` | Treasure Hunt, Pirate War, Bounty Hunt, Lost Island, King's Challenge, Grand Raid, Naval Battle; optional auto-scheduler |
 | `levels` | `levels.yml` | Pirate levels 1–50: XP from fights, treasure and exploring; extra damage and hearts |
 | `combat` | `combat.yml` | Combat tag (no logging out or teleporting away mid-fight), respawn protection, new-player PvP protection |
-| `shop` | `shop.yml` | Harbor Market: buy and sell for Doubloons, editable in-game with `/shop admin` |
+| `shop` | `shop.yml` | Harbor Market: buy and sell for Doubloons at the shopkeepers at spawn, editable in-game with `/shop admin` |
 | `sidebar` | `sidebar.yml` | Stats sidebar: Doubloons, bounty, crew, island, fruit power, events (`/sidebar` to hide) |
 | `guide` | `guide.yml` | Welcome intro, starter kit with a treasure map, tips for new players, the `/guide` book, `/discord` |
 | `fruits` | (settings in `items.yml`) | Abyss fruit powers as a separate switch: turn it off and fruits stop working without touching the other items. Needs `items` |
 | `smithy` | `smithy.yml` | Upgrade weapons, armour, tools and bows +1..+5 for Doubloons and materials (`/smithy`, or the Blacksmith at spawn) |
-| `hub` | `hub.yml` | The spawn town: shopkeeper villagers in the market stalls, crew registrar, live bounty board, founders' monument, welcome sign, timed parkour tower |
+| `hub` | `hub.yml` | The spawn town: shopkeeper villagers in the market stalls, crew registrar, live bounty board, founders' monument, welcome sign, timed parkour tower; also the quest villagers on village islands |
+| `quests` | `quests.yml` | Village quests: villagers on neutral village islands give quests (fish, hunt, bring materials) for Doubloons, XP and items |
 
 Modules talk to each other only through shared services, so turning one off just disables the features that need it. For example, without `crews`, islands can still be generated and discovered but not claimed.
 

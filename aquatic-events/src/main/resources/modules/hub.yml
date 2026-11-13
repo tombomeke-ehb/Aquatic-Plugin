@@ -8,11 +8,13 @@
 #  there (/hubadmin reset <id> puts it back, /hubadmin list shows them all).
 #  NPCs and signs are not saved in the world: they appear while players are nearby.
 #
+#  NPCs with "island-type: VILLAGE" stand on every village island instead (offsets from the well).
+#
 #  NPC actions (run when a player right-clicks it):
 #    "cmd:<command>"  the player runs the command (without /)
 #    "msg:<text>"     a MiniMessage line (clickable with <click:run_command:'/...'>)
 # =====================================================================================
-config-version: 2
+config-version: 3
 
 npcs:
   blacksmith:
@@ -57,6 +59,31 @@ npcs:
     profession: mason
     offset: [17, -7]
     actions: ["cmd:shop masonry"]
+  # ---- the village folk: they stand around the well of every village and give quests (quests.yml)
+  village_elder:
+    island-type: VILLAGE
+    name: "<gold><bold>Village Elder</bold> <gray>(quests)"
+    profession: cleric
+    offset: [3, 3]
+    actions: ["cmd:quests talk elder"]
+  village_fisher:
+    island-type: VILLAGE
+    name: "<aqua><bold>Old Fisher</bold> <gray>(quests)"
+    profession: fisherman
+    offset: [-3, 3]
+    actions: ["cmd:quests talk fisher"]
+  village_smith:
+    island-type: VILLAGE
+    name: "<#e67e22><bold>Village Smith</bold> <gray>(quests)"
+    profession: weaponsmith
+    offset: [3, -3]
+    actions: ["cmd:quests talk smith"]
+  village_hunter:
+    island-type: VILLAGE
+    name: "<red><bold>Hunter</bold> <gray>(quests)"
+    profession: butcher
+    offset: [-3, -3]
+    actions: ["cmd:quests talk hunter"]
 
 # Floating signs. type: text (fixed lines), bounties (most wanted) or parkour (best times).
 # height = blocks above the ground at that spot.

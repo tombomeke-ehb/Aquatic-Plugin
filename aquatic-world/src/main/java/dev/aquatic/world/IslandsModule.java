@@ -1046,6 +1046,11 @@ public final class IslandsModule extends AquaticModule implements IslandService,
             int y = world.getHighestBlockYAt(is.x, is.z + 12, HeightMap.MOTION_BLOCKING) + 1;
             return new Location(world, is.x + 0.5, y, is.z + 12.5, 180f, 0f);
         }
+        if (is.type == IslandType.VILLAGE) {
+            // in front of the village well (not on its roof)
+            int y = world.getHighestBlockYAt(is.x, is.z + 5, HeightMap.MOTION_BLOCKING) + 1;
+            return new Location(world, is.x + 0.5, y, is.z + 5.5, 180f, 0f);
+        }
         int y = world.getHighestBlockYAt(is.x, is.z, HeightMap.MOTION_BLOCKING) + 1;
         return new Location(world, is.x + 0.5, y, is.z + 0.5);
     }
@@ -1090,6 +1095,12 @@ public final class IslandsModule extends AquaticModule implements IslandService,
             raise(file, o + "per-1000-land", 4, 10);
             raise(file, o + "ores", List.of("COAL_ORE:6", "IRON_ORE:5", "COPPER_ORE:4", "GOLD_ORE:1.5", "REDSTONE_ORE:1.5",
                     "LAPIS_ORE:1", "DIAMOND_ORE:0.25", "EMERALD_ORE:0.2"), defaults.getStringList(o + "ores"));
+        }
+        if (from < 5) {
+            // 2.12.0: neutral villages with quest givers
+            addMissing(file, defaults, "types.VILLAGE");
+            addMissing(file, defaults, "generation.island-type-weights.VILLAGE");
+            addMissing(file, defaults, "island-names.VILLAGE");
         }
     }
 

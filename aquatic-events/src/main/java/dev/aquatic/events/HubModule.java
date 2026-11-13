@@ -178,16 +178,26 @@ public final class HubModule extends AquaticModule implements Listener {
 
     /** Every capital gets the hub (normally there is one). */
     private List<Island> capitals() {
+        return islandsOf(IslandType.CAPITAL);
+    }
+
+    private List<Island> islandsOf(IslandType type) {
         IslandService islands = service(IslandService.class);
         List<Island> out = new ArrayList<>();
         if (islands != null) {
             for (Island is : islands.islands()) {
-                if (is.type() == IslandType.CAPITAL) {
+                if (is.type() == type) {
                     out.add(is);
                 }
             }
         }
         return out;
+    }
+
+    /** The island type a spot belongs to: "island-type" (default CAPITAL; VILLAGE for the village folk). */
+    private static IslandType typeOf(Spot s) {
+        IslandType t = IslandType.parse(s.cfg.getString("island-type", "CAPITAL"));
+        return t == null ? IslandType.CAPITAL : t;
     }
 
     /** First spot from sea level up where a player could stand (solid below, two free blocks above). */
@@ -234,7 +244,7 @@ public final class HubModule extends AquaticModule implements Listener {
         if (tickCount % 4 != 0) {
             return; // NPCs and texts every 2 seconds
         }
-        List<Island> capitals = capitals();
+        Map<IslandType, List<Island>> byType = new java.util.EnumMap<>(IslandType.class);
         java.util.Set<String> wanted = new java.util.HashSet<>();
         for (Spot s : spots) {
             Location set = placed.get(s.id);
@@ -244,7 +254,7 @@ public final class HubModule extends AquaticModule implements Listener {
                 }
                 continue;
             }
-            for (Island capital : capitals) {
+            for (Island capital : byType.computeIfAbsent(typeOf(s), this::islandsOf)) {
                 Location l = locate(s, capital);
                 if (l != null) {
                     keep(s, s.id + "@" + capital.id(), l, wanted);
@@ -399,6 +409,7 @@ public final class HubModule extends AquaticModule implements Listener {
             return;
         }
         clickCooldown.put(p.getUniqueId(), now);
+        ShopModule.npcPass(p.getUniqueId()); // talking to a shopkeeper (or the smithy) opens the market
         for (Spot s : spots) {
             if (!s.id.equals(id)) {
                 continue;
@@ -626,6 +637,12 @@ public final class HubModule extends AquaticModule implements Listener {
             raise(file, "npcs.blacksmith.actions", List.of("cmd:shop tools"), List.of("cmd:smithy"));
             raise(file, "npcs.blacksmith.name", "<gold><bold>Blacksmith</bold> <gray>(tools & weapons)",
                     "<gold><bold>Blacksmith</bold> <gray>(smithy & tools)");
+        }
+        if (from < 3) {
+            // 2.12.0: the village folk who give quests
+            for (String id : List.of("village_elder", "village_fisher", "village_smith", "village_hunter")) {
+                addMissing(file, defaults, "npcs." + id);
+            }
         }
     }
 }

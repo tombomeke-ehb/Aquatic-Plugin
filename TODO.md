@@ -32,7 +32,8 @@ This file is the roadmap. Tick off items as they're finished and add new ideas u
 - Combat tag, respawn protection and new-player protection.
 
 **Economy and progression**
-- Doubloons, bounties, treasure (5 tiers) with maps, and the Harbor Market (`/shop`, editable in-game).
+- Doubloons, bounties, treasure (5 tiers) with maps, and the Harbor Market (at the shopkeepers at spawn, editable in-game).
+- Neutral village islands with quest-giving villagers.
 
 **Events and community**
 - 7 server events and the Crown Tournament for the Conqueror of the Sea.
@@ -111,9 +112,15 @@ This file is the roadmap. Tick off items as they're finished and add new ideas u
 ## Economy and shop
 - [x] Harbor Market with in-game editing.
 - [x] Shopkeeper villagers in market stalls on the capital (done in 2.4.0).
+- [x] The shop only opens at the shopkeepers, not with `/shop` (done in 2.12.0).
 - [ ] Limited stock and daily deals.
 - [ ] Player shops and trading posts on neutral islands.
 - [ ] Sell island upgrades, buildings and ship blueprints in the market.
+
+## Villages and quests
+- [x] Neutral village islands (smithy, fishing huts, tavern, farms) with quest givers (done in 2.12.0).
+- [ ] Quest chains (one quest unlocks the next) and a reputation per village.
+- [ ] Delivery quests between villages and the capital.
 
 ## Progression
 - [x] Pirate levels, fruit mastery, and bounty power.

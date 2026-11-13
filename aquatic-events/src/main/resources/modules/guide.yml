@@ -6,7 +6,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 2
+config-version: 3
 
 intro:
   enabled: true
@@ -169,7 +169,7 @@ book:
       - "<dark_aqua><bold>Depth</bold>\n\n<black>Common: 1 block\nUncommon: 2 blocks\nRare: 2 blocks\nEpic: 3 blocks\nLegendary: 4 blocks\n\nFirst to open it gets the Doubloons and the loot! You may dig up treasure on any island."
       - "<dark_aqua><bold>Treasure maps</bold>\n\n<black>A map shows a red X near the treasure (not exactly on it).\n\n<bold>Right-click</bold> the map: it tells you if you are getting warmer or colder.\n\n<dark_gray>/treasure info</dark_gray> <black>gives rumours."
     market:
-      - "<dark_aqua><bold>7. Harbor Market</bold>\n\n<black>Buy tools, food, boats and pirate gear for Doubloons, and sell your loot.\n\n<dark_gray>/shop</dark_gray> <black>opens the market.\nLeft-click: buy\nRight-click: sell\nShift: a stack / all\n\n<dark_gray>/shop sell</dark_gray> <black>sells what you hold."
+      - "<dark_aqua><bold>7. Harbor Market</bold>\n\n<black>Buy tools, food, boats and pirate gear for Doubloons, and sell your loot.\n\n<black>Talk to the shopkeepers in the stalls at spawn to open the market.\nLeft-click: buy\nRight-click: sell\nShift: a stack / all\n\n<black>Villages have folk with quests too!"
     bounties:
       - "<dark_aqua><bold>4. Bounties</bold>\n\n<black>Defeating pirates raises your bounty. Big bounties earn titles, from Rookie to Dread Tyrant.\n\nKill a wanted pirate to claim their bounty!\n\n<dark_gray>/bounty info\n/bounty top\n/bounty set <player> <amount>\n/wanted"
     fruits:

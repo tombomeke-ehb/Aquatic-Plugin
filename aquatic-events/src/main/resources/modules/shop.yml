@@ -16,7 +16,12 @@
 title: "<dark_aqua><bold>Harbor Market"
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 4
+config-version: 5
+
+command:
+  # false: players can't open the shop with /shop (or /shop sell) anywhere; they talk to the shopkeeper
+  # villagers at spawn instead. Players with the permission aquatic.shop.anywhere (ops) always can.
+  players-can-open: false
 
 categories:
   tools:
@@ -212,6 +217,7 @@ treasure-map:
     - "<white>Maps left: <yellow><left>"
     - "<dark_gray>Only for sale while such treasures exist."
 messages:
+  use-shopkeepers: "<red>The market is at spawn: talk to the <yellow>shopkeepers</yellow> in the stalls (/spawn)."
   no-treasure-maps: "<red>No maps of this kind left. <gray>Every such treasure is already charted (or there are none). Try again later."
   menu-items: "<gray><count> item(s)"
   menu-open: "<yellow>Click to open"

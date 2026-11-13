@@ -1,5 +1,28 @@
 # Changelog
 
+## 2.12.0 (2026-11-13)
+
+### Added
+- **Village islands:** a new neutral island type that nobody can claim, build on or fight on.
+  - Cottages, a smithy (anvil, blast furnace, smithing table, grindstone), two fishing huts, a tavern and fenced farm fields with crops along dirt roads to the coast.
+  - A well in the middle of the village square, and piers at the ends of the roads.
+  - Villages show up in random island spawns (about as often as Tidewatch outposts), or make one with `/island admin spawn village <radius>`.
+- **Quests:** four villagers stand around every village well: the Village Elder, the Old Fisher, the Village Smith and the Hunter.
+  - Right-click one to see their quests, then click [Accept] and later [Turn in].
+  - Catch fish, hunt mobs or bring materials, for Doubloons, pirate XP and sometimes items.
+  - Quests repeat after a cooldown. You can do 3 at once. `/quests` shows your progress.
+  - Everything is set in the new `quests.yml`.
+
+### Changed
+- **The shop is only at the shopkeepers:** `/shop` no longer opens the market for players. They talk to the shopkeeper villagers at spawn instead (the Blacksmith's tools button still works).
+  - Ops can still use `/shop`. Turn the command back on for everyone with `command.players-can-open: true` in `shop.yml`.
+- The guide book's market page now tells players to visit the shopkeepers.
+
+### Your server
+- Configs upgrade automatically, with backups kept (`islands.yml`, `shop.yml`, `hub.yml`, `guide.yml`).
+- Existing islands are not changed. New villages appear with new random island spawns, or spawn some with `/island admin spawnrandom village <count>`.
+- Update the resource pack link and SHA-1 in `server.properties` (see the release notes).
+
 ## 2.11.0 (2026-11-13)
 
 ### Added

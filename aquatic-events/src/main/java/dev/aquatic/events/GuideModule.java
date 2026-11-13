@@ -417,5 +417,14 @@ public final class GuideModule extends AquaticModule implements Listener {
             // 2.5.0: no starter treasure map (everyone hunting the same few treasures at spawn)
             raise(file, "starter-kit.treasure-map", true, false);
         }
+        if (from < 3) {
+            // 2.12.0: the market is opened at the shopkeepers, not with /shop
+            List<String> pages = new java.util.ArrayList<>(file.getStringList("book.chapters.market"));
+            List<String> fresh = defaults.getStringList("book.chapters.market");
+            if (!pages.isEmpty() && !fresh.isEmpty() && pages.get(0).contains("opens the market.")) {
+                pages.set(0, fresh.get(0));
+                file.set("book.chapters.market", pages);
+            }
+        }
     }
 }
