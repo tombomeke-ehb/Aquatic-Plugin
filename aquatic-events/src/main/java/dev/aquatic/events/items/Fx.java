@@ -82,251 +82,354 @@ final class Fx {
                 new Particle.DustTransition(light, color, size));
     }
 
-    /** A flat ring of dust at "radius" around the centre. */
-    void ring(Location center, double radius, Color color, float size) {
-        int points = Math.max(8, count((int) Math.min(90, radius * 10)));
+    /** A flat ring of dust at "radius" around the centre (only without the resource pack). */
+    private void dustRing(Location center, double radius, Color color, float size) {
+        int points = Math.max(8, count((int) Math.min(40, radius * 5)));
         for (int i = 0; i < points; i++) {
             double a = 2 * Math.PI * i / points;
             glow(center.clone().add(Math.cos(a) * radius, 0, Math.sin(a) * radius), color, size, 1, 0);
         }
     }
 
-    // ------------------------------------------------------------------ animated 3D effects (resource pack)
+    /** Particles thrown outwards from a point: every one flies its own way at "speed". */
+    void spray(Location at, Particle particle, int amount, double speed) {
+        World w = at.getWorld();
+        int n = count(amount);
+        if (w == null || n <= 0 || particle.getDataType() != Void.class) {
+            return;
+        }
+        for (int i = 0; i < n; i++) {
+            double u = Math.random() * 2 - 1, t = Math.random() * Math.PI * 2, r = Math.sqrt(1 - u * u);
+            w.spawnParticle(particle, at, 0, r * Math.cos(t), u * 0.6 + 0.15, r * Math.sin(t), speed);
+        }
+    }
 
-    /** Display-entity effects need the resource pack (they use its effect models). */
+    // ------------------------------------------------------------------ sprite effects (resource pack)
+    // Hand-drawn frames (resourcepack/pixelart.py): slash 6, burst 5, ring 6, spark 4, beam 3, bolt 3.
+    // Every frame is the model "aquatic:vfx_<name>_<n>": a layer tinted in the effect's colour plus a white core.
+
+    /** Sprite effects need the resource pack. */
     private boolean displays() {
         return quality() > 0 && module.config().getBoolean("resource-pack.enabled", false)
                 && module.config().getBoolean("effects.animated", true);
     }
 
-    /** A glowing effect model (vfx_slash, vfx_ring, vfx_flash) tinted in the given colour. */
-    private org.bukkit.entity.ItemDisplay vfx(Location at, String model, Color color) {
+    private static org.bukkit.inventory.ItemStack frame(String sprite, int n, Color color) {
         org.bukkit.inventory.ItemStack stack = new org.bukkit.inventory.ItemStack(org.bukkit.Material.PAPER);
         org.bukkit.inventory.meta.ItemMeta meta = stack.getItemMeta();
-        meta.setItemModel(org.bukkit.NamespacedKey.fromString("aquatic:" + model));
+        meta.setItemModel(org.bukkit.NamespacedKey.fromString("aquatic:vfx_" + sprite + "_" + n));
         org.bukkit.inventory.meta.components.CustomModelDataComponent cmd = meta.getCustomModelDataComponent();
         cmd.setColors(java.util.List.of(color));
         meta.setCustomModelDataComponent(cmd);
         stack.setItemMeta(meta);
-        return at.getWorld().spawn(at, org.bukkit.entity.ItemDisplay.class, d -> {
-            d.setItemStack(stack);
-            d.setPersistent(false);
-            d.setBrightness(new org.bukkit.entity.Display.Brightness(15, 15));
-            d.setShadowRadius(0);
-        });
+        return stack;
     }
 
-    /** Sets the start pose, then moves smoothly to the end pose over "ticks" and removes it after "life". */
-    private void animate(org.bukkit.entity.ItemDisplay d, org.bukkit.util.Transformation start,
-                         org.bukkit.util.Transformation end, int ticks, int life) {
-        d.setTransformation(start);
-        module.runLater(() -> {
-            if (d.isValid()) {
-                d.setInterpolationDelay(0);
-                d.setInterpolationDuration(ticks);
-                d.setTransformation(end);
-            }
-        }, 2L);
+    /**
+     * Shows a sprite and plays its frames (order = the frame numbers to show, one every "tpf" ticks), then removes
+     * it. The display starts in pose "start" and glides to "end" while it plays (end may be null).
+     */
+    private org.bukkit.entity.ItemDisplay play(Location at, String sprite, int[] order, int tpf, Color color,
+                                               org.bukkit.entity.Display.Billboard billboard,
+                                               org.bukkit.util.Transformation start, org.bukkit.util.Transformation end) {
+        Location spot = at.clone();
+        spot.setYaw(0);
+        spot.setPitch(0);
+        org.bukkit.entity.ItemDisplay d = spot.getWorld().spawn(spot, org.bukkit.entity.ItemDisplay.class, e -> {
+            e.setItemStack(frame(sprite, order[0], color));
+            e.setPersistent(false);
+            e.setBrightness(new org.bukkit.entity.Display.Brightness(15, 15));
+            e.setShadowRadius(0);
+            e.setBillboard(billboard);
+            e.setTransformation(start);
+        });
+        int life = order.length * tpf;
+        for (int i = 1; i < order.length; i++) {
+            int n = order[i];
+            module.runLater(() -> {
+                if (d.isValid()) {
+                    d.setItemStack(frame(sprite, n, color));
+                }
+            }, (long) i * tpf);
+        }
+        if (end != null) {
+            module.runLater(() -> {
+                if (d.isValid()) {
+                    d.setInterpolationDelay(0);
+                    d.setInterpolationDuration(Math.max(1, life - 2));
+                    d.setTransformation(end);
+                }
+            }, 2L);
+        }
         module.runLater(d::remove, life);
+        return d;
+    }
+
+    private static int[] upTo(int frames) {
+        int[] order = new int[frames];
+        for (int i = 0; i < frames; i++) {
+            order[i] = i;
+        }
+        return order;
     }
 
     private static org.bukkit.util.Transformation pose(org.joml.Vector3f move, org.joml.Quaternionf rot, float scale) {
-        return new org.bukkit.util.Transformation(move, rot, new org.joml.Vector3f(scale, scale, scale), new org.joml.Quaternionf());
+        return pose(move, rot, scale, scale, scale);
     }
 
-    /** A bright star-burst that pops and vanishes (impacts). */
+    private static org.bukkit.util.Transformation pose(org.joml.Vector3f move, org.joml.Quaternionf rot, float sx, float sy, float sz) {
+        return new org.bukkit.util.Transformation(move, rot, new org.joml.Vector3f(sx, sy, sz), new org.joml.Quaternionf());
+    }
+
+    private static final org.bukkit.entity.Display.Billboard FIXED = org.bukkit.entity.Display.Billboard.FIXED;
+    private static final org.bukkit.entity.Display.Billboard FACING = org.bukkit.entity.Display.Billboard.CENTER;
+
+    /** A twinkle: a four-pointed star that opens and closes (hits, pick-ups, casts). */
     void flash(Location at, Color color, float size) {
         if (!displays() || at.getWorld() == null) {
             return;
         }
-        org.bukkit.entity.ItemDisplay d = vfx(at, "vfx_flash", color);
-        d.setBillboard(org.bukkit.entity.Display.Billboard.CENTER);
-        animate(d, pose(new org.joml.Vector3f(), new org.joml.Quaternionf(), 0.3f),
-                pose(new org.joml.Vector3f(), new org.joml.Quaternionf().rotateZ(0.6f), size), 3, 6);
+        float s = Math.max(0.5f, size * 1.5f);
+        play(at, "spark", upTo(4), 2, color, FACING, pose(new org.joml.Vector3f(), new org.joml.Quaternionf(), s * 0.7f),
+                pose(new org.joml.Vector3f(), new org.joml.Quaternionf(), s));
     }
 
-    /** A glowing shockwave ring that sweeps over the ground. */
-    void shockwave(Location center, double radius, int ticks, Color color) {
-        if (!displays() || center.getWorld() == null) {
+    /** An impact star: a white pop with spikes shooting out. */
+    void impact(Location at, Color color, float size) {
+        if (!displays() || at.getWorld() == null) {
             return;
         }
-        org.bukkit.entity.ItemDisplay d = vfx(center, "vfx_ring", color);
-        org.joml.Quaternionf flat = new org.joml.Quaternionf().rotateX((float) Math.toRadians(90));
-        animate(d, pose(new org.joml.Vector3f(), flat, 0.4f),
-                pose(new org.joml.Vector3f(), new org.joml.Quaternionf(flat).rotateZ(1.2f), (float) (radius * 2.2)),
-                Math.max(3, ticks), Math.max(3, ticks) + 3);
+        play(at, "burst", upTo(5), 2, color, FACING, pose(new org.joml.Vector3f(), new org.joml.Quaternionf(), size * 0.8f),
+                pose(new org.joml.Vector3f(), new org.joml.Quaternionf(), size * 1.25f));
     }
 
-    /** A glowing crescent that sweeps forward from the eyes (slashes). */
+    /** A shockwave ring that grows over the ground to "radius" in about "ticks" ticks. */
+    void shockwave(Location center, double radius, int ticks, Color color) {
+        if (center.getWorld() == null || quality() <= 0) {
+            return;
+        }
+        if (!displays()) {
+            dustRing(center, radius, color, 1.4f);
+            return;
+        }
+        org.joml.Quaternionf flat = new org.joml.Quaternionf().rotateX((float) Math.toRadians(90));
+        float s = (float) (radius * 2.1);
+        int tpf = Math.max(1, Math.round(Math.max(6, ticks) / 6f));
+        play(center.clone().add(0, 0.06, 0), "ring", upTo(6), tpf, color, FIXED,
+                pose(new org.joml.Vector3f(), flat, s * 0.8f), pose(new org.joml.Vector3f(), flat, s));
+    }
+
+    /** A ring that closes in on the centre (pulls, implosions). */
+    private void implode(Location center, double radius, int ticks, Color color) {
+        if (!displays()) {
+            dustRing(center, radius * 0.5, color, 1.4f);
+            return;
+        }
+        org.joml.Quaternionf flat = new org.joml.Quaternionf().rotateX((float) Math.toRadians(90));
+        float s = (float) (radius * 2.1);
+        int tpf = Math.max(1, Math.round(Math.max(6, ticks) / 6f));
+        play(center.clone().add(0, 0.06, 0), "ring", new int[]{5, 4, 3, 2, 1, 0}, tpf, color, FIXED,
+                pose(new org.joml.Vector3f(), flat, s), pose(new org.joml.Vector3f(), flat, s * 0.8f));
+    }
+
+    /** A sword sweep in front of the eyes: a diagonal arc that shoots across and breaks up. */
     void slash(Location eye, Vector dir, double reach, Color color) {
         if (!displays() || eye.getWorld() == null) {
             return;
         }
         Vector f = dir.clone().normalize();
-        Location start = eye.clone().add(f.clone().multiply(1.2)).add(0, -0.2, 0);
-        start.setYaw(0);
-        start.setPitch(0);
-        org.bukkit.entity.ItemDisplay d = vfx(start, "vfx_slash", color);
+        Location at = eye.clone().add(f.clone().multiply(1.7)).add(0, -0.25, 0);
+        boolean left = java.util.concurrent.ThreadLocalRandom.current().nextBoolean();
         org.joml.Quaternionf face = new org.joml.Quaternionf().rotateY((float) Math.toRadians(-eye.getYaw()))
-                .rotateX((float) Math.toRadians(eye.getPitch())).rotateZ(-0.35f);
-        Vector move = f.clone().multiply(Math.max(1, reach * 0.7));
-        animate(d, pose(new org.joml.Vector3f(), face, 0.6f),
-                pose(new org.joml.Vector3f((float) move.getX(), (float) move.getY(), (float) move.getZ()),
-                        new org.joml.Quaternionf(face).rotateZ(0.7f), 3.2f), 5, 7);
+                .rotateX((float) Math.toRadians(eye.getPitch())).rotateZ(left ? 0.75f : -0.75f);
+        float s = (float) Math.max(1.8, Math.min(4.2, reach * 1.05));
+        Vector move = f.clone().multiply(0.5);
+        play(at, "slash", upTo(6), 1, color, FIXED, pose(new org.joml.Vector3f(), face, s * 0.85f),
+                pose(new org.joml.Vector3f((float) move.getX(), (float) move.getY(), (float) move.getZ()), face, s));
     }
 
-    /** A shockwave: a ring growing from 0 to maxRadius over "ticks" ticks (or shrinking when inward). */
-    void wave(Location center, double maxRadius, int ticks, Color color, Particle extra, boolean inward) {
-        if (quality() <= 0) {
-            return;
-        }
-        int total = Math.max(1, ticks);
-        if (!inward) {
-            shockwave(center, maxRadius, total, color);
-            org.bukkit.block.Block ground = center.clone().add(0, -0.6, 0).getBlock();
-            if (ground.getType().isSolid() && center.getWorld() != null && count(18) > 0) {
-                center.getWorld().spawnParticle(Particle.BLOCK, center, count(18), maxRadius * 0.35, 0.1, maxRadius * 0.35, 0.15,
-                        ground.getBlockData()); // debris kicked up from the ground
-            }
-        }
-        for (int i = 1; i <= total; i++) {
-            int step = i;
-            module.runLater(() -> {
-                double f = step / (double) total;
-                double r = maxRadius * (inward ? 1 - f + 0.1 : f);
-                ring(center, r, color, 1.6f);
-                if (extra != null && step % 2 == 0) {
-                    int pts = Math.max(6, count((int) (r * 3)));
-                    for (int p = 0; p < pts; p++) {
-                        double a = 2 * Math.PI * p / pts;
-                        burst(center.clone().add(Math.cos(a) * r, 0.2, Math.sin(a) * r), extra, 1, 0.05, 0.01);
-                    }
-                }
-            }, step);
-        }
-    }
-
-    /** A helix around an entity for "ticks" ticks (auras, transformations). */
-    void spiral(Entity entity, int ticks, Color color) {
-        if (quality() <= 0) {
-            return;
-        }
-        for (int i = 0; i < ticks; i++) {
-            int step = i;
-            module.runLater(() -> {
-                if (!entity.isValid()) {
-                    return;
-                }
-                Location base = entity.getLocation();
-                for (int s = 0; s < 2; s++) {
-                    double a = step * 0.45 + s * Math.PI;
-                    double y = (step % 20) / 20.0 * entity.getHeight();
-                    dust(base.clone().add(Math.cos(a) * 0.8, y, Math.sin(a) * 0.8), color, 1.3f, 1, 0);
-                }
-            }, step);
-        }
-    }
-
-    /** A straight beam of dust between two points. */
-    void beam(Location from, Location to, Color color, float size, double spacing) {
-        Vector v = to.toVector().subtract(from.toVector());
-        double len = v.length();
-        if (len < 0.1 || len > 96) {
-            return;
-        }
-        Vector unit = v.clone().normalize();
-        v.normalize().multiply(spacing);
-        Location p = from.clone();
-        boolean rich = size >= 1.5f && quality() >= 0.75;
-        Vector side = unit.clone().crossProduct(new Vector(0, 1, 0));
-        if (side.lengthSquared() < 1e-4) {
-            side = new Vector(1, 0, 0);
-        }
-        side.normalize();
-        Vector up = side.clone().crossProduct(unit).normalize();
-        int i = 0;
-        for (double d = 0; d < len; d += spacing, i++) {
-            glow(p, color, size, 1, 0.02);
-            if (rich) { // two strands spiralling around a glowing core
-                double a = d * 3.2;
-                for (int strand = 0; strand < 2; strand++) {
-                    double aa = a + strand * Math.PI;
-                    Vector off = side.clone().multiply(Math.cos(aa) * 0.28).add(up.clone().multiply(Math.sin(aa) * 0.28));
-                    dust(p.clone().add(off), color, size * 0.55f, 1, 0);
-                }
-                if (i % 4 == 0) {
-                    burst(p, Particle.END_ROD, 1, 0.02, 0);
-                }
-            }
-            p.add(v);
-        }
-    }
-
-    /** A sword crescent in front of "eye", facing "dir". */
+    /** A wide flat sweep at chest height that bulges forward (ability swings, cleaves). */
     void crescent(Location eye, Vector dir, double radius, Color color) {
+        if (eye.getWorld() == null || quality() <= 0) {
+            return;
+        }
         Vector forward = dir.clone().setY(0);
         if (forward.lengthSquared() < 1e-4) {
             forward = new Vector(1, 0, 0);
         }
         forward.normalize();
-        Vector side = new Vector(-forward.getZ(), 0, forward.getX());
-        int points = Math.max(10, count(26));
-        for (int i = 0; i <= points; i++) {
-            double a = -Math.PI / 2.4 + (Math.PI / 1.2) * i / points;
-            Vector off = forward.clone().multiply(Math.cos(a) * radius).add(side.clone().multiply(Math.sin(a) * radius));
-            dust(eye.clone().add(off).add(0, -0.3 + 0.25 * Math.sin(a), 0), color, 1.4f, 1, 0);
+        if (!displays()) {
+            Vector side = new Vector(-forward.getZ(), 0, forward.getX());
+            int points = Math.max(8, count(16));
+            for (int i = 0; i <= points; i++) {
+                double a = -Math.PI / 2.4 + (Math.PI / 1.2) * i / points;
+                Vector off = forward.clone().multiply(Math.cos(a) * radius).add(side.clone().multiply(Math.sin(a) * radius));
+                dust(eye.clone().add(off).add(0, -0.3, 0), color, 1.4f, 1, 0);
+            }
+            return;
+        }
+        Location at = eye.clone().add(forward.clone().multiply(radius * 0.45)).add(0, -0.45, 0);
+        org.joml.Quaternionf lie = new org.joml.Quaternionf().rotateY((float) Math.toRadians(-eye.getYaw()))
+                .rotateX((float) Math.toRadians(78));
+        float s = (float) (radius * 1.9);
+        Vector move = forward.clone().multiply(radius * 0.35);
+        play(at, "slash", upTo(6), 1, color, FIXED, pose(new org.joml.Vector3f(), lie, s * 0.8f),
+                pose(new org.joml.Vector3f((float) move.getX(), 0, (float) move.getZ()), lie, s));
+    }
+
+    /** A shockwave over the ground with debris; "extra" particles are thrown along with it. */
+    void wave(Location center, double maxRadius, int ticks, Color color, Particle extra, boolean inward) {
+        if (quality() <= 0 || center.getWorld() == null) {
+            return;
+        }
+        int total = Math.max(1, ticks);
+        if (inward) {
+            implode(center, maxRadius, total, color);
+        } else {
+            shockwave(center, maxRadius, total, color);
+            org.bukkit.block.Block ground = center.clone().add(0, -0.6, 0).getBlock();
+            if (ground.getType().isSolid() && count(14) > 0) {
+                center.getWorld().spawnParticle(Particle.BLOCK, center, count(14), maxRadius * 0.35, 0.1, maxRadius * 0.35, 0.15,
+                        ground.getBlockData()); // debris kicked up from the ground
+            }
+        }
+        if (extra == null || extra.getDataType() != Void.class) {
+            return;
+        }
+        int pts = Math.max(6, count((int) Math.min(28, maxRadius * 5)));
+        double speed = Math.min(0.45, maxRadius / Math.max(4.0, total) * 0.5);
+        for (int p = 0; p < pts; p++) {
+            double a = 2 * Math.PI * p / pts;
+            double r = inward ? maxRadius : 0.4;
+            double sign = inward ? -1 : 1;
+            center.getWorld().spawnParticle(extra, center.clone().add(Math.cos(a) * r, 0.15, Math.sin(a) * r), 0,
+                    Math.cos(a) * sign, 0.05, Math.sin(a) * sign, speed);
         }
     }
 
-    /** Lightning-style jagged bolt from above down to the target point. */
-    void bolt(Location target, Color color) {
-        Location p = target.clone().add(0, 12, 0);
-        java.util.concurrent.ThreadLocalRandom r = java.util.concurrent.ThreadLocalRandom.current();
-        for (int i = 0; i < 12; i++) {
-            Location next = p.clone().add(r.nextDouble(-0.8, 0.8), -1, r.nextDouble(-0.8, 0.8));
-            if (i == 11) {
-                next = target.clone();
-            }
-            beam(p, next, color, 1.2f, 0.25);
-            if ((i == 4 || i == 7) && quality() >= 0.75) { // a short side branch
-                Location b = p.clone();
-                for (int k = 0; k < 3; k++) {
-                    Location nb = b.clone().add(r.nextDouble(-1.2, 1.2), -0.8, r.nextDouble(-1.2, 1.2));
-                    beam(b, nb, color, 0.9f, 0.3);
-                    b = nb;
+    /** Coloured swirls rising around an entity for "ticks" ticks (auras, transformations). */
+    void spiral(Entity entity, int ticks, Color color) {
+        if (quality() <= 0) {
+            return;
+        }
+        for (int i = 0; i < ticks; i += 2) {
+            int step = i;
+            module.runLater(() -> {
+                if (!entity.isValid() || entity.getWorld() == null) {
+                    return;
                 }
-            }
-            p = next;
+                Location base = entity.getLocation();
+                double a = step * 0.5;
+                double y = (step % 24) / 24.0 * entity.getHeight();
+                for (int s = 0; s < 2; s++) {
+                    Location at = base.clone().add(Math.cos(a + s * Math.PI) * 0.75, y, Math.sin(a + s * Math.PI) * 0.75);
+                    entity.getWorld().spawnParticle(Particle.ENTITY_EFFECT, at, 1, 0, 0, 0, 0, color);
+                }
+            }, step);
         }
-        flash(target.clone().add(0, 0.5, 0), color, 2.6f);
-        burst(target, Particle.ELECTRIC_SPARK, 25, 0.6, 0.2);
+        module.runLater(() -> {
+            if (entity.isValid()) {
+                flash(entity.getLocation().add(0, entity.getHeight() + 0.3, 0), color, 0.8f);
+            }
+        }, ticks);
     }
 
-    // ------------------------------------------------------------------ more effects
+    /** Two crossed sprites stretched from one point to another (so the beam shows from every side). */
+    private void stretch(Location from, Location to, String sprite, int[] order, int tpf, Color color, float thickness) {
+        Vector v = to.toVector().subtract(from.toVector());
+        float len = (float) v.length();
+        if (len < 0.05f) {
+            return;
+        }
+        Location mid = from.clone().add(v.clone().multiply(0.5));
+        org.joml.Quaternionf along = new org.joml.Quaternionf().rotationTo(1, 0, 0, (float) v.getX(), (float) v.getY(), (float) v.getZ());
+        play(mid, sprite, order, tpf, color, FIXED, pose(new org.joml.Vector3f(), along, len, thickness, 1f), null);
+        org.joml.Quaternionf crossed = new org.joml.Quaternionf(along).rotateX((float) Math.toRadians(90));
+        play(mid, sprite, order, tpf, color, FIXED, pose(new org.joml.Vector3f(), crossed, len, thickness, 1f), null);
+    }
 
-    /** A column of light rising from the ground: spiralling dust, sparks and a flash at the top. */
+    /** A beam of energy between two points. */
+    void beam(Location from, Location to, Color color, float size, double spacing) {
+        if (from.getWorld() == null || quality() <= 0) {
+            return;
+        }
+        Vector v = to.toVector().subtract(from.toVector());
+        double len = v.length();
+        if (len < 0.1 || len > 96) {
+            return;
+        }
+        if (displays()) {
+            stretch(from, to, "beam", new int[]{0, 1, 2, 1}, 2, color, Math.max(0.5f, size * 0.7f));
+            return;
+        }
+        v.normalize().multiply(Math.max(spacing, 0.4));
+        Location p = from.clone();
+        for (double d = 0; d < len; d += Math.max(spacing, 0.4)) {
+            glow(p, color, size, 1, 0.02);
+            p.add(v);
+        }
+    }
+
+    /** A jagged arc of lightning from one point to another (chain lightning, shocks). */
+    void zap(Location from, Location to, Color color) {
+        if (from.getWorld() == null || quality() <= 0) {
+            return;
+        }
+        if (displays()) {
+            stretch(from, to, "bolt", new int[]{0, 1, 2, 1}, 2, color, 1.8f);
+        } else {
+            beam(from, to, color, 1.2f, 0.4);
+        }
+    }
+
+    /** A lightning bolt from the sky down to the target. */
+    void bolt(Location target, Color color) {
+        if (target.getWorld() == null || quality() <= 0) {
+            return;
+        }
+        Location top = target.clone().add(0, 13, 0);
+        if (displays()) {
+            stretch(top, target, "bolt", new int[]{0, 1, 2, 0}, 2, color, 4.5f);
+            impact(target.clone().add(0, 0.6, 0), color, 2.6f);
+        } else {
+            beam(top, target, color, 1.4f, 0.4);
+        }
+        shockwave(target.clone().add(0, 0.1, 0), 2.6, 6, color);
+        burst(target, Particle.ELECTRIC_SPARK, 25, 0.6, 0.2);
+        spray(target.clone().add(0, 0.3, 0), Particle.END_ROD, 8, 0.25);
+    }
+
+    /** A column of light rising from the ground, with a ring at its foot and a twinkle on top. */
     void pillar(Location base, Color color, double height, int ticks) {
         if (quality() <= 0 || base.getWorld() == null) {
             return;
         }
-        for (int i = 0; i < ticks; i++) {
-            int step = i;
-            module.runLater(() -> {
-                double y = height * step / Math.max(1, ticks - 1);
-                for (int s = 0; s < 3; s++) {
-                    double a = step * 0.7 + s * Math.PI * 2 / 3;
-                    double r = 0.6 - 0.35 * step / Math.max(1, ticks);
-                    glow(base.clone().add(Math.cos(a) * r, y, Math.sin(a) * r), color, 1.2f, 1, 0);
+        if (displays()) {
+            float h = (float) height;
+            int[] order = new int[Math.max(4, ticks / 2)];
+            for (int i = 0; i < order.length; i++) {
+                order[i] = i % 3;
+            }
+            for (int k = 0; k < 2; k++) {
+                org.joml.Quaternionf up = new org.joml.Quaternionf().rotateZ((float) Math.toRadians(90));
+                if (k == 1) {
+                    up.rotateX((float) Math.toRadians(90));
                 }
-                if (step % 3 == 0) {
-                    burst(base.clone().add(0, y, 0), Particle.END_ROD, 1, 0.1, 0.02);
-                }
-            }, step);
+                play(base, "beam", order, 2, color, FIXED,
+                        pose(new org.joml.Vector3f(0, 0.3f, 0), up, 0.6f, 1.3f, 1f),
+                        pose(new org.joml.Vector3f(0, h / 2, 0), up, h, 0.9f, 1f));
+            }
         }
-        module.runLater(() -> flash(base.clone().add(0, height, 0), color, 1.4f), ticks);
+        shockwave(base.clone().add(0, 0.1, 0), 1.6, 6, color);
+        World w = base.getWorld();
+        for (int i = 0; i < count(6); i++) {
+            w.spawnParticle(Particle.END_ROD, base.clone().add((Math.random() - 0.5) * 0.8, 0.2, (Math.random() - 0.5) * 0.8),
+                    0, 0, 1, 0, 0.08 + Math.random() * 0.12);
+        }
+        module.runLater(() -> flash(base.clone().add(0, height + 0.2, 0), color, 1.3f), Math.max(2, ticks - 2));
     }
 
-    /** Rings of light orbiting an entity for a while (auras, power-ups). */
+    /** Rings of light circling an entity for a while (auras, power-ups). */
     void orbit(Entity entity, int ticks, Color color, int rings) {
         if (quality() <= 0) {
             return;
@@ -341,39 +444,45 @@ final class Fx {
                 for (int k = 0; k < rings; k++) {
                     double a = step * 0.35 + k * Math.PI * 2 / rings;
                     double y = entity.getHeight() * (0.25 + 0.5 * (k % 2)) + 0.15 * Math.sin(step * 0.3 + k);
-                    dust(base.clone().add(Math.cos(a) * 0.9, y, Math.sin(a) * 0.9), color, 1.1f, 1, 0);
+                    glow(base.clone().add(Math.cos(a) * 0.9, y, Math.sin(a) * 0.9), color, 1.3f, 1, 0);
                 }
             }, step);
         }
     }
 
-    /** A burst in every direction: a sphere of sparks flying out, a shockwave and a flash. */
+    /** A burst in every direction: an impact star, a shockwave and sparks flying out. */
     void nova(Location center, Color color, double radius) {
         if (quality() <= 0 || center.getWorld() == null) {
             return;
         }
-        int points = count(40);
-        for (int i = 0; i < points; i++) {
-            double u = Math.random() * 2 - 1, t = Math.random() * Math.PI * 2, r = Math.sqrt(1 - u * u);
-            Vector dir = new Vector(r * Math.cos(t), u, r * Math.sin(t));
-            Location at = center.clone().add(dir.clone().multiply(radius * (0.4 + Math.random() * 0.6)));
-            glow(at, color, 1.0f, 1, 0);
-        }
-        burst(center, Particle.FIREWORK, count(20), 0.2, radius * 0.12);
+        impact(center, color, (float) Math.max(1.6, radius * 1.1));
         shockwave(center.clone().add(0, -0.4, 0), radius, 7, color);
-        flash(center, color, (float) Math.min(2.5, 0.6 + radius * 0.3));
+        spray(center, Particle.END_ROD, 10, Math.min(0.5, 0.1 + radius * 0.06));
+        spray(center, Particle.FIREWORK, 8, Math.min(0.4, 0.08 + radius * 0.05));
+        if (!displays()) {
+            dust(center, color, 1.6f, 14, radius * 0.4);
+        }
     }
 
-    /** Little sparks of light drifting upwards. */
+    /** A few twinkles popping one after another, with sparks drifting up. */
     void sparkles(Location at, Color color, int amount, double spread) {
         if (quality() <= 0 || at.getWorld() == null) {
             return;
         }
-        for (int i = 0; i < count(amount); i++) {
+        int stars = Math.max(1, Math.min(4, count(amount) / 3));
+        for (int i = 0; i < stars; i++) {
             Location p = at.clone().add((Math.random() - 0.5) * spread * 2, Math.random() * spread, (Math.random() - 0.5) * spread * 2);
-            glow(p, color, 0.8f, 1, 0);
+            float size = 0.3f + (float) Math.random() * 0.3f;
+            module.runLater(() -> flash(p, color, size), i * 2L);
         }
-        burst(at, Particle.END_ROD, Math.max(1, count(amount / 4)), spread, 0.03);
+        if (!displays()) {
+            glow(at, color, 0.9f, amount, spread);
+        }
+        World w = at.getWorld();
+        for (int i = 0; i < Math.max(1, count(amount / 4)); i++) {
+            w.spawnParticle(Particle.END_ROD, at.clone().add((Math.random() - 0.5) * spread, 0, (Math.random() - 0.5) * spread),
+                    0, 0, 1, 0, 0.04);
+        }
     }
 
     /** Sound waves: rings that grow out from a point one after another (horns, bells, calls). */
@@ -383,10 +492,7 @@ final class Fx {
         }
         for (int k = 0; k < rings; k++) {
             int n = k;
-            module.runLater(() -> {
-                ring(center, maxRadius * (n + 1) / rings, color, 1.2f);
-                shockwave(center, maxRadius * (n + 1) / rings, 6, color);
-            }, n * 5L);
+            module.runLater(() -> shockwave(center, maxRadius * (n + 1) / rings, 8, color), n * 5L);
         }
     }
 

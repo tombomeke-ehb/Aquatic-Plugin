@@ -1,5 +1,26 @@
 # Changelog
 
+## 2.20.0 (2026-11-13)
+
+### Changed
+- **Hand-drawn item icons.** Every weapon, tool, key and armour icon is redrawn pixel by pixel on Minecraft's own 16x16 grid, with the same chunky proportions and clean shade bands as vanilla items, then doubled to 32x32 with a pixel-art scaler. No more thin lines or grain. The drawings are in `resourcepack/pixelart.py`.
+- **New effects.** The soft, blurry effect sprites and most of the dust shapes are gone. Effects are now crisp animated sprites, each with a white core and an edge in the move's colour:
+  - **Slash:** a six-frame sweep that shoots across and breaks up. Charged hits get one slash and an impact star; on-hit procs cross two slashes and add a shockwave.
+  - **Impact star, shockwave ring, twinkle:** used for hits, blasts, casts and pick-ups.
+  - **Beam and lightning bolt:** stretched between two points and visible from every side. Chain lightning now jumps as jagged arcs.
+  - **Pillar of light:** a real column that grows from the ground.
+  - Sparks now fly outwards from blasts, and auras use Minecraft's own coloured swirls.
+  - Fewer particles overall: rings that used hundreds of particles now use a few dozen.
+- **Hats and helmets leave your face free.** Hats only cover the top of the head; the Tidewarden helmet is open at the front.
+
+### Fixed
+- **Crate keys could not be found or used.**
+  - The crate admin commands were hidden from help and tab completion. They now show up for admins: `/crate give <player> <crate> [amount]`, `/crate giveall`, `/crate item`, `/crate set`, `/crate remove`, `/crate list`, `/crate setup`.
+  - New: `/crate key <crate> [amount]` gives keys to yourself, and `/aitem give <player> key_<crate>` works too.
+  - A crate block placed by hand (from the creative menu) is now a crate as soon as someone clicks it (`any-crate-block` in `crates.yml`).
+  - A key is never placed as a tripwire hook.
+- **Crate chests were see-through at the back.** The chest now covers the whole block and its domed lid sits on top.
+
 ## 2.19.0 (2026-11-13)
 
 ### Added

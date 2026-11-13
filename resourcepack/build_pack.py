@@ -24,6 +24,8 @@ import zipfile
 from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import pixelart  # noqa: E402
 PACK = os.path.join(HERE, "pack")
 DIST = os.path.join(HERE, "dist")
 N = 32  # item texture size
@@ -782,15 +784,18 @@ def armor_layers(base, trim, accent, scale=4, legs=None, boots=None, hat=None):
         if face == "top":
             r = math.hypot(x - w / 2, y - h / 2) / (w / 2)
             return worn(shade(felt(hat_col, x, y), -0.12 * (1 - min(1, r))), x, y, w, h)
-        if y >= h - 3:
-            return shade(accent, 0.15 if (x + y) % 3 == 0 else -0.1)          # braid
-        if h - 11 <= y < h - 6:
-            c = shade(trim, 0.08 if y == h - 11 else (-0.12 if y == h - 7 else 0))   # ribbon band
-            if face == "front" and abs(x - (w - 8)) <= 3 and h - 13 <= y <= h - 5:
-                r = math.hypot(x - (w - 8), y - (h - 9))
+        rim = 13 if face != "back" else 16                                   # the hat ends above the eyes
+        if y >= rim:
+            return None
+        if y >= rim - 2:
+            return shade(accent, 0.15 if (x + y) % 3 == 0 else -0.1)          # braid along the brim
+        if rim - 7 <= y < rim - 3:
+            c = shade(trim, 0.08 if y == rim - 7 else (-0.12 if y == rim - 4 else 0))   # ribbon band
+            if face == "front" and abs(x - (w - 8)) <= 2 and rim - 8 <= y <= rim - 3:
+                r = math.hypot(x - (w - 8), y - (rim - 5.5))
                 return shade(accent, 0.25 - r * 0.12) if r <= 1 else shade(linen, -0.05 - r * 0.04)   # cockade
             return c
-        return worn(felt(hat_col, x, y), x, y, w, h)
+        return felt(hat_col, x, y)
     box(l1, 0, 0, 8, 8, 8, hat_paint)
 
     # ---- coat (8x12x4)
@@ -955,9 +960,9 @@ def plate_armor_layers(base, trim, accent, seed=11):
         if face == "bottom":
             return None
         if face == "front":
-            if y >= 12 and 6 <= x < w - 6 and y < h - 2:
-                return None                                                     # the face opening
-            if y >= 12 and (x < 6 or x >= w - 6):
+            if y >= 12 and 4 <= x < w - 4:
+                return None                                                     # the face opening, open at the chin
+            if y >= 12 and (x < 4 or x >= w - 4):
                 return plate(x, y, w, h, 12, h - 1, shade(base, -0.08))          # cheek guards
             if 10 <= y < 12:
                 return shade(trim, 0.1)                                         # brow band
@@ -1148,10 +1153,11 @@ def write_json(path, data):
         json.dump(data, f, indent=2)
 
 
-def item(name, image, handheld=False):
+def item(name, image, handheld=False, drawn=False):
     os.makedirs(os.path.join(PACK, "assets", "aquatic", "textures", "item"), exist_ok=True)
     path = os.path.join(PACK, "assets", "aquatic", "textures", "item", name + ".png")
-    image = [polish(f) for f in image] if isinstance(image, list) else polish(image)
+    if not drawn:
+        image = [polish(f) for f in image] if isinstance(image, list) else polish(image)
     if isinstance(image, list):  # an animation: frames stacked top to bottom
         strip = Image.new("RGBA", (image[0].width, image[0].height * len(image)), (0, 0, 0, 0))
         for i, frame in enumerate(image):
@@ -1234,18 +1240,29 @@ def vfx_flash():
     return img
 
 
-def vfx_item(name, image):
-    """An effect model whose colour is set by the plugin (tint from the item's custom model data)."""
-    os.makedirs(os.path.join(PACK, "assets", "aquatic", "textures", "item"), exist_ok=True)
-    image.save(os.path.join(PACK, "assets", "aquatic", "textures", "item", name + ".png"))
-    write_json(os.path.join(PACK, "assets", "aquatic", "models", "item", name + ".json"), {
-        "parent": "minecraft:item/generated",
-        "textures": {"layer0": "aquatic:item/" + name},
-    })
-    write_json(os.path.join(PACK, "assets", "aquatic", "items", name + ".json"), {
-        "model": {"type": "minecraft:model", "model": "aquatic:item/" + name,
-                  "tints": [{"type": "minecraft:custom_model_data", "index": 0, "default": 16777215}]},
-    })
+def vfx_frames():
+    """The effect sprites (pixelart.VFX): every frame is its own model "vfx_<name>_<n>" with a tinted layer
+    (the plugin sets the colour through the item's custom model data) and a white core that stays white."""
+    tex = os.path.join(PACK, "assets", "aquatic", "textures", "item")
+    os.makedirs(tex, exist_ok=True)
+    for old in ("vfx_slash", "vfx_ring", "vfx_flash"):          # the soft sprites of 2.11 - 2.19
+        for path in (os.path.join(tex, old + ".png"), os.path.join(PACK, "assets", "aquatic", "models", "item", old + ".json"),
+                     os.path.join(PACK, "assets", "aquatic", "items", old + ".json")):
+            if os.path.exists(path):
+                os.remove(path)
+    for name, make in pixelart.VFX.items():
+        for n, (tint, core) in enumerate(make()):
+            key = "vfx_%s_%d" % (name, n)
+            tint.save(os.path.join(tex, key + ".png"))
+            core.save(os.path.join(tex, key + "_core.png"))
+            write_json(os.path.join(PACK, "assets", "aquatic", "models", "item", key + ".json"), {
+                "parent": "minecraft:item/generated",
+                "textures": {"layer0": "aquatic:item/" + key, "layer1": "aquatic:item/" + key + "_core"},
+            })
+            write_json(os.path.join(PACK, "assets", "aquatic", "items", key + ".json"), {
+                "model": {"type": "minecraft:model", "model": "aquatic:item/" + key,
+                          "tints": [{"type": "minecraft:custom_model_data", "index": 0, "default": 16777215}]},
+            })
 
 
 # ---------------------------------------------------------------- animated fruits (a preview of their power)
@@ -1554,25 +1571,24 @@ def crate_blocks():
         # The body fills the whole block footprint: the block is solid to the game, so the faces of the blocks
         # touching it are not drawn; anything smaller than a full side would leave a see-through gap there.
         el = []
-        el.append(box([0, 0, 0], [16, 10, 16], "wood"))                             # body
+        el.append(box([0, 0, 0], [16, 11, 16], "wood"))                             # body
         el[-1]["faces"]["up"]["texture"] = "#inner"
         el[-1]["faces"]["down"]["texture"] = "#inner"
         el.append(box([-0.2, 0, -0.2], [16.2, 1.2, 16.2], "trim"))                  # bottom rim
-        el.append(box([-0.2, 9.2, -0.2], [16.2, 10.4, 16.2], "trim"))               # top rim of the body
-        el.append(box([0, 10.4, 0], [16, 13, 16], "lid"))                           # lid, three steps for a rounded top
-        el.append(box([0, 13, 1.5], [16, 14.5, 14.5], "lid"))
-        el.append(box([0, 14.5, 4], [16, 15.6, 12], "lid"))
+        el.append(box([-0.2, 10.2, -0.2], [16.2, 11.4, 16.2], "trim"))              # top rim of the body
+        el.append(box([0, 11, 0], [16, 16, 16], "lid"))                             # the lid fills the block to the top
+        el.append(box([0, 16, 1.5], [16, 17.4, 14.5], "lid"))                       # and domes above it
+        el.append(box([0, 17.4, 4], [16, 18.4, 12], "lid"))
         for x0 in (2.5, 11.5):                                                      # two metal bands over lid and body
             x1 = x0 + 2
-            el.append(box([x0, 0, -0.3], [x1, 10.6, 16.3], "metal"))
-            el.append(box([x0, 10.4, -0.3], [x1, 13.3, 16.3], "metal"))
-            el.append(box([x0, 13, 1.2], [x1, 14.8, 14.8], "metal"))
-            el.append(box([x0, 14.5, 3.7], [x1, 15.9, 12.3], "metal"))
+            el.append(box([x0, 0, -0.3], [x1, 16.3, 16.3], "metal"))
+            el.append(box([x0, 16, 1.2], [x1, 17.7, 14.8], "metal"))
+            el.append(box([x0, 17.4, 3.7], [x1, 18.7, 12.3], "metal"))
         for x0 in (-0.3, 14.8):                                                     # corner guards
             for z0 in (-0.3, 14.8):
-                el.append(box([x0, 0, z0], [x0 + 1.5, 10.4, z0 + 1.5], "trim"))
-        el.append(box([6, 6, -0.8], [10, 11.5, 0], "lock", uv=[0, 0, 16, 16]))      # locks, front and back
-        el.append(box([6, 6, 16], [10, 11.5, 16.8], "lock", uv=[0, 0, 16, 16]))
+                el.append(box([x0, 0, z0], [x0 + 1.5, 11.4, z0 + 1.5], "trim"))
+        el.append(box([6, 7, -0.8], [10, 12.5, 0], "lock", uv=[0, 0, 16, 16]))      # locks, front and back
+        el.append(box([6, 7, 16], [10, 12.5, 16.8], "lock", uv=[0, 0, 16, 16]))
         t = lambda n: "aquatic:block/chest_%s_%s" % (tier, n)
         write_json(os.path.join(PACK, "assets", "minecraft", "models", "block", block + ".json"), {
             "parent": "minecraft:block/block",
@@ -2061,11 +2077,7 @@ def main():
     })
     item("conqueror_crown", crown())
     equipment("conqueror_crown", crown_worn())
-    item("storm_saber", shimmer(storm_saber(), glow=("#fff35c",)), handheld=True)
-    item("abyssal_baton", shimmer(abyssal_baton(), glow=("#7dfff0",)), handheld=True)
-    vfx_item("vfx_slash", vfx_slash())
-    vfx_item("vfx_ring", vfx_ring())
-    vfx_item("vfx_flash", vfx_flash())
+    vfx_frames()
     flintlock_3d()
     musket_3d()
     # the Tidewatch: pillagers (riflemen) and vindicators (officers) in uniform
@@ -2076,26 +2088,15 @@ def main():
     illager_hd("#14284d", "#e2b33c", "#e8e4d8", "#0f1d38", seed=3).save(os.path.join(ill, "vindicator.png"))
     illager_hd("#1d3a6b", "#e8e4d8", "#e8e4d8", "#16294a", seed=5).save(os.path.join(ill, "pillager.png"))
     hand_cannon_3d()
-    # swords and weapons
-    item("tidecleaver", shimmer(blade("#ffffff", "#dfe6ea", "#aeb8bf", "#7f8a91", "#b0b7bd", "#2d4a6b", "#9fe3ff", width=2.8, tip=5), glow=("#9fe3ff",)), True)
-    item("nightbloom", shimmer(blade("#f6c1d6", "#a35d9c", "#5a2a7a", "#2c1240", "#d76d77", "#1d0f2b", "#ff8fb1",
-                             pattern=lambda s_, t_, w_: rgb("#ff9ec4") if int(s_) % 5 == 2 and abs(t_) < 0.6 else None), glow=("#ff9ec4", "#ff8fb1")), True)
-    item("leviathans_fang", shimmer(blade("#ff7a6b", "#5a1a1a", "#2a0b0b", "#120404", "#3a3a3a", "#4a0f0f", "#c0392b",
-                                  serrate=True, outline_col="#050101"), glow=("#c0392b",), strength=0.45), True)
-    item("tide_rapier", shimmer(blade("#e8fffb", "#8fe6d6", "#43cea2", "#185a9d", "#d9a521", "#185a9d", "#43cea2",
-                              width=1.2, length=27, tip=5, guard_half=4.2), glow=("#43cea2",)), True)
-    item("abyss_cutlass", shimmer(blade("#9ff5e6", "#3fa79a", "#1c4f4a", "#0c2422", "#00c9a7", "#232526", "#00c9a7",
-                                curve=3.0, width=2.4), glow=("#00c9a7",)), True)
-    item("krakens_maul", shimmer(krakens_maul(), glow=("#c47cff",), strength=0.45), True)
-    item("harpoon", shimmer(harpoon()), True)
+    # weapons, tools and keys: hand-drawn (pixelart.py), with a band of light that sweeps along them
+    for name, (rows, palette, edits) in pixelart.WEAPONS.items():
+        img = pixelart.icon(rows, palette, edits)
+        glow = tuple(palette[k] for k in ("p", "P", "x") if k in palette)
+        if name == "abyssal_shackles":
+            item(name, img, drawn=True)
+        else:
+            item(name, shimmer(img, glow=glow, strength=0.5), True, drawn=True)
     crate_blocks()
-    item("key_sailor", shimmer(crate_key("#d7e3ea", "#7d8b96", "#3fb8c9", "#bff6ff"), glow=("#3fb8c9", "#bff6ff")), True)
-    item("key_captain", shimmer(crate_key("#f2c230", "#9c6b12", "#c0392b", "#ffb3a6"), glow=("#c0392b", "#ffb3a6")), True)
-    item("key_kraken", shimmer(crate_key("#5d4a7a", "#2b1f3d", "#43e0c8", "#c9fff5"), glow=("#43e0c8", "#c9fff5")), True)
-    item("coral_scimitar", shimmer(coral_scimitar(), glow=("#fff0e0",)), True)
-    item("abyssal_anchor", shimmer(abyssal_anchor(), glow=("#7dfff0",), band=4.0), True)
-    item("deepcore_pickaxe", shimmer(deepcore_pickaxe(), glow=("#3fd8ff", "#c8fbff", "#9fe8de")), True)
-    item("abyssal_shackles", shackles())
     # bombs and shot
     item("smoke_bomb", bomb("#6f757b", "#3b3f43", "#ffe680", smoke_mark))
     item("frost_bomb", bomb("#7fd3ff", "#e6f7ff", "#bff0ff", frost_mark))
@@ -2107,24 +2108,12 @@ def main():
     item("healing_tonic", bottle("#e84393"))
     item("gale_grog", bottle("#4dd0e1", cork="#6b4a2b"))
     item("seafoam_milkshake", milkshake())
-    # armour sets: icons and how they look when worn
-    for piece in ("helmet", "chestplate", "leggings", "boots"):
-        item("tidewarden_" + piece, armor_icon(piece, "#5c6976", "#8a7045", "#6a9e99"))
+    # armour sets: hand-drawn icons (pixelart.py) and how they look when worn
+    for name, (rows, palette) in pixelart.ARMOUR.items():
+        item(name, pixelart.icon(rows, palette), drawn=True)
     equipment("tidewarden", *plate_armor_layers("#5c6976", "#8a7045", "#6a9e99"))
-    item("corsair_hat", armor_icon("helmet", "#2a1d16", "#120c09", "#b8933f", style="tricorn"))
-    item("corsair_coat", armor_icon("chestplate", "#7e2a25", "#3a2318", "#b8933f", style="coat"))
-    item("corsair_breeches", armor_icon("leggings", "#b49a74", "#5a4026", "#3a2318", style="cloth"))
-    item("corsair_boots", armor_icon("boots", "#2a1d16", "#120c09", "#b8933f"))
     equipment("corsair", *armor_layers("#7e2a25", "#3a2318", "#b8933f", legs="#b49a74", boots="#2a1d14", hat="#2a1d16"))
-    item("captains_coat", armor_icon("chestplate", "#2c2a30", "#7a2420", "#b8933f", style="coat"))
     # Tidewatch uniforms (worn by the garrison)
-    item("tidewatch_hat", armor_icon("helmet", "#1f2a3d", "#11182a", "#cfc8b4", style="tricorn"))
-    item("tidewatch_coat", armor_icon("chestplate", "#24334f", "#141d31", "#cfc8b4", style="coat"))
-    item("tidewatch_trousers", armor_icon("leggings", "#d9d3c2", "#9a968c", "#24334f", style="cloth"))
-    item("tidewatch_boots", armor_icon("boots", "#221c17", "#0e0b08", "#cfc8b4"))
-    item("tidewatch_officer_coat", armor_icon("chestplate", "#1a2742", "#0e1628", "#b8933f", style="coat"))
-    item("tidewatch_captain_hat", armor_icon("helmet", "#e4e0d6", "#8f7a4c", "#b8933f", style="tricorn"))
-    item("tidewatch_captain_coat", armor_icon("chestplate", "#e4e0d6", "#8f7a4c", "#b8933f", style="coat"))
     equipment("tidewatch", *armor_layers("#24334f", "#141d31", "#cfc8b4", legs="#d9d3c2", boots="#221c17", hat="#1f2a3d"))
     equipment("tidewatch_officer", *armor_layers("#1a2742", "#0e1628", "#b8933f", legs="#d9d3c2", boots="#221c17", hat="#1f2a3d"))
     equipment("tidewatch_captain", *armor_layers("#e4e0d6", "#8f7a4c", "#b8933f", legs="#d9d3c2", boots="#221c17", hat="#e4e0d6"))

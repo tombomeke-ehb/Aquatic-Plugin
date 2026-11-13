@@ -27,6 +27,9 @@ auto-register: true
 auto-register-radius: 48
 
 # A floating sign above every crate.
+# Any block of a crate's own material (the nether blocks below) is that crate, also when it was placed by hand
+# from the creative menu. Turn off if you use those blocks for something else.
+any-crate-block: true
 holograms: true
 hologram-height: 0.9
 hologram:

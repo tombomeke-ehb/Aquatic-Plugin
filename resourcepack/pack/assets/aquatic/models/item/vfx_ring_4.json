@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "aquatic:item/vfx_ring_4",
+    "layer1": "aquatic:item/vfx_ring_4_core"
+  }
+}

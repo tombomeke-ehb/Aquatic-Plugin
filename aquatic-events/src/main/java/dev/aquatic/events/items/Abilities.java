@@ -321,7 +321,7 @@ public final class Abilities {
                     line(a, "CRIT", eye, t.getLocation().add(0, 1, 0));
                     org.bukkit.Color c = colorOf(a, type);
                     fx.beam(eye.clone().add(dir.clone().multiply(0.6)), t.getLocation().add(0, 1, 0), c, 1.5f, 0.35);
-                    fx.burst(t.getLocation().add(0, 1, 0), Particle.EXPLOSION, 1, 0, 0);
+                    fx.impact(t.getLocation().add(0, 1, 0), c, 1.8f);
                     fx.wave(t.getLocation().add(0, 0.2, 0), 2.5, 6, c, Particle.CLOUD, false);
                     sound(a, "entity.player.attack.strong", t.getLocation());
                     Util.sound(t.getLocation(), "entity.generic.explode", 0.5f, 1.6f);
@@ -354,7 +354,8 @@ public final class Abilities {
                 area(p, c, radius, damage, a);
                 ring(a, "SNOWFLAKE", p.getLocation().add(0, 0.3, 0), radius);
                 fx.wave(p.getLocation().add(0, 0.3, 0), radius, 8, colorOf(a, type), Particle.SNOWFLAKE, false);
-                fx.burst(c, Particle.WHITE_ASH, 30, radius / 3, 0.02);
+                fx.impact(c, colorOf(a, type), (float) Math.max(1.6, radius * 0.7));
+                fx.burst(c, Particle.WHITE_ASH, 12, radius / 3, 0.02);
                 sound(a, "block.glass.break", c);
                 selfEffects(p, a);
                 return true;
@@ -375,7 +376,7 @@ public final class Abilities {
                 fx.bolt(at.clone().add(0, 0.5, 0), colorOf(a, type));
                 fx.wave(at.clone().add(0, 0.2, 0), radius, 6, colorOf(a, type), Particle.ELECTRIC_SPARK, false);
                 area(p, at, radius, damage, a);
-                particles(a, "ELECTRIC_SPARK", at.clone().add(0, 1, 0), 60, radius / 2);
+                particles(a, "ELECTRIC_SPARK", at.clone().add(0, 1, 0), 18, radius / 2);
                 return true;
             }
             case "invisibility" -> {
@@ -473,8 +474,10 @@ public final class Abilities {
                             return;
                         }
                         Location pt = start.clone().add(stepV.clone().multiply(n));
-                        fx.dust(pt.clone().add(0, 0.4, 0), c, 1.8f, 6, width / 3);
-                        particles(a, "FLAME", pt.clone().add(0, 0.3, 0), 4, width / 3);
+                        if (n % 2 == 1) {
+                            fx.crescent(pt.clone().add(0, 0.9, 0), stepV, Math.max(1.4, width * 1.1), c);   // the rolling front
+                        }
+                        particles(a, "FLAME", pt.clone().add(0, 0.3, 0), 3, width / 3);
                         for (Entity e : p.getWorld().getNearbyEntities(pt, width, 1.6, width)) {
                             if (e instanceof LivingEntity le && hit.add(e.getUniqueId()) && strike(p, le, a, damage)) {
                                 push(le, stepV.clone().multiply(knock).setY(0.3));
@@ -511,8 +514,10 @@ public final class Abilities {
                         }
                     }
                 }
-                fx.beam(from, point, colorOf(a, type), 1.6f, 0.3);
-                particles(a, "END_ROD", point, 12, 0.3);
+                fx.beam(from.clone().add(dir.clone().multiply(0.8)).add(0, -0.25, 0), point, colorOf(a, type), 1.6f, 0.3);
+                fx.flash(from.clone().add(dir.clone().multiply(0.9)).add(0, -0.25, 0), colorOf(a, type), 1.2f);
+                fx.impact(point, colorOf(a, type), 1.6f);
+                particles(a, "END_ROD", point, 6, 0.3);
                 sound(a, "entity.warden.sonic_boom", p.getLocation());
                 selfEffects(p, a);
                 return true;
@@ -532,8 +537,9 @@ public final class Abilities {
                 for (int i = 0; i <= jumps && current != null; i++) {
                     hit.add(current.getUniqueId());
                     Location at = current.getLocation().add(0, 1, 0);
-                    fx.beam(last, at, c, 1.3f, 0.25);
-                    fx.burst(at, Particle.ELECTRIC_SPARK, 20, 0.4, 0.1);
+                    fx.zap(last, at, c);
+                    fx.impact(at, c, 1.1f);
+                    fx.burst(at, Particle.ELECTRIC_SPARK, 8, 0.4, 0.1);
                     strike(p, current, a, dmg);
                     last = at;
                     dmg *= a.getDouble("falloff", 0.8);
@@ -608,12 +614,10 @@ public final class Abilities {
     }
 
     private void ring(ConfigurationSection a, String fallback, Location center, double radius) {
-        int points = (int) Math.max(12, Math.min(72, radius * 8));
+        int points = (int) Math.max(8, Math.min(28, radius * 3));
         for (int i = 0; i < points; i++) {
             double angle = 2 * Math.PI * i / points;
-            for (double r = radius; r > 0.9; r -= radius / 2.0) {
-                particles(a, fallback, center.clone().add(Math.cos(angle) * r, 0, Math.sin(angle) * r), 2, 0.1);
-            }
+            particles(a, fallback, center.clone().add(Math.cos(angle) * radius, 0, Math.sin(angle) * radius), 1, 0.1);
         }
     }
 

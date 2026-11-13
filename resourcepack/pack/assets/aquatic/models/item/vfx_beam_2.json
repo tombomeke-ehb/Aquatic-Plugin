@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "aquatic:item/vfx_beam_2",
+    "layer1": "aquatic:item/vfx_beam_2_core"
+  }
+}

@@ -407,6 +407,18 @@ public final class ItemsModule extends AquaticModule implements ItemService {
 
     // ------------------------------------------------------------------ commands
 
+    /** Everything /aitem give knows: the custom items and the crate keys (key_<crate>). */
+    private List<String> giveIds() {
+        List<String> ids = new ArrayList<>(defs.keySet());
+        dev.aquatic.api.CrateService crateKeys = service(dev.aquatic.api.CrateService.class);
+        if (crateKeys != null) {
+            for (String c : crateKeys.crateTypes()) {
+                ids.add("key_" + c);
+            }
+        }
+        return ids;
+    }
+
     private void registerCommands() {
         AquaticCommand cmd = new AquaticCommand("aitem", "Custom pirate items", "aquaticitem", "pirateitem");
         cmd.sub("give", (sender, args) -> {
@@ -414,6 +426,18 @@ public final class ItemsModule extends AquaticModule implements ItemService {
             Player target = AquaticCommand.onlinePlayer(args[0]);
             ItemDef def = def(args[1]);
             if (def == null) {
+                // crate keys: key_sailor, key_captain ... (crates.yml)
+                dev.aquatic.api.CrateService crateKeys = service(dev.aquatic.api.CrateService.class);
+                String raw = args[1].toLowerCase(java.util.Locale.ROOT);
+                String crate = raw.startsWith("key_") || raw.startsWith("key:") ? raw.substring(4) : null;
+                if (crateKeys != null && crate != null && crateKeys.crateTypes().contains(crate)) {
+                    int n = args.length > 2 ? Math.max(1, Math.min(2304, AquaticCommand.integer(args[2]))) : 1;
+                    for (int left = n; left > 0; left -= 64) {
+                        Util.give(target, crateKeys.key(crate, Math.min(64, left)));
+                    }
+                    send(sender, "item-given", "amount", n, "item", crateKeys.key(crate, 1).displayName(), "player", target.getName());
+                    return;
+                }
                 throw new CommandFail(rawMsg("unknown-item", "id", args[1]));
             }
             int amount = args.length > 2 ? Math.max(1, Math.min(2304, AquaticCommand.integer(args[2]))) : 1;
@@ -427,7 +451,7 @@ public final class ItemsModule extends AquaticModule implements ItemService {
             send(sender, "item-given", "amount", amount, "item", def.displayName(), "player", target.getName());
         }).usage("<player> <id> [amount]").description("Give a custom item").permission("aquatic.items.admin")
                 .completer((s, a) -> a.length == 1 ? AquaticCommand.playerNames(a[0])
-                        : a.length == 2 ? AquaticCommand.filter(defs.keySet(), a[1]) : List.of());
+                        : a.length == 2 ? AquaticCommand.filter(giveIds(), a[1]) : List.of());
 
         cmd.sub("list", (sender, args) -> {
             send(sender, "list-header", "count", defs.size());

@@ -1,7 +1,7 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "aquatic:item/vfx_slash",
+    "model": "aquatic:item/vfx_slash_5",
     "tints": [
       {
         "type": "minecraft:custom_model_data",

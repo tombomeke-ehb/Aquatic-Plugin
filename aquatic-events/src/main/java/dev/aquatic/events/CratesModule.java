@@ -338,6 +338,10 @@ public final class CratesModule extends AquaticModule implements Listener, Crate
     @EventHandler(ignoreCancelled = true)
     public void onPlace(BlockPlaceEvent event) {
         ItemStack it = event.getItemInHand();
+        if (keyType(it) != null) {
+            event.setCancelled(true);                   // keys are items, not blocks
+            return;
+        }
         String id = it.hasItemMeta() ? it.getItemMeta().getPersistentDataContainer().get(blockTag, PersistentDataType.STRING) : null;
         if (id == null) {
             return;
@@ -360,7 +364,22 @@ public final class CratesModule extends AquaticModule implements Listener, Crate
             return;
         }
         String type = blocks.get(key(b));
+        if (type == null && config().getBoolean("any-crate-block", true)) {
+            for (Crate any : crates.values()) {
+                Material m = blockOf(any);
+                if (m != Material.CHEST && m == b.getType()) {
+                    type = any.id;                      // a crate block placed by hand: it is a crate from now on
+                    blocks.put(key(b), type);
+                    saveBlocks();
+                    break;
+                }
+            }
+        }
         if (type == null) {
+            if (event.getAction() == Action.RIGHT_CLICK_BLOCK && keyType(event.getItem()) != null) {
+                event.setUseItemInHand(Event.Result.DENY);   // a key is not a tripwire hook: never place it
+                event.setCancelled(true);
+            }
             return;
         }
         event.setCancelled(true);
@@ -670,7 +689,7 @@ public final class CratesModule extends AquaticModule implements Listener, Crate
             saveBlocks();
             send(p, "set", "crate", Text.mm(c.name), "block", ItemSpecs.pretty(b.getType()));
         }).usage("<crate>").description("Make the block you look at a crate (any block: a chest in a build, a barrel ...)")
-                .permission("aquatic.crates.admin").playerOnly().hidden()
+                .permission("aquatic.crates.admin").playerOnly()
                 .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(new ArrayList<>(crates.keySet()), a[0]) : List.of());
         cmd.sub("remove", (s, a) -> {
             Player p = AquaticCommand.player(s);
@@ -685,12 +704,12 @@ public final class CratesModule extends AquaticModule implements Listener, Crate
                 e.remove();
             }
             send(p, "removed");
-        }).description("Stop the block you look at being a crate").permission("aquatic.crates.admin").playerOnly().hidden();
+        }).description("Stop the block you look at being a crate").permission("aquatic.crates.admin").playerOnly();
         cmd.sub("list", (s, a) -> {
             send(s, "list-header", "count", blocks.size());
             blocks.forEach((k, v) -> s.sendMessage(rawMsg("list-line", "crate", Text.mm(crates.containsKey(v) ? crates.get(v).name : v),
                     "where", k.replace(";", " "))));
-        }).description("All crate blocks").permission("aquatic.crates.admin").hidden();
+        }).description("All crate blocks").permission("aquatic.crates.admin");
         cmd.sub("give", (s, a) -> {
             AquaticCommand.need(a, 2, "/crate give <player> <crate> [amount]");
             Player target = AquaticCommand.onlinePlayer(a[0]);
@@ -698,7 +717,7 @@ public final class CratesModule extends AquaticModule implements Listener, Crate
             int amount = a.length > 2 ? (int) AquaticCommand.number(a[2]) : 1;
             giveKeys(target, c, amount);
             send(s, "gave", "player", target.getName(), "amount", amount, "crate", Text.mm(c.name));
-        }).usage("<player> <crate> [amount]").description("Give crate keys").permission("aquatic.crates.admin").hidden()
+        }).usage("<player> <crate> [amount]").description("Give crate keys").permission("aquatic.crates.admin")
                 .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(Bukkit.getOnlinePlayers().stream().map(Player::getName).toList(), a[0])
                         : a.length == 2 ? AquaticCommand.filter(new ArrayList<>(crates.keySet()), a[1]) : List.of());
         cmd.sub("giveall", (s, a) -> {
@@ -709,7 +728,7 @@ public final class CratesModule extends AquaticModule implements Listener, Crate
                 giveKeys(p, c, amount);
             }
             Bukkit.broadcast(msg("giveall", "amount", amount, "crate", Text.mm(c.name)));
-        }).usage("<crate> [amount]").description("Give every online player crate keys").permission("aquatic.crates.admin").hidden()
+        }).usage("<crate> [amount]").description("Give every online player crate keys").permission("aquatic.crates.admin")
                 .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(new ArrayList<>(crates.keySet()), a[0]) : List.of());
         cmd.sub("item", (s, a) -> {
             AquaticCommand.need(a, 1, "/crate item <crate>");
@@ -717,11 +736,18 @@ public final class CratesModule extends AquaticModule implements Listener, Crate
             Crate c = crate(a[0]);
             p.getInventory().addItem(crateItem(c));
             send(p, "got-block", "crate", Text.mm(c.name));
-        }).usage("<crate>").description("Get the crate's block: place it to make a crate").permission("aquatic.crates.admin").playerOnly().hidden()
+        }).usage("<crate>").description("Get the crate's block: place it to make a crate").permission("aquatic.crates.admin").playerOnly()
                 .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(new ArrayList<>(crates.keySet()), a[0]) : List.of());
         cmd.sub("setup", (s, a) -> setup(AquaticCommand.player(s)))
                 .description("Put the default crate stands at the capital (setup-spots in crates.yml)")
-                .permission("aquatic.crates.admin").playerOnly().hidden();
+                .permission("aquatic.crates.admin").playerOnly();
+        cmd.sub("key", (s, a) -> {
+            AquaticCommand.need(a, 1, "/crate key <crate> [amount]");
+            Crate c = crate(a[0]);
+            int amount = a.length > 1 ? (int) AquaticCommand.number(a[1]) : 1;
+            giveKeys(AquaticCommand.player(s), c, amount);
+        }).usage("<crate> [amount]").description("Get crate keys yourself").permission("aquatic.crates.admin").playerOnly()
+                .completer((s, a) -> a.length == 1 ? AquaticCommand.filter(new ArrayList<>(crates.keySet()), a[0]) : List.of());
         registerCommand(cmd);
     }
 

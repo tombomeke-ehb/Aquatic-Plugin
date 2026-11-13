@@ -249,13 +249,14 @@ public final class GearListener implements Listener {
         Fx fx = abilities.fx();
         org.bukkit.Color c = weaponColor(def);
         Location eye = p.getEyeLocation();
-        fx.slash(eye, eye.getDirection(), proc ? 3.5 : 2.2, c);
-        fx.crescent(eye, eye.getDirection(), proc ? 2.4 : 1.8, c);
+        fx.slash(eye, eye.getDirection(), proc ? 3.2 : 2.4, c);
         Location hit = victim.getLocation().add(0, victim.getHeight() * 0.6, 0);
-        fx.flash(hit, c, proc ? 1.6f : 0.8f);
-        fx.glow(hit, c, 1.0f, proc ? 14 : 6, 0.35);
+        fx.impact(hit, c, proc ? 1.5f : 0.9f);
+        fx.burst(hit, org.bukkit.Particle.CRIT, proc ? 10 : 5, 0.25, 0.25);
         if (proc) {
+            fx.crescent(eye, eye.getDirection(), 2.4, c);
             fx.shockwave(victim.getLocation().add(0, 0.1, 0), 1.8, 7, c);
+            fx.spray(hit, org.bukkit.Particle.ENCHANTED_HIT, 10, 0.35);
         }
     }
 

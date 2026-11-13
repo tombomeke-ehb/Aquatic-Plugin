@@ -475,7 +475,7 @@ VILLAGE islands (`/island admin spawn village <radius>`, or random spawns) are n
 Every crate has its own block: nether blocks nobody can get with the Nether off.
 - The Sailor's Crate is Nether Quartz Ore, the Captain's is Nether Gold Ore, and the Kraken's Hoard is Shroomlight (it glows).
 - The resource pack turns them into 3D crates.
-- **Placing one:** `/crate item <crate>` gives staff the block; place it and it is a crate. `/crate setup` places three stands at the capital you stand on.
+- **Placing one:** `/crate item <crate>` gives staff the block; place it and it is a crate. `/crate setup` places three stands at the capital you stand on. A crate block placed from the creative menu also becomes a crate when someone clicks it.
 - **Any other block** can be a crate too (`/crate set <crate>` while looking at it), for example a chest in a pasted schematic.
 - **Opening:** right-click a crate with its key. A reel spins and stops on a prize.
 - **Prizes:** left-click (or right-click without a key) shows every prize with its chance. `/crate` shows them for every crate.
@@ -488,6 +488,7 @@ Every crate has its own block: nether blocks nobody can get with the Nether off.
 | `/crate preview <crate>` | Every prize of a crate and its chance | Everyone |
 | `/crate item <crate>` | Get the crate's block; placing it makes a crate | `aquatic.crates.admin` |
 | `/crate set <crate>` / `/crate remove` | Make the block you look at a crate, or stop it being one | `aquatic.crates.admin` |
+| `/crate key <crate> [amount]` | Give yourself keys (also `/aitem give <player> key_<crate>`) | `aquatic.crates.admin` |
 | `/crate setup` | Default crate stands at the capital (`setup-spots` in `crates.yml`) | `aquatic.crates.admin` |
 | `/crate list` | Every crate block | `aquatic.crates.admin` |
 | `/crate give <player> <crate> [amount]` / `/crate giveall <crate> [amount]` | Give keys | `aquatic.crates.admin` |
