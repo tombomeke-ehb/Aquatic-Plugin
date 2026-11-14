@@ -1156,3 +1156,148 @@ VFX = {"slash": slash_frames, "burst": burst_frames, "ring": ring_frames, "spark
        "beam": beam_frames, "bolt": bolt_frames, "rune": rune_frames, "flame": flame_frames, "shard": shard_frames,
        "puff": puff_frames, "splash": splash_frames, "swirl": swirl_frames, "crack": crack_frames, "claw": claw_frames,
        "shield": shield_frames, "lines": lines_frames}
+
+
+# ------------------------------------------------------------------ drinks, bombs and small items
+# l m n o = the main colour from light to shadow; w = glint; g G = glass; k = cork; other letters per item.
+
+FLASK = [
+    "......####......",
+    "......#kk#......",
+    ".....######.....",
+    "......#gG#......",
+    "......#gG#......",
+    ".....#ggGG#.....",
+    "....#gggGGG#....",
+    "...#lllllmmm#...",
+    "..#wlmmmmmmno#..",
+    "..#wmmmmmmmno#..",
+    "..#lmmmmmmnno#..",
+    "..#mmmmmmnnoo#..",
+    "...#mmmnnnoo#...",
+    "....#nnnooo#....",
+    ".....######.....",
+    "................",
+]
+
+BOTTLE = [
+    "......####......",
+    "......#kk#......",
+    "......#gG#......",
+    "......#gG#......",
+    ".....#ggGG#.....",
+    "....#llmmno#....",
+    "....#wmmmno#....",
+    "....#wmmmno#....",
+    "....#yyyyyY#....",
+    "....#yzzzyY#....",
+    "....#yyyyyY#....",
+    "....#lmmmno#....",
+    "....#mmmnno#....",
+    "....#mmnnoo#....",
+    "....########....",
+    "................",
+]
+
+SHAKE = [
+    "...........rw...",
+    "..........rw....",
+    ".....cc..rw.....",
+    "....#cC#rw......",
+    "...##ww####.....",
+    "..#wwwwwwwW#....",
+    "..#WwwwwwWW#....",
+    "..##########....",
+    "...#gllllmG#....",
+    "...#gwlllmG#....",
+    "...#gwlllmG#....",
+    "....#gllmG#.....",
+    "....#gllmG#.....",
+    "....#gllmG#.....",
+    "....######......",
+    "................",
+]
+
+BOMB = [
+    "..........sS....",
+    ".........f......",
+    "........f.......",
+    "......####......",
+    ".....#kkkk#.....",
+    "....########....",
+    "...#llmmmmno#...",
+    "..#lwmmmmmmno#..",
+    "..#lwmmmmmmno#..",
+    "..#lmmmmmmmno#..",
+    "..#mmmmmmmnno#..",
+    "..#mmmmmmnnoo#..",
+    "...#mmmnnnoo#...",
+    "....#nnnooo#....",
+    ".....######.....",
+    "................",
+]
+
+BALL = [
+    "................",
+    "................",
+    ".....######.....",
+    "...##llmmmn##...",
+    "..#llwmmmmmno#..",
+    ".#llwwmmmmmmno#.",
+    ".#lwwmmmmmmmno#.",
+    ".#lmmmmmmmmnno#.",
+    ".#mmmmmmmmmnno#.",
+    ".#mmmmmmmmnnoo#.",
+    ".#mmmmmmmnnnoo#.",
+    "..#mmmmnnnnoo#..",
+    "...##nnnooo##...",
+    ".....######.....",
+    "................",
+    "................",
+]
+
+CONCH = [
+    "................",
+    "...........##...",
+    ".........##lm#..",
+    ".......##llmm#..",
+    ".....##llmmmn#..",
+    "....#llmlmmnn#..",
+    "...#llmllmnno#..",
+    "..#lllmlmmnoo#..",
+    "..#llmllmnnoo#..",
+    "..#lmllmmnoo#...",
+    "...#mlmmnnoo#...",
+    "...#ppmnnoo#....",
+    "..#pPp#ooo#.....",
+    "..#ppp####......",
+    "...###..........",
+    "................",
+]
+
+
+def ramp(colour, **extra):
+    c = _rgb(colour)
+    hexa = lambda t: "#%02x%02x%02x" % t
+    p = {"#": hexa(_mix(c, COOL, 0.78)), "l": hexa(_mix(c, WARM, 0.38)), "m": colour, "n": hexa(_mix(c, COOL, 0.24)),
+         "o": hexa(_mix(c, COOL, 0.46)), "w": "#fffdf2", "g": "#eef8fa", "G": "#bcd6dd", "k": "#b9824a"}
+    p.update(extra)
+    return p
+
+
+FLAME = [(7, 8, "e"), (6, 9, "e"), (7, 9, "E"), (8, 9, "e"), (6, 10, "e"), (7, 10, "E"), (8, 10, "e")]
+FLAKE = [(7, 8, "e"), (6, 9, "e"), (7, 9, "E"), (8, 9, "e"), (7, 10, "e"), (5, 9, "e"), (9, 9, "e"), (7, 7, "e"), (7, 11, "e")]
+CLOUD = [(7, 8, "e"), (8, 8, "e"), (6, 9, "e"), (7, 9, "e"), (8, 9, "e"), (9, 9, "E"), (7, 10, "E"), (8, 10, "E")]
+FUSE = dict(f="#8a6a44", s="#ffe680", S="#fff7c2", k="#3a3d42")
+
+MISC = {  # name: (drawing, palette, edits)
+    "healing_tonic": (FLASK, ramp("#e84393"), []),
+    "gale_grog": (FLASK, ramp("#4dd0e1", k="#7a5630"), []),
+    "rum": (BOTTLE, ramp("#8a4416", y="#ecd9a8", Y="#c7ae78", z="#6b4a22"), []),
+    "seafoam_milkshake": (SHAKE, ramp("#9fe6d2", r="#e23b3b", c="#e23b3b", C="#9c1f2a", W="#d9e6e2"), []),
+    "smoke_bomb": (BOMB, ramp("#7a8087", e="#e8ecef", E="#b9c0c6", **FUSE), CLOUD),
+    "frost_bomb": (BOMB, ramp("#6cc4f2", e="#ffffff", E="#d6f3ff", **FUSE), FLAKE),
+    "fire_bomb": (BOMB, ramp("#b02a1e", e="#ffb23d", E="#fff0a0", **FUSE), FLAME),
+    "cannonball": (BALL, ramp("#4a4f58"), []),
+    "echo_conch": (CONCH, ramp("#dc9f72", l="#fff0dc", p="#f29bb0", P="#c7607e"), []),
+}

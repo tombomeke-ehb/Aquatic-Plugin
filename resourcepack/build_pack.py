@@ -93,15 +93,22 @@ def fruit(main, swirl, leaf="#3f9b3a", outline_col="#2a1626", phase=0.0):
                 continue
             nz = math.sqrt(1 - d2)
             lam = max(0.0, dx * LIGHT[0] + dy * LIGHT[1] + nz * LIGHT[2])
-            k = max(-0.62, min(0.45, (lam - 0.5) * 1.2))
-            col = shade(main, k)
+            def tone(c):
+                if lam > 0.80:
+                    return mix(c, (255, 246, 214), 0.30)
+                if lam > 0.56:
+                    return c
+                if lam > 0.36:
+                    return mix(c, (26, 18, 58), 0.18)
+                if lam > 0.18:
+                    return mix(c, (26, 18, 58), 0.36)
+                return mix(c, (26, 18, 58), 0.54)
+            col = tone(main)
             r = math.sqrt(d2)
             ang = math.atan2(dy, dx)
             v = (r * 2.3 - ang / (2 * math.pi) + phase) % 1.0  # the abyss swirl: a spiral over the skin
-            if 0.12 < r < 0.93 and v < 0.25:
-                col = shade(swirl, k * 0.8)
-            if r > 0.9:
-                col = shade(col, -0.18)  # darker rim
+            if 0.12 < r < 0.93 and v < 0.28:
+                col = tone(swirl)
             if (dx + 0.36) ** 2 + (dy + 0.42) ** 2 < 0.028:
                 col = mix(col, WHITE, 0.8)  # shine
             elif (dx + 0.36) ** 2 + (dy + 0.42) ** 2 < 0.06:
@@ -2031,17 +2038,10 @@ def main():
             write_json(os.path.join(models, name + ".json"), forge.model("aquatic:item/" + name, grid,
                                                                          {"a": 1.6, "b": 1.6, "c": 1.6, "d": 1.6}))
     crate_blocks()
-    # bombs and shot
-    item("smoke_bomb", bomb("#6f757b", "#3b3f43", "#ffe680", smoke_mark))
-    item("frost_bomb", bomb("#7fd3ff", "#e6f7ff", "#bff0ff", frost_mark))
-    item("fire_bomb", bomb("#a3241a", "#3b2a20", "#ffcf3d", fire_mark))
-    item("cannonball", cannonball())
+    # drinks, bombs and small items: hand-drawn (pixelart.py)
+    for name, (rows, palette, edits) in pixelart.MISC.items():
+        item(name, pixelart.icon(rows, palette, edits), drawn=True)
     # tools and drinks
-    item("echo_conch", echo_conch())
-    item("rum", bottle("#7a3a12", shape="tall", label="#e8d2a0"))
-    item("healing_tonic", bottle("#e84393"))
-    item("gale_grog", bottle("#4dd0e1", cork="#6b4a2b"))
-    item("seafoam_milkshake", milkshake())
     # armour sets: hand-drawn icons (pixelart.py) and how they look when worn
     for name, (rows, palette) in pixelart.ARMOUR.items():
         item(name, pixelart.armour_icon(rows, palette), drawn=True)

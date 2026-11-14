@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.23.3 (2026-11-14)
+
+### Changed
+- **Cleaner drink, bomb and small-item icons.** The Rum, Healing Tonic, Gale Grog, Seafoam Milkshake, the three bombs, the cannonball and the Echo Conch are redrawn by hand in the same style as the weapons: rounded shapes, a glint, shaded sides and a coloured outline.
+- **Cleaner fruits.** The Abyss Fruits keep their shape, swirl and animations, but are shaded in clean bands of light instead of a grainy gradient, with a slightly wider swirl.
+
 ## 2.23.2 (2026-11-14)
 
 ### Changed
