@@ -348,7 +348,13 @@ final class TidewatchGarrison implements Listener {
         EntityEquipment eq = le.getEquipment();
         ConfigurationSection gear = mob.getConfigurationSection("equipment");
         if (eq != null && gear != null) {
-            eq.setHelmet(item(pick(gear, "helmet")));
+            String helmet = pick(gear, "helmet");
+            boolean illager = le instanceof org.bukkit.entity.Illager;
+            if (helmet != null && helmet.toLowerCase(Locale.ROOT).startsWith("look:") && !illager) {
+                // the 3D Tidewatch hats are made for the taller illager head: on anyone else they would float
+                helmet = helmet.endsWith("_tall") ? helmet.substring(0, helmet.length() - 5) : null;
+            }
+            eq.setHelmet(item(helmet));
             eq.setChestplate(item(pick(gear, "chestplate")));
             eq.setLeggings(item(pick(gear, "leggings")));
             eq.setBoots(item(pick(gear, "boots")));

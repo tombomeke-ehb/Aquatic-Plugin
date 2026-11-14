@@ -117,9 +117,20 @@ public final class SidebarModule extends AquaticModule implements Listener {
             return;
         }
         for (Player p : Bukkit.getOnlinePlayers()) {
-            update(p);
+            try {
+                update(p);
+            } catch (Throwable t) {
+                lastError = t.toString();
+                if (!errorLogged) {                       // one player's problem never stops the others
+                    errorLogged = true;
+                    logger().log(java.util.logging.Level.WARNING, "[sidebar] Could not draw the sidebar for " + p.getName(), t);
+                }
+            }
         }
     }
+
+    private boolean errorLogged;
+    private String lastError;
 
     private void update(Player p) {
         if (!p.isOnline() || !config().getBoolean("enabled", true)) {
@@ -147,14 +158,18 @@ public final class SidebarModule extends AquaticModule implements Listener {
                 return;
             }
             org.bukkit.scoreboard.Objective theirs = current.getObjective(DisplaySlot.SIDEBAR);
-            if (theirs != null && !theirs.getName().equals("aquatic_side")) {
+            if (theirs != null && !theirs.getName().equals("aquatic_side") && !config().getBoolean("take-sidebar-slot", true)
+                    && !current.getEntries().stream().allMatch(e -> !theirs.getScore(e).isScoreSet())) {
                 return;                                  // it shows its own sidebar: leave it alone
             }
-            if (current.getObjective("aquatic_side") == null) {
-                Objective o = current.registerNewObjective("aquatic_side", Criteria.DUMMY, Text.mm(dev.aquatic.util.Placeholders.apply(p, config().getString("title", "Aquatic SMP"))));
-                o.setDisplaySlot(DisplaySlot.SIDEBAR);
+            Objective o = current.getObjective("aquatic_side");
+            if (o == null) {
+                o = current.registerNewObjective("aquatic_side", Criteria.DUMMY, Text.mm(dev.aquatic.util.Placeholders.apply(p, config().getString("title", "Aquatic SMP"))));
                 o.numberFormat(NumberFormat.blank());
                 shown.remove(p.getUniqueId());
+            }
+            if (o.getDisplaySlot() != DisplaySlot.SIDEBAR) {
+                o.setDisplaySlot(DisplaySlot.SIDEBAR);
             }
             board = current;
             boards.put(p.getUniqueId(), board);
@@ -366,6 +381,24 @@ public final class SidebarModule extends AquaticModule implements Listener {
             }
             save();
         }).defaultCompleter((s, a) -> AquaticCommand.filter(List.of("on", "off"), a.length == 0 ? "" : a[0]));
+        cmd.sub("debug", (sender, a) -> {
+            Player p = a.length > 0 ? Bukkit.getPlayerExact(a[0]) : AquaticCommand.player(sender);
+            if (p == null) {
+                throw new dev.aquatic.command.CommandFail("<red>No such player online.");
+            }
+            Scoreboard current = p.getScoreboard();
+            Scoreboard main = Bukkit.getScoreboardManager().getMainScoreboard();
+            org.bukkit.scoreboard.Objective side = current.getObjective(DisplaySlot.SIDEBAR);
+            sender.sendMessage(Text.mm("<aqua>Sidebar of <white><p></white>: enabled <white><e></white>, hidden by the player <white><h></white>",
+                    "p", p.getName(), "e", config().getBoolean("enabled", true), "h", hidden.contains(p.getUniqueId())));
+            sender.sendMessage(Text.mm("<gray>Scoreboard: <white><b></white>, sidebar slot shows <white><s></white>",
+                    "b", current == boards.get(p.getUniqueId()) ? "ours" : current == main ? "the server's main board" : "another plugin's board",
+                    "s", side == null ? "nothing" : side.getName()));
+            TournamentService t = service(TournamentService.class);
+            sender.sendMessage(Text.mm("<gray>Tournament running: <white><t></white>. Last error: <white><err>",
+                    "t", t != null && t.tournamentRunning(), "err", lastError == null ? "none" : lastError));
+            sender.sendMessage(Text.mm("<gray><r>", "r", dev.aquatic.util.Ranks.describe(p)));
+        }).usage("[player]").description("Why the sidebar does (not) show, and what LuckPerms gives").permission("aquatic.admin");
         registerCommand(cmd);
     }
 

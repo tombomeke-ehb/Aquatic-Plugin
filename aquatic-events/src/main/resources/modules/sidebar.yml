@@ -13,6 +13,9 @@ title: "<gradient:#1fa2ff:#12d8fa><bold>AQUATIC SMP</bold></gradient>"
 # When another plugin gives players its own scoreboard (nametags, tab ranks), put the sidebar on that board
 # instead of hiding it. The tournament's board always wins.
 share-scoreboards: true
+# On that board, show the sidebar even if the other plugin put its own sidebar there (false = leave theirs, unless
+# it is empty). Staff: /sidebar debug [player] shows which board a player has and what LuckPerms gives.
+take-sidebar-slot: true
 
 # Up to 15 lines, top to bottom (MiniMessage).
 # Tags: <player> (the LuckPerms display name or nickname) <prefix> <suffix> (rank prefix/suffix from LuckPerms) <level> <level_title> <xp_bar> <xp_percent> <balance> <bounty> <bounty_title> <crew> <crew_online>

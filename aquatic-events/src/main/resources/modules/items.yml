@@ -3,7 +3,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 13
+config-version: 14
 #  Custom pirate items: Abyss Fruits, Abyssal Iron, legendary swords, guns,
 #  cannons, the Tide Compass, Echo Conch, rum and the Conqueror of the Sea's crown.
 #
@@ -1739,6 +1739,143 @@ items:
       shape: ["CHC", "D D"]
       ingredients: {D: DIAMOND, H: HEART_OF_THE_SEA, C: PRISMARINE_CRYSTALS}
 
+  # Pirate clothes. The hats are 3D on the head (also on the Pirate Tricorn); the rest is worn like armour.
+  pirate_tricorn:
+    type: plain
+    material: LEATHER_HELMET
+    name: "<#c9a04a><bold>Pirate Tricorn"
+    lore: ["<gray>Gold trim, a skull and a red feather.", "<gray>Every pirate needs one."]
+    item-model: "aquatic:pirate_tricorn"
+    # a 3D hat: shown on the head as its own model (no armour layer)
+    head-model: true
+    custom-model-data: 0
+    max-stack: 1
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE, HIDE_DYE]
+    attributes:
+      - {attribute: armor, amount: 2, operation: ADD_NUMBER, slot: head}
+  buccaneer_bandana:
+    type: plain
+    material: LEATHER_HELMET
+    set: buccaneer
+    name: "<red><bold>Buccaneer's Bandana"
+    lore: ["<gray>Sea salt, sunburn and a quick blade.", "", "<red>Set: Buccaneer (4 pieces)"]
+    item-model: "aquatic:pirate_bandana"
+    # a 3D hat: shown on the head as its own model (no armour layer)
+    head-model: true
+    custom-model-data: 0
+    max-stack: 1
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE, HIDE_DYE]
+    attributes:
+      - {attribute: armor, amount: 1, operation: ADD_NUMBER, slot: head}
+      - {attribute: movement_speed, amount: 0.03, operation: ADD_SCALAR, slot: head}
+  buccaneer_shirt:
+    type: plain
+    material: LEATHER_CHESTPLATE
+    set: buccaneer
+    name: "<red><bold>Buccaneer's Shirt"
+    lore: ["<gray>Sea salt, sunburn and a quick blade.", "", "<red>Set: Buccaneer (4 pieces)"]
+    item-model: "aquatic:buccaneer_shirt"
+    equipment-model: "aquatic:buccaneer"
+    custom-model-data: 0
+    max-stack: 1
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE, HIDE_DYE]
+    attributes:
+      - {attribute: armor, amount: 4, operation: ADD_NUMBER, slot: chest}
+      - {attribute: movement_speed, amount: 0.03, operation: ADD_SCALAR, slot: chest}
+  buccaneer_trousers:
+    type: plain
+    material: LEATHER_LEGGINGS
+    set: buccaneer
+    name: "<red><bold>Buccaneer's Trousers"
+    lore: ["<gray>Sea salt, sunburn and a quick blade.", "", "<red>Set: Buccaneer (4 pieces)"]
+    item-model: "aquatic:buccaneer_trousers"
+    equipment-model: "aquatic:buccaneer"
+    custom-model-data: 0
+    max-stack: 1
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE, HIDE_DYE]
+    attributes:
+      - {attribute: armor, amount: 3, operation: ADD_NUMBER, slot: legs}
+      - {attribute: movement_speed, amount: 0.03, operation: ADD_SCALAR, slot: legs}
+  buccaneer_boots:
+    type: plain
+    material: LEATHER_BOOTS
+    set: buccaneer
+    name: "<red><bold>Buccaneer's Boots"
+    lore: ["<gray>Sea salt, sunburn and a quick blade.", "", "<red>Set: Buccaneer (4 pieces)"]
+    item-model: "aquatic:buccaneer_boots"
+    equipment-model: "aquatic:buccaneer"
+    custom-model-data: 0
+    max-stack: 1
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE, HIDE_DYE]
+    attributes:
+      - {attribute: armor, amount: 1, operation: ADD_NUMBER, slot: feet}
+      - {attribute: movement_speed, amount: 0.03, operation: ADD_SCALAR, slot: feet}
+  dread_captain_hat:
+    type: plain
+    material: LEATHER_HELMET
+    set: dread_captain
+    name: "<dark_red><bold>Dread Captain's Hat"
+    lore: ["<gray>Feared on every sea. Cut from the coat of a drowned admiral.", "", "<dark_red>Set: Dread Captain (4 pieces)"]
+    item-model: "aquatic:pirate_captain"
+    # a 3D hat: shown on the head as its own model (no armour layer)
+    head-model: true
+    custom-model-data: 0
+    max-stack: 1
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE, HIDE_DYE]
+    attributes:
+      - {attribute: armor, amount: 3, operation: ADD_NUMBER, slot: head}
+      - {attribute: armor_toughness, amount: 1.5, operation: ADD_NUMBER, slot: head}
+  dread_captain_coat:
+    type: plain
+    material: LEATHER_CHESTPLATE
+    set: dread_captain
+    name: "<dark_red><bold>Dread Captain's Coat"
+    lore: ["<gray>Feared on every sea. Cut from the coat of a drowned admiral.", "", "<dark_red>Set: Dread Captain (4 pieces)"]
+    item-model: "aquatic:dread_captain_coat"
+    equipment-model: "aquatic:dread_captain"
+    custom-model-data: 0
+    max-stack: 1
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE, HIDE_DYE]
+    attributes:
+      - {attribute: armor, amount: 7, operation: ADD_NUMBER, slot: chest}
+      - {attribute: armor_toughness, amount: 1.5, operation: ADD_NUMBER, slot: chest}
+  dread_captain_trousers:
+    type: plain
+    material: LEATHER_LEGGINGS
+    set: dread_captain
+    name: "<dark_red><bold>Dread Captain's Trousers"
+    lore: ["<gray>Feared on every sea. Cut from the coat of a drowned admiral.", "", "<dark_red>Set: Dread Captain (4 pieces)"]
+    item-model: "aquatic:dread_captain_trousers"
+    equipment-model: "aquatic:dread_captain"
+    custom-model-data: 0
+    max-stack: 1
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE, HIDE_DYE]
+    attributes:
+      - {attribute: armor, amount: 5, operation: ADD_NUMBER, slot: legs}
+      - {attribute: armor_toughness, amount: 1.5, operation: ADD_NUMBER, slot: legs}
+  dread_captain_boots:
+    type: plain
+    material: LEATHER_BOOTS
+    set: dread_captain
+    name: "<dark_red><bold>Dread Captain's Boots"
+    lore: ["<gray>Feared on every sea. Cut from the coat of a drowned admiral.", "", "<dark_red>Set: Dread Captain (4 pieces)"]
+    item-model: "aquatic:dread_captain_boots"
+    equipment-model: "aquatic:dread_captain"
+    custom-model-data: 0
+    max-stack: 1
+    unbreakable: true
+    flags: [HIDE_UNBREAKABLE, HIDE_DYE]
+    attributes:
+      - {attribute: armor, amount: 2, operation: ADD_NUMBER, slot: feet}
+      - {attribute: armor_toughness, amount: 1.5, operation: ADD_NUMBER, slot: feet}
   corsair_hat:
     type: plain
     material: CHAINMAIL_HELMET
@@ -1854,6 +1991,16 @@ armor-sets:
     bonus-health: 4
     effects: ["resistance:1", "water_breathing:1", "dolphins_grace:1"]
     color: "#12d8fa"
+  buccaneer:
+    pieces: 4
+    bonus-health: 2
+    effects: ["speed:1", "luck:1"]
+    color: "#e8524a"
+  dread_captain:
+    pieces: 4
+    bonus-health: 6
+    effects: ["strength:1", "fire_resistance:1"]
+    color: "#d4a32c"
   corsair:
     pieces: 4
     bonus-health: 4

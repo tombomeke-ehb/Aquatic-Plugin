@@ -440,7 +440,13 @@ public final class ItemsModule extends AquaticModule implements ItemService {
             meta.setEnchantmentGlintOverride(!(on && model != null));
         }
         String worn = cfg.getString("equipment-model");
-        if (worn != null && on) {
+        if (cfg.getBoolean("head-model", false) && on) {
+            // a 3D hat: worn on the head and shown as its own item model, without an armour layer
+            org.bukkit.inventory.meta.components.EquippableComponent eq = meta.getEquippable();
+            eq.setSlot(org.bukkit.inventory.EquipmentSlot.HEAD);
+            eq.setModel(null);
+            meta.setEquippable(eq);
+        } else if (worn != null && on) {
             org.bukkit.inventory.meta.components.EquippableComponent eq = meta.getEquippable();
             org.bukkit.inventory.EquipmentSlot slot = material.getEquipmentSlot();
             eq.setSlot(slot == org.bukkit.inventory.EquipmentSlot.HAND ? org.bukkit.inventory.EquipmentSlot.HEAD : slot);
@@ -661,6 +667,15 @@ public final class ItemsModule extends AquaticModule implements ItemService {
     @Override
     protected void migrateConfig(org.bukkit.configuration.file.YamlConfiguration file,
                                  org.bukkit.configuration.file.YamlConfiguration defaults, int from) {
+        if (from < 14) {
+            // 2.28.0: pirate clothes with 3D hats
+            for (String id : List.of("pirate_tricorn", "buccaneer_bandana", "buccaneer_shirt", "buccaneer_trousers", "buccaneer_boots",
+                    "dread_captain_hat", "dread_captain_coat", "dread_captain_trousers", "dread_captain_boots")) {
+                addMissing(file, defaults, "items." + id);
+            }
+            addMissing(file, defaults, "armor-sets.buccaneer");
+            addMissing(file, defaults, "armor-sets.dread_captain");
+        }
         if (from < 13) {
             // 2.27.0: the Steel Cutlass and the Boarding Axe (enemies fight with them too)
             addMissing(file, defaults, "items.steel_cutlass");

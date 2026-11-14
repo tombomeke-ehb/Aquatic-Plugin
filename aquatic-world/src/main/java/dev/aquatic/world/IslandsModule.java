@@ -1147,6 +1147,15 @@ public final class IslandsModule extends AquaticModule implements IslandService,
             addMissing(file, defaults, "generation.island-type-weights.VILLAGE");
             addMissing(file, defaults, "island-names.VILLAGE");
         }
+        if (from < 15) {
+            // 2.28.0: the pirate crews wear pirate clothes with 3D hats (only crews that were never edited)
+            for (String mob : List.of("deckhand", "marksman", "bosun", "dread_captain")) {
+                String path = "ships.mobs." + mob + ".equipment.helmet";
+                if ("item:corsair_hat".equals(file.getString(path))) {
+                    file.set("ships.mobs." + mob + ".equipment", defaults.get("ships.mobs." + mob + ".equipment"));
+                }
+            }
+        }
         if (from < 14) {
             // 2.27.2: recruits in uniform: vindicators instead of zombies (only if the recruit was never edited)
             addMissing(file, defaults, "tidewatch.mobs.pistoleer");

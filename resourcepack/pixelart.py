@@ -1301,3 +1301,15 @@ MISC = {  # name: (drawing, palette, edits)
     "cannonball": (BALL, ramp("#4a4f58"), []),
     "echo_conch": (CONCH, ramp("#dc9f72", l="#fff0dc", p="#f29bb0", P="#c7607e"), []),
 }
+
+
+# ------------------------------------------------------------------ pirate clothes (their hats are 3D in the hand and on the head)
+
+PIRATE = {
+    "buccaneer_shirt": (COAT, pal("#2a0a0c", "#e8524a #a8231f #741814 #4a0e0c", x="#4a3020", l="#ece6d6", y="#c9a04a", z="#3a2414")),
+    "buccaneer_trousers": (LEGGINGS, pal("#0e1424", "#5a6a8f #2f3a52 #1f283b #141a28", x="#a8231f", y="#c9a04a")),
+    "buccaneer_boots": (BOOTS, pal("#0a0604", "#7a5a40 #4a3424 #2c1f18 #1a120d", x="#8a6a50")),
+    "dread_captain_coat": (COAT, pal("#050406", "#4a4550 #1d1a1f #121014 #08070a", x="#d4a32c", l="#ece6d6", y="#d4a32c", z="#7a1520")),
+    "dread_captain_trousers": (LEGGINGS, pal("#050406", "#5a5058 #2a2228 #1a1418 #0e0a0c", x="#7a1520", y="#d4a32c")),
+    "dread_captain_boots": (BOOTS, pal("#030202", "#4a3a2e #261c15 #140f0c #0a0706", x="#d4a32c")),
+}

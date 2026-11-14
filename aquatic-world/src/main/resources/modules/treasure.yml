@@ -16,7 +16,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 8
+config-version: 9
 
 autosave-seconds: 120
 
@@ -262,6 +262,10 @@ tiers:
     beam: false
     unique-rolls: true
     loot:
+      - {custom-item: dread_captain_hat, weight: 0.8}
+      - {custom-item: dread_captain_coat, weight: 0.6}
+      - {custom-item: dread_captain_trousers, weight: 0.7}
+      - {custom-item: dread_captain_boots, weight: 0.8}
       - {item: "key:sailor:1", weight: 4}
       - {item: "key:captain:1", weight: 3}
       - {material: DIAMOND, amount: 4-8, weight: 6}

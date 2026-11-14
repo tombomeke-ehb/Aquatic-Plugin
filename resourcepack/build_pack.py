@@ -722,7 +722,7 @@ def armor_icon(piece, base, trim, accent, style="plate"):
     return outline(img, shade(base, -0.62) if style != "plate" else shade(base, -0.7))
 
 
-def armor_layers(base, trim, accent, scale=4, legs=None, boots=None, hat=None):
+def armor_layers(base, trim, accent, scale=4, legs=None, boots=None, hat=None, stripes=None):
     """Worn clothing (humanoid + humanoid_leggings layers) at 4x: wool coats with a twill weave and soft folds,
     facings and cuffs, brass buttons, a leather belt, a felt hat with a ribbon band and braid, linen breeches
     and leather boots with a turned-down cuff. Edges are worn and slightly darker, nothing is outlined."""
@@ -738,7 +738,11 @@ def armor_layers(base, trim, accent, scale=4, legs=None, boots=None, hat=None):
     linen = rgb("#d6cfbd")
     LIGHT = {"top": 0.1, "bottom": -0.3, "front": 0.03, "right": -0.07, "left": -0.07, "back": -0.13}
 
+    stripe_col = rgb(stripes) if stripes else None
+
     def wool(c, x, y, seed=3, folds=True):
+        if stripe_col is not None and c == base and (y // 4) % 2 == 1:
+            c = stripe_col                                    # a striped shirt
         twill = 0.03 if ((x + y) // 2) % 2 else -0.03
         n = (_noise(x, y, seed) - 0.5) * 0.09 + (_noise(x // 3, y // 3, seed + 7) - 0.5) * 0.06
         fold = 0.08 * math.sin(x * 0.42 + math.sin(y * 0.13 + seed) * 1.6) if folds else 0
@@ -1637,6 +1641,7 @@ def deepcore_pickaxe():
 HEADGEAR_COLOURS = {
     "navy": "#1d3a6b", "navy_dark": "#14284d", "black": "#1b1b20", "gold": "#e2b33c", "white": "#ece8dc",
     "silver": "#c9ccd1", "red": "#b3262b", "leather": "#2a1d14",
+    "felt": "#1c1816", "bone": "#e9e2cf", "plume_red": "#c0392b", "plume_white": "#f4f1ea", "bandana": "#a8231f",
     "hair_brown": "#5a3a22", "hair_black": "#1e1a17", "hair_ginger": "#b5531f", "hair_grey": "#8d8a86", "hair_white": "#e6e2da",
 }
 
@@ -1660,7 +1665,12 @@ def headgear_textures():
                 edge = min(x, y, 31 - x, 31 - y)
                 if edge == 0 and not hair:
                     k -= 0.12
-                p[x, y] = shade(c, k) + (255,)
+                col = shade(c, k)
+                if name == "bandana" and (x % 8, y % 8) in ((2, 2), (3, 2), (2, 3), (3, 3), (6, 6), (7, 6), (6, 7), (7, 7)):
+                    col = rgb("#f2ece0")                     # white polka dots
+                if name.startswith("plume") and (x + y) % 4 == 0:
+                    col = shade(c, -0.12)                    # the barbs of the feather
+                p[x, y] = col + (255,)
         img.save(os.path.join(tex, name + ".png"))
 
 
@@ -1773,6 +1783,78 @@ def tidewatch_headgear():
         write_json(os.path.join(PACK, "assets", "aquatic", "items", vid + ".json"), {
             "model": {"type": "minecraft:model", "model": "aquatic:item/" + vid},
         })
+
+
+def pirate_hat(kind):
+    """Hats for a player-sized head: in the "head" view the head spans x/z 1.6-14.4 and y 1.6-14.4."""
+    feather = {"angle": -22.5, "axis": "z", "origin": [12.8, 15.0, 8.0]}
+    if kind == "bandana":
+        return [
+            _hg([1.2, 10.2, 1.2], [14.8, 14.9, 14.8], "bandana"),
+            _hg([6.4, 10.6, 14.8], [9.6, 13.0, 15.8], "bandana"),             # the knot
+            _hg([6.6, 6.0, 15.0], [7.8, 10.6, 15.4], "bandana"),              # and its tails
+            _hg([8.2, 6.8, 15.0], [9.4, 10.6, 15.4], "bandana"),
+        ]
+    if kind == "tricorn":
+        return [
+            _hg([3.6, 14.0, 3.6], [12.4, 17.6, 12.4], "felt"),
+            _hg([0.6, 13.8, 0.6], [15.4, 14.6, 15.4], "felt"),
+            _hg([0.6, 14.6, 13.8], [15.4, 17.0, 15.4], "felt"),
+            _hg([0.6, 14.6, 3.0], [2.2, 17.0, 13.8], "felt"),
+            _hg([13.8, 14.6, 3.0], [15.4, 17.0, 13.8], "felt"),
+            _hg([0.6, 17.0, 13.8], [15.4, 17.4, 15.4], "gold"),
+            _hg([0.6, 17.0, 3.0], [2.2, 17.4, 13.8], "gold"),
+            _hg([13.8, 17.0, 3.0], [15.4, 17.4, 13.8], "gold"),
+            _hg([7.0, 15.0, 3.3], [9.0, 16.8, 3.6], "bone"),                  # skull badge
+            _hg([12.4, 15.0, 7.2], [13.2, 21.0, 8.8], "plume_red", feather),
+        ]
+    # the Dread Captain's hat: a wide brim turned up at the front, a skull, a red band and two plumes
+    return [
+        _hg([3.2, 14.0, 3.2], [12.8, 19.4, 12.8], "felt"),
+        _hg([3.1, 14.4, 3.1], [12.9, 15.6, 12.9], "plume_red"),
+        _hg([-1.6, 13.8, -1.6], [17.6, 14.6, 17.6], "felt"),
+        _hg([-0.6, 14.6, -1.6], [16.6, 18.2, -0.8], "felt"),
+        _hg([-0.6, 18.2, -1.6], [16.6, 18.6, -0.8], "gold"),
+        _hg([-1.6, 13.4, -1.6], [17.6, 13.8, 17.6], "gold"),
+        _hg([7.0, 15.4, -1.9], [9.0, 17.4, -1.6], "bone"),
+        _hg([12.0, 15.0, 9.0], [13.6, 24.0, 10.6], "plume_white", feather),
+        _hg([11.2, 15.0, 10.6], [12.4, 22.0, 11.8], "plume_red", feather),
+    ]
+
+
+def _raise(elements, dy):
+    out = []
+    for e in elements:
+        e = json.loads(json.dumps(e))
+        e["from"][1] += dy
+        e["to"][1] += dy
+        if "rotation" in e:
+            e["rotation"]["origin"][1] += dy
+        out.append(e)
+    return out
+
+
+def pirate_hats():
+    """pirate_<kind> for players and skeletons, pirate_<kind>_tall for illagers (their heads are 2 pixels taller)."""
+    headgear_textures()
+    textures = {n: "aquatic:item/headgear/" + n for n in HEADGEAR_COLOURS}
+    textures["particle"] = textures["felt"]
+    for kind in ("bandana", "tricorn", "captain"):
+        for suffix, dy in (("", 0.0), ("_tall", 3.2)):
+            vid = "pirate_" + kind + suffix
+            write_json(os.path.join(PACK, "assets", "aquatic", "models", "item", vid + ".json"), {
+                "textures": textures,
+                "elements": _raise(pirate_hat(kind), dy),
+                "display": {
+                    "head": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+                    "gui": {"rotation": [25, 200, 0], "translation": [0, -3, 0], "scale": [0.62, 0.62, 0.62]},
+                    "ground": {"rotation": [0, 0, 0], "translation": [0, -1, 0], "scale": [0.35, 0.35, 0.35]},
+                    "fixed": {"rotation": [0, 180, 0], "translation": [0, -2, 0], "scale": [0.6, 0.6, 0.6]},
+                },
+            })
+            write_json(os.path.join(PACK, "assets", "aquatic", "items", vid + ".json"), {
+                "model": {"type": "minecraft:model", "model": "aquatic:item/" + vid},
+            })
 
 
 def illager_hd(coat, trim, belts, hat, seed=1):
@@ -2056,6 +2138,11 @@ def main():
     equipment("tidewatch", *armor_layers("#24334f", "#141d31", "#cfc8b4", legs="#d9d3c2", boots="#221c17", hat="#1f2a3d"))
     equipment("tidewatch_officer", *armor_layers("#1a2742", "#0e1628", "#b8933f", legs="#d9d3c2", boots="#221c17", hat="#1f2a3d"))
     equipment("tidewatch_captain", *armor_layers("#e4e0d6", "#8f7a4c", "#b8933f", legs="#d9d3c2", boots="#221c17", hat="#e4e0d6"))
+    pirate_hats()
+    equipment("buccaneer", *armor_layers("#a8231f", "#4a3020", "#c9a04a", legs="#2f3a52", boots="#3a2414", stripes="#ece6d6"))
+    equipment("dread_captain", *armor_layers("#1d1a1f", "#7a1520", "#d4a32c", legs="#2a2228", boots="#140f0c"))
+    for name, (rows, palette) in pixelart.PIRATE.items():
+        item(name, pixelart.armour_icon(rows, palette), drawn=True)
     equipment("captains_coat", armor_layers("#2c2a30", "#7a2420", "#b8933f", hat="#1c1a1e")[0])
     for name, image in FRUITS.items():
         item(name, image)

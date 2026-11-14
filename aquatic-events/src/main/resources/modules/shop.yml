@@ -16,7 +16,7 @@
 title: "<dark_aqua><bold>Harbor Market"
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 6
+config-version: 7
 
 command:
   # false: players have no /shop command at all; the shopkeeper villagers at spawn open the market.
@@ -89,6 +89,11 @@ categories:
     description: ["<gray>Powder, shot and things that go boom."]
     items:
       - {item: "item:steel_cutlass", amount: 1, buy: 600, sell: 0}
+      - {item: "item:pirate_tricorn", amount: 1, buy: 900, sell: 0}
+      - {item: "item:buccaneer_bandana", amount: 1, buy: 700, sell: 0}
+      - {item: "item:buccaneer_shirt", amount: 1, buy: 1100, sell: 0}
+      - {item: "item:buccaneer_trousers", amount: 1, buy: 950, sell: 0}
+      - {item: "item:buccaneer_boots", amount: 1, buy: 700, sell: 0}
       - {item: "item:boarding_axe", amount: 1, buy: 750, sell: 0}
       - {item: "item:flintlock", amount: 1, buy: 1500, sell: 0}
       - {item: "item:musket", amount: 1, buy: 4500, sell: 0}

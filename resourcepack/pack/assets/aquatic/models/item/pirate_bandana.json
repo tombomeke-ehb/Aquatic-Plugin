@@ -1,0 +1,223 @@
+{
+  "textures": {
+    "navy": "aquatic:item/headgear/navy",
+    "navy_dark": "aquatic:item/headgear/navy_dark",
+    "black": "aquatic:item/headgear/black",
+    "gold": "aquatic:item/headgear/gold",
+    "white": "aquatic:item/headgear/white",
+    "silver": "aquatic:item/headgear/silver",
+    "red": "aquatic:item/headgear/red",
+    "leather": "aquatic:item/headgear/leather",
+    "felt": "aquatic:item/headgear/felt",
+    "bone": "aquatic:item/headgear/bone",
+    "plume_red": "aquatic:item/headgear/plume_red",
+    "plume_white": "aquatic:item/headgear/plume_white",
+    "bandana": "aquatic:item/headgear/bandana",
+    "hair_brown": "aquatic:item/headgear/hair_brown",
+    "hair_black": "aquatic:item/headgear/hair_black",
+    "hair_ginger": "aquatic:item/headgear/hair_ginger",
+    "hair_grey": "aquatic:item/headgear/hair_grey",
+    "hair_white": "aquatic:item/headgear/hair_white",
+    "particle": "aquatic:item/headgear/felt"
+  },
+  "elements": [
+    {
+      "from": [
+        1.2,
+        10.2,
+        1.2
+      ],
+      "to": [
+        14.8,
+        14.9,
+        14.8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bandana"
+        },
+        "south": {
+          "texture": "#bandana"
+        },
+        "east": {
+          "texture": "#bandana"
+        },
+        "west": {
+          "texture": "#bandana"
+        },
+        "up": {
+          "texture": "#bandana"
+        },
+        "down": {
+          "texture": "#bandana"
+        }
+      }
+    },
+    {
+      "from": [
+        6.4,
+        10.6,
+        14.8
+      ],
+      "to": [
+        9.6,
+        13.0,
+        15.8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bandana"
+        },
+        "south": {
+          "texture": "#bandana"
+        },
+        "east": {
+          "texture": "#bandana"
+        },
+        "west": {
+          "texture": "#bandana"
+        },
+        "up": {
+          "texture": "#bandana"
+        },
+        "down": {
+          "texture": "#bandana"
+        }
+      }
+    },
+    {
+      "from": [
+        6.6,
+        6.0,
+        15.0
+      ],
+      "to": [
+        7.8,
+        10.6,
+        15.4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bandana"
+        },
+        "south": {
+          "texture": "#bandana"
+        },
+        "east": {
+          "texture": "#bandana"
+        },
+        "west": {
+          "texture": "#bandana"
+        },
+        "up": {
+          "texture": "#bandana"
+        },
+        "down": {
+          "texture": "#bandana"
+        }
+      }
+    },
+    {
+      "from": [
+        8.2,
+        6.8,
+        15.0
+      ],
+      "to": [
+        9.4,
+        10.6,
+        15.4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bandana"
+        },
+        "south": {
+          "texture": "#bandana"
+        },
+        "east": {
+          "texture": "#bandana"
+        },
+        "west": {
+          "texture": "#bandana"
+        },
+        "up": {
+          "texture": "#bandana"
+        },
+        "down": {
+          "texture": "#bandana"
+        }
+      }
+    }
+  ],
+  "display": {
+    "head": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "gui": {
+      "rotation": [
+        25,
+        200,
+        0
+      ],
+      "translation": [
+        0,
+        -3,
+        0
+      ],
+      "scale": [
+        0.62,
+        0.62,
+        0.62
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        -1,
+        0
+      ],
+      "scale": [
+        0.35,
+        0.35,
+        0.35
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        0,
+        -2,
+        0
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    }
+  }
+}

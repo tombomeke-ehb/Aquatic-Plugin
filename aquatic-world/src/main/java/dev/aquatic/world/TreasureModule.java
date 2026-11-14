@@ -1392,6 +1392,18 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
     @Override
     protected void migrateConfig(org.bukkit.configuration.file.YamlConfiguration file,
                                  org.bukkit.configuration.file.YamlConfiguration defaults, int from) {
+        if (from < 9) {
+            // 2.28.0: the Dread Captain set in epic treasure
+            List<Map<?, ?>> loot = new ArrayList<>(file.getMapList("tiers.epic.loot"));
+            if (file.contains("tiers.epic.loot") && loot.stream().noneMatch(e -> "dread_captain_coat".equals(String.valueOf(e.get("custom-item"))))) {
+                for (Map<?, ?> d : defaults.getMapList("tiers.epic.loot")) {
+                    if (String.valueOf(d.get("custom-item")).startsWith("dread_captain_")) {
+                        loot.add(d);
+                    }
+                }
+                file.set("tiers.epic.loot", loot);
+            }
+        }
         if (from < 8) {
             // 2.27.0: the Steel Cutlass and the Boarding Axe in common treasure
             List<Map<?, ?>> loot = new ArrayList<>(file.getMapList("tiers.common.loot"));

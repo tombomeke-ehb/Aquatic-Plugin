@@ -560,6 +560,19 @@ public final class ShopModule extends AquaticModule implements Listener {
             addMissing(file, defaults, "categories.masonry");
             addMissing(file, defaults, "categories.decor");
         }
+        if (from < 7) {
+            // 2.28.0: the Pirate Tricorn and the Buccaneer set in the Pirate Armory
+            List<Map<?, ?>> items = new ArrayList<>(file.getMapList("categories.pirate.items"));
+            if (file.contains("categories.pirate.items") && items.stream().noneMatch(e -> String.valueOf(e.get("item")).equals("item:pirate_tricorn"))) {
+                for (Map<?, ?> d : defaults.getMapList("categories.pirate.items")) {
+                    String it = String.valueOf(d.get("item"));
+                    if (it.equals("item:pirate_tricorn") || it.startsWith("item:buccaneer_")) {
+                        items.add(d);
+                    }
+                }
+                file.set("categories.pirate.items", items);
+            }
+        }
         if (from < 6) {
             // 2.27.0: the Steel Cutlass and the Boarding Axe in the Pirate Armory
             List<Map<?, ?>> items = new ArrayList<>(file.getMapList("categories.pirate.items"));

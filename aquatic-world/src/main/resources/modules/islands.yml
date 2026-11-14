@@ -18,7 +18,7 @@
 
 # How often (seconds) changed data is written to plugins/AquaticSMP/data/islands/ (also saved on shutdown).
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 14
+config-version: 15
 
 autosave-seconds: 120
 
@@ -1172,21 +1172,21 @@ ships:
       name: "<red>Cursed Deckhand"
       health-multiplier: 1.6
       damage-multiplier: 1.3
-      equipment: {helmet: "item:corsair_hat", chestplate: "item:corsair_coat", leggings: "item:corsair_breeches",
-                  boots: "item:corsair_boots", mainhand: "item:steel_cutlass"}
+      equipment: {helmet: ["item:buccaneer_bandana", "item:buccaneer_bandana", "item:pirate_tricorn"], chestplate: "item:buccaneer_shirt",
+                  leggings: "item:buccaneer_trousers", boots: "item:buccaneer_boots", mainhand: "item:steel_cutlass"}
     marksman:
       type: PILLAGER
       name: "<red>Pirate Marksman"
       health-multiplier: 1.4
-      equipment: {helmet: "item:corsair_hat", chestplate: "item:corsair_coat", leggings: "item:corsair_breeches",
-                  boots: "item:corsair_boots", mainhand: "item:flintlock"}
+      # illagers show no armour, only a hat: "look:pirate_<hat>_tall" fits their taller heads
+      equipment: {helmet: ["look:pirate_tricorn_tall", "look:pirate_bandana_tall"], mainhand: "item:flintlock"}
     bosun:
       type: WITHER_SKELETON
       name: "<dark_red>Cursed Bosun"
       health-multiplier: 1.6
       damage-multiplier: 1.2
       powers: [ember, gale]
-      equipment: {helmet: "item:corsair_hat", chestplate: "item:corsair_coat", mainhand: "item:boarding_axe"}
+      equipment: {helmet: "item:pirate_tricorn", chestplate: "item:buccaneer_shirt", mainhand: "item:boarding_axe"}
     dread_captain:
       type: WITHER_SKELETON
       name: "<dark_red><bold>Dread Captain"
@@ -1195,8 +1195,8 @@ ships:
       powers: [ember, thunder]
       power-chance: 1.0
       effects: ["fire_resistance:1"]
-      equipment: {helmet: "item:corsair_hat", chestplate: "item:captains_coat", leggings: "item:corsair_breeches",
-                  boots: "item:corsair_boots", mainhand: "item:abyss_cutlass"}
+      equipment: {helmet: "item:dread_captain_hat", chestplate: "item:dread_captain_coat", leggings: "item:dread_captain_trousers",
+                  boots: "item:dread_captain_boots", mainhand: "item:abyss_cutlass"}
 
 messages:
   ship-sighted: "<gold>⚓ A <ship> <gold>was sighted near <white><x>, <z></white>. <gray>Board it, beat its crew and take its hold!"

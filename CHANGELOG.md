@@ -1,5 +1,26 @@
 # Changelog
 
+## 2.28.0 (2026-11-14)
+
+### Added
+- **Pirate clothes with 3D hats.**
+  - **Buccaneer set:** a red polka-dot bandana with a knot, a striped shirt with a vest, sash trousers and boots. Light armour; the full set gives Speed and Luck.
+  - **Dread Captain set:** a wide hat with the brim turned up, a skull, a red band and two plumes, a long black-and-gold coat, trousers and boots. Heavy armour with toughness; the full set gives Strength, Fire Resistance and 3 extra hearts.
+  - **Pirate Tricorn:** a black tricorn with gold trim, a skull and a red feather.
+  - The hats are real 3D models on the head; the other pieces are worn like armour.
+  - **Where to get them:** the Tricorn and the Buccaneer set are sold in the Pirate Armory; the Dread Captain set is found in epic treasure.
+  - **Pirate crews wear them:** deckhands wear bandanas and striped shirts, the bosun a tricorn, the Dread Captain his full set. Pistoleers wear the hats in a version made for the taller illager head.
+- **`/sidebar debug [player]`** (staff) shows whose scoreboard a player has, what is in the sidebar slot, the last sidebar error, and what the plugin reads from LuckPerms and Vault.
+
+### Fixed
+- **LuckPerms group display names were ignored.** `/lp group <group> setdisplayname ...` is not visible through Vault; the plugin now reads LuckPerms directly.
+  - A display name with text (`setdisplayname "&cAdmin"`) is the rank shown on the sidebar and as `<group>` in chat and tab.
+  - A display name that is only a colour (`setdisplayname &e`) colours the player's name in chat, the tab list and the sidebar. You can also set a name colour with the meta `name-color` (`/lp group admin meta set name-color &e`).
+- **The sidebar could vanish.**
+  - An error while drawing it stopped it for everyone; now it only skips that player and logs the cause once.
+  - When another plugin shows its own sidebar on its scoreboard, ours takes the slot (`take-sidebar-slot` in `sidebar.yml`, set it to `false` to leave theirs).
+- **3D Tidewatch hats floated above non-illager heads.** They only go on illagers now.
+
 ## 2.27.2 (2026-11-14)
 
 ### Added
