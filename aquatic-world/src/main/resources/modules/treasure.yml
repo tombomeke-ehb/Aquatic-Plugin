@@ -16,7 +16,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 6
+config-version: 7
 
 autosave-seconds: 120
 
@@ -374,9 +374,9 @@ tiers:
     beam: true
     celebrate: true
     unique-rolls: true
-    # Always in the chest: one Abyss Fruit and one signature weapon (see the jackpot list).
+    # Always in the chest: an Epic or Legendary Abyss Fruit and one signature weapon (see the jackpot list).
     guaranteed:
-      - {custom-item: fruit_random}
+      - {custom-item: fruit_random_epic}
     loot:
       - {item: "key:captain:3", weight: 5}
       - {item: "key:kraken:2", weight: 4}

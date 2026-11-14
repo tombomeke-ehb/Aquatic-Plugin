@@ -105,6 +105,8 @@ final class IslandFacilities implements Listener {
         int rot;
         Plan plan;
         final List<Location> shown = new ArrayList<>();
+        /** The ghost blocks by position, to show them again when the player's client loses them (clicks). */
+        final Map<Long, BlockData> ghost = new HashMap<>();
         long expires;
     }
 
@@ -492,6 +494,7 @@ final class IslandFacilities implements Listener {
             }
             fake.put(io.papermc.paper.math.Position.block(s.loc), show);
             pv.shown.add(s.loc);
+            pv.ghost.put(ghostKey(s.loc.getBlockX(), s.loc.getBlockY(), s.loc.getBlockZ()), show);
         }
         p.sendMultiBlockChange(fake);
         report(p, pv);
@@ -530,6 +533,7 @@ final class IslandFacilities implements Listener {
             p.sendMultiBlockChange(real);
         }
         pv.shown.clear();
+        pv.ghost.clear();
     }
 
     boolean cancel(Player p, boolean tell) {
@@ -1090,18 +1094,99 @@ final class IslandFacilities implements Listener {
                 p.sendMessage(m.msg("facility-expired", "name", name(pv.type)));
                 continue;
             }
+            // a blue box around the whole build (red when it cannot be built there): it is only a preview
             Plan plan = pv.plan;
-            Particle.DustOptions dust = new Particle.DustOptions(plan.ok() ? Color.fromRGB(0x55FF77) : Color.fromRGB(0xFF5555), 1.2f);
-            double y = plan.ay + 1.1;
-            for (int x = plan.minX; x <= plan.maxX + 1; x++) {
-                p.spawnParticle(Particle.DUST, x, y, plan.minZ, 1, 0, 0, 0, 0, dust);
-                p.spawnParticle(Particle.DUST, x, y, plan.maxZ + 1, 1, 0, 0, 0, 0, dust);
+            Particle.DustOptions dust = new Particle.DustOptions(plan.ok() ? Color.fromRGB(0x3FA9FF) : Color.fromRGB(0xFF5555), 1.5f);
+            double x0 = plan.minX, x1 = plan.maxX + 1, z0 = plan.minZ, z1 = plan.maxZ + 1;
+            double y0 = plan.ay, y1 = plan.ay + plan.maxY + 1;
+            for (double y : new double[]{y0, y1}) {
+                for (double x = x0; x <= x1; x += 0.5) {
+                    p.spawnParticle(Particle.DUST, x, y, z0, 1, 0, 0, 0, 0, dust);
+                    p.spawnParticle(Particle.DUST, x, y, z1, 1, 0, 0, 0, 0, dust);
+                }
+                for (double z = z0; z <= z1; z += 0.5) {
+                    p.spawnParticle(Particle.DUST, x0, y, z, 1, 0, 0, 0, 0, dust);
+                    p.spawnParticle(Particle.DUST, x1, y, z, 1, 0, 0, 0, 0, dust);
+                }
             }
-            for (int z = plan.minZ; z <= plan.maxZ + 1; z++) {
-                p.spawnParticle(Particle.DUST, plan.minX, y, z, 1, 0, 0, 0, 0, dust);
-                p.spawnParticle(Particle.DUST, plan.maxX + 1, y, z, 1, 0, 0, 0, 0, dust);
+            for (double y = y0; y <= y1; y += 0.5) {
+                for (double[] c : new double[][]{{x0, z0}, {x1, z0}, {x0, z1}, {x1, z1}}) {
+                    p.spawnParticle(Particle.DUST, c[0], y, c[1], 1, 0, 0, 0, 0, dust);
+                }
             }
         }
+    }
+
+    private static long ghostKey(int x, int y, int z) {
+        return ((long) (x & 0x3FFFFFF) << 38) | ((long) (z & 0x3FFFFFF) << 12) | (y & 0xFFF);
+    }
+
+    /** Sends the ghost blocks around the player again (a click makes the client show the real block there). */
+    private void reshow(Player p, Preview pv) {
+        if (pv.shown.isEmpty()) {
+            return;
+        }
+        Location eye = p.getEyeLocation();
+        Map<io.papermc.paper.math.Position, BlockData> fake = new HashMap<>();
+        for (Location l : pv.shown) {
+            if (l.getWorld() == eye.getWorld() && l.distanceSquared(eye) <= 8 * 8) {
+                BlockData d = pv.ghost.get(ghostKey(l.getBlockX(), l.getBlockY(), l.getBlockZ()));
+                if (d != null) {
+                    fake.put(io.papermc.paper.math.Position.block(l), d);
+                }
+            }
+        }
+        if (!fake.isEmpty()) {
+            p.sendMultiBlockChange(fake);
+        }
+    }
+
+    private void reshowSoon(Player p) {
+        Preview pv = previews.get(p.getUniqueId());
+        if (pv == null) {
+            return;
+        }
+        m.runLater(() -> {
+            if (previews.get(p.getUniqueId()) == pv) {
+                reshow(p, pv);
+            }
+        }, 1L);
+        m.runLater(() -> {
+            if (previews.get(p.getUniqueId()) == pv) {
+                reshow(p, pv);
+            }
+        }, 4L);
+    }
+
+    /** Clicking a ghost block does nothing (no placing against it, no using what is really there) and it stays. */
+    @EventHandler(priority = org.bukkit.event.EventPriority.LOWEST)
+    public void onPreviewClick(org.bukkit.event.player.PlayerInteractEvent event) {
+        Preview pv = previews.get(event.getPlayer().getUniqueId());
+        if (pv == null) {
+            return;
+        }
+        Block b = event.getClickedBlock();
+        if (b != null && (pv.ghost.containsKey(ghostKey(b.getX(), b.getY(), b.getZ()))
+                || pv.ghost.containsKey(ghostKey(b.getX() + event.getBlockFace().getModX(), b.getY() + event.getBlockFace().getModY(),
+                b.getZ() + event.getBlockFace().getModZ())))) {
+            event.setCancelled(true);
+        }
+        reshowSoon(event.getPlayer());
+    }
+
+    @EventHandler(priority = org.bukkit.event.EventPriority.LOWEST)
+    public void onPreviewBreak(org.bukkit.event.block.BlockBreakEvent event) {
+        Preview pv = previews.get(event.getPlayer().getUniqueId());
+        Block b = event.getBlock();
+        if (pv != null && pv.ghost.containsKey(ghostKey(b.getX(), b.getY(), b.getZ()))) {
+            event.setCancelled(true);
+            reshowSoon(event.getPlayer());
+        }
+    }
+
+    @EventHandler
+    public void onPreviewSwing(org.bukkit.event.player.PlayerAnimationEvent event) {
+        reshowSoon(event.getPlayer());
     }
 
     @EventHandler

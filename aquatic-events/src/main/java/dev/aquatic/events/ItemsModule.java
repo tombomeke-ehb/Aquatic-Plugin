@@ -155,7 +155,14 @@ public final class ItemsModule extends AquaticModule implements ItemService {
             meta.displayName(Text.item(cfg.getString("name")));
         }
         if (cfg.contains("lore")) {
-            meta.lore(Text.itemLore(cfg.getStringList("lore")));
+            List<String> lore = new ArrayList<>(cfg.getStringList("lore"));
+            if ("fruit".equals(cfg.getString("type"))) {             // the rarity, on the first line
+                String rarity = config().getString("fruits.rarities." + cfg.getString("fruit.rarity", "rare") + ".name");
+                if (rarity != null) {
+                    lore.add(0, rarity + " <dark_gray>Abyss Fruit");
+                }
+            }
+            meta.lore(Text.itemLore(lore));
         }
         int cmd = cfg.getInt("custom-model-data", 0);
         if (cmd > 0) {
@@ -300,16 +307,62 @@ public final class ItemsModule extends AquaticModule implements ItemService {
 
     @Override
     public ItemStack createItem(String id, int amount) {
-        if (id != null && id.equalsIgnoreCase(RANDOM_FRUIT)) {
+        if (id != null && id.toLowerCase(Locale.ROOT).startsWith(RANDOM_FRUIT)) {
             if (fruits == null || !fruits.isEnabled()) {
                 return null; // fruits are switched off
             }
-            java.util.List<ItemDef> fruits = defs.values().stream().filter(ItemDef::isFruit).toList();
-            return fruits.isEmpty() ? null
-                    : fruits.get(java.util.concurrent.ThreadLocalRandom.current().nextInt(fruits.size())).create(amount);
+            ItemDef fruit = randomFruit(id.length() > RANDOM_FRUIT.length() + 1 ? id.substring(RANDOM_FRUIT.length() + 1) : null);
+            return fruit == null ? null : fruit.create(amount);
         }
         ItemDef def = id == null ? null : defs.get(id.toLowerCase(Locale.ROOT));
         return def == null ? null : def.create(amount);
+    }
+
+    /** The rarities in order, from common to the rarest (fruits.rarities). */
+    public List<String> rarities() {
+        ConfigurationSection r = config().getConfigurationSection("fruits.rarities");
+        return r == null ? List.of() : new ArrayList<>(r.getKeys(false));
+    }
+
+    /** A fruit's rarity settings (fruits.rarities.<its rarity>), or null. */
+    public ConfigurationSection rarityOf(String fruitId) {
+        ItemDef def = fruitId == null ? null : defs.get(fruitId.toLowerCase(Locale.ROOT));
+        if (def == null || !def.isFruit()) {
+            return null;
+        }
+        return config().getConfigurationSection("fruits.rarities." + def.cfg.getString("fruit.rarity", "rare"));
+    }
+
+    /** A random fruit: first a rarity by its weight (only "atLeast" or rarer), then one of the fruits of that rarity. */
+    ItemDef randomFruit(String atLeast) {
+        List<String> order = rarities();
+        int from = atLeast == null ? 0 : Math.max(0, order.indexOf(atLeast.toLowerCase(Locale.ROOT)));
+        Map<String, List<ItemDef>> byRarity = new LinkedHashMap<>();
+        for (ItemDef d : defs.values()) {
+            if (d.isFruit()) {
+                byRarity.computeIfAbsent(d.cfg.getString("fruit.rarity", "rare").toLowerCase(Locale.ROOT), k -> new ArrayList<>()).add(d);
+            }
+        }
+        java.util.concurrent.ThreadLocalRandom r = java.util.concurrent.ThreadLocalRandom.current();
+        double total = 0;
+        for (int i = from; i < order.size(); i++) {
+            if (byRarity.containsKey(order.get(i))) {
+                total += Math.max(0, config().getDouble("fruits.rarities." + order.get(i) + ".weight", 1));
+            }
+        }
+        double roll = r.nextDouble() * total;
+        for (int i = from; i < order.size(); i++) {
+            List<ItemDef> list = byRarity.get(order.get(i));
+            if (list == null) {
+                continue;
+            }
+            roll -= Math.max(0, config().getDouble("fruits.rarities." + order.get(i) + ".weight", 1));
+            if (roll < 0) {
+                return list.get(r.nextInt(list.size()));
+            }
+        }
+        List<ItemDef> all = defs.values().stream().filter(ItemDef::isFruit).toList();
+        return all.isEmpty() ? null : all.get(r.nextInt(all.size()));
     }
 
     @Override
@@ -456,6 +509,14 @@ public final class ItemsModule extends AquaticModule implements ItemService {
                     send(sender, "item-given", "amount", n, "item", crateKeys.key(crate, 1).displayName(), "player", target.getName());
                     return;
                 }
+                if (args[1].toLowerCase(Locale.ROOT).startsWith(RANDOM_FRUIT)) {        // fruit_random, fruit_random_epic ...
+                    ItemStack fruit = createItem(args[1], 1);
+                    if (fruit != null) {
+                        Util.give(target, fruit);
+                        send(sender, "item-given", "amount", 1, "item", fruit.displayName(), "player", target.getName());
+                        return;
+                    }
+                }
                 throw new CommandFail(rawMsg("unknown-item", "id", args[1]));
             }
             int amount = args.length > 2 ? Math.max(1, Math.min(2304, AquaticCommand.integer(args[2]))) : 1;
@@ -557,6 +618,11 @@ public final class ItemsModule extends AquaticModule implements ItemService {
         long cd = fruits.cooldownLeft(uuid, "fruit");
         send(sender, "fruit-info-header", "player", name, "fruit", def.displayName());
         sender.sendMessage(rawMsg("fruit-info-description", "description", def.cfg.getString("fruit.description", "-")));
+        ConfigurationSection rar = rarityOf(def.id);
+        if (rar != null) {
+            sender.sendMessage(Text.mm(" <gray>Rarity: " + rar.getString("name", "?") + " <dark_gray>(" + Math.round(rar.getDouble("power", 1) * 100)
+                    + "% power, " + Math.round(rar.getDouble("cooldown", 1) * 100) + "% cooldown)"));
+        }
         if (ability != null) {
             sender.sendMessage(rawMsg("fruit-info-ability", "ability", Text.mm(ability.getString("name", "Ability")),
                     "cooldown", Text.duration(ability.getLong("cooldown", 0)),
@@ -595,6 +661,18 @@ public final class ItemsModule extends AquaticModule implements ItemService {
     @Override
     protected void migrateConfig(org.bukkit.configuration.file.YamlConfiguration file,
                                  org.bukkit.configuration.file.YamlConfiguration defaults, int from) {
+        if (from < 12) {
+            // 2.26.0: fruit rarities (weaker common fruits, stronger rare ones)
+            addMissing(file, defaults, "fruits.rarities");
+            ConfigurationSection items = defaults.getConfigurationSection("items");
+            if (items != null) {
+                for (String id : items.getKeys(false)) {
+                    if (defaults.contains("items." + id + ".fruit.rarity") && file.contains("items." + id + ".fruit")) {
+                        addMissing(file, defaults, "items." + id + ".fruit.rarity");
+                    }
+                }
+            }
+        }
         if (from < 11) {
             // 2.23.0: fruit mastery takes much longer; the Tidecaller is light blue
             raise(file, "fruits.mastery.xp-per-use", 6, 5);

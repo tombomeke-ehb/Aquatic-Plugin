@@ -1,5 +1,31 @@
 # Changelog
 
+## 2.26.0 (2026-11-14)
+
+### Added
+- **Fruit rarities.** Every Abyss Fruit has a rarity. Rarer fruits are found less often and are stronger:
+
+  | Rarity | Fruits | Chance | Damage | Cooldowns | Extra hearts |
+  | --- | --- | --- | --- | --- | --- |
+  | Common | Springcoil, Stoneskin, Venomfang, Dunemaw | 46% | 85% | 115% | - |
+  | Uncommon | Galeborn, Ghostglass, Behemoth | 28% | 95% | 105% | - |
+  | Rare | Emberheart, Rimefrost, Tidecaller | 16% | 105% | 100% | +1 |
+  | Epic | Riftshift, Luminara | 7% | 118% | 92% | +1 |
+  | Legendary | Thunderveil, Hollowvoid | 3% | 132% | 85% | +2 |
+
+  - The rarity is on the first line of the fruit's lore and in `/aitem fruit info`.
+  - `fruit_random` (treasure, crates) picks a rarity first, then a fruit. `fruit_random_<rarity>` gives that rarity or rarer: MEGA Legendary treasure now always holds an Epic or Legendary fruit.
+  - Set it all under `fruits.rarities` in `items.yml`, and move a fruit with `fruit.rarity`.
+
+### Changed
+- **New ship designs.** Both ships are rebuilt: a rounded, V-shaped hull with a stripe along the waterline, cannons behind gunports (and on deck on the brig), a raised forecastle, a captain's cabin with windows, a desk and a map table, a quarterdeck with the ship's wheel, curved sails with yards and crow's nests, a bowsprit with a jib, an anchor and a hold with cargo.
+- **Ships appear near players**, 120-320 blocks from a random player at sea (`ships.spawn-distance-min/max`), not anywhere on the map.
+- **Islands are placed in rings around spawn.** New islands go close to the centre first and move outwards ring by ring as the sea fills up (`ocean-area.placement`, `ring-start`, `ring-step`), and 12% land anywhere for a natural spread (`scatter`). Set `placement: random` for the old behaviour.
+- **Facility previews have a blue box** around the whole build (red when it cannot be built there).
+
+### Fixed
+- **Clicking a facility preview made its blocks vanish.** The ghost blocks now stay when you click them, and clicking does nothing to the real blocks underneath.
+
 ## 2.25.0 (2026-11-14)
 
 ### Added

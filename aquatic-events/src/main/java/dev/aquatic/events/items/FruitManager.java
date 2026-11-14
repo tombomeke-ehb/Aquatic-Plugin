@@ -172,7 +172,7 @@ public final class FruitManager implements Listener {
     /** Damage multiplier of fruit moves: the global fruit multiplier x mastery. */
     public double damageScale(UUID player) {
         double global = module.config().getDouble("abilities.fruit-damage-multiplier", 1.5);
-        return global * (1 + (masteryLevel(player) - 1) * masteryCfg().getDouble("damage-per-level", 0.04));
+        return global * rarity(player, "power") * (1 + (masteryLevel(player) - 1) * masteryCfg().getDouble("damage-per-level", 0.04));
     }
 
     public double rangeScale(UUID player) {
@@ -180,8 +180,14 @@ public final class FruitManager implements Listener {
     }
 
     public double cooldownScale(UUID player) {
-        return Math.max(masteryCfg().getDouble("min-cooldown", 0.6),
+        return rarity(player, "cooldown") * Math.max(masteryCfg().getDouble("min-cooldown", 0.6),
                 1 - (masteryLevel(player) - 1) * masteryCfg().getDouble("cooldown-per-level", 0.015));
+    }
+
+    /** A setting of the rarity of the player's fruit (power, cooldown), 1 when it has none. */
+    double rarity(UUID player, String key) {
+        org.bukkit.configuration.ConfigurationSection r = module.rarityOf(fruitOf.get(player));
+        return r == null ? 1.0 : r.getDouble(key, 1.0);
     }
 
     /** Extra max health (half-hearts) from having a fruit: a base amount plus a heart every few mastery levels. */
@@ -190,7 +196,9 @@ public final class FruitManager implements Listener {
             return 0;
         }
         int every = Math.max(1, masteryCfg().getInt("heart-every", 4));
-        return module.config().getDouble("fruits.bonus-health", 6) + (masteryLevel(player) / every) * 2.0;
+        org.bukkit.configuration.ConfigurationSection r = module.rarityOf(fruitOf.get(player));
+        return module.config().getDouble("fruits.bonus-health", 6) + (r == null ? 0 : r.getDouble("health", 0))
+                + (masteryLevel(player) / every) * 2.0;
     }
 
     /** True when the section is one of the configured fruit moves (identity check). */

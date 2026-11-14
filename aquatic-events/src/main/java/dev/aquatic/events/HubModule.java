@@ -782,6 +782,29 @@ public final class HubModule extends AquaticModule implements Listener {
 
     @Override
     protected void migrateConfig(YamlConfiguration file, YamlConfiguration defaults, int from) {
+        if (from < 9) {
+            // 2.25.1: founders' roles update
+            raise(file, "founders.tombomeke.role", "<gray>Left Hand Man", "<gray>Main Developer");
+            raise(file, "founders.devvv.role", "<gray>Right Hand Man", "<gray>Developer");
+            raise(file, "founders.crimson.role", "<gray>Builder", "<gray>Developer/Builder");
+            raise(file, "founders.crimson.player", "Crimson", "crimsonEvaz");
+            List<String> text = file.getStringList("displays.founders.text");
+            if (text != null && !text.isEmpty()) {
+                boolean modified = false;
+                List<String> updated = new ArrayList<>();
+                for (String line : text) {
+                    if (line.contains("(your names here)")) {
+                        updated.add(line.replace("(your names here)", "MegaAquatic"));
+                        modified = true;
+                    } else {
+                        updated.add(line);
+                    }
+                }
+                if (modified) {
+                    file.set("displays.founders.text", updated);
+                }
+            }
+        }
         if (from < 8) {
             // 2.23.0: the founders' real usernames
             raise(file, "founders.devvv.player", "Devvv_", "devv_");
@@ -797,6 +820,9 @@ public final class HubModule extends AquaticModule implements Listener {
             raise(file, "displays.welcome.height", 2.4, 3.0);
             raise(file, "displays.founders.offset", List.of(27, 0), List.of(28, 0));
             raise(file, "displays.founders.height", 1.4, 4.6);
+            raise(file, "displays.founders.text", List.of("<gold><bold>Founders of Aquatic SMP</bold>",
+                    "<white>Owner & idea: <yellow>(your names here)", "<white>Developed by <aqua>tombomeke",
+                    "<gray>Thank you to everyone who helped build this sea!"), defaults.getStringList("displays.founders.text"));
             raise(file, "displays.founders.text", List.of("<gold><bold>Founders of Aquatic SMP</bold>",
                     "<white>Owner & idea: <yellow>MegaAquatic", "<white>Developed by <aqua>tombomeke",
                     "<gray>Thank you to everyone who helped build this sea!"), defaults.getStringList("displays.founders.text"));

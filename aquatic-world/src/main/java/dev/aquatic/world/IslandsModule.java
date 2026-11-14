@@ -542,20 +542,43 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         return null;
     }
 
-    private World oceanWorld() {
+    World oceanWorld() {
         return Bukkit.getWorld(config().getString("ocean-area.world", "world"));
     }
 
     /** A random candidate in the ocean area that does not overlap an island, or null after many tries. */
-    private int[] randomCandidate(World world, int radius) {
+    /**
+     * A spot for a new island. "rings" (the default): close to the centre first - a ring at ring-start blocks out,
+     * the next ring ring-step further, and so on - so the world fills from spawn outwards; a few islands
+     * (scatter) land anywhere for a natural look. "random": anywhere in the square, like before 2.26.0.
+     * attempt = how many spots were already tried for this island (failed tries move outwards).
+     */
+    private int[] randomCandidate(World world, int radius, int attempt) {
         int centerX = config().getInt("ocean-area.center-x"), centerZ = config().getInt("ocean-area.center-z");
         int area = Math.max(radius + 1, config().getInt("ocean-area.radius", 3000));
         int spacing = Math.max(0, config().getInt("ocean-area.min-spacing", 150));
         int range = Math.max(1, area - radius);
         ThreadLocalRandom random = ThreadLocalRandom.current();
+        boolean rings = !"random".equalsIgnoreCase(config().getString("ocean-area.placement", "rings"));
+        int start = Math.max(0, config().getInt("ocean-area.ring-start", 500));
+        int step = Math.max(50, config().getInt("ocean-area.ring-step", 350));
+        double scatter = Math.max(0, Math.min(1, config().getDouble("ocean-area.scatter", 0.12)));
         for (int i = 0; i < 200; i++) {
-            int x = centerX + random.nextInt(-range, range + 1);
-            int z = centerZ + random.nextInt(-range, range + 1);
+            int x, z;
+            if (rings) {
+                double far = Math.max(start + 1, range);
+                double d = random.nextDouble() < scatter ? start + random.nextDouble() * (far - start)
+                        : start + radius + (attempt / 4 + i / 25) * (double) step + random.nextDouble() * step;
+                if (d > far) {
+                    d = start + random.nextDouble() * (far - start);
+                }
+                double a = random.nextDouble() * Math.PI * 2;
+                x = centerX + (int) Math.round(Math.cos(a) * d);
+                z = centerZ + (int) Math.round(Math.sin(a) * d);
+            } else {
+                x = centerX + random.nextInt(-range, range + 1);
+                z = centerZ + random.nextInt(-range, range + 1);
+            }
             if (!overlaps(world.getName(), x, z, radius + spacing, null)) {
                 return new int[]{x, z};
             }
@@ -607,12 +630,16 @@ public final class IslandsModule extends AquaticModule implements IslandService,
     }
 
     private void probeAsync(int radius, int attemptsLeft, java.util.function.Consumer<Location> callback) {
+        probeAsync(radius, attemptsLeft, 0, callback);
+    }
+
+    private void probeAsync(int radius, int attemptsLeft, int attempt, java.util.function.Consumer<Location> callback) {
         World world = oceanWorld();
         if (!isEnabled() || world == null || attemptsLeft <= 0) {
             callback.accept(null);
             return;
         }
-        int[] c = randomCandidate(world, radius);
+        int[] c = randomCandidate(world, radius, attempt);
         if (c == null) {
             callback.accept(null);
             return;
@@ -637,7 +664,7 @@ public final class IslandsModule extends AquaticModule implements IslandService,
                     && deepEnough(world, c[0], c[1], radius)) {
                 callback.accept(new Location(world, c[0] + 0.5, world.getSeaLevel(), c[1] + 0.5));
             } else {
-                probeAsync(radius, attemptsLeft - 1, callback);
+                probeAsync(radius, attemptsLeft - 1, attempt + 1, callback);
             }
         }));
     }
@@ -1119,6 +1146,14 @@ public final class IslandsModule extends AquaticModule implements IslandService,
             addMissing(file, defaults, "types.VILLAGE");
             addMissing(file, defaults, "generation.island-type-weights.VILLAGE");
             addMissing(file, defaults, "island-names.VILLAGE");
+        }
+        if (from < 11) {
+            // 2.26.0: islands in rings around spawn, ships near players
+            for (String k : List.of("placement", "ring-start", "ring-step", "scatter")) {
+                addMissing(file, defaults, "ocean-area." + k);
+            }
+            addMissing(file, defaults, "ships.spawn-distance-min");
+            addMissing(file, defaults, "ships.spawn-distance-max");
         }
         if (from < 10) {
             // 2.25.0: ships on the open sea

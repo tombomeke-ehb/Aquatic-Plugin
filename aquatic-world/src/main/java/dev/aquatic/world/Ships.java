@@ -212,7 +212,7 @@ final class Ships implements Listener {
 
     /** Local design coordinates -> world. The design's middle (along its length) sits on the ship's position. */
     private static int[] world(Ship s, int lx, int ly, int lz) {
-        int x = lx, z = lz - (s.design.equalsIgnoreCase("brig") ? 16 : 12);
+        int x = lx, z = lz - ShipDesign.half(s.design);
         for (int i = 0; i < (s.rot & 3); i++) {
             int t = x;
             x = -z;
@@ -290,7 +290,7 @@ final class Ships implements Listener {
             return;
         }
         searching = true;
-        m.findFreeOceanSpotAsync(26, spot -> {
+        java.util.function.Consumer<Location> place = spot -> {
             searching = false;
             if (spot == null) {
                 if (tell != null) {
@@ -315,7 +315,60 @@ final class Ships implements Listener {
             if (tell != null) {
                 tell.sendMessage(Text.mm("<green>Ship <white><id></white> at <white><x>, <z></white>.", "id", s.id, "x", s.x, "z", s.z));
             }
-        });
+        };
+        List<Player> sailors = new ArrayList<>();
+        World sea = m.oceanWorld();
+        if (sea != null) {
+            for (Player p : sea.getPlayers()) {
+                if (p.getGameMode() != GameMode.SPECTATOR) {
+                    sailors.add(p);
+                }
+            }
+        }
+        if (sailors.isEmpty()) {
+            m.findFreeOceanSpotAsync(26, place);
+        } else {
+            nearPlayer(sailors.get(ThreadLocalRandom.current().nextInt(sailors.size())), 10, place);
+        }
+    }
+
+    /** A spot of deep, open sea a little way from a player (spawn-distance-min to -max blocks), or null. */
+    private void nearPlayer(Player p, int tries, java.util.function.Consumer<Location> done) {
+        World w = p.getWorld();
+        if (tries <= 0 || !p.isOnline()) {
+            m.findFreeOceanSpotAsync(26, done);
+            return;
+        }
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        int min = Math.max(40, cfg().getInt("spawn-distance-min", 120));
+        int max = Math.max(min + 10, cfg().getInt("spawn-distance-max", 320));
+        double a = r.nextDouble() * Math.PI * 2, d = min + r.nextDouble() * (max - min);
+        int x = p.getLocation().getBlockX() + (int) Math.round(Math.cos(a) * d);
+        int z = p.getLocation().getBlockZ() + (int) Math.round(Math.sin(a) * d);
+        boolean crowded = m.overlaps(w.getName(), x, z, 40, null);
+        for (Ship other : ships.values()) {
+            crowded |= other.world.equals(w.getName()) && Math.abs(other.x - x) < 80 && Math.abs(other.z - z) < 80;
+        }
+        if (crowded) {
+            nearPlayer(p, tries - 1, done);
+            return;
+        }
+        int[][] pts = {{x, z}, {x + 18, z}, {x - 18, z}, {x, z + 18}, {x, z - 18}};
+        java.util.concurrent.CompletableFuture<?>[] loads = new java.util.concurrent.CompletableFuture<?>[pts.length];
+        for (int i = 0; i < pts.length; i++) {
+            loads[i] = w.getChunkAtAsync(pts[i][0] >> 4, pts[i][1] >> 4);
+        }
+        java.util.concurrent.CompletableFuture.allOf(loads).whenComplete((ok, err) -> Bukkit.getScheduler().runTask(m.plugin(), () -> {
+            boolean deep = err == null;
+            for (int[] pt : pts) {
+                deep &= w.getHighestBlockYAt(pt[0], pt[1], org.bukkit.HeightMap.OCEAN_FLOOR) <= w.getSeaLevel() - 8;
+            }
+            if (deep) {
+                done.accept(new Location(w, x + 0.5, w.getSeaLevel(), z + 0.5));
+            } else {
+                nearPlayer(p, tries - 1, done);
+            }
+        }));
     }
 
     // ------------------------------------------------------------------ the crew
@@ -802,7 +855,7 @@ final class Ships implements Listener {
             if (s == null) {
                 throw new CommandFail("<red>Could not build the ship here.");
             }
-            p.teleport(feet(p.getWorld(), world(s, 0, 6, s.d.captain[2] - 4)));
+            p.teleport(feet(p.getWorld(), world(s, s.d.arrival[0], s.d.arrival[1], s.d.arrival[2])));
             sender.sendMessage(Text.mm("<green>Ship <white><id></white> built around you.", "id", s.id));
         }).usage("[kind]").description("Build a ship where you stand (stand over open water)").playerOnly()
                 .completer((sender, a) -> a.length == 1 ? AquaticCommand.filter(kinds(), a[0]) : List.of());
@@ -820,7 +873,7 @@ final class Ships implements Listener {
             Player p = AquaticCommand.player(sender);
             World w = Bukkit.getWorld(s.world);
             if (w != null) {
-                p.teleport(feet(w, world(s, 0, 6, s.d.captain[2] - 4)));
+                p.teleport(feet(w, world(s, s.d.arrival[0], s.d.arrival[1], s.d.arrival[2])));
             }
         }).usage("<id>").description("Go to a ship").playerOnly().completer((sender, a) -> ids(a));
         cmd.sub("sink", (sender, a) -> {

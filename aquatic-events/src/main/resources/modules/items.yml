@@ -3,7 +3,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 11
+config-version: 12
 #  Custom pirate items: Abyss Fruits, Abyssal Iron, legendary swords, guns,
 #  cannons, the Tide Compass, Echo Conch, rum and the Conqueror of the Sea's crown.
 #
@@ -41,6 +41,18 @@ abilities:
   item-damage-multiplier: 1.3
 
 fruits:
+  # Every fruit has a rarity ("fruit.rarity" on the fruit). Rarer fruits are found less often and are stronger:
+  #   weight   = how often a random fruit (treasure, crates) is of this rarity
+  #   power    = damage of its moves (x the normal damage)
+  #   cooldown = cooldowns of its moves (x the normal cooldown; lower = faster)
+  #   health   = extra half-hearts on top of bonus-health
+  # "fruit_random" gives a fruit of any rarity, "fruit_random_<rarity>" one of that rarity or rarer.
+  rarities:
+    common:    {name: "<gray>★ Common",                weight: 46, power: 0.85, cooldown: 1.15, health: 0}
+    uncommon:  {name: "<green>★★ Uncommon",            weight: 28, power: 0.95, cooldown: 1.05, health: 0}
+    rare:      {name: "<aqua>★★★ Rare",                weight: 16, power: 1.05, cooldown: 1.0,  health: 2}
+    epic:      {name: "<light_purple>★★★★ Epic",       weight: 7,  power: 1.18, cooldown: 0.92, health: 2}
+    legendary: {name: "<gold><bold>★★★★★ Legendary",   weight: 3,  power: 1.32, cooldown: 0.85, health: 4}
   # Extra max health (half-hearts) just for carrying an Abyss Fruit power: 6 = +3 hearts.
   bonus-health: 6
   # Mastery: train your fruit by using it. Every level: more damage, more range, shorter cooldowns,
@@ -176,6 +188,7 @@ items:
     nutrition: 4
     saturation: 2.4
     fruit:
+      rarity: common
       description: "Spring body: immune to fall damage, jumps higher. Stretch a punch at whatever you look at, or leap forward."
       passives:
         - jump_boost:2
@@ -215,6 +228,7 @@ items:
     max-stack: 1
     always-edible: true
     fruit:
+      rarity: rare
       description: "Ember body: immune to fire and lava. Hurl a blazing fist that bursts on impact."
       passives:
         - fire_resistance:1
@@ -257,6 +271,7 @@ items:
     max-stack: 1
     always-edible: true
     fruit:
+      rarity: rare
       description: "Frost body: walk on frozen water, immune to freezing. A burst of frost freezes and slows everything around you."
       frost-walker-radius: 3
       immunities:
@@ -298,6 +313,7 @@ items:
     max-stack: 1
     always-edible: true
     fruit:
+      rarity: legendary
       description: "Storm body: always fast. Call down lightning where you look."
       passives:
         - speed:2
@@ -334,6 +350,7 @@ items:
     max-stack: 1
     always-edible: true
     fruit:
+      rarity: uncommon
       description: "Mist body: fade from sight for a while; use again to reappear. Abyssal Iron reveals you."
       ability:
         name: "<white>Mistveil"
@@ -366,6 +383,7 @@ items:
     max-stack: 1
     always-edible: true
     fruit:
+      rarity: epic
       description: "Rift: swap places with whoever you look at, tearing them for a little damage."
       ability:
         name: "<light_purple>Rift Swap"
@@ -397,6 +415,7 @@ items:
     max-stack: 1
     always-edible: true
     fruit:
+      rarity: legendary
       description: "Void: drag everyone around you in and blind them."
       passives:
         - night_vision:1
@@ -435,6 +454,7 @@ items:
     max-stack: 1
     always-edible: true
     fruit:
+      rarity: uncommon
       description: "Behemoth: permanent extra health; rage into a behemoth with great strength and toughness."
       passives:
         - health_boost:1
@@ -476,6 +496,7 @@ items:
     max-stack: 1
     always-edible: true
     fruit:
+      rarity: uncommon
       description: "Wind body: falls slowly and jumps high. Blow enemies away, pull them into a cyclone or cut them with the wind."
       passives:
         - jump_boost:2
@@ -516,6 +537,7 @@ items:
     max-stack: 1
     always-edible: true
     fruit:
+      rarity: common
       description: "Stone body: takes less damage and hits harder. Shake the ground around you or crush a target with a boulder fist."
       passives:
         - resistance:1
@@ -1312,6 +1334,7 @@ items:
     max-stack: 1
     always-edible: true
     fruit:
+      rarity: rare
       description: "Tide body: hurl a crashing wave, drag enemies into a whirlpool or blast them up with a geyser."
       passives:
         - conduit_power:1
@@ -1351,6 +1374,7 @@ items:
     max-stack: 1
     always-edible: true
     fruit:
+      rarity: common
       description: "Serpent body: fast and venomous. Lunge with a poisoned bite, spray venom or coil around an enemy."
       passives:
         - speed:1
@@ -1387,6 +1411,7 @@ items:
     max-stack: 1
     always-edible: true
     fruit:
+      rarity: common
       description: "Sand body: whip enemies with sand, vanish in a dust cloud or swallow them in quicksand."
       passives:
         - haste:1
@@ -1422,6 +1447,7 @@ items:
     max-stack: 1
     always-edible: true
     fruit:
+      rarity: epic
       description: "Light body: see in the dark. Fire a piercing beam, blind everyone around you or flash across the field."
       passives:
         - night_vision:1

@@ -18,7 +18,7 @@
 
 # How often (seconds) changed data is written to plugins/AquaticSMP/data/islands/ (also saved on shutdown).
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 10
+config-version: 11
 
 autosave-seconds: 120
 
@@ -33,6 +33,13 @@ ocean-area:
   # Islands are placed within this many blocks (square) of the centre. Big islands need a big sea:
   # set it in-game with /island admin area <radius> where you stand.
   radius: 12000
+  # How new islands are placed. rings: close to spawn first, in rings that move outwards as the sea fills up
+  # (a ring at ring-start blocks, the next ring-step further, ...), with a few (scatter: 0.12 = 12%) anywhere for a
+  # natural look. random: anywhere in the area.
+  placement: rings
+  ring-start: 500
+  ring-step: 350
+  scatter: 0.12
   # Minimum open water between the borders of two islands.
   min-spacing: 200
   # Random spots tried per island before giving up.
@@ -1091,6 +1098,9 @@ ships:
   min-players-online: 1
   # A ship nobody boarded sails on after this many hours.
   expire-hours: 6
+  # Ships appear this far (in blocks) from a random player out at sea, so there is always one within reach.
+  spawn-distance-min: 120
+  spawn-distance-max: 320
   # Minutes between the last kill and the sinking.
   sink-minutes: 10
   # At most this many crew members fight at once; the rest come up as the others fall.
