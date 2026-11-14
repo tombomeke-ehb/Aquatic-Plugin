@@ -2039,8 +2039,12 @@ def main():
                                                                          {"a": 1.6, "b": 1.6, "c": 1.6, "d": 1.6}))
     crate_blocks()
     # drinks, bombs and small items: hand-drawn (pixelart.py)
+    caps = {"cannonball": 7.0, "smoke_bomb": 6.0, "frost_bomb": 6.0, "fire_bomb": 6.0}
     for name, (rows, palette, edits) in pixelart.MISC.items():
-        item(name, pixelart.icon(rows, palette, edits), drawn=True)
+        img = pixelart.icon(rows, palette, edits)
+        item(name, img, drawn=True)                             # 3D in the hand: round things bulge
+        write_json(os.path.join(PACK, "assets", "aquatic", "models", "item", name + ".json"),
+                   forge.round_model("aquatic:item/" + name, img, caps.get(name, 4.0)))
     # tools and drinks
     # armour sets: hand-drawn icons (pixelart.py) and how they look when worn
     for name, (rows, palette) in pixelart.ARMOUR.items():
@@ -2054,6 +2058,11 @@ def main():
     equipment("captains_coat", armor_layers("#2c2a30", "#7a2420", "#b8933f", hat="#1c1a1e")[0])
     for name, image in FRUITS.items():
         item(name, image)
+        write_json(os.path.join(PACK, "assets", "aquatic", "models", "item", name + ".json"),
+                   forge.round_model("aquatic:item/" + name, image, 7.0))
+    crown_img = crown()
+    write_json(os.path.join(PACK, "assets", "aquatic", "models", "item", "conqueror_crown.json"),
+               forge.round_model("aquatic:item/conqueror_crown", crown_img, 3.0))
     crown().resize((128, 128), Image.NEAREST).save(os.path.join(PACK, "pack.png"))
 
     os.makedirs(DIST, exist_ok=True)

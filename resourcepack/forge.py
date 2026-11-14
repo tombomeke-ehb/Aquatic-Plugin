@@ -211,21 +211,25 @@ def make(name):
 
 
 def voxels(grid, depth=None):
-    """Model elements for a part grid: every run of pixels of the same thickness is a box, textured with its own
-    pixels on the front and back and with its edge pixels on the sides."""
+    """Model elements for a part grid: every pixel gets the thickness of its part."""
     d = dict(DEPTH)
     d.update(depth or {})
+    return boxes([[None if k is None else d.get(k, 1.0) for k in row] for row in grid])
+
+
+def boxes(depths):
+    """Model elements for a 32x32 map of thicknesses (None = empty): every run of pixels of the same thickness is
+    a box, textured with its own pixels on the front and back and with its edge pixels on the sides."""
     els = []
     for y in range(32):
         x = 0
         while x < 32:
-            k = grid[y][x]
-            if k is None:
+            dep = depths[y][x]
+            if dep is None:
                 x += 1
                 continue
-            dep = d.get(k, 1.0)
             x0 = x
-            while x < 32 and grid[y][x] is not None and d.get(grid[y][x], 1.0) == dep:
+            while x < 32 and depths[y][x] == dep:
                 x += 1
             u0, u1, v0, v1 = x0 / 2, x / 2, y / 2, (y + 1) / 2
             face = lambda uv: {"uv": uv, "texture": "#t"}
@@ -234,6 +238,38 @@ def voxels(grid, depth=None):
                 "up": face([u0, v0, u1, v1]), "down": face([u0, v0, u1, v1]),
                 "west": face([u0, v0, u0 + 0.5, v1]), "east": face([u1 - 0.5, v0, u1, v1])}})
     return els
+
+
+def puff(images, cap=5.0):
+    """A rounded body for an icon (or the frames of an animated one): the further a pixel is from the edge of
+    the shape, the thicker it is, so round things bulge like the real object. -> thickness map for boxes()."""
+    if not isinstance(images, list):
+        images = [images]
+    solid = [[any(im.getpixel((x, y))[3] > 0 for im in images) for x in range(32)] for y in range(32)]
+    dist = [[0 if not solid[y][x] else 99 for x in range(32)] for y in range(32)]
+    for _ in range(16):                                           # distance to the nearest empty pixel
+        for y in range(32):
+            for x in range(32):
+                if dist[y][x]:
+                    near = min(dist[yy][xx] if 0 <= xx < 32 and 0 <= yy < 32 else 0
+                               for xx, yy in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)))
+                    dist[y][x] = min(dist[y][x], near + 1)
+    return [[None if not solid[y][x] else min(cap, round((0.8 + 1.9 * math.sqrt(dist[y][x] - 1)) * 2) / 2)
+             for x in range(32)] for y in range(32)]
+
+
+CARRIED = {  # the same hold as Minecraft's own flat items (item/generated), a little bigger
+    "thirdperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 3.4, 1.2], "scale": [0.7, 0.7, 0.7]},
+    "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 3.2, 1.13], "scale": [0.68, 0.68, 0.68]},
+    "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.5, 0.5, 0.5]},
+    "head": {"rotation": [0, 180, 0], "translation": [0, 13, 7], "scale": [1, 1, 1]},
+    "fixed": {"rotation": [0, 180, 0], "scale": [1, 1, 1]},
+}
+
+
+def round_model(texture, images, cap=5.0):
+    return {"gui_light": "front", "textures": {"t": texture, "particle": texture}, "elements": boxes(puff(images, cap)),
+            "display": CARRIED}
 
 
 HELD = {  # Minecraft's own sword hold (item/handheld), but half as big again; the grip stays in the hand

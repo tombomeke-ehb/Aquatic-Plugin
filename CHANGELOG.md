@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.24.0 (2026-11-14)
+
+### Added
+- **3D drinks, bombs, fruits and small items.** In the hand, on the ground and in item frames they are now real 3D objects that match the weapons:
+  - The Abyss Fruits (with their animations), the Rum, Healing Tonic, Gale Grog and Seafoam Milkshake, the three bombs, the cannonball, the Echo Conch and the Crown of the Conqueror.
+  - Round things bulge: the middle of a fruit, bomb or flask is thick and it thins towards the edge.
+  - The inventory icons are unchanged.
+
 ## 2.23.3 (2026-11-14)
 
 ### Changed
