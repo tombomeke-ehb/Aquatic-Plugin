@@ -217,6 +217,8 @@ public final class SidebarModule extends AquaticModule implements Listener {
         Map<String, Object> ph = new HashMap<>();
         ph.put("player", dev.aquatic.util.Ranks.name(p));
         ph.put("prefix", dev.aquatic.util.Ranks.prefix(p));
+        ph.put("lp_rank", dev.aquatic.util.Ranks.group(p));
+        ph.put("lp_group", String.valueOf(dev.aquatic.util.Ranks.groupId(p)));
         ph.put("suffix", dev.aquatic.util.Ranks.suffix(p));
         ph.put("balance", eco == null ? "-" : eco.format(eco.balance(id)));
         ph.put("bounty", eco == null ? Text.number(bounty) : eco.format(bounty));
@@ -284,6 +286,7 @@ public final class SidebarModule extends AquaticModule implements Listener {
                     case "conqueror" -> conqueror != null;
                     case "combat" -> combatLeft > 0;
                     case "nofruit" -> fruit == null;
+                    case "lprank" -> dev.aquatic.util.Ranks.groupId(p) != null;
                     default -> true;
                 };
                 if (!show) {
@@ -368,6 +371,26 @@ public final class SidebarModule extends AquaticModule implements Listener {
 
     @Override
     protected void migrateConfig(YamlConfiguration file, YamlConfiguration defaults, int from) {
+        if (from < 4) {
+            // 2.27.2: the LuckPerms rank under the name; the crew rank is called the Role
+            List<String> lines = new ArrayList<>(file.getStringList("layout"));
+            int who = -1;
+            boolean has = false;
+            for (int i = 0; i < lines.size(); i++) {
+                has |= lines.get(i).contains("<lp_rank>");
+                if (who < 0 && lines.get(i).contains("<player>")) {
+                    who = i;
+                }
+            }
+            if (!has && who >= 0) {
+                lines.add(who + 1, "?lprank:<gray>Rank: <lp_rank>");
+            }
+            int crewRank = lines.indexOf("?crew:<gray>Rank: <white><rank>");
+            if (crewRank >= 0) {
+                lines.set(crewRank, "?crew:<gray>Role: <white><rank>");
+            }
+            file.set("layout", lines);
+        }
         if (from < 3) {
             // 2.23.0: the rank of your bounty stands above your name
             List<String> lines = new ArrayList<>(file.getStringList("layout"));

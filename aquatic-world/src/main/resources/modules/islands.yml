@@ -18,7 +18,7 @@
 
 # How often (seconds) changed data is written to plugins/AquaticSMP/data/islands/ (also saved on shutdown).
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 12
+config-version: 14
 
 autosave-seconds: 120
 
@@ -931,7 +931,7 @@ tidewatch:
   captain-xp: 400
   strongbox-tier: rare
   # Which soldiers spawn (template:weight).
-  soldiers: ["recruit:5", "rifleman:3", "lieutenant:1"]
+  soldiers: ["recruit:4", "rifleman:4", "pistoleer:3", "lieutenant:1"]
   # Officers (templates with "powers") use an Abyss Fruit power on their target every power-cooldown-seconds,
   # after a one-second warning (particles and a sound) so players can dodge. Captains hit 40% harder.
   # Powers: ember (fireballs), frost (freezing nova), thunder (lightning at the target), gale (gust).
@@ -956,11 +956,13 @@ tidewatch:
     tidewatch_captain_hat: GOLDEN_HELMET
     tidewatch_captain_coat: GOLDEN_CHESTPLATE
   mobs:
+    # Recruits are vindicators too, so every soldier wears the Tidewatch uniform (vindicators hit hard: the damage
+    # is turned down). Only pillagers can fire guns: give guns ("item:musket", "item:flintlock") to PILLAGER only.
     recruit:
-      type: ZOMBIE
+      type: VINDICATOR
       name: "<blue>Tidewatch Recruit"
-      health-multiplier: 1.5
-      damage-multiplier: 1.2
+      health-multiplier: 1.2
+      damage-multiplier: 0.55
       equipment: {helmet: "item:tidewatch_hat", chestplate: "item:tidewatch_coat", leggings: "item:tidewatch_trousers",
                   boots: "item:tidewatch_boots", mainhand: "item:steel_cutlass"}
     # Riflemen and officers are illagers (pillagers and vindicators): they move and fight like soldiers and
@@ -974,6 +976,16 @@ tidewatch:
         mainhand: "item:musket"
         helmet: ["look:tw_shako", "look:tw_shako", "look:tw_shako_mustache_brown", "look:tw_shako_mustache_black",
                  "look:tw_shako_mustache_ginger", "look:tw_shako_beard_brown", "look:tw_shako_eyepatch"]
+    # Pistoleers: pillagers in uniform with a Flintlock and a tricorn, quicker shots at closer range.
+    pistoleer:
+      type: PILLAGER
+      name: "<blue>Tidewatch Pistoleer"
+      health-multiplier: 1.4
+      equipment:
+        mainhand: "item:flintlock"
+        helmet: ["look:tw_tricorn", "look:tw_tricorn_mustache_grey", "look:tw_tricorn_beard_black", "look:tw_tricorn_beard_ginger",
+                 "look:tw_tricorn_eyepatch"]
+        chestplate: "item:tidewatch_coat"
     lieutenant:
       type: VINDICATOR
       name: "<dark_blue>Tidewatch Lieutenant"
@@ -1131,7 +1143,7 @@ ships:
       trim: BLUE_WOOL
       banner: BLUE_BANNER
       crew-size: 8
-      crew: ["recruit:4", "rifleman:3", "lieutenant:1"]
+      crew: ["recruit:3", "rifleman:3", "pistoleer:3", "lieutenant:1"]
       captain: captain
       # Doubloons per kill (the captain: five times this), and for everyone aboard when the ship is cleared.
       kill-reward: 40

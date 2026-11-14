@@ -943,6 +943,7 @@ public final class CrewsModule extends AquaticModule implements CrewService {
         Integer level = levelCache.get(player.getUniqueId());
         String badge = config().getString("tablist.level-badge", "");
         Object[] common = {"rank", PermsHook.prefix(player), "suffix", PermsHook.suffix(player), "player", PermsHook.name(player),
+                "group", dev.aquatic.util.Ranks.group(player),
                 "level", level == null || badge.isEmpty() ? Component.empty() : Text.mm(badge, "level", level)};
         if (crew == null) {
             String format = config().getString("tablist.no-crew-format", "");
@@ -1025,6 +1026,12 @@ public final class CrewsModule extends AquaticModule implements CrewService {
     @Override
     protected void migrateConfig(org.bukkit.configuration.file.YamlConfiguration file,
                                  org.bukkit.configuration.file.YamlConfiguration defaults, int from) {
+        if (from < 3) {
+            // 2.27.2: join and leave messages with the LuckPerms rank
+            for (String k : List.of("join-messages", "join-message", "first-join-message", "quit-message")) {
+                addMissing(file, defaults, "chat." + k);
+            }
+        }
         if (from < 2) {
             // 2.16.0: the crew menu runs everything (member pages, bank, invites, diplomacy)
             org.bukkit.configuration.ConfigurationSection msgs = defaults.getConfigurationSection("messages");

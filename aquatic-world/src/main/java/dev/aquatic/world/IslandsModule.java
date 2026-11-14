@@ -1147,6 +1147,34 @@ public final class IslandsModule extends AquaticModule implements IslandService,
             addMissing(file, defaults, "generation.island-type-weights.VILLAGE");
             addMissing(file, defaults, "island-names.VILLAGE");
         }
+        if (from < 14) {
+            // 2.27.2: recruits in uniform: vindicators instead of zombies (only if the recruit was never edited)
+            addMissing(file, defaults, "tidewatch.mobs.pistoleer");
+            raise(file, "tidewatch.soldiers", List.of("recruit:5", "rifleman:3", "lieutenant:1"), defaults.getStringList("tidewatch.soldiers"));
+            raise(file, "ships.kinds.tidewatch.crew", List.of("recruit:4", "rifleman:3", "lieutenant:1"),
+                    defaults.getStringList("ships.kinds.tidewatch.crew"));
+            if ("ZOMBIE".equals(file.getString("tidewatch.mobs.recruit.type")) && file.getDouble("tidewatch.mobs.recruit.damage-multiplier") == 1.2) {
+                file.set("tidewatch.mobs.recruit.type", "VINDICATOR");
+                file.set("tidewatch.mobs.recruit.health-multiplier", 1.2);
+                file.set("tidewatch.mobs.recruit.damage-multiplier", 0.55);
+            }
+        }
+        if (from < 13) {
+            // 2.27.2: 2.27.0 could leave a "tidewatch" (or "ships" / "income") section with only its new key, so every
+            // soldier template came out empty (zombies). Fill in every missing setting of those sections.
+            for (String section : List.of("tidewatch", "ships", "income", "ocean-area")) {
+                org.bukkit.configuration.ConfigurationSection d = defaults.getConfigurationSection(section);
+                if (d == null) {
+                    continue;
+                }
+                for (String key : d.getKeys(false)) {
+                    addMissing(file, defaults, section + "." + key);
+                }
+            }
+            for (String mob : List.of("recruit", "rifleman", "lieutenant", "captain")) {
+                addMissing(file, defaults, "tidewatch.mobs." + mob + ".type");
+            }
+        }
         if (from < 12) {
             // 2.27.0: enemies fight with the custom weapons; island upkeep; forts lock the waters around them
             Map<String, String[]> gear = new java.util.LinkedHashMap<>();

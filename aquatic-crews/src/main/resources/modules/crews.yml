@@ -6,7 +6,7 @@
 # =====================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 2
+config-version: 3
 
 # Maximum number of pirates in one crew (captain included).
 max-members: 6
@@ -206,6 +206,13 @@ home:
     - world_the_end
 
 chat:
+  # Our own join and leave messages. Off by default: Essentials (or another plugin) keeps handling them.
+  # Turn on to use these instead ("" = no message). Tags: <rank> (LuckPerms prefix), <group> (LuckPerms rank),
+  # <player> (LuckPerms display name or nickname), <suffix>, <level>, <crew>, <tag>, <online>, and PlaceholderAPI.
+  join-messages: false
+  join-message: "<dark_gray>[<green>+<dark_gray>] <rank><white><player><suffix> <gray>came aboard."
+  first-join-message: "<gold>⚓ <white><player></white> <gold>joins the crew of the sea for the first time! <gray>(<online> online)"
+  quit-message: "<dark_gray>[<red>-<dark_gray>] <rank><white><player><suffix> <gray>went ashore."
   # Put the crew tag in front of public chat messages.
   prefix-enabled: true
   # Tags: <tag> (crew tag in crew colour), <crew> (crew name), <rank_icon> (see rank-icons)
@@ -240,7 +247,7 @@ chat:
 tablist:
   # Show the crew tag in front of names in the tab list.
   enabled: true
-  # Tags: <rank> (rank prefix from LuckPerms/Vault) <level> <tag> <crew> <player> <rank_icon> <suffix>
+  # Tags: <rank> (rank prefix from LuckPerms/Vault) <group> (LuckPerms rank) <level> <tag> <crew> <player> <rank_icon> <suffix>
   # PlaceholderAPI placeholders work in every tab and chat line too, e.g. %luckperms_prefix%,
   # %luckperms_meta_displayname%, %player_ping%. Legacy colours they return (&c, &#ff8800) are kept.
   format: "<rank><level><rank_icon> <dark_gray>[<tag><dark_gray>] <white><player><suffix>"

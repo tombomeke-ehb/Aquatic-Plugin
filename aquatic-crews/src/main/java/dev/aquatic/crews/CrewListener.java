@@ -84,6 +84,43 @@ final class CrewListener implements Listener {
         module.updateTab(p);
     }
 
+    /** Join and leave messages in the server's own style, with the LuckPerms rank and name (chat.join-message ...). */
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onJoinMessage(PlayerJoinEvent event) {
+        if (!module.config().getBoolean("chat.join-messages", false)) {
+            return;                                       // Essentials / LuckPerms setups keep their own
+        }
+        Player p = event.getPlayer();
+        String key = p.hasPlayedBefore() ? "chat.join-message" : "chat.first-join-message";
+        String line = module.config().getString(key, module.config().getString("chat.join-message"));
+        if (line == null) {
+            return;                                       // not set: the normal message
+        }
+        event.joinMessage(line.isEmpty() ? null : announce(p, line));
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onQuitMessage(PlayerQuitEvent event) {
+        if (!module.config().getBoolean("chat.join-messages", false)) {
+            return;
+        }
+        String line = module.config().getString("chat.quit-message");
+        if (line != null) {
+            event.quitMessage(line.isEmpty() ? null : announce(event.getPlayer(), line));
+        }
+    }
+
+    private Component announce(Player p, String line) {
+        CrewImpl crew = module.byPlayer.get(p.getUniqueId());
+        Integer level = module.cachedLevel(p.getUniqueId());
+        return dev.aquatic.util.Text.mm(dev.aquatic.util.Placeholders.apply(p, line), "player", PermsHook.name(p),
+                "rank", PermsHook.prefix(p), "suffix", PermsHook.suffix(p), "group", dev.aquatic.util.Ranks.group(p),
+                "level", level == null ? "1" : String.valueOf(level),
+                "crew", crew == null ? Component.empty() : crew.displayName(),
+                "tag", crew == null ? Component.empty() : crew.tagComponent(),
+                "online", String.valueOf(org.bukkit.Bukkit.getOnlinePlayers().size()));
+    }
+
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         UUID id = event.getPlayer().getUniqueId();
@@ -322,6 +359,7 @@ final class CrewListener implements Listener {
         ChatRenderer base = event.renderer();
         String name = player.getName();
         Component ranked = PermsHook.name(player);         // the LuckPerms display name or nickname
+        Component group = dev.aquatic.util.Ranks.group(player);
         Component itemComponent = item;
         event.renderer((source, displayName, message, viewer) -> {
             Component msg = message;
@@ -340,7 +378,7 @@ final class CrewListener implements Listener {
                     .clickEvent(net.kyori.adventure.text.event.ClickEvent.suggestCommand("/msg " + name + " "));
             if (format) {
                 return dev.aquatic.util.Text.mm(line, "level", badge, "prefix", prefix == null ? Component.empty() : prefix,
-                        "name", shownName, "message", msg, "rank", rank, "suffix", suffix);
+                        "name", shownName, "message", msg, "rank", rank, "suffix", suffix, "group", group);
             }
             Component rendered = base.render(source, shownName, msg, viewer);
             return prefix == null ? rendered : Component.textOfChildren(prefix, rendered);

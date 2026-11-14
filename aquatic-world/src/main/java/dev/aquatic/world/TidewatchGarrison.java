@@ -352,7 +352,12 @@ final class TidewatchGarrison implements Listener {
             eq.setChestplate(item(pick(gear, "chestplate")));
             eq.setLeggings(item(pick(gear, "leggings")));
             eq.setBoots(item(pick(gear, "boots")));
-            eq.setItemInMainHand(item(pick(gear, "mainhand")));
+            ItemStack hand = item(pick(gear, "mainhand"));
+            if (hand != null && hand.getType() == Material.CROSSBOW && !(le instanceof org.bukkit.entity.Pillager)
+                    && !(le instanceof org.bukkit.entity.Piglin)) {
+                hand = item("item:steel_cutlass");         // only pillagers can fire a gun; the rest get a blade
+            }
+            eq.setItemInMainHand(hand);
             eq.setHelmetDropChance(0);
             eq.setChestplateDropChance(0);
             eq.setLeggingsDropChance(0);

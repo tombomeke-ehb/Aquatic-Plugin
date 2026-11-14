@@ -1,5 +1,20 @@
 # Changelog
 
+## 2.27.2 (2026-11-14)
+
+### Added
+- **LuckPerms ranks everywhere.**
+  - **Sidebar:** a new `Rank:` line under your name shows your LuckPerms rank. The crew rank line is now called `Role:`.
+  - **Rank text:** the rank shown is the group's `displayname` meta (`/lp group admin meta set displayname "&cAdmin"`), else its prefix without brackets, else the group name.
+  - **Tags:** `<lp_rank>` and `<lp_group>` in the sidebar, and `<group>` in the chat and tab formats, next to `<rank>` (the prefix), `<suffix>` and the LuckPerms display name.
+- **Optional join and leave messages in the server's style,** with the rank prefix, display name and suffix, plus a special message for a player's first join. They are off by default, so Essentials (or LuckPerms setups) keep their own. Turn them on with `chat.join-messages: true` in `crews.yml`. PlaceholderAPI works there too.
+- **Tidewatch Pistoleers:** pillagers in uniform with a Flintlock and a tricorn. Together with the riflemen (Muskets), who now turn up more often, pillagers make up more than half of every garrison and Tidewatch ship crew.
+
+### Fixed
+- **Tidewatch outposts spawned only zombies.** The 2.27.0 update could leave the `tidewatch` section of `islands.yml` with just its new setting, so every soldier template came out empty and fell back to a zombie. Missing settings are filled in again.
+- **Recruits are vindicators now,** not zombies, so the whole garrison wears the Tidewatch uniform. Their damage is turned down to match.
+- **Guns only go to soldiers that can fire them** (pillagers). Any other soldier given a gun gets a Steel Cutlass instead.
+
 ## 2.27.1 (2026-11-14)
 
 ### Added

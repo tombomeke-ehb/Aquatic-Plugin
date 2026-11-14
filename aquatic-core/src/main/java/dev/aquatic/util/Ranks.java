@@ -62,6 +62,59 @@ public final class Ranks {
         static String meta(Object chat, Player p, String key) {
             return ((net.milkbowl.vault.chat.Chat) chat).getPlayerInfoString(p, key, null);
         }
+
+        static String group(Object chat, Player p) {
+            return ((net.milkbowl.vault.chat.Chat) chat).getPrimaryGroup(p);
+        }
+
+        static String groupMeta(Object chat, Player p, String group, String key) {
+            return ((net.milkbowl.vault.chat.Chat) chat).getGroupInfoString(p.getWorld().getName(), group, key, null);
+        }
+
+        static String groupPrefix(Object chat, Player p, String group) {
+            return ((net.milkbowl.vault.chat.Chat) chat).getGroupPrefix(p.getWorld().getName(), group);
+        }
+    }
+
+    /** The id of the player's primary group in the permissions plugin ("default", "admin" ...), or null. */
+    public static String groupId(Player p) {
+        Object c = chat();
+        if (c == null) {
+            return null;
+        }
+        try {
+            String g = Lookup.group(c, p);
+            return g == null || g.isBlank() ? null : g;
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    /**
+     * The player's rank: the primary group's "displayname" meta (LuckPerms: /lp group admin meta set displayname
+     * "&amp;cAdmin"), else the group's prefix without brackets around it, else the group name with a capital.
+     * Empty when there is no permissions plugin.
+     */
+    public static Component group(Player p) {
+        Object c = chat();
+        String g = groupId(p);
+        if (c == null || g == null) {
+            return Component.empty();
+        }
+        try {
+            String shown = Lookup.groupMeta(c, p, g, "displayname");
+            if (shown == null || shown.isBlank()) {
+                String prefix = Lookup.groupPrefix(c, p, g);
+                String plainPrefix = prefix == null ? "" : plain(parse(prefix)).trim();
+                if (!plainPrefix.isEmpty()) {
+                    return parse(prefix.trim().replaceAll("^(&[0-9a-fk-or]|§[0-9a-fk-or])*\\[", "$1").replaceAll("\\]\\s*$", ""));
+                }
+                return Component.text(Character.toUpperCase(g.charAt(0)) + g.substring(1));
+            }
+            return parse(shown);
+        } catch (Throwable t) {
+            return Component.text(g);
+        }
     }
 
     /** The rank prefix with a space after it, or empty. */

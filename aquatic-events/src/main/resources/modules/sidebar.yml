@@ -18,22 +18,25 @@ share-scoreboards: true
 # Tags: <player> (the LuckPerms display name or nickname) <prefix> <suffix> (rank prefix/suffix from LuckPerms) <level> <level_title> <xp_bar> <xp_percent> <balance> <bounty> <bounty_title> <crew> <crew_online>
 #       <rank> <reputation> <island> <island_type> <island_rarity> <island_owner> <fruit> <fruit_level>
 #       <move> <move_cd> <combat> <event> <event_time> <conqueror> <online> <x> <z>
+# LuckPerms (through Vault): <lp_rank> (the rank: its displayname meta, its prefix or its name), <lp_group> (the
+#   group id), <prefix> <suffix>; condition "?lprank:" shows a line only when a permissions plugin is installed.
 # PlaceholderAPI placeholders work in the title and every line, e.g. %luckperms_prefix%,
 #   %luckperms_meta_displayname%, %luckperms_primary_group_name%, %player_ping% (legacy colours they return are kept).
 # Start a line with "?<condition>:" to only show it when that applies:
 #   crew, nocrew, island, sea, fruit, nofruit, event, bounty, conqueror, combat
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 3
+config-version: 4
 
 layout:
   - "<dark_gray><strikethrough>                         "
   - "?bounty:<bounty_title>"
   - "<white><bold><player></bold> <level_title>"
+  - "?lprank:<gray>Rank: <lp_rank>"
   - "<gray>Lv <aqua><level></aqua> <xp_bar> <dark_gray><xp_percent>%"
   - "<gray>Doubloons: <yellow><balance>"
   - "?bounty:<gray>Bounty: <red><bounty>"
   - "?crew:<gray>Crew: <crew> <dark_gray>(<crew_online>)"
-  - "?crew:<gray>Rank: <white><rank>"
+  - "?crew:<gray>Role: <white><rank>"
   - "?nocrew:<gray>Crew: <dark_gray>none <gray>· /crew"
   - "?island:<aqua><island> <dark_gray>· <island_rarity>"
   - "?island:<gray>» <island_owner>"
