@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.28.2 (2026-11-14)
+
+### Changed
+- **Longer crew tags:** up to 6 characters (was 4), and new crews without a tag get the first 4 letters of their name (was 3). Existing tags stay; change one with `/crew tag`.
+- **The name on the sidebar is no longer bold.**
+
+### Fixed
+- **The sidebar showed "Rank: none".** With LuckPerms installed, the plugin now reads only LuckPerms itself (Vault could answer with "none"). The rank is the group's display name when it has text, else its prefix without the brackets (`[ADMIN]` becomes `ADMIN`), else the group name.
+- `/sidebar debug` shows the name and rank exactly as they are drawn, with their colours.
+
 ## 2.28.1 (2026-11-14)
 
 ### Fixed

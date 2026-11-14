@@ -160,7 +160,7 @@ public final class Ranks {
     public static String nameColour(Player p) {
         for (String key : new String[]{"name-color", "namecolor", "name_color", "username-color", "name-colour"}) {
             String v = lpMeta(p, key);
-            if (v == null) {
+            if (v == null && lp() == null) {
                 Object c = chat();
                 try {
                     v = c == null ? null : Lookup.meta(c, p, key);
@@ -168,7 +168,7 @@ public final class Ranks {
                     v = null;
                 }
             }
-            if (v != null && !v.isBlank()) {
+            if (useful(v)) {
                 return v.trim();
             }
         }
@@ -183,7 +183,9 @@ public final class Ranks {
     public static String describe(Player p) {
         return "LuckPerms API: " + (lp() != null) + ", Vault chat: " + (chat() != null)
                 + ", group: " + groupId(p) + ", group display name: " + lpDisplayName(groupId(p))
-                + ", prefix: " + plain(prefix(p)).trim() + ", name colour: " + nameColour(p) + ", shown name: " + plain(name(p));
+                + ", prefix: " + plain(prefix(p)).trim() + ", name colour: " + nameColour(p)
+                + ", shown name: " + net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().serialize(name(p))
+                + ", rank: " + net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().serialize(group(p));
     }
 
     /** The id of the player's primary group in the permissions plugin ("default", "admin" ...), or null. */
@@ -210,34 +212,36 @@ public final class Ranks {
      * Empty when there is no permissions plugin.
      */
     public static Component group(Player p) {
-        Object c = chat();
         String g = groupId(p);
         if (g == null) {
             return Component.empty();
         }
-        if (c == null) {
-            String own = lpDisplayName(g);
-            return own != null && !plain(parse(own)).isBlank() ? parse(own)
-                    : Component.text(Character.toUpperCase(g.charAt(0)) + g.substring(1));
+        String own = lpDisplayName(g);                            // /lp group admin setdisplayname "&cAdmin"
+        if (useful(own) && !plain(parse(own)).isBlank()) {
+            return parse(own);
         }
+        Object c = chat();
         try {
-            String own = lpDisplayName(g);                        // /lp group admin setdisplayname "&cAdmin"
-            if (own != null && !own.isBlank() && !plain(parse(own)).isBlank()) {
-                return parse(own);
-            }
-            String shown = Lookup.groupMeta(c, p, g, "displayname");
-            if (shown == null || shown.isBlank()) {
-                String prefix = Lookup.groupPrefix(c, p, g);
-                String plainPrefix = prefix == null ? "" : plain(parse(prefix)).trim();
-                if (!plainPrefix.isEmpty()) {
-                    return parse(prefix.trim().replaceAll("^(&[0-9a-fk-or]|§[0-9a-fk-or])*\\[", "$1").replaceAll("\\]\\s*$", ""));
+            String prefix = c == null ? null : Lookup.groupPrefix(c, p, g);
+            if (useful(prefix) && !plain(parse(prefix)).isBlank()) {
+                String stripped = prefix.trim().replaceAll("^((?:[&§][0-9a-fk-orA-FK-OR])*)\\[", "$1").replaceAll("\\]\\s*$", "");
+                if (!plain(parse(stripped)).isBlank()) {
+                    return parse(stripped);
                 }
-                return Component.text(Character.toUpperCase(g.charAt(0)) + g.substring(1));
             }
-            return parse(shown);
-        } catch (Throwable t) {
-            return Component.text(g);
+        } catch (Throwable ignored) {
+            // no prefix support
         }
+        return Component.text(Character.toUpperCase(g.charAt(0)) + g.substring(1));
+    }
+
+    /** A value worth showing: not empty and not a placeholder answer like "none" or "null". */
+    private static boolean useful(String v) {
+        if (v == null || v.isBlank()) {
+            return false;
+        }
+        String t = v.trim().toLowerCase(java.util.Locale.ROOT);
+        return !t.equals("none") && !t.equals("null") && !t.equals("default");
     }
 
     /** The rank prefix with a space after it, or empty. */
@@ -272,9 +276,10 @@ public final class Ranks {
 
     /** The name to show: the LuckPerms display name, a nickname, or the plain name. */
     public static Component name(Player p) {
+        String colour = nameColour(p);
         for (String key : new String[]{"displayname", "display-name", "nickname"}) {
             String raw = lpMeta(p, key);
-            if (raw == null) {
+            if (raw == null && lp() == null) {
                 Object c = chat();
                 try {
                     raw = c == null ? null : Lookup.meta(c, p, key);
@@ -282,13 +287,13 @@ public final class Ranks {
                     raw = null;                                   // a permissions plugin without meta support
                 }
             }
-            if (raw != null && !raw.isBlank() && !plain(parse(raw)).isBlank()) {
-                return parse(raw);
+            if (useful(raw) && !plain(parse(raw)).isBlank()) {
+                boolean coloured = raw.contains("&") || raw.contains("§") || raw.contains("<");
+                return parse((coloured || colour == null ? "" : colour) + raw);
             }
         }
         Component shown = p.displayName();
         boolean own = plain(shown).equals(p.getName()) || plain(shown).isBlank();
-        String colour = nameColour(p);
         if (colour != null) {
             return parse(colour + (own ? p.getName() : plain(shown)));
         }

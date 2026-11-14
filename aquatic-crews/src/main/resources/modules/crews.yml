@@ -6,7 +6,7 @@
 # =====================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 3
+config-version: 4
 
 # Maximum number of pirates in one crew (captain included).
 max-members: 6
@@ -39,7 +39,9 @@ name:
 # When /crew create is used without a tag, one is made from the first letters of the name.
 tag:
   min-length: 2
-  max-length: 4
+  max-length: 6
+  # New crews without a tag get this many letters of their name (when free).
+  auto-length: 4
   allowed-characters: "[A-Za-z0-9]+"
 
 # Colour new crews get. A colour name (aqua, gold, red, ...) or a hex code (#1fa2ff).

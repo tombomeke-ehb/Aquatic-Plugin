@@ -408,6 +408,15 @@ public final class SidebarModule extends AquaticModule implements Listener {
 
     @Override
     protected void migrateConfig(YamlConfiguration file, YamlConfiguration defaults, int from) {
+        if (from < 6) {
+            // 2.28.2: the name is no longer bold (it takes the LuckPerms name colour)
+            List<String> lines = new ArrayList<>(file.getStringList("layout"));
+            int i = lines.indexOf("<white><bold><player></bold> <level_title>");
+            if (i >= 0) {
+                lines.set(i, "<white><player> <level_title>");
+                file.set("layout", lines);
+            }
+        }
         if (from < 5) {
             // 2.28.1: 2.23.0 - 2.28.0 could write an empty layout for files that still used the old "lines" key
             if (file.getStringList("layout").isEmpty()) {

@@ -607,7 +607,8 @@ public final class CrewsModule extends AquaticModule implements CrewService {
         int max = Math.max(1, config().getInt("tag.max-length", 4));
         int min = Math.max(1, config().getInt("tag.min-length", 2));
         String letters = name.replaceAll("[^A-Za-z0-9]", "").toUpperCase(Locale.ROOT);
-        for (int len = Math.min(Math.min(3, max), letters.length()); len <= Math.min(max, letters.length()); len++) {
+        int auto = Math.max(min, config().getInt("tag.auto-length", 4));
+        for (int len = Math.min(Math.min(auto, max), letters.length()); len <= Math.min(max, letters.length()); len++) {
             if (len < min) {
                 continue;
             }
@@ -1026,6 +1027,11 @@ public final class CrewsModule extends AquaticModule implements CrewService {
     @Override
     protected void migrateConfig(org.bukkit.configuration.file.YamlConfiguration file,
                                  org.bukkit.configuration.file.YamlConfiguration defaults, int from) {
+        if (from < 4) {
+            // 2.28.2: longer crew tags
+            raise(file, "tag.max-length", 4, 6);
+            addMissing(file, defaults, "tag.auto-length");
+        }
         if (from < 3) {
             // 2.27.2: join and leave messages with the LuckPerms rank
             for (String k : List.of("join-messages", "join-message", "first-join-message", "quit-message")) {

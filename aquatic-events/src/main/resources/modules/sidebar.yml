@@ -28,12 +28,12 @@ take-sidebar-slot: true
 # Start a line with "?<condition>:" to only show it when that applies:
 #   crew, nocrew, island, sea, fruit, nofruit, event, bounty, conqueror, combat
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 5
+config-version: 6
 
 layout:
   - "<dark_gray><strikethrough>                         "
   - "?bounty:<bounty_title>"
-  - "<white><bold><player></bold> <level_title>"
+  - "<white><player> <level_title>"
   - "?lprank:<gray>Rank: <lp_rank>"
   - "<gray>Lv <aqua><level></aqua> <xp_bar> <dark_gray><xp_percent>%"
   - "<gray>Doubloons: <yellow><balance>"
