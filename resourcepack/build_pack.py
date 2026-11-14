@@ -2036,7 +2036,8 @@ def main():
         else:
             item(name, shimmer(img, glow=glow, strength=0.5), True, drawn=True)
             write_json(os.path.join(models, name + ".json"), forge.model("aquatic:item/" + name, grid,
-                                                                         {"a": 1.6, "b": 1.6, "c": 1.6, "d": 1.6}))
+                                                                         {"a": 1.6, "b": 1.6, "c": 1.6, "d": 1.6},
+                                                                         small=name.startswith("key_")))
     crate_blocks()
     # drinks, bombs and small items: hand-drawn (pixelart.py)
     caps = {"cannonball": 7.0, "smoke_bomb": 6.0, "frost_bomb": 6.0, "fire_bomb": 6.0}

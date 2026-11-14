@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.24.1 (2026-11-14)
+
+### Fixed
+- **Crate keys were huge in the hand.** They are now less than half the size in third person and a little smaller in first person; weapons and tools keep their size.
+
 ## 2.24.0 (2026-11-14)
 
 ### Added

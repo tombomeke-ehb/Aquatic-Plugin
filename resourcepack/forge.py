@@ -283,9 +283,18 @@ HELD = {  # Minecraft's own sword hold (item/handheld), but half as big again; t
 }
 
 
-def model(texture, grid, depth=None):
+SMALL = dict(HELD)  # small things held like a tool (keys): well under the size of a sword
+SMALL.update({
+    "thirdperson_righthand": {"rotation": [0, -90, 55], "translation": [0, 1.8, 0.78], "scale": [0.55, 0.55, 0.55]},
+    "thirdperson_lefthand": {"rotation": [0, 90, -55], "translation": [0, 1.8, 0.78], "scale": [0.55, 0.55, 0.55]},
+    "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 3.2, 1.13], "scale": [0.6, 0.6, 0.6]},
+    "firstperson_lefthand": {"rotation": [0, 90, -25], "translation": [1.13, 3.2, 1.13], "scale": [0.6, 0.6, 0.6]},
+})
+
+
+def model(texture, grid, depth=None, small=False):
     return {"gui_light": "front", "textures": {"t": texture, "particle": texture}, "elements": voxels(grid, depth),
-            "display": HELD}
+            "display": SMALL if small else HELD}
 
 
 # ------------------------------------------------------------------ chest textures (32 px, clean pixel art)
