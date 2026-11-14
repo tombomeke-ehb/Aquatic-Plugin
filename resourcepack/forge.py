@@ -336,3 +336,97 @@ def lock(metal, dark, gem, glow, frame, px=32):
                 c = hi
             p[x, y] = c + (255,)
     return img
+
+
+# ------------------------------------------------------------------ chests, modern style (16 px)
+
+def _tones(wood, metal):
+    mix, warm, cool = pixelart._mix, pixelart.WARM, pixelart.COOL
+    return {"w1": mix(wood, warm, 0.13), "w2": wood, "w3": mix(wood, cool, 0.14), "w4": mix(wood, cool, 0.34),
+            "m1": mix(metal, warm, 0.42), "m2": metal, "m3": mix(metal, cool, 0.26), "m4": mix(metal, cool, 0.5)}
+
+
+def _plank(c, r, rows, along, board, seed):
+    """One pixel of a plank that is "rows" high: a soft light top row, a dark line under it, a few short streaks."""
+    if r == 0:
+        return c["w1"]
+    if r == rows - 1:
+        return c["w4"]
+    if along == 3 + int(_h(board, 1, seed) * 9):
+        return c["w3"]                                              # where two boards meet
+    if _h(board * 5 + r, along // 3, seed + 2) < 0.22:
+        return c["w3"] if _h(board, along // 3, seed + 3) < 0.7 else c["w1"]
+    return c["w2"]
+
+
+def chest_side(wood, metal, seed):
+    c = _tones(wood, metal)
+    img = Image.new("RGBA", (16, 16))
+    p = img.load()
+    for y in range(16):
+        for x in range(16):
+            if y in (5, 6):                                         # the lid's rim
+                k = c["m1"] if y == 5 else c["m3"]
+                if x in (0, 15):
+                    k = c["m4"]
+            elif x in (0, 15) or y in (0, 15):                      # the frame: a dark outer line ...
+                k = c["m4"] if (x in (0, 15) or y == 15) else c["m3"]
+            elif x in (1, 14):                                      # ... and the corner posts
+                k = c["m1"] if x == 1 else c["m2"]
+                if y in (2, 9, 13):
+                    k = c["m4"]                                     # rivets
+                elif y in (3, 10, 14):
+                    k = c["m1"]
+            elif y < 5:
+                k = _plank(c, (y - 1) % 2, 2, x, 10 + (y - 1) // 2, seed) if y > 1 else _plank(c, 0, 4, x, 9, seed)
+                if y == 4:
+                    k = c["w3"]
+            else:
+                k = _plank(c, (y - 7) % 4, 4, x, (y - 7) // 4, seed)
+            p[x, y] = k + (255,)
+    return img
+
+
+def chest_top(wood, metal, seed, bottom=False):
+    c = _tones(wood, metal)
+    if bottom:
+        c = {k: pixelart._mix(v, pixelart.COOL, 0.3) for k, v in c.items()}
+    img = Image.new("RGBA", (16, 16))
+    p = img.load()
+    for y in range(16):
+        for x in range(16):
+            e = min(x, y, 15 - x, 15 - y)
+            if e == 0:
+                k = c["m4"]
+            elif e == 1:
+                k = c["m1"] if (x == 1 or y == 1) else c["m3"]
+                if (x in (1, 14)) and (y in (1, 14)):
+                    k = c["m1"]
+            elif x in (7, 8) and not bottom:                         # a strap over the lid
+                k = c["m2"] if x == 7 else c["m3"]
+                if y in (4, 11):
+                    k = c["m1"]
+            else:
+                k = _plank(c, (x - 2) % 4, 4, y, 20 + (x - 2) // 4, seed)
+            p[x, y] = k + (255,)
+    return img
+
+
+def chest_latch(metal, gem, glow, frame):
+    """4 x 5 pixels in the corner of a 16 px frame: a plate, a gem that pulses, a keyhole."""
+    c = _tones(metal, metal)
+    pulse = (0, 1, 2, 3, 4, 3, 2, 1)[frame % 8] / 4.0
+    g1, g2 = pixelart._mix(gem, glow, 0.35 + 0.6 * pulse), pixelart._mix(gem, pixelart.COOL, 0.25 - 0.2 * pulse)
+    rows = ["1223",
+            "2gG3",
+            "2Gh3",
+            "22k3",
+            "3334"]
+    key = {"1": c["m1"], "2": c["m2"], "3": c["m3"], "4": c["m4"], "g": g1, "G": pixelart._mix(gem, glow, 0.15 + 0.4 * pulse),
+           "h": g2, "k": (20, 14, 12)}
+    img = Image.new("RGBA", (16, 16), c["m2"] + (255,))
+    p = img.load()
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            p[x, y] = key[ch] + (255,)
+    return img

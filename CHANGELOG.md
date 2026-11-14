@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.23.1 (2026-11-14)
+
+### Changed
+- **New crate chests.** A clean, modern look: 16 px textures with soft planks, a metal frame with rivets, a lid rim that stands out and a latch with a pulsing gem. The stepped lid and the thick bands are gone.
+
+### Fixed
+- **Musket and Flintlock in first person** filled the middle of the screen (you looked at the butt of the gun). They now sit low and to the right, pointing ahead.
+
 ## 2.23.0 (2026-11-14)
 
 ### Added

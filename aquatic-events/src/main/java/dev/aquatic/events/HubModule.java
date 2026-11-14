@@ -798,7 +798,7 @@ public final class HubModule extends AquaticModule implements Listener {
             raise(file, "displays.founders.offset", List.of(27, 0), List.of(28, 0));
             raise(file, "displays.founders.height", 1.4, 4.6);
             raise(file, "displays.founders.text", List.of("<gold><bold>Founders of Aquatic SMP</bold>",
-                    "<white>Owner & idea: <yellow>(your names here)", "<white>Developed by <aqua>tombomeke",
+                    "<white>Owner & idea: <yellow>MegaAquatic", "<white>Developed by <aqua>tombomeke",
                     "<gray>Thank you to everyone who helped build this sea!"), defaults.getStringList("displays.founders.text"));
         }
         if (from < 2) {

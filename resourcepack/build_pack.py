@@ -1071,7 +1071,7 @@ GUN_DISPLAY = {  # like a normal held item (same as vanilla item/generated), but
     # along (0.26, 0, -0.97) with +y up; the gun's muzzle is -x and its top +y, so it turns -105 degrees about y.
     # The translation puts the grip (not the middle of the model) in the hand.
     "thirdperson_righthand": {"rotation": [0, -105, 0], "translation": [1.9, 2.1, -2.9], "scale": [0.7, 0.7, 0.7]},
-    "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 3.2, 1.13], "scale": [0.68, 0.68, 0.68]},
+    "firstperson_righthand": {"rotation": [0, -90, 0], "translation": [5.0, 1.5, -3.0], "scale": [0.68, 0.68, 0.68]},
     "fixed": {"rotation": [0, 180, 0], "scale": [1, 1, 1]},
 }
 
@@ -1098,6 +1098,7 @@ def cube(frm, to, mat, rotation=None):
 
 CANNON_DISPLAY = dict(GUN_DISPLAY)
 # A normal held item: +y of the hand points forward, +z up. Muzzle (-x) to +y and top (+y) to +z.
+CANNON_DISPLAY["firstperson_righthand"] = {"rotation": [0, -90, 25], "translation": [1.13, 3.2, 1.13], "scale": [0.68, 0.68, 0.68]}
 CANNON_DISPLAY["thirdperson_righthand"] = {"rotation": [90, -90, 0], "translation": [0, 1.6, 3.6], "scale": [0.7, 0.7, 0.7]}
 
 
@@ -1480,73 +1481,44 @@ def chest_lock(metal, dark, gem, glow, frame):
 
 
 def crate_blocks():
-    """Each crate block becomes a treasure chest: body, a rounded three-step lid, metal bands over it all,
-    corner guards, feet and a pulsing lock on the front and the back."""
+    """Each crate block is a treasure chest in the style of today's Minecraft: 16 px textures with soft, low-contrast
+    planks, a metal frame with rivets painted on, a lid rim and a latch with a gem (it pulses) that stand out."""
     tex = os.path.join(PACK, "assets", "aquatic", "textures", "block")
     os.makedirs(tex, exist_ok=True)
+    for old in os.listdir(tex):                                 # textures of the older chest designs
+        if old.startswith(("chest_", "crate_")):
+            os.remove(os.path.join(tex, old))
     for block, (tier, wood, dark, metal, metal_d, gem, glow) in CRATE_BLOCKS.items():
-        wood, dark, metal, metal_d, gem, glow = (rgb(c) for c in (wood, dark, metal, metal_d, gem, glow))
+        wood, metal, gem, glow = (rgb(c) for c in (wood, metal, gem, glow))
         seed = len(tier) * 7
-        parts = {
-            "wood": chest_wood(wood, dark, seed),
-            "lid": chest_wood(shade(wood, 0.06), dark, seed + 3, vertical=True),
-            "inner": chest_wood(shade(dark, -0.1), shade(dark, -0.3), seed + 5),
-            "metal": chest_metal(metal, metal_d, seed),
-            "trim": chest_metal(shade(metal, -0.15), metal_d, seed + 2, rivets=False),
-        }
-        for name, img in parts.items():
-            img.save(os.path.join(tex, "chest_%s_%s.png" % (tier, name)))
-        frames = [chest_lock(metal, metal_d, gem, glow, f) for f in range(8)]
-        strip = Image.new("RGBA", (CHEST_PX, CHEST_PX * 8))
-        for i, f in enumerate(frames):
-            strip.paste(f, (0, i * CHEST_PX))
-        lock_path = os.path.join(tex, "chest_%s_lock.png" % tier)
+        forge.chest_side(wood, metal, seed).save(os.path.join(tex, "chest_%s_side.png" % tier))
+        forge.chest_top(wood, metal, seed).save(os.path.join(tex, "chest_%s_top.png" % tier))
+        forge.chest_top(wood, metal, seed, bottom=True).save(os.path.join(tex, "chest_%s_bottom.png" % tier))
+        strip = Image.new("RGBA", (16, 16 * 8))
+        for f in range(8):
+            strip.paste(forge.chest_latch(metal, gem, glow, f), (0, f * 16))
+        lock_path = os.path.join(tex, "chest_%s_latch.png" % tier)
         strip.save(lock_path)
-        write_json(lock_path + ".mcmeta", {"animation": {"frametime": 3, "interpolate": True}})
-        for old in ("side", "top", "post"):                # the 2.16.0 box crate textures
-            p = os.path.join(tex, "crate_%s_%s.png" % (tier, old))
-            if os.path.exists(p):
-                os.remove(p)
-        p = os.path.join(tex, "crate_%s_lock.png" % tier)
-        if os.path.exists(p):
-            os.remove(p)
+        write_json(lock_path + ".mcmeta", {"animation": {"frametime": 4, "interpolate": True}})
 
-        def box(frm, to, tex_key, faces=("north", "south", "east", "west", "up", "down"), uv=None, cull=False):
-            f = {}
-            for side in faces:
-                spec = {"texture": "#" + tex_key}
-                if uv:
-                    spec["uv"] = uv
-                f[side] = spec
-            return {"from": frm, "to": to, "faces": f}
+        def box(frm, to, faces):
+            return {"from": frm, "to": to, "faces": {k: ({"texture": "#" + v[0], "uv": v[1]} if isinstance(v, tuple)
+                                                         else {"texture": "#" + v}) for k, v in faces.items()}}
 
-        # The body fills the whole block footprint: the block is solid to the game, so the faces of the blocks
-        # touching it are not drawn; anything smaller than a full side would leave a see-through gap there.
-        el = []
-        el.append(box([0, 0, 0], [16, 11, 16], "wood"))                             # body
-        el[-1]["faces"]["up"]["texture"] = "#inner"
-        el[-1]["faces"]["down"]["texture"] = "#inner"
-        el.append(box([-0.2, 0, -0.2], [16.2, 1.2, 16.2], "trim"))                  # bottom rim
-        el.append(box([-0.2, 10.2, -0.2], [16.2, 11.4, 16.2], "trim"))              # top rim of the body
-        el.append(box([0, 11, 0], [16, 16, 16], "lid"))                             # the lid fills the block to the top
-        el.append(box([0, 16, 1.5], [16, 17.4, 14.5], "lid"))                       # and domes above it
-        el.append(box([0, 17.4, 4], [16, 18.4, 12], "lid"))
-        for x0 in (2.5, 11.5):                                                      # two metal bands over lid and body
-            x1 = x0 + 2
-            el.append(box([x0, 0, -0.3], [x1, 16.3, 16.3], "metal"))
-            el.append(box([x0, 16, 1.2], [x1, 17.7, 14.8], "metal"))
-            el.append(box([x0, 17.4, 3.7], [x1, 18.7, 12.3], "metal"))
-        for x0 in (-0.3, 14.8):                                                     # corner guards
-            for z0 in (-0.3, 14.8):
-                el.append(box([x0, 0, z0], [x0 + 1.5, 11.4, z0 + 1.5], "trim"))
-        el.append(box([6, 7, -0.8], [10, 12.5, 0], "lock", uv=[0, 0, 16, 16]))      # locks, front and back
-        el.append(box([6, 7, 16], [10, 12.5, 16.8], "lock", uv=[0, 0, 16, 16]))
+        # The body is the whole block: the game does not draw the faces of blocks that touch it.
+        el = [box([0, 0, 0], [16, 16, 16], {"north": "side", "south": "side", "east": "side", "west": "side",
+                                             "up": "top", "down": "bottom"}),
+              # the lid's rim stands out a little, all the way round (rows 5-6 of the side texture)
+              box([-0.3, 9.5, -0.3], [16.3, 11.0, 16.3], {f: ("side", [0, 5, 16, 6.5]) for f in ("north", "south", "east", "west")}
+                  | {"up": ("side", [0, 5, 16, 6]), "down": ("side", [0, 6, 16, 7])})]
+        for z0, z1 in ((-0.7, 0.0), (16.0, 16.7)):               # a latch on the front and the back
+            el.append(box([6, 7.5, z0], [10, 12.5, z1], {"north": ("latch", [0, 0, 4, 5]), "south": ("latch", [0, 0, 4, 5]),
+                                                         "east": ("latch", [3, 0, 4, 5]), "west": ("latch", [0, 0, 1, 5]),
+                                                         "up": ("latch", [0, 0, 4, 1]), "down": ("latch", [0, 4, 4, 5])}))
         t = lambda n: "aquatic:block/chest_%s_%s" % (tier, n)
         write_json(os.path.join(PACK, "assets", "minecraft", "models", "block", block + ".json"), {
             "parent": "minecraft:block/block",
-            "ambientocclusion": False,
-            "textures": {"particle": t("wood"), "wood": t("wood"), "lid": t("lid"), "inner": t("inner"),
-                         "metal": t("metal"), "trim": t("trim"), "lock": t("lock")},
+            "textures": {"particle": t("side"), "side": t("side"), "top": t("top"), "bottom": t("bottom"), "latch": t("latch")},
             "elements": el,
             "display": {
                 "gui": {"rotation": [30, 225, 0], "translation": [0, 0, 0], "scale": [0.625, 0.625, 0.625]},
@@ -1969,7 +1941,7 @@ def illager_hd(coat, trim, belts, hat, seed=1):
 MUSKET_DISPLAY = {  # a long gun: bigger in the hand than the pistols
     "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.6, 0.6, 0.6]},
     "thirdperson_righthand": {"rotation": [0, -105, 0], "translation": [1.9, 0.9, -3.0], "scale": [0.9, 0.9, 0.9]},
-    "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 3.2, 1.13], "scale": [0.9, 0.9, 0.9]},
+    "firstperson_righthand": {"rotation": [0, -90, 0], "translation": [5.0, 1.8, -4.5], "scale": [0.9, 0.9, 0.9]},
     "fixed": {"rotation": [0, 180, 0], "scale": [1, 1, 1]},
     "gui": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
 }
