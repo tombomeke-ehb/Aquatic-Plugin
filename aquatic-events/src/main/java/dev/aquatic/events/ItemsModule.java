@@ -661,6 +661,11 @@ public final class ItemsModule extends AquaticModule implements ItemService {
     @Override
     protected void migrateConfig(org.bukkit.configuration.file.YamlConfiguration file,
                                  org.bukkit.configuration.file.YamlConfiguration defaults, int from) {
+        if (from < 13) {
+            // 2.27.0: the Steel Cutlass and the Boarding Axe (enemies fight with them too)
+            addMissing(file, defaults, "items.steel_cutlass");
+            addMissing(file, defaults, "items.boarding_axe");
+        }
         if (from < 12) {
             // 2.26.0: fruit rarities (weaker common fruits, stronger rare ones)
             addMissing(file, defaults, "fruits.rarities");

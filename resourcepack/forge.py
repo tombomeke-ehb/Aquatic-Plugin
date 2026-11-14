@@ -155,6 +155,26 @@ def pickaxe(s, t):
     return None
 
 
+def boarding_axe(s, t):
+    if s < 2.0 and abs(t) <= 1.6:
+        return "p"
+    if s <= 31 and abs(t) <= 1.05:
+        return "g" if (12 <= s < 13.4 or 24 <= s < 25.4) else "h"
+    # the head: a bearded blade on one side, a short spike on the other
+    if t < -1.0:
+        u = -t - 1.0                                         # 0 at the haft, 8 at the edge
+        half = 2.4 + u * 0.55
+        if u <= 8.2 and abs(s - 28.2 + u * 0.15) <= half:
+            if u > 7.0:
+                return "a"                                   # the bright cutting edge
+            return bands((s - 28.2) / max(half, 0.1))
+    if t > 1.0 and t <= 3.6 and abs(s - 28.5) <= 1.4 - (t - 1.0) * 0.4:
+        return "d"
+    if 31 < s <= 33 and abs(t) <= 0.9:
+        return "g"
+    return None
+
+
 def pal(outline, main, guard, grip, gem, x, T="#efe6cf"):
     p = {"#": outline, "x": x, "T": T}
     p.update(zip("abcd", main.split()))
@@ -188,6 +208,11 @@ WEAPONS = {
                        pal("#3a0f1e", "#ffe0d0 #ff9d8a #e65c5c #a2364c", "#ffd98a #c7903a", "#7a4a2e #4a2816", "#c7903a #fff1e6", "#fff1e6",
                            T="#ffc2a8"),
                        "#fff4ea", {}),
+    "steel_cutlass": (sword(L=34, wb=2.0, tip=6, profile="flare", curve=-2.2, guard=4.0, horns=1.4),
+                      pal("#14181f", "#f4f8fb #c3ccd5 #8a96a3 #5a6572", "#c9a04a #8a6528", "#5a3a22 #36220f", "#8a6528 #e6c77a", "#ffffff"),
+                      "#ffffff", {}),
+    "boarding_axe": (boarding_axe, pal("#15120e", "#eef2f5 #b4bcc5 #7d8792 #4f5862", "#8a8f96 #5a5f66", "#8a5a32 #553419", "#5a5f66 #b4bcc5", "#ffffff"),
+                     None, {"a": 1.4, "b": 1.4, "c": 1.4, "d": 1.4, "g": 2.0}),
     "krakens_maul": (maul, pal("#150a2b", "#b891ea #7c4fc4 #52309a #331c66", "#c9c9dc #6e6e88", "#8a6245 #4f3524", "#6e6e88 #eafffb", "#6ff5e0",
                                T="#e6dcf5"),
                      None, {"a": 5.0, "b": 5.0, "c": 5.0, "d": 5.0, "g": 5.6, "G": 5.6, "x": 5.6, "P": 6.0, "h": 1.6, "T": 2.0}),

@@ -10,8 +10,12 @@ update-ticks: 20
 
 title: "<gradient:#1fa2ff:#12d8fa><bold>AQUATIC SMP</bold></gradient>"
 
+# When another plugin gives players its own scoreboard (nametags, tab ranks), put the sidebar on that board
+# instead of hiding it. The tournament's board always wins.
+share-scoreboards: true
+
 # Up to 15 lines, top to bottom (MiniMessage).
-# Tags: <player> <level> <level_title> <xp_bar> <xp_percent> <balance> <bounty> <bounty_title> <crew> <crew_online>
+# Tags: <player> (the LuckPerms display name or nickname) <prefix> <suffix> (rank prefix/suffix from LuckPerms) <level> <level_title> <xp_bar> <xp_percent> <balance> <bounty> <bounty_title> <crew> <crew_online>
 #       <rank> <reputation> <island> <island_type> <island_rarity> <island_owner> <fruit> <fruit_level>
 #       <move> <move_cd> <combat> <event> <event_time> <conqueror> <online> <x> <z>
 # Start a line with "?<condition>:" to only show it when that applies:

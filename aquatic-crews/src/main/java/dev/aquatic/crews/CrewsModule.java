@@ -875,6 +875,7 @@ public final class CrewsModule extends AquaticModule implements CrewService {
             } else {
                 levelCache.remove(id);
             }
+            updateTab(p);                                   // rank changes in LuckPerms show without rejoining
             if (config().getBoolean("tablist.header-footer", true)) {
                 Object[] ph = {"player", p.getName(), "online", Bukkit.getOnlinePlayers().size(), "max", Bukkit.getMaxPlayers(),
                         "crew", crew == null ? rawMsg("card-no-crew") : crew.displayName(),
@@ -941,7 +942,7 @@ public final class CrewsModule extends AquaticModule implements CrewService {
         // rank prefix and suffix from LuckPerms (through Vault) and the pirate level, for everyone
         Integer level = levelCache.get(player.getUniqueId());
         String badge = config().getString("tablist.level-badge", "");
-        Object[] common = {"rank", PermsHook.prefix(player), "suffix", PermsHook.suffix(player), "player", player.getName(),
+        Object[] common = {"rank", PermsHook.prefix(player), "suffix", PermsHook.suffix(player), "player", PermsHook.name(player),
                 "level", level == null || badge.isEmpty() ? Component.empty() : Text.mm(badge, "level", level)};
         if (crew == null) {
             String format = config().getString("tablist.no-crew-format", "");

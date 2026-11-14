@@ -584,6 +584,24 @@ public final class GearListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onGunAsBow(org.bukkit.event.entity.EntityShootBowEvent event) {
         ItemDef def = module.defOf(event.getBow());
+        if (def != null && def.type.equals("gun") && !(event.getEntity() instanceof Player)) {
+            // a Tidewatch rifleman or a pirate marksman: a gunshot with a flash and smoke, a fast ball that hits hard
+            LivingEntity shooter = event.getEntity();
+            Vector dir = shooter.getEyeLocation().getDirection();
+            Location muzzle = shooter.getEyeLocation().add(dir.clone().multiply(1.0)).add(0, -0.25, 0);
+            abilities.fx().flash(muzzle, org.bukkit.Color.fromRGB(0xFFB347), 0.9f);
+            abilities.fx().burst(muzzle, org.bukkit.Particle.FLAME, 4, 0.05, 0.03);
+            abilities.fx().burst(muzzle.clone().add(dir.clone().multiply(0.4)), org.bukkit.Particle.CAMPFIRE_COSY_SMOKE, 4, 0.08, 0.01);
+            Util.sound(muzzle, "entity.generic.explode", 0.9f, 1.8f);
+            if (event.getProjectile() instanceof org.bukkit.entity.AbstractArrow arrow) {
+                arrow.setVelocity(arrow.getVelocity().multiply(1.6));
+                ConfigurationSection g = def.cfg.getConfigurationSection("gun");
+                arrow.setDamage((g == null ? 8 : g.getDouble("damage", 8)) * 0.35 / Math.max(1, arrow.getVelocity().length()) * 3);
+                arrow.setPickupStatus(org.bukkit.entity.AbstractArrow.PickupStatus.DISALLOWED);
+                arrow.setSilent(true);
+            }
+            return;
+        }
         if (def != null && def.type.equals("gun")) {
             event.setCancelled(true);
             event.setConsumeItem(false);

@@ -1392,6 +1392,15 @@ public final class TreasureModule extends AquaticModule implements TreasureServi
     @Override
     protected void migrateConfig(org.bukkit.configuration.file.YamlConfiguration file,
                                  org.bukkit.configuration.file.YamlConfiguration defaults, int from) {
+        if (from < 8) {
+            // 2.27.0: the Steel Cutlass and the Boarding Axe in common treasure
+            List<Map<?, ?>> loot = new ArrayList<>(file.getMapList("tiers.common.loot"));
+            if (file.contains("tiers.common.loot") && loot.stream().noneMatch(e -> "steel_cutlass".equals(String.valueOf(e.get("custom-item"))))) {
+                loot.add(Map.of("custom-item", "steel_cutlass", "weight", 1.5));
+                loot.add(Map.of("custom-item", "boarding_axe", "weight", 1));
+                file.set("tiers.common.loot", loot);
+            }
+        }
         if (from < 7) {
             // 2.26.0: MEGA treasure holds an Epic or Legendary fruit
             List<Map<?, ?>> g = file.getMapList("tiers.mega.guaranteed");

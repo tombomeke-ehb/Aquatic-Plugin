@@ -139,10 +139,26 @@ public final class SidebarModule extends AquaticModule implements Listener {
             obj.numberFormat(NumberFormat.blank());
             boards.put(p.getUniqueId(), board);
         }
-        if (current != board) {
-            if (current != main) {
-                return; // the tournament or another plugin shows its own scoreboard right now
+        if (current != board && current != main) {
+            // Another plugin gave the player its own scoreboard (nametags, tab prefixes from LuckPerms, ...).
+            // During the tournament its board wins; otherwise the sidebar moves onto that board, so both work.
+            TournamentService t = service(TournamentService.class);
+            if ((t != null && t.tournamentRunning()) || !config().getBoolean("share-scoreboards", true)) {
+                return;
             }
+            org.bukkit.scoreboard.Objective theirs = current.getObjective(DisplaySlot.SIDEBAR);
+            if (theirs != null && !theirs.getName().equals("aquatic_side")) {
+                return;                                  // it shows its own sidebar: leave it alone
+            }
+            if (current.getObjective("aquatic_side") == null) {
+                Objective o = current.registerNewObjective("aquatic_side", Criteria.DUMMY, Text.mm(config().getString("title", "Aquatic SMP")));
+                o.setDisplaySlot(DisplaySlot.SIDEBAR);
+                o.numberFormat(NumberFormat.blank());
+                shown.remove(p.getUniqueId());
+            }
+            board = current;
+            boards.put(p.getUniqueId(), board);
+        } else if (current != board) {
             p.setScoreboard(board);
         }
         Objective obj = board.getObjective("aquatic_side");
@@ -199,7 +215,9 @@ public final class SidebarModule extends AquaticModule implements Listener {
 
         dev.aquatic.api.LevelService levels = service(dev.aquatic.api.LevelService.class);
         Map<String, Object> ph = new HashMap<>();
-        ph.put("player", p.getName());
+        ph.put("player", dev.aquatic.util.Ranks.name(p));
+        ph.put("prefix", dev.aquatic.util.Ranks.prefix(p));
+        ph.put("suffix", dev.aquatic.util.Ranks.suffix(p));
         ph.put("balance", eco == null ? "-" : eco.format(eco.balance(id)));
         ph.put("bounty", eco == null ? Text.number(bounty) : eco.format(bounty));
         ph.put("crew", crew == null ? rawMsg("none") : crew.displayName());

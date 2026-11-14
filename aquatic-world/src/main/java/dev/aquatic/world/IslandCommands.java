@@ -556,6 +556,15 @@ final class IslandCommands {
         if (m.garrison() != null && m.garrison().holds(is)) {
             throw new CommandFail(m.rawMsg("claim-tidewatch", "island", is.name));
         }
+        int lock = m.config().getInt("tidewatch.lock-radius", 1000);
+        if (lock > 0 && m.garrison() != null) {
+            for (IslandImpl fort : m.islandImpls()) {
+                if (fort != is && fort.type == dev.aquatic.api.IslandType.TIDEWATCH && fort.world.equals(is.world)
+                        && m.garrison().holds(fort) && Math.hypot(fort.x - is.x, fort.z - is.z) <= lock) {
+                    throw new CommandFail(m.rawMsg("claim-tidewatch-region", "fort", fort.name));
+                }
+            }
+        }
         if (is.status == IslandStatus.OCCUPIED) {
             throw new CommandFail(m.rawMsg("claim-occupied", "island", is.name, "crew", m.crewDisplay(is.ownerCrewId)));
         }

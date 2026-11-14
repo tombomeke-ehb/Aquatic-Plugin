@@ -18,7 +18,7 @@
 
 # How often (seconds) changed data is written to plugins/AquaticSMP/data/islands/ (also saved on shutdown).
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 11
+config-version: 12
 
 autosave-seconds: 120
 
@@ -916,6 +916,9 @@ builds:
 # -------------------------------------------------------------------------------------
 tidewatch:
   enabled: true
+  # While a Tidewatch fort holds out, no island within this many blocks of it can be claimed (0 = off).
+  # Take the fort first to open up the waters around it.
+  lock-radius: 1000
   base-soldiers: 4
   # Extra soldiers per extra player on the island, up to max-soldiers.
   per-player: 2
@@ -942,7 +945,7 @@ tidewatch:
     frost: "<aqua>(Rimefrost)"
     thunder: "<yellow>(Thunderveil)"
     gale: "<white>(Galeborn)"
-  # Equipment can be a MATERIAL or "item:<custom item>" (the Tidewatch uniforms from items.yml, which get
+  # Equipment can be a MATERIAL or "item:<custom item>" (weapons too: riflemen with "item:musket" fire it) (the Tidewatch uniforms from items.yml, which get
   # their own look with the resource pack). If the items module is off, these materials are used instead.
   uniform-fallback:
     tidewatch_hat: LEATHER_HELMET
@@ -959,7 +962,7 @@ tidewatch:
       health-multiplier: 1.5
       damage-multiplier: 1.2
       equipment: {helmet: "item:tidewatch_hat", chestplate: "item:tidewatch_coat", leggings: "item:tidewatch_trousers",
-                  boots: "item:tidewatch_boots", mainhand: IRON_SWORD}
+                  boots: "item:tidewatch_boots", mainhand: "item:steel_cutlass"}
     # Riflemen and officers are illagers (pillagers and vindicators): they move and fight like soldiers and
     # the resource pack dresses them in Tidewatch uniform (in an ocean world no others spawn on their own).
     rifleman:
@@ -968,7 +971,7 @@ tidewatch:
       health-multiplier: 1.6
       # helmet: a random look per soldier ("look:<id>" = a 3D hat and face from the resource pack).
       equipment:
-        mainhand: CROSSBOW
+        mainhand: "item:musket"
         helmet: ["look:tw_shako", "look:tw_shako", "look:tw_shako_mustache_brown", "look:tw_shako_mustache_black",
                  "look:tw_shako_mustache_ginger", "look:tw_shako_beard_brown", "look:tw_shako_eyepatch"]
     lieutenant:
@@ -983,7 +986,7 @@ tidewatch:
         chestplate: "item:tidewatch_officer_coat"
         leggings: "item:tidewatch_trousers"
         boots: "item:tidewatch_boots"
-        mainhand: IRON_AXE
+        mainhand: "item:boarding_axe"
     captain:
       type: VINDICATOR
       name: "<dark_aqua><bold>Warden Captain</bold>"
@@ -996,7 +999,7 @@ tidewatch:
         chestplate: "item:tidewatch_captain_coat"
         leggings: "item:tidewatch_trousers"
         boots: "item:tidewatch_boots"
-        mainhand: DIAMOND_AXE
+        mainhand: "item:storm_saber"
 
 raiding:
   # When may enemies build/break/loot on an occupied island?
@@ -1064,6 +1067,15 @@ income:
   # Only pay crews with at least one member online.
   require-online: true
   default: 100
+  # Upkeep: every payout costs Doubloons per owned island, taken from the crew bank (the income first).
+  # cost = (per-island + per-facility x facilities) x (1 + growth x (owned islands - 1)): holding many islands
+  # gets expensive. A crew that cannot pay unpaid-limit payouts in a row loses its newest island.
+  upkeep:
+    enabled: true
+    per-island: 50
+    per-facility: 12
+    growth: 0.15
+    unpaid-limit: 12
   per-type:
     TROPICAL: 100
     JUNGLE: 120
@@ -1149,19 +1161,20 @@ ships:
       health-multiplier: 1.6
       damage-multiplier: 1.3
       equipment: {helmet: "item:corsair_hat", chestplate: "item:corsair_coat", leggings: "item:corsair_breeches",
-                  boots: "item:corsair_boots", mainhand: IRON_SWORD}
+                  boots: "item:corsair_boots", mainhand: "item:steel_cutlass"}
     marksman:
-      type: SKELETON
-      name: "<red>Cursed Marksman"
+      type: PILLAGER
+      name: "<red>Pirate Marksman"
       health-multiplier: 1.4
-      equipment: {helmet: "item:corsair_hat", chestplate: "item:corsair_coat", boots: "item:corsair_boots", mainhand: BOW}
+      equipment: {helmet: "item:corsair_hat", chestplate: "item:corsair_coat", leggings: "item:corsair_breeches",
+                  boots: "item:corsair_boots", mainhand: "item:flintlock"}
     bosun:
       type: WITHER_SKELETON
       name: "<dark_red>Cursed Bosun"
       health-multiplier: 1.6
       damage-multiplier: 1.2
       powers: [ember, gale]
-      equipment: {helmet: "item:corsair_hat", chestplate: "item:corsair_coat", mainhand: IRON_AXE}
+      equipment: {helmet: "item:corsair_hat", chestplate: "item:corsair_coat", mainhand: "item:boarding_axe"}
     dread_captain:
       type: WITHER_SKELETON
       name: "<dark_red><bold>Dread Captain"
@@ -1171,7 +1184,7 @@ ships:
       power-chance: 1.0
       effects: ["fire_resistance:1"]
       equipment: {helmet: "item:corsair_hat", chestplate: "item:captains_coat", leggings: "item:corsair_breeches",
-                  boots: "item:corsair_boots", mainhand: NETHERITE_SWORD}
+                  boots: "item:corsair_boots", mainhand: "item:abyss_cutlass"}
 
 messages:
   ship-sighted: "<gold>⚓ A <ship> <gold>was sighted near <white><x>, <z></white>. <gray>Board it, beat its crew and take its hold!"
@@ -1358,6 +1371,10 @@ messages:
   under-attack: "<red>Not while the island is under attack!"
   crews-disabled: "<red>Crews are disabled on this server."
   # --- income ---
+  income-net: "<gold>Your <count> island(s) earned <yellow><income></yellow>, upkeep <red>-<upkeep></red>: <white><net></white> <gray>into the crew bank."
+  upkeep-unpaid: "<red>The crew bank cannot pay the island upkeep (<white><missed>/<limit></white>). <gray>At <white><limit></white> you lose an island!"
+  upkeep-lost: "<red>Unpaid upkeep: <white><island></white> was abandoned and is free to claim."
+  claim-tidewatch-region: "<red>The Tidewatch fort <white><fort></white> still controls these waters. <gray>Take it first."
   income-paid: "<gold>Your <count> island(s) paid <yellow><amount></yellow> into the crew bank."
   # --- info / list / map ---
   open-sea: "<aqua>You're on the open sea."

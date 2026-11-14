@@ -1147,6 +1147,26 @@ public final class IslandsModule extends AquaticModule implements IslandService,
             addMissing(file, defaults, "generation.island-type-weights.VILLAGE");
             addMissing(file, defaults, "island-names.VILLAGE");
         }
+        if (from < 12) {
+            // 2.27.0: enemies fight with the custom weapons; island upkeep; forts lock the waters around them
+            Map<String, String[]> gear = new java.util.LinkedHashMap<>();
+            gear.put("tidewatch.mobs.recruit.equipment.mainhand", new String[]{"IRON_SWORD", "item:steel_cutlass"});
+            gear.put("tidewatch.mobs.rifleman.equipment.mainhand", new String[]{"CROSSBOW", "item:musket"});
+            gear.put("tidewatch.mobs.lieutenant.equipment.mainhand", new String[]{"IRON_AXE", "item:boarding_axe"});
+            gear.put("tidewatch.mobs.captain.equipment.mainhand", new String[]{"DIAMOND_AXE", "item:storm_saber"});
+            gear.put("ships.mobs.deckhand.equipment.mainhand", new String[]{"IRON_SWORD", "item:steel_cutlass"});
+            gear.put("ships.mobs.bosun.equipment.mainhand", new String[]{"IRON_AXE", "item:boarding_axe"});
+            gear.put("ships.mobs.dread_captain.equipment.mainhand", new String[]{"NETHERITE_SWORD", "item:abyss_cutlass"});
+            gear.forEach((path, v) -> raise(file, path, v[0], v[1]));
+            if ("SKELETON".equals(file.getString("ships.mobs.marksman.type")) && "BOW".equals(file.getString("ships.mobs.marksman.equipment.mainhand"))) {
+                file.set("ships.mobs.marksman", defaults.get("ships.mobs.marksman"));
+            }
+            addMissing(file, defaults, "income.upkeep");
+            addMissing(file, defaults, "tidewatch.lock-radius");
+            for (String key : List.of("income-net", "upkeep-unpaid", "upkeep-lost", "claim-tidewatch-region")) {
+                addMissing(file, defaults, "messages." + key);
+            }
+        }
         if (from < 11) {
             // 2.26.0: islands in rings around spawn, ships near players
             for (String k : List.of("placement", "ring-start", "ring-step", "scatter")) {
@@ -1862,14 +1882,64 @@ public final class IslandsModule extends AquaticModule implements IslandService,
             }
         }
         EconomyService economy = service(EconomyService.class);
-        for (Map.Entry<String, Double> e : totals.entrySet()) {
+        ConfigurationSection up = config().getConfigurationSection("income.upkeep");
+        boolean upkeep = up != null && up.getBoolean("enabled", true);
+        Map<String, List<IslandImpl>> owned = new HashMap<>();
+        for (IslandImpl is : islands.values()) {
+            if (is.status == IslandStatus.OCCUPIED && is.ownerCrewId != null) {
+                owned.computeIfAbsent(is.ownerCrewId, k -> new ArrayList<>()).add(is);
+            }
+        }
+        YamlConfiguration missedData = upkeep ? loadData("upkeep") : null;
+        for (Map.Entry<String, List<IslandImpl>> e : owned.entrySet()) {
             Crew crew = crews.crewById(e.getKey());
             if (crew == null || (requireOnline && crew.onlineMembers().isEmpty())) {
                 continue;
             }
-            crew.depositBank(e.getValue());
-            crew.broadcast(msg("income-paid", "amount", economy != null ? economy.format(e.getValue()) : Text.number(e.getValue()),
-                    "count", counts.get(e.getKey())));
+            double income = totals.getOrDefault(e.getKey(), 0.0);
+            double cost = 0;
+            if (upkeep) {
+                double growth = 1 + up.getDouble("growth", 0.15) * (e.getValue().size() - 1);
+                for (IslandImpl is : e.getValue()) {
+                    cost += (up.getDouble("per-island", 50) + up.getDouble("per-facility", 12) * is.facilities.size()) * growth;
+                }
+            }
+            String fmtIncome = economy != null ? economy.format(income) : Text.number(income);
+            if (cost <= 0) {
+                if (income > 0) {
+                    crew.depositBank(income);
+                    crew.broadcast(msg("income-paid", "amount", fmtIncome, "count", e.getValue().size()));
+                }
+                continue;
+            }
+            double net = income - cost;
+            boolean paid = net >= 0 || crew.withdrawBank(-net);
+            if (net >= 0) {
+                crew.depositBank(net);
+            }
+            if (paid) {
+                missedData.set(crew.id(), null);
+                crew.broadcast(msg("income-net", "count", e.getValue().size(), "income", fmtIncome,
+                        "upkeep", economy != null ? economy.format(cost) : Text.number(cost),
+                        "net", (net < 0 ? "-" : "+") + (economy != null ? economy.format(Math.abs(net)) : Text.number(Math.abs(net)))));
+                continue;
+            }
+            int limit = Math.max(1, up.getInt("unpaid-limit", 12));
+            int missed = missedData.getInt(crew.id()) + 1;
+            if (missed >= limit) {
+                IslandImpl newest = e.getValue().stream().max(java.util.Comparator.comparingLong(i -> i.claimedAt)).orElse(null);
+                if (newest != null) {
+                    setOwner(newest, null);
+                    crew.broadcast(msg("upkeep-lost", "island", newest.name));
+                }
+                missed = 0;
+            } else {
+                crew.broadcast(msg("upkeep-unpaid", "missed", missed, "limit", limit));
+            }
+            missedData.set(crew.id(), missed == 0 ? null : missed);
+        }
+        if (missedData != null) {
+            saveData("upkeep", missedData);
         }
     }
 

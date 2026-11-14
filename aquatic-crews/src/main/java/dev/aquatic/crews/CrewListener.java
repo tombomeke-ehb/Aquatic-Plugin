@@ -321,6 +321,7 @@ final class CrewListener implements Listener {
         }
         ChatRenderer base = event.renderer();
         String name = player.getName();
+        Component ranked = PermsHook.name(player);         // the LuckPerms display name or nickname
         Component itemComponent = item;
         event.renderer((source, displayName, message, viewer) -> {
             Component msg = message;
@@ -333,7 +334,8 @@ final class CrewListener implements Listener {
                         .replacement(hl));
             }
             // hover the name for the player card, click it to start a private message
-            Component shownName = card == null ? displayName : displayName
+            Component who = ranked == null ? displayName : ranked;
+            Component shownName = card == null ? who : who
                     .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(card))
                     .clickEvent(net.kyori.adventure.text.event.ClickEvent.suggestCommand("/msg " + name + " "));
             if (format) {

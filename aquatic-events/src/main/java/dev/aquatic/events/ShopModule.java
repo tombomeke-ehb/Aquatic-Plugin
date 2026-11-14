@@ -560,6 +560,15 @@ public final class ShopModule extends AquaticModule implements Listener {
             addMissing(file, defaults, "categories.masonry");
             addMissing(file, defaults, "categories.decor");
         }
+        if (from < 6) {
+            // 2.27.0: the Steel Cutlass and the Boarding Axe in the Pirate Armory
+            List<Map<?, ?>> items = new ArrayList<>(file.getMapList("categories.pirate.items"));
+            if (file.contains("categories.pirate.items") && items.stream().noneMatch(e -> String.valueOf(e.get("item")).equals("item:steel_cutlass"))) {
+                items.add(0, Map.of("item", "item:boarding_axe", "amount", 1, "buy", 750, "sell", 0));
+                items.add(0, Map.of("item", "item:steel_cutlass", "amount", 1, "buy", 600, "sell", 0));
+                file.set("categories.pirate.items", items);
+            }
+        }
         if (from < 5) {
             // 2.12.0: the shop is opened at the shopkeepers at spawn, not with /shop
             addMissing(file, defaults, "command");

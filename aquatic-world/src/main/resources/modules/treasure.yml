@@ -16,7 +16,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 7
+config-version: 8
 
 autosave-seconds: 120
 
@@ -91,6 +91,8 @@ tiers:
       - {material: FISHING_ROD, weight: 1.5, enchants: [LURE:1-2, LUCK_OF_THE_SEA:1], name: "<aqua>Old Salt's Rod"}
       - {material: ENCHANTED_BOOK, weight: 2, random-enchant-level: 5-12}
       - {custom-item: smoke_bomb, amount: 1-2, weight: 2}
+      - {custom-item: steel_cutlass, weight: 1.5}
+      - {custom-item: boarding_axe, weight: 1}
       - {custom-item: rum, amount: 1-2, weight: 2}
       - {custom-item: cannonball, amount: 2-4, weight: 1.5}
       - {custom-item: fire_bomb, amount: 1, weight: 1}

@@ -3,7 +3,7 @@
 # =====================================================================================
 
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 12
+config-version: 13
 #  Custom pirate items: Abyss Fruits, Abyssal Iron, legendary swords, guns,
 #  cannons, the Tide Compass, Echo Conch, rum and the Conqueror of the Sea's crown.
 #
@@ -763,6 +763,33 @@ items:
       falloff: 0.75
       color: "#fff35c"
 
+  # Plain steel: what the Tidewatch and the pirates fight with. Found in common treasure, sold by the Quartermaster.
+  steel_cutlass:
+    type: sword
+    material: IRON_SWORD
+    name: "<white><bold>Steel Cutlass"
+    lore:
+      - "<dark_gray>Standard issue on every deck from here to the Abyss."
+      - ""
+      - "<gray>A sturdy, quick blade."
+    item-model: "aquatic:steel_cutlass"
+    custom-model-data: 0
+    attributes:
+      - {attribute: attack_damage, amount: 6.5, operation: ADD_NUMBER, slot: mainhand}
+      - {attribute: attack_speed, amount: -2.3, operation: ADD_NUMBER, slot: mainhand}
+  boarding_axe:
+    type: sword
+    material: IRON_AXE
+    name: "<gray><bold>Boarding Axe"
+    lore:
+      - "<dark_gray>For cutting rigging, doors and the men behind them."
+      - ""
+      - "<gray>Slow, heavy blows."
+    item-model: "aquatic:boarding_axe"
+    custom-model-data: 0
+    attributes:
+      - {attribute: attack_damage, amount: 9.5, operation: ADD_NUMBER, slot: mainhand}
+      - {attribute: attack_speed, amount: -3.1, operation: ADD_NUMBER, slot: mainhand}
   tide_rapier:
     type: sword
     material: IRON_SWORD

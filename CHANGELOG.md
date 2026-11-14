@@ -1,5 +1,24 @@
 # Changelog
 
+## 2.27.0 (2026-11-14)
+
+### Added
+- **Enemies fight with the custom weapons.**
+  - **Tidewatch:** recruits carry the new Steel Cutlass, riflemen the Musket, lieutenants the new Boarding Axe, and the Warden Captain the Storm Saber.
+  - **Pirates:** deckhands carry Steel Cutlasses, bosuns Boarding Axes, and the Dread Captain the Abyss Cutlass. Marksmen are now pistoleers with a Flintlock.
+  - **Guns:** riflemen and marksmen fire them with a gunshot, a muzzle flash and smoke, and a fast, hard-hitting ball.
+  - Enemies never drop their weapons.
+- **Steel Cutlass and Boarding Axe:** plain steel weapons, in 3D like the others. They turn up in common treasure and are sold in the Pirate Armory (600 and 750 Doubloons).
+- **Island upkeep.** Every payout, each island costs Doubloons from the crew bank (paid from its income first): `(50 + 12 per facility) x (1 + 15% per extra island)`. Holding many islands gets expensive. A crew that cannot pay 12 payouts in a row loses its newest island. Set it under `income.upkeep` in `islands.yml`.
+- **Tidewatch forts control the waters around them.** While a fort holds out, no island within 1000 blocks of it can be claimed (`tidewatch.lock-radius`). Take the fort to open the area up.
+
+### Fixed
+- **LuckPerms names and ranks in chat, tab and the sidebar.**
+  - A display name set in LuckPerms (meta `displayname` or `nickname`, e.g. `/lp user <name> meta set displayname "&bCaptain Tom"`) or a nickname from another plugin now shows in chat, the tab list and the sidebar.
+  - The rank prefix and suffix (through Vault) still work as before. The sidebar gets `<prefix>` and `<suffix>` tags too.
+  - The tab list refreshes regularly, so rank changes show without rejoining.
+- **The sidebar disappeared when another plugin used its own scoreboard** (nametag and tab plugins that come with a LuckPerms setup). It now sits on that plugin's scoreboard instead of hiding; only the tournament's scoreboard still takes over (`share-scoreboards` in `sidebar.yml`).
+
 ## 2.26.0 (2026-11-14)
 
 ### Added
