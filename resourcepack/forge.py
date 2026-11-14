@@ -236,11 +236,11 @@ def voxels(grid, depth=None):
     return els
 
 
-HELD = {  # the same hold as Minecraft's own swords and tools (item/handheld)
-    "thirdperson_righthand": {"rotation": [0, -90, 55], "translation": [0, 4.0, 0.5], "scale": [0.85, 0.85, 0.85]},
-    "thirdperson_lefthand": {"rotation": [0, 90, -55], "translation": [0, 4.0, 0.5], "scale": [0.85, 0.85, 0.85]},
-    "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 3.2, 1.13], "scale": [0.68, 0.68, 0.68]},
-    "firstperson_lefthand": {"rotation": [0, 90, -25], "translation": [1.13, 3.2, 1.13], "scale": [0.68, 0.68, 0.68]},
+HELD = {  # Minecraft's own sword hold (item/handheld), but half as big again; the grip stays in the hand
+    "thirdperson_righthand": {"rotation": [0, -90, 55], "translation": [0, 7.3, 0.08], "scale": [1.3, 1.3, 1.3]},
+    "thirdperson_lefthand": {"rotation": [0, 90, -55], "translation": [0, 7.3, 0.08], "scale": [1.3, 1.3, 1.3]},
+    "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 4.02, 1.47], "scale": [0.8, 0.8, 0.8]},
+    "firstperson_lefthand": {"rotation": [0, 90, -25], "translation": [1.13, 4.02, 1.47], "scale": [0.8, 0.8, 0.8]},
     "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.5, 0.5, 0.5]},
     "head": {"rotation": [0, 180, 0], "translation": [0, 13, 7], "scale": [1, 1, 1]},
     "fixed": {"rotation": [0, 180, 0], "scale": [1, 1, 1]},

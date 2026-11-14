@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.23.2 (2026-11-14)
+
+### Changed
+- **Bigger weapons in the hand.** The 3D weapons, tools and keys are about 50% larger in third person and a little larger in first person; the grip stays in the hand.
+
 ## 2.23.1 (2026-11-14)
 
 ### Changed
