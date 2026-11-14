@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.28.1 (2026-11-14)
+
+### Fixed
+- **The sidebar showed only its title.** Sidebar configs that still used the old `lines` setting got an empty `layout: []` from the config updates in 2.23.0 - 2.28.0. The layout is repaired on start (back to the default sidebar), an empty layout now always falls back to the default, and the updates never write an empty layout again.
+
 ## 2.28.0 (2026-11-14)
 
 ### Added

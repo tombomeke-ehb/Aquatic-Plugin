@@ -281,7 +281,11 @@ public final class SidebarModule extends AquaticModule implements Listener {
 
         List<Component> out = new ArrayList<>();
         // "layout" (2.3.0+) replaces the older "lines"
-        for (String raw : config().getStringList("layout")) {
+        List<String> layout = config().getStringList("layout");
+        if (layout.isEmpty() && config().getDefaults() != null) {
+            layout = config().getDefaults().getStringList("layout");     // never an empty sidebar
+        }
+        for (String raw : layout) {
             String line = raw;
             if (line.startsWith("?")) {
                 int colon = line.indexOf(':');
@@ -404,6 +408,12 @@ public final class SidebarModule extends AquaticModule implements Listener {
 
     @Override
     protected void migrateConfig(YamlConfiguration file, YamlConfiguration defaults, int from) {
+        if (from < 5) {
+            // 2.28.1: 2.23.0 - 2.28.0 could write an empty layout for files that still used the old "lines" key
+            if (file.getStringList("layout").isEmpty()) {
+                file.set("layout", defaults.getStringList("layout"));
+            }
+        }
         if (from < 4) {
             // 2.27.2: the LuckPerms rank under the name; the crew rank is called the Role
             List<String> lines = new ArrayList<>(file.getStringList("layout"));
@@ -422,7 +432,9 @@ public final class SidebarModule extends AquaticModule implements Listener {
             if (crewRank >= 0) {
                 lines.set(crewRank, "?crew:<gray>Role: <white><rank>");
             }
-            file.set("layout", lines);
+            if (!lines.isEmpty()) {
+                file.set("layout", lines);
+            }
         }
         if (from < 3) {
             // 2.23.0: the rank of your bounty stands above your name
@@ -439,7 +451,9 @@ public final class SidebarModule extends AquaticModule implements Listener {
             if (!has && who >= 0) {
                 lines.add(who, "?bounty:<bounty_title>");
             }
-            file.set("layout", lines);
+            if (!lines.isEmpty()) {
+                file.set("layout", lines);
+            }
         }
         if (from < 2) {
             // 2.17.0: the level sits next to the XP bar (a narrower sidebar)

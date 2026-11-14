@@ -28,7 +28,7 @@ take-sidebar-slot: true
 # Start a line with "?<condition>:" to only show it when that applies:
 #   crew, nocrew, island, sea, fruit, nofruit, event, bounty, conqueror, combat
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 4
+config-version: 5
 
 layout:
   - "<dark_gray><strikethrough>                         "
