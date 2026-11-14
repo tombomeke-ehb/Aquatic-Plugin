@@ -854,6 +854,9 @@ final class IslandCommands {
             m.markDirty();
         }
         m.queueRegeneration(is, sender);
+        if (m.garrison() != null) {
+            m.garrison().reset(is.id);
+        }
         m.send(sender, "regen-started", "island", is.name, "queued", m.queuedJobs());
     }
 

@@ -95,6 +95,7 @@ public final class IslandsModule extends AquaticModule implements IslandService,
     private IslandUpgrades upgrades;
     private IslandFacilities facilities;
     private TidewatchGarrison garrison;
+    private Ships ships;
     /** Exact spawn point set with /island admin setspawn ("world;x;y;z;yaw;pitch"), or null. */
     private String spawnPoint;
     private boolean dirty;
@@ -147,6 +148,11 @@ public final class IslandsModule extends AquaticModule implements IslandService,
         registerListener(garrison);
         runTimer(garrison::tick, 60L, 60L);
         runTimer(garrison::tickPowers, 20L, 20L);
+        ships = new Ships(this);
+        ships.load();
+        registerListener(ships);
+        registerCommand(ships.command());
+        runTimer(ships::tick, 100L, 40L);
         runTimer(() -> upgrades.tickHarbor(presence), 40L, 40L);
         conquest = new ConquestManager(this);
         registerCommand(new IslandCommands(this).build());
@@ -184,6 +190,9 @@ public final class IslandsModule extends AquaticModule implements IslandService,
     protected void onDisable() {
         if (facilities != null) {
             facilities.clear();
+        }
+        if (ships != null) {
+            ships.shutdown();
         }
         if (garrison != null) {
             garrison.shutdown();
@@ -1110,6 +1119,14 @@ public final class IslandsModule extends AquaticModule implements IslandService,
             addMissing(file, defaults, "types.VILLAGE");
             addMissing(file, defaults, "generation.island-type-weights.VILLAGE");
             addMissing(file, defaults, "island-names.VILLAGE");
+        }
+        if (from < 10) {
+            // 2.25.0: ships on the open sea
+            addMissing(file, defaults, "ships");
+            for (String key : List.of("ship-sighted", "ship-boarded", "ship-crew-left", "ship-cleared", "ship-cleared-you",
+                    "ship-bar", "ship-sinking", "ship-protected")) {
+                addMissing(file, defaults, "messages." + key);
+            }
         }
         if (from < 9) {
             // 2.18.0: new Tidewatch forts (three variants); the strongbox lies in the open yard

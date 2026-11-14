@@ -612,3 +612,16 @@ Depending on the version, EssentialsX can also have `/balance`, `/bal`, `/money`
 **Other overlaps:**
 - **Tab list:** AquaticSMP's crew tags in the tab list can fight with the **TAB** plugin. If you use TAB, set `tablist.enabled: false` in `crews.yml` and use the `%aquatic_crew_tag%` placeholder (needs PlaceholderAPI) in TAB instead.
 - **Chat:** with an EssentialsX Chat format plugin, both may try to format the message. Either set `chat.prefix-enabled: false` in `crews.yml` or put `%aquatic_crew_tag%` in your chat plugin's format.
+
+## Ships
+
+Ships appear on the open sea by themselves (`ships` in `islands.yml`). Board one, beat the crew and the captain, loot the two chests, and get off before it sinks.
+
+| Command | What it does | Permission |
+| --- | --- | --- |
+| `/ship list` | All ships, where they are and how much crew is left (click one to go there) | `aquatic.ships.admin` |
+| `/ship spawn [kind]` | Build a ship where you stand (stand over open water) | `aquatic.ships.admin` |
+| `/ship random [kind]` | Send a ship out to a random spot on the sea | `aquatic.ships.admin` |
+| `/ship tp <id>` | Go to a ship | `aquatic.ships.admin` |
+| `/ship sink <id>` | Sink a ship now, with the animation | `aquatic.ships.admin` |
+| `/ship remove <id>` | Remove a ship at once | `aquatic.ships.admin` |

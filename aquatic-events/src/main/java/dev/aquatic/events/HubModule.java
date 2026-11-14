@@ -284,7 +284,7 @@ public final class HubModule extends AquaticModule implements Listener {
                 }
             }
         }
-        // NPCs and signs nobody is near any more (or that were moved) go away
+        // NPCs and signs nobody is near anymore (or that were moved) go away
         live.entrySet().removeIf(e -> {
             if (wanted.contains(e.getKey())) {
                 return false;

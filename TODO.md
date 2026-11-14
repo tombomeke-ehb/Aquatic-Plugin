@@ -23,6 +23,7 @@ What changed in each version is in [CHANGELOG.md](CHANGELOG.md). Current version
   - The founders' shrine (heads, names, roles), a fountain, plaza decoration and a timed parkour tower.
   - Harbour roads, houses, piers and a lighthouse.
 - **Tidewatch outposts:** forts with a garrison in uniform (illagers with their own textures) and a Warden Captain.
+- **Ships:** Tidewatch sloops and cursed pirate brigs appear on the sea; clear the crew, loot the chests, get off before it sinks.
   - Liberate one to claim it.
   - About 1 in 5 officers has a fruit power, with a warning before each attack.
 - **Villages:** neutral, unclaimable islands with cottages, a smithy, fishing huts, a tavern, farm fields and a well.

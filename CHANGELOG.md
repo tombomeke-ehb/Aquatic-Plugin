@@ -1,5 +1,23 @@
 # Changelog
 
+## 2.25.0 (2026-11-14)
+
+### Added
+- **Ships on the open sea.** Every 20 minutes a ship appears somewhere on the sea and the server hears roughly where.
+  - **Two kinds:** a Tidewatch Patrol Sloop (recruits, riflemen, a lieutenant and a Warden Captain) and a Cursed Pirate Brig (skeleton deckhands and marksmen, a bosun and the Dread Captain, who uses fruit powers).
+  - **The ships:** a hull with a hold below deck, masts with striped sails and a flag, a captain's cabin with a quarterdeck on top.
+  - **The fight:** the crew appears when you come close, at most six at a time. Every kill pays Doubloons (the captain five times as much) and the usual XP.
+  - **The prize:** when the last one falls, the two chests (cabin and hold) fill with treasure loot, and everyone aboard gets Doubloons and XP.
+  - **The countdown:** a boss bar counts down 10 minutes. Then the ship sinks block by block with spray and bubbles and is gone, with whatever was left in its chests.
+  - Ships cannot be taken apart, and no other monsters spawn on them. A ship nobody boards sails on after 6 hours.
+  - Everything is set under `ships` in `islands.yml`: how often, how many, the kinds, crews, rewards, loot tier and the sinking time.
+  - Staff: `/ship list`, `/ship spawn [kind]`, `/ship random [kind]`, `/ship tp <id>`, `/ship sink <id>`, `/ship remove <id>` (`aquatic.ships.admin`).
+
+### Fixed
+- **The Tidewatch garrison did not appear on a regenerated island.** Two causes:
+  - An island that had been liberated stayed "liberated" for 12 hours, also after `/island regen`. Regenerating now brings the garrison straight back.
+  - The garrison ignored players in creative mode, so staff testing in creative saw an empty fort. It now appears for them too (it still only attacks players who can be hurt).
+
 ## 2.24.1 (2026-11-14)
 
 ### Fixed

@@ -18,7 +18,7 @@
 
 # How often (seconds) changed data is written to plugins/AquaticSMP/data/islands/ (also saved on shutdown).
 # Do not edit: used to upgrade this file when the plugin updates.
-config-version: 9
+config-version: 10
 
 autosave-seconds: 120
 
@@ -1077,7 +1077,101 @@ bluemap:
 # =====================================================================================
 #  Messages
 # =====================================================================================
+# -------------------------------------------------------------------------------------
+# Ships on the open sea
+# -------------------------------------------------------------------------------------
+# Every interval-minutes a ship appears somewhere on the sea (a rumour tells roughly where). Board it and fight
+# the crew and the captain. When the last one falls, its chests fill with loot and everyone aboard is paid;
+# sink-minutes later the ship goes down and is gone. Staff: /ship list|spawn|random|tp|sink|remove.
+ships:
+  enabled: true
+  interval-minutes: 20
+  # Never more than this many ships with a crew at once.
+  max-active: 4
+  min-players-online: 1
+  # A ship nobody boarded sails on after this many hours.
+  expire-hours: 6
+  # Minutes between the last kill and the sinking.
+  sink-minutes: 10
+  # At most this many crew members fight at once; the rest come up as the others fall.
+  max-on-deck: 6
+  # Tell the server when a ship is sighted (rough coordinates) and when one is cleared.
+  announce: true
+  kinds:
+    # design: sloop (one mast) or brig (two masts, longer). sail/trim: wool colours. banner: the flag on the mast.
+    # crew: templates with weights, from "mobs" below or from the Tidewatch garrison (tidewatch.mobs).
+    # crew-size: how many must fall (plus the captain). loot-tier: a treasure tier (treasure.yml) per chest.
+    tidewatch:
+      name: "<blue>Tidewatch Patrol Sloop"
+      weight: 5
+      design: sloop
+      sail: WHITE_WOOL
+      trim: BLUE_WOOL
+      banner: BLUE_BANNER
+      crew-size: 8
+      crew: ["recruit:4", "rifleman:3", "lieutenant:1"]
+      captain: captain
+      # Doubloons per kill (the captain: five times this), and for everyone aboard when the ship is cleared.
+      kill-reward: 40
+      clear-reward: 1200
+      clear-xp: 300
+      loot-tier: rare
+    pirates:
+      name: "<dark_red>Cursed Pirate Brig"
+      weight: 4
+      design: brig
+      sail: BLACK_WOOL
+      trim: RED_WOOL
+      banner: BLACK_BANNER
+      crew-size: 12
+      crew: ["deckhand:5", "marksman:3", "bosun:1"]
+      captain: dread_captain
+      kill-reward: 55
+      clear-reward: 2200
+      clear-xp: 500
+      loot-tier: epic
+  # Crew templates (same options as tidewatch.mobs): type, name, health or health-multiplier, damage-multiplier,
+  # equipment, effects, powers (Abyss Fruit powers: ember, frost, thunder, gale) and power-chance.
+  mobs:
+    deckhand:
+      type: SKELETON
+      name: "<red>Cursed Deckhand"
+      health-multiplier: 1.6
+      damage-multiplier: 1.3
+      equipment: {helmet: "item:corsair_hat", chestplate: "item:corsair_coat", leggings: "item:corsair_breeches",
+                  boots: "item:corsair_boots", mainhand: IRON_SWORD}
+    marksman:
+      type: SKELETON
+      name: "<red>Cursed Marksman"
+      health-multiplier: 1.4
+      equipment: {helmet: "item:corsair_hat", chestplate: "item:corsair_coat", boots: "item:corsair_boots", mainhand: BOW}
+    bosun:
+      type: WITHER_SKELETON
+      name: "<dark_red>Cursed Bosun"
+      health-multiplier: 1.6
+      damage-multiplier: 1.2
+      powers: [ember, gale]
+      equipment: {helmet: "item:corsair_hat", chestplate: "item:corsair_coat", mainhand: IRON_AXE}
+    dread_captain:
+      type: WITHER_SKELETON
+      name: "<dark_red><bold>Dread Captain"
+      health: 120
+      damage-multiplier: 1.5
+      powers: [ember, thunder]
+      power-chance: 1.0
+      effects: ["fire_resistance:1"]
+      equipment: {helmet: "item:corsair_hat", chestplate: "item:captains_coat", leggings: "item:corsair_breeches",
+                  boots: "item:corsair_boots", mainhand: NETHERITE_SWORD}
+
 messages:
+  ship-sighted: "<gold>⚓ A <ship> <gold>was sighted near <white><x>, <z></white>. <gray>Board it, beat its crew and take its hold!"
+  ship-boarded: "<red>⚔ You are boarding a <ship><red>. The crew draws steel!"
+  ship-crew-left: "<gray>Crew left: <white><left>"
+  ship-cleared: "<gold>⚓ <white><player></white> cleared a <ship><gold>!"
+  ship-cleared-you: "<green>The <ship> <green>is yours: <gold>+<amount></gold>. <gray>Its chests are full. You have <white><minutes> minutes</white> before it sinks!"
+  ship-bar: "<red>The ship sinks in <white><time>"
+  ship-sinking: "<red><bold>The ship is going down!</bold> <gray>Get off!"
+  ship-protected: "<red>You cannot take the ship apart."
   schematic-list-header: "<aqua>Schematics <gray>(<count>) in plugins/AquaticSMP/schematics <dark_gray>(click one to preview)"
   schematic-list-line: " <gray>- <white><file>"
   schematic-list-empty: " <gray>None yet. Put .schem (WorldEdit) or .nbt (structure block) files in that folder."

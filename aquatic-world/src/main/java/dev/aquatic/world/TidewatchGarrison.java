@@ -115,6 +115,16 @@ final class TidewatchGarrison implements Listener {
         return Math.max(0, (liberatedUntil.getOrDefault(is.id, 0L) - System.currentTimeMillis()) / 1000);
     }
 
+    /** A new or regenerated island: the garrison is back, whatever happened there before. */
+    void reset(String islandId) {
+        despawn(islandId);
+        alerted.remove(islandId);
+        lastWave.remove(islandId);
+        if (liberatedUntil.remove(islandId) != null) {
+            save();
+        }
+    }
+
     /** True while the Tidewatch holds the island (it can't be claimed then). */
     boolean holds(IslandImpl is) {
         return is.type == IslandType.TIDEWATCH && is.status != IslandStatus.OCCUPIED && cfg().getBoolean("enabled", true) && !liberated(is);
@@ -132,7 +142,8 @@ final class TidewatchGarrison implements Listener {
             List<Player> present = new ArrayList<>();
             if (w != null) {
                 for (Player p : w.getPlayers()) {
-                    if (p.getGameMode() != GameMode.SPECTATOR && p.getGameMode() != GameMode.CREATIVE && is.contains(p.getLocation())) {
+                    // creative players (staff building or testing) see the garrison too; it only hunts the others
+                    if (p.getGameMode() != GameMode.SPECTATOR && is.contains(p.getLocation())) {
                         present.add(p);
                     }
                 }
@@ -269,7 +280,17 @@ final class TidewatchGarrison implements Listener {
     }
 
     private LivingEntity spawn(IslandImpl is, String template, Location at, List<Player> targets) {
-        ConfigurationSection mob = cfg().getConfigurationSection("mobs." + template);
+        List<Player> hunted = new ArrayList<>(targets);
+        hunted.removeIf(p -> p.getGameMode() == GameMode.CREATIVE);
+        LivingEntity le = spawnFrom(cfg().getConfigurationSection("mobs." + template), at, hunted);
+        if (le != null) {
+            le.getPersistentDataContainer().set(islandKey, PersistentDataType.STRING, is.id);
+        }
+        return le;
+    }
+
+    /** Spawns a soldier from a mob template (also used for the crews of ships). */
+    LivingEntity spawnFrom(ConfigurationSection mob, Location at, List<Player> targets) {
         if (mob == null || at.getWorld() == null) {
             return null;
         }
@@ -287,13 +308,15 @@ final class TidewatchGarrison implements Listener {
             spawned.remove();
             return null;
         }
-        le.getPersistentDataContainer().set(islandKey, PersistentDataType.STRING, is.id);
         le.setPersistent(false);
         le.setRemoveWhenFarAway(false);
         le.setCanPickupItems(false);
         if (le instanceof org.bukkit.entity.Zombie zombie) {
             zombie.setShouldBurnInDay(false);
             zombie.setConversionTime(-1);
+        }
+        if (le instanceof org.bukkit.entity.AbstractSkeleton skeleton) {
+            skeleton.setShouldBurnInDay(false);
         }
         // officers with an Abyss Fruit power (picked at random from the template's list)
         List<String> powers = mob.getStringList("powers");
