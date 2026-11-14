@@ -134,7 +134,7 @@ public final class SidebarModule extends AquaticModule implements Listener {
         Scoreboard main = Bukkit.getScoreboardManager().getMainScoreboard();
         if (board == null) {
             board = Bukkit.getScoreboardManager().getNewScoreboard();
-            Objective obj = board.registerNewObjective("aquatic_side", Criteria.DUMMY, Text.mm(config().getString("title", "Aquatic SMP")));
+            Objective obj = board.registerNewObjective("aquatic_side", Criteria.DUMMY, Text.mm(dev.aquatic.util.Placeholders.apply(p, config().getString("title", "Aquatic SMP"))));
             obj.setDisplaySlot(DisplaySlot.SIDEBAR);
             obj.numberFormat(NumberFormat.blank());
             boards.put(p.getUniqueId(), board);
@@ -151,7 +151,7 @@ public final class SidebarModule extends AquaticModule implements Listener {
                 return;                                  // it shows its own sidebar: leave it alone
             }
             if (current.getObjective("aquatic_side") == null) {
-                Objective o = current.registerNewObjective("aquatic_side", Criteria.DUMMY, Text.mm(config().getString("title", "Aquatic SMP")));
+                Objective o = current.registerNewObjective("aquatic_side", Criteria.DUMMY, Text.mm(dev.aquatic.util.Placeholders.apply(p, config().getString("title", "Aquatic SMP"))));
                 o.setDisplaySlot(DisplaySlot.SIDEBAR);
                 o.numberFormat(NumberFormat.blank());
                 shown.remove(p.getUniqueId());
@@ -165,7 +165,7 @@ public final class SidebarModule extends AquaticModule implements Listener {
         if (obj == null) {
             return;
         }
-        obj.displayName(Text.mm(config().getString("title", "Aquatic SMP")));
+        obj.displayName(Text.mm(dev.aquatic.util.Placeholders.apply(p, config().getString("title", "Aquatic SMP"))));
         List<Component> lines = render(p);
         List<Component> before = shown.computeIfAbsent(p.getUniqueId(), k -> new ArrayList<>());
         for (int i = 0; i < MAX_LINES; i++) {
@@ -290,7 +290,7 @@ public final class SidebarModule extends AquaticModule implements Listener {
                     continue;
                 }
             }
-            out.add(Text.mm(line, flat));
+            out.add(Text.mm(dev.aquatic.util.Placeholders.apply(p, line), flat));
             if (out.size() >= MAX_LINES) {
                 break;
             }

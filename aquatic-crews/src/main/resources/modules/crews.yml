@@ -241,6 +241,8 @@ tablist:
   # Show the crew tag in front of names in the tab list.
   enabled: true
   # Tags: <rank> (rank prefix from LuckPerms/Vault) <level> <tag> <crew> <player> <rank_icon> <suffix>
+  # PlaceholderAPI placeholders work in every tab and chat line too, e.g. %luckperms_prefix%,
+  # %luckperms_meta_displayname%, %player_ping%. Legacy colours they return (&c, &#ff8800) are kept.
   format: "<rank><level><rank_icon> <dark_gray>[<tag><dark_gray>] <white><player><suffix>"
   # Players without a crew ("" = the plain name).
   no-crew-format: "<rank><level><white><player><suffix>"

@@ -269,7 +269,7 @@ final class CrewListener implements Listener {
         Component suffix = module.permSuffix(player);
         org.bukkit.configuration.ConfigurationSection cfg = module.config().getConfigurationSection("chat");
         boolean format = cfg != null && cfg.getBoolean("format.enabled", true);
-        String line = cfg == null ? "" : cfg.getString("format.line", "<level><prefix><name><dark_gray> » <white><message>");
+        String line = dev.aquatic.util.Placeholders.apply(player, cfg == null ? "" : cfg.getString("format.line", "<level><prefix><name><dark_gray> » <white><message>"));
         Integer level = module.cachedLevel(id);
         Component badge = level == null || cfg == null || cfg.getString("format.level-badge", "").isEmpty() ? Component.empty()
                 : dev.aquatic.util.Text.mm(cfg.getString("format.level-badge"), "level", level);

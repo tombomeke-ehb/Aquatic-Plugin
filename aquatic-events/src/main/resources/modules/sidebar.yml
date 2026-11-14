@@ -18,6 +18,8 @@ share-scoreboards: true
 # Tags: <player> (the LuckPerms display name or nickname) <prefix> <suffix> (rank prefix/suffix from LuckPerms) <level> <level_title> <xp_bar> <xp_percent> <balance> <bounty> <bounty_title> <crew> <crew_online>
 #       <rank> <reputation> <island> <island_type> <island_rarity> <island_owner> <fruit> <fruit_level>
 #       <move> <move_cd> <combat> <event> <event_time> <conqueror> <online> <x> <z>
+# PlaceholderAPI placeholders work in the title and every line, e.g. %luckperms_prefix%,
+#   %luckperms_meta_displayname%, %luckperms_primary_group_name%, %player_ping% (legacy colours they return are kept).
 # Start a line with "?<condition>:" to only show it when that applies:
 #   crew, nocrew, island, sea, fruit, nofruit, event, bounty, conqueror, combat
 # Do not edit: used to upgrade this file when the plugin updates.

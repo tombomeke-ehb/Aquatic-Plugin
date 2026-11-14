@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.27.1 (2026-11-14)
+
+### Added
+- **PlaceholderAPI in the sidebar, the tab list and chat.** Every line can now hold any PlaceholderAPI placeholder next to our own tags, for example `%luckperms_prefix%`, `%luckperms_suffix%`, `%luckperms_meta_displayname%`, `%luckperms_primary_group_name%` or `%player_ping%`.
+  - Legacy colours the placeholders return (`&c`, `&#ff8800`, `§l`) are kept, so they mix with MiniMessage in one line.
+  - **Sidebar:** the `title` and every `layout` line in `sidebar.yml`.
+  - **Tab list:** `tablist.format`, `no-crew-format`, `header` and `footer` in `crews.yml`.
+  - **Chat:** `chat.format.line` in `crews.yml`.
+  - Without PlaceholderAPI installed, the lines stay as they are.
+
 ## 2.27.0 (2026-11-14)
 
 ### Added

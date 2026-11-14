@@ -880,8 +880,8 @@ public final class CrewsModule extends AquaticModule implements CrewService {
                 Object[] ph = {"player", p.getName(), "online", Bukkit.getOnlinePlayers().size(), "max", Bukkit.getMaxPlayers(),
                         "crew", crew == null ? rawMsg("card-no-crew") : crew.displayName(),
                         "balance", eco == null ? "-" : eco.format(eco.balance(id)), "bounty", bountyText};
-                p.sendPlayerListHeaderAndFooter(Text.mm(String.join("<newline>", config().getStringList("tablist.header")), ph),
-                        Text.mm(String.join("<newline>", config().getStringList("tablist.footer")), ph));
+                p.sendPlayerListHeaderAndFooter(Text.mm(dev.aquatic.util.Placeholders.apply(p, String.join("<newline>", config().getStringList("tablist.header"))), ph),
+                        Text.mm(dev.aquatic.util.Placeholders.apply(p, String.join("<newline>", config().getStringList("tablist.footer"))), ph));
             }
         }
         playerCards.keySet().retainAll(online);
@@ -946,7 +946,7 @@ public final class CrewsModule extends AquaticModule implements CrewService {
                 "level", level == null || badge.isEmpty() ? Component.empty() : Text.mm(badge, "level", level)};
         if (crew == null) {
             String format = config().getString("tablist.no-crew-format", "");
-            player.playerListName(format.isEmpty() ? null : Text.mm(format, common));
+            player.playerListName(format.isEmpty() ? null : Text.mm(dev.aquatic.util.Placeholders.apply(player, format), common));
         } else {
             Object[] all = java.util.Arrays.copyOf(common, common.length + 6);
             all[common.length] = "tag";
@@ -955,7 +955,7 @@ public final class CrewsModule extends AquaticModule implements CrewService {
             all[common.length + 3] = crew.displayName();
             all[common.length + 4] = "rank_icon";
             all[common.length + 5] = Text.mm(rankIcon(crew.rankOf(player.getUniqueId())));
-            player.playerListName(Text.mm(tabFormat, all));
+            player.playerListName(Text.mm(dev.aquatic.util.Placeholders.apply(player, tabFormat), all));
         }
     }
 
